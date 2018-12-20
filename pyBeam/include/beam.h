@@ -50,6 +50,8 @@ public:
   
   virtual ~CBeamSolver(void);
   
-  void solve_beam(void);     
+  void solve_beam(void);  
+  
+  void Solve(void); 
   
 };

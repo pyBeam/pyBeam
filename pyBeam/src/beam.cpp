@@ -159,34 +159,151 @@ void CBeamSolver::solve_beam(void){
 
 	double  lambda = 1.0;
 	double dlambda =  1.0/input->Get_LoadSteps() ;
-	int i = 0;
-	int i_cum = 1;
+	unsigned long iIter;
+	unsigned long totalIter = 0;
 	int ls = 1;
 
 	for  ( ls = 0; ls < input->Get_LoadSteps(); ls++)
 	{
-		std::cout << "==============================" << ls << std::endl;
+		std::cout << "==============================" << std::endl;
 		std::cout << "==       LOAD STEP     " << ls << std::endl;
 
 		lambda = dlambda*(ls+1);
 		std::cout << "lambda = " << lambda << std::endl;
 
 		//===============================================
-		//
 		//               ITERATIVE SEQUENCE
-		//
 		//===============================================
-		int converged = 0;
-		i = 0;
+		
+		bool converged = false;
 
-		while ( i < input->Get_nIter() && converged == 0)
+		for (iIter = 0; iIter < input->Get_nIter(); iIter++)
 		{
-			std::cout << "   ----- ITERATION  -----" << i << std::endl;
+			std::cout << "   ----- ITERATION  " << iIter << "-----" << std::endl;
 
 
 			/*--------------------------------------------------
 			 *   Updates  Fext, Residual,
 			*----------------------------------------------------*/
+
+			// Update External Forces (if they are follower )
+			structure->UpdateExtForces(lambda,input->Get_FollowerFlag());
+
+			// Evaluate the Residual
+			structure->EvalResidual();
+
+			std::cout << " Residual = "  <<  structure->Residual.norm() << std::endl;
+
+			/*--------------------------------------------------
+			 *   Assembly Ktang, Solve System
+			*----------------------------------------------------*/
+
+			// Reassembling Stiffness Matrix + Applying Boundary Conditions
+			structure->AssemblyTang();
+
+			// Solve Linear System   K*dU = Res = Fext - Fin
+			structure->SolveLinearStaticSystem();
+
+			/*--------------------------------------------------
+			 *   Updates Coordinates, Updates Rotation Matrices
+			*----------------------------------------------------*/
+
+			structure->UpdateCoord();
+
+			structure->EchoDisp();   structure->EchoCoord();
+
+			// Now only X is updated!
+
+			structure->UpdateRotationMatrix();  // based on the rotational displacements
+			structure->UpdateLength();          // Updating length, important
+
+
+			/*--------------------------------------------------
+			 *   Update Internal Forces
+			*----------------------------------------------------*/
+            // Now, X, R, l are updated
+
+			structure->UpdateInternalForces();
+
+			/*--------------------------------------------------
+			 *    Check Convergence
+			*----------------------------------------------------*/
+
+			double disp_factor =   structure->dU.norm()/input->Get_l();
+			std::cout << " disp_factor = "  <<  disp_factor << std::endl;
+
+			if (disp_factor <= input->Get_ConvCriteria())
+			{
+				converged = true;
+				std::cout << " CONVERGED at iteration  "  << iIter <<   std::endl;
+				totalIter += iIter;
+				break;
+			}
+		}
+		std::cout << "#####    EXITING ITERATIVE SEQUENCE   #####" << std::endl;
+	}
+
+	//  Writing the number of iterations in the echoes
+	echoes <<  totalIter  << std::endl;
+
+	std::chrono::steady_clock::time_point end= std::chrono::steady_clock::now();
+
+	std::cout << "Time difference INI-FIN  = " << chrono::duration_cast<chrono::microseconds>(end - begin).count() <<std::endl;
+	std::cout << "Time difference INI-PART = " << chrono::duration_cast<chrono::microseconds>(partial - begin).count() <<std::endl;
+	std::cout << "Time difference PART-FIN = " << chrono::duration_cast<chrono::microseconds>(end  - partial).count() <<std::endl;
+
+	echoes << (chrono::duration_cast<chrono::microseconds>(partial - begin).count())/1.0e6 << std::endl;
+	echoes << (chrono::duration_cast<chrono::microseconds>(end - partial).count())/1.0e6 << std::endl;
+
+	std::cout << "LA COMMEDIA E' FINITA "  <<std::endl;
+	
+	
+}
+
+void CBeamSolver::Solve(void){
+
+	//===============================================
+	//  Initialize structural solver
+	//===============================================
+	
+	structure = new CStructure(input, element);
+
+	std::cout << "Reading External Forces" << std::endl;
+	structure->ReadForces(input->Get_Load());
+
+	//===============================================
+	// LOAD STEPPING
+	//===============================================
+	
+	std::cout << "#####    STARTING LOAD STEPPING   #####" << std::endl;
+
+	double  lambda = 1.0;
+	double dlambda =  1.0/input->Get_LoadSteps() ;
+	unsigned long iIter;
+	unsigned long totalIter = 0;
+	unsigned long loadStep = 1;
+
+	for  ( loadStep = 0; loadStep < input->Get_LoadSteps(); loadStep++)
+	{
+		std::cout << "==============================" << std::endl;
+		std::cout << "==       LOAD STEP     " << loadStep << std::endl;
+		std::cout << "==============================" << std::endl;
+
+		lambda = dlambda*(loadStep+1);
+		std::cout << "lambda = " << lambda << std::endl;
+
+		//===============================================
+		//               ITERATIVE SEQUENCE
+		//===============================================
+		bool converged = false;
+
+		for (iIter = 0; iIter < input->Get_nIter(); iIter++) {
+			
+			std::cout << "   ----- ITERATION  -----" << iIter << std::endl;
+
+			/*--------------------------------------------------
+			 *   Updates  Fext, Residual,
+			 *----------------------------------------------------*/
 
 			// Update External Forces (if they are follower )
 			structure->UpdateExtForces(lambda,input->Get_FollowerFlag());
@@ -238,29 +355,14 @@ void CBeamSolver::solve_beam(void){
 
 			if (disp_factor <= input->Get_ConvCriteria())
 			{
-				converged = 1;
-				std::cout << " CONVERGED at iteration  "  << i <<   std::endl;
+				converged = true;
+				std::cout << " CONVERGED at iteration  "  << iIter <<   std::endl;
+				totalIter += iIter;
+				break;
 			}
-			else
-				i++;
-			    i_cum++;
 		}
 		std::cout << "#####    EXITING ITERATIVE SEQUENCE   #####" << std::endl;
 	}
-
-	//  Writing the number of iterations in the echoes
-	echoes <<  i_cum  << std::endl;
-
-	std::chrono::steady_clock::time_point end= std::chrono::steady_clock::now();
-
-	std::cout << "Time difference INI-FIN  = " << chrono::duration_cast<chrono::microseconds>(end - begin).count() <<std::endl;
-	std::cout << "Time difference INI-PART = " << chrono::duration_cast<chrono::microseconds>(partial - begin).count() <<std::endl;
-	std::cout << "Time difference PART-FIN = " << chrono::duration_cast<chrono::microseconds>(end  - partial).count() <<std::endl;
-
-	echoes << (chrono::duration_cast<chrono::microseconds>(partial - begin).count())/1.0e6 << std::endl;
-	echoes << (chrono::duration_cast<chrono::microseconds>(end - partial).count())/1.0e6 << std::endl;
-
-	std::cout << "LA COMMEDIA E' FINITA "  <<std::endl;
-	
 	
 }
+

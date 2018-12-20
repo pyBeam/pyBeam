@@ -28,6 +28,6 @@ import pyBeam as Test
 
 testobject = Test.CBeamSolver()
 
-testobject.solve_beam()
+testobject.Solve()
 
 
