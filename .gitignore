@@ -1,0 +1,10 @@
+.cproject
+.project
+.settings/
+output.dat
+pyBeam/*.so
+pyBeam/*.py
+pyBeam/*.pyc
+pyBeam/*.cxx
+pyBeam/*.o
+tests/

@@ -1,0 +1,34 @@
+#============================  LIBS & INCLUDES
+
+EIGEN_PATH = /home/ruben/Software/eigen3.2.4/
+
+INCLPATH =  -I$(EIGEN_PATH)
+#==========================================================
+
+
+all:
+	swig -c++ -python -Wall pyBeam.i 
+	# I need to add all the requested .cpp files used in the DLM.cpp for the relative .o files...
+	g++ -O2 -c -std=gnu++11 -DDEBG -DLINUX=1 -fPIC pyBeam_wrap.cxx ./src/ROMFM_FULLORDER.cpp ./src/FiniteElement.cpp ./src/StructSyst.cpp ./src/Rotations.cpp ./src/beam.cpp -I/usr/include/python2.7 $(INCLPATH)
+	# ... That need to be used here so that the relative pyDLM_Cpp_wrap.o compiles the correct _pyDLM_Cpp.so
+	g++ -O2 -shared -fPIC ROMFM_FULLORDER.o FiniteElement.o StructSyst.o Rotations.o beam.o pyBeam_wrap.o -o _pyBeam.so  $(INCLPATH) 
+
+
+
+
+# (alternative version of line 2)
+#g++ -O2 -c -std=gnu++11 -fPIC ./dlm/DLM.cpp ./dlm/Param.cpp $(INCLPATH) 
+#g++ -O2 -c -std=gnu++11 -fPIC pyDLM_Cpp_wrap.cxx -I/usr/include/python2.7 $(INCLPATH)
+
+#error: ImportError: './_pyDLM_Cpp.so: undefined symbol: _ZN5Param16read_AerogeneralEv'
+
+RMc = rm  # remove option
+# This cleans all the old object files (which are intermediate files)
+clean:
+	@echo "NOW CLEANING ALL" 
+	-$(RMc) -f *.o
+	-$(RMc) -f *.so
+	-$(RMc) -f *.pyc
+	-$(RMc) -f pyMLS_Cpp.py
+	-$(RMc) -f *.cxx
+
