@@ -43,8 +43,8 @@ protected:
 	
 	double load; 			// [N];
 	int follower_flag;		// (0) Nonfollower (1) follower (2) approx follower
-	int load_steps;			// Number of load steps
-	int n_iter;				// Number of iterations
+	unsigned long loadSteps;			// Number of load steps
+	unsigned long nIter;				// Number of iterations
 
 	double end_time;		// [sec] for SS calculation
 	double dt;   			// [sec] time increment for SS calculation
@@ -83,7 +83,7 @@ protected:
 
 	//################     Convergence Parameters    ###########################
 
-	double conv_disp;
+	double convCriteria;
 
 	
 public:
@@ -97,6 +97,16 @@ public:
   unsigned long Get_nFEM(void) { return nFEM; }
   
   unsigned short Get_nDOF(void) { return nDOF; }
+  
+  unsigned short Get_FollowerFlag(void) { return follower_flag; }  
+  
+  unsigned long Get_LoadSteps(void) { return loadSteps;}
+  
+  unsigned long Get_nIter(void) { return nIter;}  
+  
+  double Get_Load(void) { return load;}  
+  
+  double Get_l(void) { return l; }  
   
   double Get_le(void) { return le; }
   
@@ -120,7 +130,8 @@ public:
           
   double Get_Izz(void) { return Izz; }  
     
-
+  double Get_ConvCriteria(void) { return convCriteria; }  
+    
   
 };
 

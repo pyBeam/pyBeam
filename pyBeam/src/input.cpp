@@ -43,8 +43,8 @@ CInput::CInput(void) {
 	
 	load = 5000; 			// [N];
 	follower_flag = 0;		// (0) Nonfollower (1) follower (2) approx follower
-	load_steps = 1;			// Number of load steps
-	n_iter = 30;			// Number of iterations  --30
+	loadSteps = 1;			// Number of load steps
+	nIter = 30;			// Number of iterations  --30
 
 	//##############    Wing Inputs  ###########################
 	// Units Sys: SI
@@ -95,7 +95,7 @@ CInput::CInput(void) {
 
 	//################     Convergence Parameters    ###########################
 
-	conv_disp = 1e-4;
+	convCriteria = 1e-4;
     
 }
 

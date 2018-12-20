@@ -42,15 +42,10 @@
 
 class CStructure
 {
-	/* MEMBERS */
-
+	
 private:
 
-
-
 public:
-	//
-
 
     int nfem;                // number of finite elements
 
@@ -74,54 +69,9 @@ public:
 	Eigen::Vector3d Ftip;      // (vector read from the input file) - needed as basis to update the Fext
 	Eigen::VectorXd Fnom;        // Array of nominal forces
 
-	/* MEMBER FUNCTIONS */
-
-private:
-
-public:
-	//------------------------  Constructor -----------------------------
-	// Default the values of SPC, n_mass, nfem
 	CStructure(CInput *input, CElement **element);
 
 	~CStructure();
-
-	//-----------------------  Initializer  ------------------------
-
-	void Initializer(int val_nfem, int val_DOFO , int val_Follflag0, CElement **femO)
-	{
-
-		FollFlag = val_Follflag0;
-
-		DOF = val_DOFO;
-
-		// Links to the finite-element object
-		fem = femO;
-
-		// Resizes and zeros the M matrices
-		nfem = val_nfem;
-
-		// Resizes and zeros the K matrices
-		Ksys.resize((nfem+1)*6,(nfem+1)*6);
-		Ksys = Eigen::MatrixXd::Zero((nfem+1)*6,(nfem+1)*6);
-
-
-		M.resize((nfem+1)*6,(nfem+1)*6);
-		M = Eigen::MatrixXd::Zero((nfem+1)*6,(nfem+1)*6);
-
-		dU  = Eigen::VectorXd::Zero((nfem+1)*6);         // Whole system displacements
-
-		X  = Eigen::VectorXd::Zero((nfem+1)*3);
-
-		InitialCoord();
-
-		// Forces nodal Vector
-		Ftip   =  Eigen::Vector3d::Zero();
-        Fnom     =  Eigen::VectorXd::Zero((nfem+1)*6);
-		Fext     =  Eigen::VectorXd::Zero((nfem+1)*6);
-		Fint     =  Eigen::VectorXd::Zero((nfem+1)*6);
-		Residual =  Eigen::VectorXd::Zero((nfem+1)*6);
-
-	}
 
 	/*##############################################################
 	 *

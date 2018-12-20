@@ -38,56 +38,6 @@ private:
 	
 protected:
 
-	//##################     Numerical Inputs     ###########################
-
-	int Nn;					// number of overall nodes along the wing (no collapsed)
-	int nFEM;				// number of finite elements
-
-	int DOF; 				// number of rigid modes to be calculated
-
-	int lin;  				// flag for linear/nonlinear solution
-	double load; 			// [N];
-	int follower_flag;		// (0) Nonfollower (1) follower (2) approx follower
-	int load_steps;			// Number of load steps
-	int n_iter;				// Number of iterations
-
-	//##############    Wing Inputs  ###########################
-	// Units Sys: SI
-
-	double t; 				// web & flange thickness [m]
-	double h;				// web height [m]
-	double b;				// flange width [m]
-	double E; 				// Elastic modulus [GPa]
-	double Poiss; 			// Poisson Ratio
-	double ro;				// Beam Density [kg/m^3]
-	double G;				// Shear modulus
-	double l; 				// Wing Length [m]
-	double A;				// cross section area
-	double As_z; 			// z Effective shear area
-	double As_y;			// y Effective shear area
-
-	double Iyy, Izz;
-	double Jx; 				//Polar Moment of Inertia
-
-
-	double Mwing;			//Wing's mass [kg]
-	double EIy, EIz, GJ, AE;
-
-	double Clalpha;  		//  recall pi = atan(1)*4;
-	double Cldelta;
-
-	//#################    Elements properties    ############################
-
-	double le;      	//element length
-	double m, m_e; 		//Element's mass
-	double m_w, m_f; 	//web and flange mass
-	double Ix, Iz; 		//[kg*m^2]
-
-	//################     Convergence Parameters    ###########################
-
-	double conv_disp;
-
-	
 public:
 
   CInput* input;
@@ -99,12 +49,6 @@ public:
   CBeamSolver(void);
   
   virtual ~CBeamSolver(void);
-  
-  inline double GetX1(void) { return t; }  
-    
-  inline double GetX2(void) { return h; }
-  
-  inline double GetX3(void) { return b; }
   
   void solve_beam(void);     
   
