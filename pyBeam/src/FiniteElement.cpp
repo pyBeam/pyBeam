@@ -29,7 +29,62 @@
 
 CElement::CElement(void){
 	
-	std::cout << "I INITIALIZE THE ELEMENTS" << std::endl;
+}
+
+CElement::CElement(unsigned long iElement, CInput *input){
+	
+	std::cout << "I INITIALIZE THE ELEMENT" << iElement;
+	
+	std::cout << " for which Iyy is " << input->Get_Iyy();	
+	
+    std::cout << std::endl;
+    
+    le  = input->Get_le();
+	Jx  = input->Get_Jx();
+	m_e = input->Get_m_e();
+	A   = input->Get_A();
+	EIz = input->Get_EIz();
+	EIy = input->Get_EIy();
+	GJ  = input->Get_GJ();
+	AE  = input->Get_AE();
+	m   = input->Get_m();
+	Iyy = input->Get_Iyy();
+	Izz = input->Get_Izz();
+
+	elemdofs = input->Get_nDOF();
+
+	Mfem  = Eigen::MatrixXd::Zero(elemdofs,elemdofs);
+
+	fint = Eigen::VectorXd::Zero(elemdofs);
+
+
+	Rrig = Eigen::MatrixXd::Zero(6,6);         // Rotation Matrix
+	R     = Eigen::MatrixXd::Identity(6,6);    // Initial Rotation Matrix
+	Rprev = Eigen::MatrixXd::Identity(6,6);    // Initial Rotation Matrix
+
+	l_act  = le;
+	l_ini  = le;
+	l_prev = le;
+
+	eps  = Eigen::VectorXd::Zero(6);   // Elastic Cumulative deformation
+    phi  = Eigen::VectorXd::Zero(6);   // Elastic Cumulative tension
+
+    // INITIALIZATION of KPRIM
+
+    Eigen::VectorXd diagonale = Eigen::VectorXd::Zero(6);
+    Kprim = Eigen::MatrixXd::Zero(6,6);
+
+    diagonale << AE/l_ini  , GJ/l_ini  ,  4*EIy/l_ini  ,   4*EIz/l_ini , 4*EIy/l_ini , 4*EIz/l_ini ;
+
+    // Writing the diagonal
+    for (unsigned short index=0; index < 6; index++)
+    {
+      Kprim(index,index) = diagonale(index);
+     }
+
+    Kprim(3-1,5-1) = 2*EIy/l_ini;  Kprim(5-1,3-1) = Kprim(3-1,5-1);
+    Kprim(4-1,6-1) = 2*EIz/l_ini;  Kprim(6-1,4-1) = Kprim(4-1,6-1);
+
 	
 }
 
@@ -55,8 +110,8 @@ void CElement::ElementMass_Rao()
 
 
     Mfem(1-1,7-1) = 1/6.0;
-    Mfem(2-1,6-1) =  11/210.0*le;    Mfem(2-1,8-1)=  9/70.0;  Mfem(2-1,12-1)= -13/420.0*le;
-    Mfem(3-1,5-1) =  -11/210.0*le;   Mfem(3-1,9-1)=  9/70.0;  Mfem(3-1,11-1)=  13/420.0*le;
+    Mfem(2-1,6-1) = 11/210.0*le;    Mfem(2-1,8-1)=  9/70.0;  Mfem(2-1,12-1)= -13/420.0*le;
+    Mfem(3-1,5-1) = -11/210.0*le;   Mfem(3-1,9-1)=  9/70.0;  Mfem(3-1,11-1)=  13/420.0*le;
     Mfem(4-1,10-1)= r/6.0;
     Mfem(5-1,9-1) =  -13/420.0*le ;  Mfem(5-1,11-1) = -pow(le,2)/140.0;
     Mfem(6-1,8-1) = 13/420.0*le;     Mfem(6-1,12-1) = -pow(le,2)/140.0;

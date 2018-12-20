@@ -90,6 +90,8 @@ protected:
 	
 public:
 
+  CInput* input;
+
   CElement** element;  /*!< \brief Vector which the define the elements. */
 
   CBeamSolver(void);

@@ -101,9 +101,12 @@ CBeamSolver::CBeamSolver(void) {
 
 	conv_disp = 1e-4;
 	
+	input = new CInput();
+	
+	// Initialize the finite elements
 	element = new CElement*[nFEM];
-	for (unsigned short iFEM = 0; iFEM < nFEM; iFEM++){
-		element[iFEM] = new CElement();
+	for (unsigned long iFEM = 0; iFEM < nFEM; iFEM++){
+		element[iFEM] = new CElement(iFEM, input);
 	}
     
 }

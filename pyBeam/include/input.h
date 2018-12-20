@@ -98,27 +98,27 @@ public:
   
   unsigned short Get_nDOF(void) { return nDOF; }
   
-  unsigned short Get_le(void) { return le; }
+  double Get_le(void) { return le; }
   
-  unsigned short Get_Jx(void) { return Jx; }
+  double Get_Jx(void) { return Jx; }
   
-  unsigned short Get_m_e(void) { return m_e; } 
+  double Get_m_e(void) { return m_e; } 
   
-  unsigned short Get_A(void) { return A; } 
+  double Get_A(void) { return A; } 
       
-  unsigned short Get_EIz(void) { return EIz; } 
+  double Get_EIz(void) { return EIz; } 
         
-  unsigned short Get_EIy(void) { return EIy; } 
+  double Get_EIy(void) { return EIy; } 
   
-  unsigned short Get_GJ(void) { return GJ; } 
+  double Get_GJ(void) { return GJ; } 
   
-  unsigned short Get_AE(void) { return AE; } 
+  double Get_AE(void) { return AE; } 
   
-  unsigned short Get_m(void) { return m; }
+  double Get_m(void) { return m; }
   
-  unsigned short Get_Iyy(void) { return Iyy; }     
+  double Get_Iyy(void) { return Iyy; }     
           
-  unsigned short Get_Izz(void) { return Izz; }  
+  double Get_Izz(void) { return Izz; }  
     
 
   

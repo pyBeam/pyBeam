@@ -77,7 +77,9 @@ private:
 public:
 	//	FiniteElement(){}
 	
-	CElement(void);
+	CElement(void);	
+	
+	CElement(unsigned long iElement, CInput *input);
 	
 	virtual ~CElement(void);
 
