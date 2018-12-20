@@ -101,9 +101,21 @@ CBeamSolver::CBeamSolver(void) {
 
 	conv_disp = 1e-4;
 	
-	input = new CInput();
+	//==============================================================
+	//
+	//      Input initialization
+	//
+	//==============================================================	
 	
-	// Initialize the finite elements
+	input = new CInput();
+
+	//==============================================================
+	//
+	//      Finite Element initialization
+	//
+	//==============================================================
+
+	std::cout << "=========  Finite Element Initialization  ====" << std::endl;		
 	element = new CElement*[nFEM];
 	for (unsigned long iFEM = 0; iFEM < nFEM; iFEM++){
 		element[iFEM] = new CElement(iFEM, input);
@@ -178,21 +190,6 @@ void CBeamSolver::solve_beam(void){
 
 	std::cout << "=========  Finite Element Initialization  ====" << std::endl;
 
-
-	CElement fem[nFem];
-
-
-	// Initializes all the FEs
-
-	for (iFem=0; iFem < nFem; iFem++) {
-		
-		fem[iFem].Initializer(le, Jx , m_e ,A,
-							  EIz , EIy , GJ, AE ,
-							  m ,  Iyy, Izz,
-							  12);
-
-	}
-
 	//===============================================
 	//
 	//  Now the system is considered as a whole
@@ -201,7 +198,7 @@ void CBeamSolver::solve_beam(void){
 
 	StructSyst structsyst;
 
-	structsyst.Initializer(nFem, DOF , follower_flag, fem[0]);    // Initialize structure
+	structsyst.Initializer(nFem, DOF , follower_flag, element);    // Initialize structure
 
 	structsyst.EchoCoord();
 
@@ -212,8 +209,8 @@ void CBeamSolver::solve_beam(void){
 		for (int id_fe=1; id_fe<=structsyst.nfem; id_fe++)
 		{
 			std::ofstream myfile4 ("./output/echo_R_Re.out", std::ios_base::out | std::ios_base::app);
-			myfile4  << fem[id_fe-1].Rrig.block(0,0,3,3) << std::endl;
-			myfile4  << fem[id_fe-1].R.block(0,0,3,3)  << std::endl;
+			myfile4  << element[id_fe-1]->Rrig.block(0,0,3,3) << std::endl;
+			myfile4  << element[id_fe-1]->R.block(0,0,3,3)  << std::endl;
 		}
 
 	#endif

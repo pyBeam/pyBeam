@@ -57,7 +57,7 @@ public:
 	int DOF;                  // In space, 6
 	int FollFlag;             // Flag for Follower forces (1)
 
-	CElement * fem;      // Pointer to the first finite element
+	CElement **fem;      // Pointer to the first finite element
 
 	Eigen::MatrixXd M;      // Recall in Eigen X stays for dynamic, d for double:  (nfem+1)*6  X   (nfem+1)*6
 	Eigen::MatrixXd Ksys;
@@ -91,7 +91,7 @@ public:
 
 	//-----------------------  Initializer  ------------------------
 
-	void Initializer(int val_nfem, int val_DOFO , int val_Follflag0, CElement &femO)
+	void Initializer(int val_nfem, int val_DOFO , int val_Follflag0, CElement **femO)
 	{
 
 		FollFlag = val_Follflag0;
@@ -99,7 +99,7 @@ public:
 		DOF = val_DOFO;
 
 		// Links to the finite-element object
-		fem = &femO;
+		fem = femO;
 
 		// Resizes and zeros the M matrices
 		nfem = val_nfem;

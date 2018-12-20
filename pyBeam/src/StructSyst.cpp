@@ -97,7 +97,7 @@ void StructSyst::AssemblyTang()
 
 		//  To evaluate the Tangent the Updated Elastic Matrix needs top be Updated
 
-		fem[id_el-1].ElementTang_Rao(Ktang);       //--> writes the fem[id_el].Ktang
+		fem[id_el-1]->ElementTang_Rao(Ktang);       //--> writes the fem[id_el].Ktang
 
 		dof = (id_el-1)*6 ;   // first-1 dof
 
@@ -109,7 +109,7 @@ void StructSyst::AssemblyTang()
 				dof_kkk = dof + kkk;            // prev+1 / prev + 7
 
 				// Rotates the element's SUBMATRIX tangent
-				Krotated = (   fem[id_el-1].R * Ktang.block(jjj-1,kkk-1,6,6)  ) * fem[id_el-1].R.transpose() ;
+				Krotated = (   fem[id_el-1]->R * Ktang.block(jjj-1,kkk-1,6,6)  ) * fem[id_el-1]->R.transpose() ;
 
 				// Contribution in the appropriate SPOT of the SYSTEM TANGENT
 				Ksys.block(dof_jjj-1,dof_kkk-1,6,6) += Krotated;
@@ -184,12 +184,12 @@ void StructSyst::EvalSensRot()
 
 		XbmXa = X.segment(idofXini+3-1,3) - X.segment(idofXini-1,3);
 
-		fint = fem[id_el-1].fint;
+		fint = fem[id_el-1]->fint;
 
-		onetol =  1.0/fem[id_el-1].l_act;                 //     1/l
+		onetol =  1.0/fem[id_el-1]->l_act;                 //     1/l
 
-		dl_dU.head(3)        = -fem[id_el-1].R.block(1-1,1-1,3,1);
-		dl_dU.segment(7-1,3) =  fem[id_el-1].R.block(1-1,1-1,3,1);
+		dl_dU.head(3)        = -fem[id_el-1]->R.block(1-1,1-1,3,1);
+		dl_dU.segment(7-1,3) =  fem[id_el-1]->R.block(1-1,1-1,3,1);
 
 		de1 = (-onetol*onetol)*( XbmXa * dl_dU.transpose());    //
 		de1 += onetol*de1_part1;
@@ -203,7 +203,7 @@ void StructSyst::EvalSensRot()
 		for (int i=1; i<= 12; i++)
 		{
 			de1_i = de1.block(1-1,i-1,3,1);
-			e3 = fem[id_el-1].R.block(1-1,3-1,3,1);
+			e3 = fem[id_el-1]->R.block(1-1,3-1,3,1);
 			de2.block(1-1,i-1,3,1) = e3.cross(de1_i);
 		}
 
@@ -351,7 +351,7 @@ void StructSyst::InitialCoord()
 
 	X  = Eigen::VectorXd::Zero((nfem+1)*3);
 
-	double le = fem[0].le;
+	double le = fem[0]->le;
 
 	int posX = 1;    // current  position in the X array
 	int count = 0;   // number of fe upstream the node
@@ -396,8 +396,8 @@ void StructSyst::UpdateLength()
 		Xb.head(3) = X.segment(node_ini+3-1,3);
 
 		temp = Xb - Xa;
-		fem[id_fe-1].l_prev = fem[id_fe-1].l_act;
-		fem[id_fe-1].l_act = temp.norm();
+		fem[id_fe-1]->l_prev = fem[id_fe-1]->l_act;
+		fem[id_fe-1]->l_act = temp.norm();
 
 		node_ini += 3;
 
@@ -441,7 +441,7 @@ void StructSyst::UpdateRotationMatrix()
 		indu += 6;
 		dU_AB.tail(6) = dU.segment(indu-1,6)  ;   // They are already in the local CS (but not the updated final one).
 
-		(fem[i_fe-1].EvalRotMat)(dU_AB,X_AB);     // Calling the coordinate update routine
+		fem[i_fe-1]->EvalRotMat(dU_AB,X_AB);     // Calling the coordinate update routine
 	}
 
 
@@ -450,8 +450,8 @@ void StructSyst::UpdateRotationMatrix()
 	for (int i_fe=1; i_fe<=nfem; i_fe++)
 	{
 		std::ofstream myfile4 ("./output/echo_R_Re.out", std::ios_base::out | std::ios_base::app);
-		myfile4  << fem[i_fe-1].Rrig.block(0,0,3,3) << std::endl;
-		myfile4  << fem[i_fe-1].R.block(0,0,3,3)  << std::endl;
+		myfile4  << fem[i_fe-1]->Rrig.block(0,0,3,3) << std::endl;
+		myfile4  << fem[i_fe-1]->R.block(0,0,3,3)  << std::endl;
 	}
 
 #endif
@@ -518,7 +518,7 @@ void StructSyst::UpdateInternalForces()
 		 * ---------------------------*/
 		// Relative displacement of the second node is only along the new axis direction
 
-		duel(7-1) = fem[id_fe-1].l_act - fem[id_fe-1].l_prev;
+		duel(7-1) = fem[id_fe-1]->l_act - fem[id_fe-1]->l_prev;
 
 
 		/*----------------------------
@@ -544,10 +544,10 @@ void StructSyst::UpdateInternalForces()
 		// (C) Using identity      Rnode*Rprev = R*Relastic
 		/* Relastic = R'*Rnode_A*Rprev  */
 		//
-		Rreduc = fem[id_fe-1].R.block(0,0,3,3);
+		Rreduc = fem[id_fe-1]->R.block(0,0,3,3);
 		Rtransp = Rreduc.transpose();
-		Rel_A = Rtransp  *  Rnode_A  * fem[id_fe-1].Rprev.block(0,0,3,3);
-		Rel_B = Rtransp  *  Rnode_B  * fem[id_fe-1].Rprev.block(0,0,3,3);
+		Rel_A = Rtransp  *  Rnode_A  * fem[id_fe-1]->Rprev.block(0,0,3,3);
+		Rel_B = Rtransp  *  Rnode_B  * fem[id_fe-1]->Rprev.block(0,0,3,3);
 
 		// (c) Transforming in pseudo-vector, since infinitesimal (elastic), the components are independent
 		RotToPseudo(pseudo_A , Rel_A);
@@ -569,45 +569,45 @@ void StructSyst::UpdateInternalForces()
 		//
 		// eps = {    DL,    DTheta ,  Theta_y_el_B ,  Theta_z_el_B , Theta_y_el_A,  Theta_z_el_A)
 
-		fem[id_fe-1].eps(1-1) += duel( 7-1);
-        fem[id_fe-1].eps(2-1) += duel( 10-1) - duel( 4-1);
-        fem[id_fe-1].eps(3-1) += duel( 11-1);
-        fem[id_fe-1].eps(4-1) += duel( 12-1);
-		fem[id_fe-1].eps(5-1) += duel( 5-1);
-		fem[id_fe-1].eps(6-1) += duel( 6-1);
+		fem[id_fe-1]->eps(1-1) += duel( 7-1);
+        fem[id_fe-1]->eps(2-1) += duel( 10-1) - duel( 4-1);
+        fem[id_fe-1]->eps(3-1) += duel( 11-1);
+        fem[id_fe-1]->eps(4-1) += duel( 12-1);
+		fem[id_fe-1]->eps(5-1) += duel( 5-1);
+		fem[id_fe-1]->eps(6-1) += duel( 6-1);
 
 		// Constitutive relation between deformational and tensional state
 		//
 		// phi = tensional state = { N ,  Mt , MBy , MBz , MAy , M_Az }
 
-		fem[id_fe-1].phi =  fem[id_fe-1].Kprim*fem[id_fe-1].eps;
+		fem[id_fe-1]->phi =  fem[id_fe-1]->Kprim*fem[id_fe-1]->eps;
 
         Eigen::MatrixXd Na = Eigen::MatrixXd::Zero(6,6);
         Eigen::MatrixXd Nb = Eigen::MatrixXd::Zero(6,6);
 
-        fem[id_fe-1].EvalNaNb(Na , Nb);
+        fem[id_fe-1]->EvalNaNb(Na , Nb);
 
         // Updating  cumulative internal forces
 
-		fem[id_fe-1].fint.segment(1-1,6) =  Na.transpose()*fem[id_fe-1].phi;
-		fem[id_fe-1].fint.segment(7-1,6) =  Nb.transpose()*fem[id_fe-1].phi;
+		fem[id_fe-1]->fint.segment(1-1,6) =  Na.transpose()*fem[id_fe-1]->phi;
+		fem[id_fe-1]->fint.segment(7-1,6) =  Nb.transpose()*fem[id_fe-1]->phi;
 
 
 
 #ifdef DEBG
 		std::ofstream echo_eps ("./output/echo_eps.out", std::ios_base::out | std::ios_base::app);
-		echo_eps << fem[id_fe-1].eps << std::endl;
+		echo_eps << fem[id_fe-1]->eps << std::endl;
 		std::ofstream echo_phi ("./output/echo_phi.out", std::ios_base::out | std::ios_base::app);
-		echo_phi << fem[id_fe-1].phi << std::endl;
+		echo_phi << fem[id_fe-1]->phi << std::endl;
 		std::ofstream echo_fint ("./output/echo_fint.out", std::ios_base::out | std::ios_base::app);
-		echo_fint << fem[id_fe-1].fint << std::endl;
+		echo_fint << fem[id_fe-1]->fint << std::endl;
 #endif
 
 
 		// Contribution to the NODAL Internl Forces ARRAY
 
-		Fint.segment(dof_ini-1,6)   +=  fem[id_fe-1].R*  fem[id_fe-1].fint.segment(1-1,6);
-		Fint.segment(dof_ini+6-1,6) +=  fem[id_fe-1].R*  fem[id_fe-1].fint.segment(7-1,6);
+		Fint.segment(dof_ini-1,6)   +=  fem[id_fe-1]->R*  fem[id_fe-1]->fint.segment(1-1,6);
+		Fint.segment(dof_ini+6-1,6) +=  fem[id_fe-1]->R*  fem[id_fe-1]->fint.segment(7-1,6);
 
 		dof_ini += 6;   // increase index in the complete U vector
 

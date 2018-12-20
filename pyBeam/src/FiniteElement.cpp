@@ -32,12 +32,6 @@ CElement::CElement(void){
 }
 
 CElement::CElement(unsigned long iElement, CInput *input){
-	
-	std::cout << "I INITIALIZE THE ELEMENT" << iElement;
-	
-	std::cout << " for which Iyy is " << input->Get_Iyy();	
-	
-    std::cout << std::endl;
     
     le  = input->Get_le();
 	Jx  = input->Get_Jx();
@@ -51,7 +45,7 @@ CElement::CElement(unsigned long iElement, CInput *input){
 	Iyy = input->Get_Iyy();
 	Izz = input->Get_Izz();
 
-	elemdofs = input->Get_nDOF();
+	elemdofs = 2*input->Get_nDOF();
 
 	Mfem  = Eigen::MatrixXd::Zero(elemdofs,elemdofs);
 
@@ -226,7 +220,6 @@ void CElement::ElementElastic_Rao(Eigen::MatrixXd &Kel)
 
 void CElement::ElementTang_Rao(Eigen::MatrixXd & Ktang)
 {
-
     Eigen::MatrixXd Na = Eigen::MatrixXd::Zero(6,6);
     Eigen::MatrixXd Nb = Eigen::MatrixXd::Zero(6,6);
 
