@@ -32,6 +32,7 @@
 
 #include "../include/FiniteElement.h"
 #include "../include/Rotations.h"
+#include "../include/input.h"
 
 #include <iostream>
 

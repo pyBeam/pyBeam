@@ -23,15 +23,11 @@
  * If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
+ 
 #pragma once
-#include <math.h>       /* exp */
+#include <math.h>
 
-#include "../include/FiniteElement.h"
-#include "../include/StructSyst.h"
-#include "../include/input.h"
-
-class CBeamSolver
+class CInput
 {
 
 private:
@@ -40,16 +36,18 @@ protected:
 
 	//##################     Numerical Inputs     ###########################
 
-	int Nn;					// number of overall nodes along the wing (no collapsed)
-	int nFEM;				// number of finite elements
+	unsigned long nNodes;	// Number of overall nodes along the wing (no collapsed)
+	unsigned long nFEM;		// Number of finite elements
 
-	int DOF; 				// number of rigid modes to be calculated
-
-	int lin;  				// flag for linear/nonlinear solution
+	unsigned short nDOF; 	// Number of degrees of freedom
+	
 	double load; 			// [N];
 	int follower_flag;		// (0) Nonfollower (1) follower (2) approx follower
 	int load_steps;			// Number of load steps
 	int n_iter;				// Number of iterations
+
+	double end_time;		// [sec] for SS calculation
+	double dt;   			// [sec] time increment for SS calculation
 
 	//##############    Wing Inputs  ###########################
 	// Units Sys: SI
@@ -90,18 +88,39 @@ protected:
 	
 public:
 
-  CElement** element;  /*!< \brief Vector which the define the elements. */
-
-  CBeamSolver(void);
+  CInput(void);
   
-  virtual ~CBeamSolver(void);
+  virtual ~CInput(void);
   
-  inline double GetX1(void) { return t; }  
+  unsigned long Get_nNodes(void) { return nNodes; }  
     
-  inline double GetX2(void) { return h; }
+  unsigned long Get_nFEM(void) { return nFEM; }
   
-  inline double GetX3(void) { return b; }
+  unsigned short Get_nDOF(void) { return nDOF; }
   
-  void solve_beam(void);     
+  unsigned short Get_le(void) { return le; }
+  
+  unsigned short Get_Jx(void) { return Jx; }
+  
+  unsigned short Get_m_e(void) { return m_e; } 
+  
+  unsigned short Get_A(void) { return A; } 
+      
+  unsigned short Get_EIz(void) { return EIz; } 
+        
+  unsigned short Get_EIy(void) { return EIy; } 
+  
+  unsigned short Get_GJ(void) { return GJ; } 
+  
+  unsigned short Get_AE(void) { return AE; } 
+  
+  unsigned short Get_m(void) { return m; }
+  
+  unsigned short Get_Iyy(void) { return Iyy; }     
+          
+  unsigned short Get_Izz(void) { return Izz; }  
+    
+
   
 };
+

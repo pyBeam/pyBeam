@@ -28,6 +28,7 @@
 #include <Eigen/Dense>
 
 #include "../include/Rotations.h"
+#include "../include/input.h"
 
 class CElement
 {

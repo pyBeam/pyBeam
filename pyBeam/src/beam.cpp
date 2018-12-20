@@ -45,26 +45,10 @@ CBeamSolver::CBeamSolver(void) {
 
 	DOF = 6;                // number of rigid modes to be calculated
 	
-	lin = 1;  				// flag for linear/nonlinear solution
 	load = 5000; 			// [N];
 	follower_flag = 0;		// (0) Nonfollower (1) follower (2) approx follower
 	load_steps = 1;			// Number of load steps
 	n_iter = 30;			// Number of iterations  --30
-
-	end_time = 1000;		// [sec] for SS calculation
-	dt = 10;   			// [sec] time increment for SS calculation
-
-	//#########################    Airfoil properties    ##########################
-
-	c = 2.438;            	// Wing Chord
-	cg = 0.2*c;          	// Airfoil Center of Garavity
-	ac = 0.2*c;           	// Airfoil Aerodynamic Center
-	qc = -0.6*c;
-	ea = 0.4*c;           	// Elastic Axis Location
-
-	e = ea-ac;            	// Distance of E.A & A.C
-	d = 0;					// Distance of C.G & A.C
-	a = 2.0*e/c-0.5;
 
 	//##############    Wing Inputs  ###########################
 	// Units Sys: SI
@@ -94,7 +78,6 @@ CBeamSolver::CBeamSolver(void) {
 
 	Clalpha = 2*   atan(1)*4;  //  recall pi = atan(1)*4;
 	Cldelta = 1;
-	S = l*c; //Wing Surface
 
 
 	//#################    Elements properties    ############################
