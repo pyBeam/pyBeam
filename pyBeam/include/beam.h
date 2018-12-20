@@ -92,7 +92,9 @@ public:
 
   CInput* input;
 
-  CElement** element;  /*!< \brief Vector which the define the elements. */
+  CElement** element;  	  /*!< \brief Vector which the define the elements. */
+  
+  CStructure* structure;  /*!< \brief Vector which the define the elements. */  
 
   CBeamSolver(void);
   

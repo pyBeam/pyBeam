@@ -40,7 +40,7 @@
 #include <fstream>
 #endif
 
-class StructSyst
+class CStructure
 {
 	/* MEMBERS */
 
@@ -81,13 +81,9 @@ private:
 public:
 	//------------------------  Constructor -----------------------------
 	// Default the values of SPC, n_mass, nfem
-	StructSyst()
-{
-        nfem = 1;
-		DOF=6;
-		FollFlag = 0;
+	CStructure(CInput *input, CElement **element);
 
-}
+	~CStructure();
 
 	//-----------------------  Initializer  ------------------------
 

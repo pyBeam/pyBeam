@@ -26,6 +26,46 @@
 
 #include "../include/StructSyst.h"
 
+CStructure::CStructure(CInput *input, CElement **element)
+{
+
+	FollFlag = 0;
+
+	DOF = input->Get_nDOF();
+
+	// Links to the finite-element object
+	fem = element;
+
+	// Resizes and zeros the M matrices
+	nfem = input->Get_nFEM();
+
+	// Resizes and zeros the K matrices
+	Ksys.resize((nfem+1)*6,(nfem+1)*6);
+	Ksys = Eigen::MatrixXd::Zero((nfem+1)*6,(nfem+1)*6);
+
+	M.resize((nfem+1)*6,(nfem+1)*6);
+	M = Eigen::MatrixXd::Zero((nfem+1)*6,(nfem+1)*6);
+
+	dU  = Eigen::VectorXd::Zero((nfem+1)*6);         // Whole system displacements
+
+	X  = Eigen::VectorXd::Zero((nfem+1)*3);
+
+	InitialCoord();
+
+	// Forces nodal Vector
+	Ftip   =  Eigen::Vector3d::Zero();
+    Fnom     =  Eigen::VectorXd::Zero((nfem+1)*6);
+	Fext     =  Eigen::VectorXd::Zero((nfem+1)*6);
+	Fint     =  Eigen::VectorXd::Zero((nfem+1)*6);
+	Residual =  Eigen::VectorXd::Zero((nfem+1)*6);
+			
+}
+
+CStructure::~CStructure(void)
+{
+
+}
+
 /***************************************************************
  *
  *         ReadForces
@@ -35,7 +75,7 @@
  it just applies the external force at the TIP
  ***************************************************************/
 
-void StructSyst::ReadForces(double forces)
+void CStructure::ReadForces(double forces)
 {
 	int pos_loc_dof = 2;   // 1,2,3- trasl  4 5 6 -rotat
 	Ftip(pos_loc_dof-1) = forces;
@@ -50,7 +90,7 @@ void StructSyst::ReadForces(double forces)
  ****************************************************************/
 // This subroutine updates the external force.
 
-void StructSyst::UpdateExtForces(double lambda, int switcher )
+void CStructure::UpdateExtForces(double lambda, int switcher )
 {
 	if (switcher == 0)
 		Fext = lambda* Fnom;
@@ -74,7 +114,7 @@ void StructSyst::UpdateExtForces(double lambda, int switcher )
  *
  */
 //--------------------------     Evaluates Segment Stiffness FEM
-void StructSyst::AssemblyTang()
+void CStructure::AssemblyTang()
 {
 	//
 
@@ -151,7 +191,7 @@ void StructSyst::AssemblyTang()
  * contribution to the tangent matrix  dF = dR*f
  * */
 
-void StructSyst::EvalSensRot()
+void CStructure::EvalSensRot()
 {
 	Eigen::VectorXd dl_dU =  Eigen::VectorXd::Zero(12);
 	Eigen::MatrixXd de1 = Eigen::MatrixXd::Zero(3,12);
@@ -248,7 +288,7 @@ This subroutine:
 (b) applies the B.C.
 WARNING: (Fext and Fint need to be updated before)    */
 
-void StructSyst::EvalResidual()
+void CStructure::EvalResidual()
 {
 	Residual = Fext - Fint;
 
@@ -264,7 +304,7 @@ void StructSyst::EvalResidual()
 Solves the linear static problem.
 It needs Ksys and Residual updated*/
 
-void StructSyst::SolveLinearStaticSystem()
+void CStructure::SolveLinearStaticSystem()
 {
 
 	std::cout << "-->  Solving Linear System, "  << std::endl;
@@ -300,7 +340,7 @@ void StructSyst::SolveLinearStaticSystem()
 
  */
 
-void StructSyst::UpdateCoord()
+void CStructure::UpdateCoord()
 {
 	std::cout << "-->  Update Global Coordinates "  << std::endl;
 
@@ -345,7 +385,7 @@ void StructSyst::UpdateCoord()
  *
  *
  */
-void StructSyst::InitialCoord()
+void CStructure::InitialCoord()
 {
 	std::cout << "---------  Resetting Initial Coordinate Values "  << std::endl;
 
@@ -377,7 +417,7 @@ void StructSyst::InitialCoord()
  * the first and last nodes, and being straight.
  *
  */
-void StructSyst::UpdateLength()
+void CStructure::UpdateLength()
 {
 	std::cout << "-->  Updating Length "  << std::endl;
 	//
@@ -414,7 +454,7 @@ void StructSyst::UpdateLength()
    (b)  incremental rotation matrix is updated
  */
 
-void StructSyst::UpdateRotationMatrix()
+void CStructure::UpdateRotationMatrix()
 {
 
 
@@ -470,7 +510,7 @@ Given the incremental displacement dU,  updated X,l,R
 
  */
 
-void StructSyst::UpdateInternalForces()
+void CStructure::UpdateInternalForces()
 {
 
 	std::cout << "-->  Updating Internal Forces "   << std::endl;
@@ -631,7 +671,7 @@ void StructSyst::UpdateInternalForces()
 /*
  * Outputs the Coordinates in Global Ref. System
  */
-void StructSyst::EchoCoord()
+void CStructure::EchoCoord()
 {
 
 #ifdef DEBG
@@ -649,7 +689,7 @@ void StructSyst::EchoCoord()
  *
  *******************************************/
 
-void StructSyst::EchoDisp()
+void CStructure::EchoDisp()
 {
 
 #ifdef DEBG
@@ -662,7 +702,7 @@ void StructSyst::EchoDisp()
 //      Outputs the Residual
 //===================================================
 
-void StructSyst::EchoRes()
+void CStructure::EchoRes()
 {
 #ifdef DEBG
 	std::ofstream echo_Residual ("./output/echo_Residual.out", std::ios_base::out | std::ios_base::app);            //  Residual in GLOBAL REF
@@ -675,7 +715,7 @@ void StructSyst::EchoRes()
 //      Outputs the External Forces
 //===================================================
 
-void StructSyst::EchoFext()
+void CStructure::EchoFext()
 {
 #ifdef DEBG
 	std::ofstream echo_Fext ("./output/echo_Fext.out", std::ios_base::out | std::ios_base::app);            //  Residual in GLOBAL REF
@@ -688,7 +728,7 @@ void StructSyst::EchoFext()
 //      Outputs the K Matrix
 //===================================================
 
-void StructSyst::EchoMatrixK()
+void CStructure::EchoMatrixK()
 {
 #ifdef DEBG
 	std::ofstream echo_MatrixK ("./output/echo_MatrixK.out", std::ios_base::out | std::ios_base::app);            //  Residual in GLOBAL REF

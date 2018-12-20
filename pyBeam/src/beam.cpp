@@ -120,6 +120,8 @@ CBeamSolver::CBeamSolver(void) {
 	for (unsigned long iFEM = 0; iFEM < nFEM; iFEM++){
 		element[iFEM] = new CElement(iFEM, input);
 	}
+	
+	structure = NULL;
     
 }
 
@@ -182,31 +184,23 @@ void CBeamSolver::solve_beam(void){
 
 	int tempor;
 
-	//==============================================================
-	//
-	//      FEM Matrices assembly
-	//
-	//==============================================================
-
-	std::cout << "=========  Finite Element Initialization  ====" << std::endl;
-
 	//===============================================
 	//
 	//  Now the system is considered as a whole
 	//
 	//===============================================
+	
+	structure = new CStructure(input, element);
 
-	StructSyst structsyst;
+	structure->Initializer(nFem, DOF , follower_flag, element);    // Initialize structure
 
-	structsyst.Initializer(nFem, DOF , follower_flag, element);    // Initialize structure
-
-	structsyst.EchoCoord();
+	structure->EchoCoord();
 
 	std::cout << "Reading External Forces" << std::endl;
-	structsyst.ReadForces(load);                                 // reads the external forces and assembly of Fnom
+	structure->ReadForces(load);                                 // reads the external forces and assembly of Fnom
 
 	#ifdef DEBG
-		for (int id_fe=1; id_fe<=structsyst.nfem; id_fe++)
+		for (int id_fe=1; id_fe<=structure->nfem; id_fe++)
 		{
 			std::ofstream myfile4 ("./output/echo_R_Re.out", std::ios_base::out | std::ios_base::app);
 			myfile4  << element[id_fe-1]->Rrig.block(0,0,3,3) << std::endl;
@@ -271,37 +265,37 @@ void CBeamSolver::solve_beam(void){
 			*----------------------------------------------------*/
 
 			// Update External Forces (if they are follower )
-			structsyst.UpdateExtForces(lambda,follower_flag);
-			structsyst.EchoFext();
+			structure->UpdateExtForces(lambda,follower_flag);
+			structure->EchoFext();
 
 			// Evaluate the Residual
-			structsyst.EvalResidual();
+			structure->EvalResidual();
 
-			std::cout << " Residual = "  <<  structsyst.Residual.norm() << std::endl;
-			structsyst.EchoRes();
+			std::cout << " Residual = "  <<  structure->Residual.norm() << std::endl;
+			structure->EchoRes();
 
 			/*--------------------------------------------------
 			 *   Assembly Ktang, Solve System
 			*----------------------------------------------------*/
 
 			// Reassembling Stiffness Matrix + Applying Boundary Conditions
-			structsyst.AssemblyTang();
+			structure->AssemblyTang();
 
 			// Solve Linear System   K*dU = Res = Fext - Fin
-			structsyst.SolveLinearStaticSystem();
+			structure->SolveLinearStaticSystem();
 
 			/*--------------------------------------------------
 			 *   Updates Coordinates, Updates Rotation Matrices
 			*----------------------------------------------------*/
 
-			structsyst.UpdateCoord();
+			structure->UpdateCoord();
 
-			structsyst.EchoDisp();   structsyst.EchoCoord();
+			structure->EchoDisp();   structure->EchoCoord();
 
 			// Now only X is updated!
 
-			structsyst.UpdateRotationMatrix();  // based on the rotational displacements
-			structsyst.UpdateLength();          // Updating length, important
+			structure->UpdateRotationMatrix();  // based on the rotational displacements
+			structure->UpdateLength();          // Updating length, important
 
 
 			/*--------------------------------------------------
@@ -309,13 +303,13 @@ void CBeamSolver::solve_beam(void){
 			*----------------------------------------------------*/
             // Now, X, R, l are updated
 
-			structsyst.UpdateInternalForces();
+			structure->UpdateInternalForces();
 
 			/*--------------------------------------------------
 			 *    Check Convergence
 			*----------------------------------------------------*/
 
-			double disp_factor =   structsyst.dU.norm()/l;
+			double disp_factor =   structure->dU.norm()/l;
 			std::cout << " disp_factor = "  <<  disp_factor << std::endl;
 
 			if (disp_factor <= conv_disp)
