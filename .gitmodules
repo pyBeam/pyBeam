@@ -1,0 +1,3 @@
+[submodule "pyBeam/CoDiPack"]
+	path = pyBeam/CoDiPack
+	url = https://github.com/SciCompKL/CoDiPack.git
