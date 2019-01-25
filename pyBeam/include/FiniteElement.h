@@ -1,9 +1,9 @@
 /*
  * pyBeam, a Beam Solver
  *
- * Copyright (C) 2018 Ruben Sanchez, Rauno Cavallaro
+ * Copyright (C) 2018 Tim Albring, Ruben Sanchez, Rauno Cavallaro
  * 
- * Developers: Ruben Sanchez (SciComp, TU Kaiserslautern)
+ * Developers: Tim Albring, Ruben Sanchez (SciComp, TU Kaiserslautern)
  *             Rauno Cavallaro (Carlos III University Madrid)
  *
  * This file is part of pyBeam.
@@ -27,6 +27,8 @@
 #pragma once
 #include <Eigen/Dense>
 
+#include "../include/types.h"
+
 #include "../include/Rotations.h"
 #include "../include/input.h"
 
@@ -36,38 +38,38 @@ private:
 public:
 	int elemdofs;
 
-	double le;
-	double Jx;
-	double m_e;
-	double A;
+	su2double le;
+	su2double Jx;
+	su2double m_e;
+	su2double A;
 
-	double EIz;
-	double EIy;
-	double GJ;
-	double AE;
+	su2double EIz;
+	su2double EIy;
+	su2double GJ;
+	su2double AE;
 
-	double m;
-	double Iyy;
-	double Izz;
+	su2double m;
+	su2double Iyy;
+	su2double Izz;
 
 
-	Eigen::MatrixXd  Rrig;         // Rodriguez Rotation Matrix (local reference system in GCS)
-	Eigen::MatrixXd  R;             // Local reference system in GCS
-	Eigen::MatrixXd  Rprev;         // m_R previous value
+	MatrixXdDiff  Rrig;         // Rodriguez Rotation Matrix (local reference system in GCS)
+	MatrixXdDiff  R;             // Local reference system in GCS
+	MatrixXdDiff  Rprev;         // m_R previous value
 
 	// Added for Battini's CS
-	double l_ini;                    // Initial Length
-	double l_act;                    // Actual Length
-	double l_prev;                   // Previous length
+	su2double l_ini;                    // Initial Length
+	su2double l_act;                    // Actual Length
+	su2double l_prev;                   // Previous length
 
 
 public:
-	Eigen::MatrixXd Mfem;
-	Eigen::VectorXd fint;  // This is the elemen't Internal Forces
+	MatrixXdDiff Mfem;
+	VectorXdDiff fint;  // This is the elemen't Internal Forces
 
-	Eigen::VectorXd eps ;  // Elastic Deformational Status
-	Eigen::VectorXd phi ;  // Elastic Cumulative Tension
-    Eigen::MatrixXd Kprim;
+	VectorXdDiff eps ;  // Elastic Deformational Status
+	VectorXdDiff phi ;  // Elastic Cumulative Tension
+    MatrixXdDiff Kprim;
 
 
 
@@ -84,12 +86,12 @@ public:
 	virtual ~CElement(void);
 
 	//	// Default constructors with also parameter definition
-	//	Segment(int valore_init , double valore_kinit );
+	//	Segment(int valore_init , su2double valore_kinit );
 	// Default constructors with also parameter definition
 
-	void Initializer(double val_le, double val_Jx , double val_m_e ,double val_A,
-			double val_EIz , double val_EIy , double val_GJ, double val_AE ,
-			double val_m ,  double val_Iyy, double val_Izz,
+	void Initializer(su2double val_le, su2double val_Jx , su2double val_m_e ,su2double val_A,
+			su2double val_EIz , su2double val_EIy , su2double val_GJ, su2double val_AE ,
+			su2double val_m ,  su2double val_Iyy, su2double val_Izz,
 			int val_elemdofs=12)
 	{
 		le  = val_le;
@@ -107,26 +109,26 @@ public:
 
 		elemdofs = val_elemdofs;
 
-		Mfem  = Eigen::MatrixXd::Zero(elemdofs,elemdofs);
+		Mfem  = MatrixXdDiff::Zero(elemdofs,elemdofs);
 
-		fint = Eigen::VectorXd::Zero(elemdofs);
+		fint = VectorXdDiff::Zero(elemdofs);
 
 
-		Rrig = Eigen::MatrixXd::Zero(6,6);         // Rotation Matrix
-		R     = Eigen::MatrixXd::Identity(6,6);    // Initial Rotation Matrix
-		Rprev = Eigen::MatrixXd::Identity(6,6);    // Initial Rotation Matrix
+		Rrig = MatrixXdDiff::Zero(6,6);         // Rotation Matrix
+		R     = MatrixXdDiff::Identity(6,6);    // Initial Rotation Matrix
+		Rprev = MatrixXdDiff::Identity(6,6);    // Initial Rotation Matrix
 
 		l_act  = le;
 		l_ini  = le;
 		l_prev = le;
 
-		eps  = Eigen::VectorXd::Zero(6);   // Elastic Cumulative deformation
-        phi  = Eigen::VectorXd::Zero(6);   // Elastic Cumulative tension
+		eps  = VectorXdDiff::Zero(6);   // Elastic Cumulative deformation
+        phi  = VectorXdDiff::Zero(6);   // Elastic Cumulative tension
 
         // INITIALIZATION of KPRIM
 
-        Eigen::VectorXd diagonale = Eigen::VectorXd::Zero(6);
-        Kprim = Eigen::MatrixXd::Zero(6,6);
+        VectorXdDiff diagonale = VectorXdDiff::Zero(6);
+        Kprim = MatrixXdDiff::Zero(6,6);
 
         diagonale << AE/l_ini  , GJ/l_ini  ,  4*EIy/l_ini  ,   4*EIz/l_ini , 4*EIy/l_ini , 4*EIz/l_ini ;
 
@@ -144,17 +146,17 @@ public:
 	// Evaluates FEM element matrix
 	void ElementMass_Rao();
 
-	void EvalNaNb(Eigen::MatrixXd &Na,  Eigen::MatrixXd  &Nb);
+	void EvalNaNb(MatrixXdDiff &Na,  MatrixXdDiff  &Nb);
 
 	// Evaluates FEM element matrix
-	void ElementElastic_Rao(Eigen::MatrixXd &Kel);
+	void ElementElastic_Rao(MatrixXdDiff &Kel);
 
 	// Evaluates FEM element matrix
-	void ElementTang_Rao(Eigen::MatrixXd &Ktang);
+	void ElementTang_Rao(MatrixXdDiff &Ktang);
 
-	void EvalRotMat(Eigen::VectorXd &dU_AB , Eigen::VectorXd &X_AB );
+	void EvalRotMat(VectorXdDiff &dU_AB , VectorXdDiff &X_AB );
 
-	void EvalRotMatDEBUG(Eigen::VectorXd &dU_AB , Eigen::VectorXd &X_AB , Eigen::MatrixXd &Rtest);
+	void EvalRotMatDEBUG(VectorXdDiff &dU_AB , VectorXdDiff &X_AB , MatrixXdDiff &Rtest);
 
 
 };

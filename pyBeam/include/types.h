@@ -24,21 +24,18 @@
  *
  */
 
-
+ 
 #pragma once
 
-#include "../include/types.h"
-
 #include <Eigen/Dense>
+#include <Eigen/Eigenvalues>
+#include <Eigen/LU>
 
-#include <iostream>
+#include "../CoDiPack/include/codi.hpp"
 
-#ifdef DEBG
-#include <fstream>
-#endif
+typedef codi::RealReverse su2double;
 
-void RotToPseudo(Vector3dDiff& pseudo , Matrix3dDiff R);
-
-void PseudoToRot(Vector3dDiff pseudo , Matrix3dDiff& R);
-
-
+typedef Eigen::Matrix<su2double, Eigen::Dynamic, Eigen::Dynamic> MatrixXdDiff; // MatrixXd
+typedef Eigen::Matrix<su2double, Eigen::Dynamic, 1> VectorXdDiff;       // VectorXd
+typedef Eigen::Matrix<su2double, 3, 3> Matrix3dDiff;             // Matrix3d
+typedef Eigen::Matrix<su2double, 3, 1> Vector3dDiff;             // Vector3d

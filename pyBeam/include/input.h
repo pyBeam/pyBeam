@@ -1,9 +1,9 @@
 /*
  * pyBeam, a Beam Solver
  *
- * Copyright (C) 2018 Ruben Sanchez, Rauno Cavallaro
+ * Copyright (C) 2018 Tim Albring, Ruben Sanchez, Rauno Cavallaro
  * 
- * Developers: Ruben Sanchez (SciComp, TU Kaiserslautern)
+ * Developers: Tim Albring, Ruben Sanchez (SciComp, TU Kaiserslautern)
  *             Rauno Cavallaro (Carlos III University Madrid)
  *
  * This file is part of pyBeam.
@@ -23,9 +23,11 @@
  * If not, see <http://www.gnu.org/licenses/>.
  *
  */
- 
+
 #pragma once
 #include <math.h>
+
+#include "../include/types.h"
 
 class CInput
 {
@@ -41,49 +43,49 @@ protected:
 
 	unsigned short nDOF; 	// Number of degrees of freedom
 	
-	double load; 			// [N];
+	su2double load; 			// [N];
 	int follower_flag;		// (0) Nonfollower (1) follower (2) approx follower
 	unsigned long loadSteps;			// Number of load steps
 	unsigned long nIter;				// Number of iterations
 
-	double end_time;		// [sec] for SS calculation
-	double dt;   			// [sec] time increment for SS calculation
+	su2double end_time;		// [sec] for SS calculation
+	su2double dt;   			// [sec] time increment for SS calculation
 
 	//##############    Wing Inputs  ###########################
 	// Units Sys: SI
 
-	double t; 				// web & flange thickness [m]
-	double h;				// web height [m]
-	double b;				// flange width [m]
-	double E; 				// Elastic modulus [GPa]
-	double Poiss; 			// Poisson Ratio
-	double ro;				// Beam Density [kg/m^3]
-	double G;				// Shear modulus
-	double l; 				// Wing Length [m]
-	double A;				// cross section area
-	double As_z; 			// z Effective shear area
-	double As_y;			// y Effective shear area
+	su2double t; 				// web & flange thickness [m]
+	su2double h;				// web height [m]
+	su2double b;				// flange width [m]
+	su2double E; 				// Elastic modulus [GPa]
+	su2double Poiss; 			// Poisson Ratio
+	su2double ro;				// Beam Density [kg/m^3]
+	su2double G;				// Shear modulus
+	su2double l; 				// Wing Length [m]
+	su2double A;				// cross section area
+	su2double As_z; 			// z Effective shear area
+	su2double As_y;			// y Effective shear area
 
-	double Iyy, Izz;
-	double Jx; 				//Polar Moment of Inertia
+	su2double Iyy, Izz;
+	su2double Jx; 				//Polar Moment of Inertia
 
 
-	double Mwing;			//Wing's mass [kg]
-	double EIy, EIz, GJ, AE;
+	su2double Mwing;			//Wing's mass [kg]
+	su2double EIy, EIz, GJ, AE;
 
-	double Clalpha;  		//  recall pi = atan(1)*4;
-	double Cldelta;
+	su2double Clalpha;  		//  recall pi = atan(1)*4;
+	su2double Cldelta;
 
 	//#################    Elements properties    ############################
 
-	double le;      	//element length
-	double m, m_e; 		//Element's mass
-	double m_w, m_f; 	//web and flange mass
-	double Ix, Iz; 		//[kg*m^2]
+	su2double le;      	//element length
+	su2double m, m_e; 		//Element's mass
+	su2double m_w, m_f; 	//web and flange mass
+	su2double Ix, Iz; 		//[kg*m^2]
 
 	//################     Convergence Parameters    ###########################
 
-	double convCriteria;
+	su2double convCriteria;
 
 	
 public:
@@ -91,6 +93,8 @@ public:
   CInput(void);
   
   virtual ~CInput(void);
+  
+  void SetParameters(su2double thickness);
   
   unsigned long Get_nNodes(void) { return nNodes; }  
     
@@ -104,33 +108,33 @@ public:
   
   unsigned long Get_nIter(void) { return nIter;}  
   
-  double Get_Load(void) { return load;}  
+  su2double Get_Load(void) { return load;}  
   
-  double Get_l(void) { return l; }  
+  su2double Get_l(void) { return l; }  
   
-  double Get_le(void) { return le; }
+  su2double Get_le(void) { return le; }
   
-  double Get_Jx(void) { return Jx; }
+  su2double Get_Jx(void) { return Jx; }
   
-  double Get_m_e(void) { return m_e; } 
+  su2double Get_m_e(void) { return m_e; } 
   
-  double Get_A(void) { return A; } 
+  su2double Get_A(void) { return A; } 
       
-  double Get_EIz(void) { return EIz; } 
+  su2double Get_EIz(void) { return EIz; } 
         
-  double Get_EIy(void) { return EIy; } 
+  su2double Get_EIy(void) { return EIy; } 
   
-  double Get_GJ(void) { return GJ; } 
+  su2double Get_GJ(void) { return GJ; } 
   
-  double Get_AE(void) { return AE; } 
+  su2double Get_AE(void) { return AE; } 
   
-  double Get_m(void) { return m; }
+  su2double Get_m(void) { return m; }
   
-  double Get_Iyy(void) { return Iyy; }     
+  su2double Get_Iyy(void) { return Iyy; }     
           
-  double Get_Izz(void) { return Izz; }  
+  su2double Get_Izz(void) { return Izz; }  
     
-  double Get_ConvCriteria(void) { return convCriteria; }  
+  su2double Get_ConvCriteria(void) { return convCriteria; }  
     
   
 };

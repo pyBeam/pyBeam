@@ -22,11 +22,11 @@
 # General Public License along with pyBeam.
 # If not, see <http://www.gnu.org/licenses/>.
 #
-#
 
-import pyBeam as Test
 
-testobject = Test.CBeamSolver()
+from pyBeam import CBeamSolver 
+
+testobject = CBeamSolver()
 
 testobject.Solve()
 

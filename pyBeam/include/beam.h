@@ -1,9 +1,9 @@
 /*
  * pyBeam, a Beam Solver
  *
- * Copyright (C) 2018 Ruben Sanchez, Rauno Cavallaro
+ * Copyright (C) 2018 Tim Albring, Ruben Sanchez, Rauno Cavallaro
  * 
- * Developers: Ruben Sanchez (SciComp, TU Kaiserslautern)
+ * Developers: Tim Albring, Ruben Sanchez (SciComp, TU Kaiserslautern)
  *             Rauno Cavallaro (Carlos III University Madrid)
  *
  * This file is part of pyBeam.
@@ -24,8 +24,11 @@
  *
  */
 
+
 #pragma once
 #include <math.h>       /* exp */
+
+#include "../include/types.h"
 
 #include "../include/FiniteElement.h"
 #include "../include/StructSyst.h"
@@ -49,8 +52,6 @@ public:
   CBeamSolver(void);
   
   virtual ~CBeamSolver(void);
-  
-  void solve_beam(void);  
   
   void Solve(void); 
   

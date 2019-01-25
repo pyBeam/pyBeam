@@ -1,9 +1,9 @@
 /*
  * pyBeam, a Beam Solver
  *
- * Copyright (C) 2018 Ruben Sanchez, Rauno Cavallaro
+ * Copyright (C) 2018 Tim Albring, Ruben Sanchez, Rauno Cavallaro
  * 
- * Developers: Ruben Sanchez (SciComp, TU Kaiserslautern)
+ * Developers: Tim Albring, Ruben Sanchez (SciComp, TU Kaiserslautern)
  *             Rauno Cavallaro (Carlos III University Madrid)
  *
  * This file is part of pyBeam.
@@ -23,7 +23,7 @@
  * If not, see <http://www.gnu.org/licenses/>.
  *
  */
- 
+
 #include <iostream>
 #include <fstream>
 #include <chrono>
@@ -33,10 +33,14 @@
 using namespace std;
 
 CInput::CInput(void) {
+  
+}
+
+void CInput::SetParameters(su2double thickness){
 	
 	//##################     Numerical Inputs     ###########################
 
-	nNodes = 11; 			// number of overall nodes along the wing (no collapsed)
+	nNodes = 101; 			// number of overall nodes along the wing (no collapsed)
 	nFEM = nNodes - 1;
 
 	nDOF = 6;                // number of rigid modes to be calculated
@@ -49,7 +53,7 @@ CInput::CInput(void) {
 	//##############    Wing Inputs  ###########################
 	// Units Sys: SI
 
-	t = 2*1e-2; 			// web & flange thickness [m]
+	t = thickness;		// web & flange thickness [m]
 	h = 40*1e-2;			// web height [m]
 	b = 20*1e-2;			// flange width [m]
 	E = 70*1e9; 			// Elastic modulus [GPa]
@@ -102,3 +106,5 @@ CInput::CInput(void) {
 CInput::~CInput(void) {
 	
 }
+
+

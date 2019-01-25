@@ -1,9 +1,9 @@
 /*
  * pyBeam, a Beam Solver
  *
- * Copyright (C) 2018 Ruben Sanchez, Rauno Cavallaro
+ * Copyright (C) 2018 Tim Albring, Ruben Sanchez, Rauno Cavallaro
  * 
- * Developers: Ruben Sanchez (SciComp, TU Kaiserslautern)
+ * Developers: Tim Albring, Ruben Sanchez (SciComp, TU Kaiserslautern)
  *             Rauno Cavallaro (Carlos III University Madrid)
  *
  * This file is part of pyBeam.
@@ -41,23 +41,23 @@ CStructure::CStructure(CInput *input, CElement **element)
 
 	// Resizes and zeros the K matrices
 	Ksys.resize((nfem+1)*6,(nfem+1)*6);
-	Ksys = Eigen::MatrixXd::Zero((nfem+1)*6,(nfem+1)*6);
+	Ksys = MatrixXdDiff::Zero((nfem+1)*6,(nfem+1)*6);
 
 	M.resize((nfem+1)*6,(nfem+1)*6);
-	M = Eigen::MatrixXd::Zero((nfem+1)*6,(nfem+1)*6);
+	M = MatrixXdDiff::Zero((nfem+1)*6,(nfem+1)*6);
 
-	dU  = Eigen::VectorXd::Zero((nfem+1)*6);         // Whole system displacements
+	dU  = VectorXdDiff::Zero((nfem+1)*6);         // Whole system displacements
 
-	X  = Eigen::VectorXd::Zero((nfem+1)*3);
+	X  = VectorXdDiff::Zero((nfem+1)*3);
 
 	InitialCoord();
 
 	// Forces nodal Vector
-	Ftip   =  Eigen::Vector3d::Zero();
-    Fnom     =  Eigen::VectorXd::Zero((nfem+1)*6);
-	Fext     =  Eigen::VectorXd::Zero((nfem+1)*6);
-	Fint     =  Eigen::VectorXd::Zero((nfem+1)*6);
-	Residual =  Eigen::VectorXd::Zero((nfem+1)*6);
+	Ftip   =  Vector3dDiff::Zero();
+    Fnom     =  VectorXdDiff::Zero((nfem+1)*6);
+	Fext     =  VectorXdDiff::Zero((nfem+1)*6);
+	Fint     =  VectorXdDiff::Zero((nfem+1)*6);
+	Residual =  VectorXdDiff::Zero((nfem+1)*6);
 			
 }
 
@@ -75,7 +75,7 @@ CStructure::~CStructure(void)
  it just applies the external force at the TIP
  ***************************************************************/
 
-void CStructure::ReadForces(double forces)
+void CStructure::ReadForces(su2double forces)
 {
 	int pos_loc_dof = 2;   // 1,2,3- trasl  4 5 6 -rotat
 	Ftip(pos_loc_dof-1) = forces;
@@ -90,7 +90,7 @@ void CStructure::ReadForces(double forces)
  ****************************************************************/
 // This subroutine updates the external force.
 
-void CStructure::UpdateExtForces(double lambda, int switcher )
+void CStructure::UpdateExtForces(su2double lambda, int switcher )
 {
 	if (switcher == 0)
 		Fext = lambda* Fnom;
@@ -121,13 +121,13 @@ void CStructure::AssemblyTang()
 	std::cout  << " Assembly Tangent"  << std::endl;
 
 	int dof = 0;   int dof_jjj = 0;   int dof_kkk = 0;
-	Eigen::MatrixXd Krotated = Eigen::MatrixXd::Zero(6,6);   // Matrice di appoggio
+	MatrixXdDiff Krotated = MatrixXdDiff::Zero(6,6);   // Matrice di appoggio
 
 	// Setting to Zero the SYSTEM Stiffness
-	Ksys = Eigen::MatrixXd::Zero((nfem+1)*6,(nfem+1)*6);
+	Ksys = MatrixXdDiff::Zero((nfem+1)*6,(nfem+1)*6);
 
 	// Element's contribution to Ktang
-	Eigen::MatrixXd Ktang(12,12);
+	MatrixXdDiff Ktang(12,12);
 	/*------------------------------------
 	 *    Cycle on the finite elements
 	 *------------------------------------*/
@@ -174,8 +174,8 @@ void CStructure::AssemblyTang()
 	// Imposing BC
 	for (int iii=1; iii<= 6; iii++)
 	{
-		Ksys.row(iii-1) = Eigen::VectorXd::Zero((nfem+1)*6);
-		Ksys.col(iii-1) = Eigen::VectorXd::Zero((nfem+1)*6);
+		Ksys.row(iii-1) = VectorXdDiff::Zero((nfem+1)*6);
+		Ksys.col(iii-1) = VectorXdDiff::Zero((nfem+1)*6);
 		Ksys(iii-1,iii-1) = 1.0;
 	}
 
@@ -193,28 +193,28 @@ void CStructure::AssemblyTang()
 
 void CStructure::EvalSensRot()
 {
-	Eigen::VectorXd dl_dU =  Eigen::VectorXd::Zero(12);
-	Eigen::MatrixXd de1 = Eigen::MatrixXd::Zero(3,12);
-	Eigen::MatrixXd de2 = Eigen::MatrixXd::Zero(3,12);
-	Eigen::MatrixXd de3 = Eigen::MatrixXd::Zero(3,12);
+	VectorXdDiff dl_dU =  VectorXdDiff::Zero(12);
+	MatrixXdDiff de1 = MatrixXdDiff::Zero(3,12);
+	MatrixXdDiff de2 = MatrixXdDiff::Zero(3,12);
+	MatrixXdDiff de3 = MatrixXdDiff::Zero(3,12);
 
-	Eigen::MatrixXd Krot = Eigen::MatrixXd::Zero(12,12);
-	Eigen::VectorXd fint =  Eigen::VectorXd::Zero(12);
+	MatrixXdDiff Krot = MatrixXdDiff::Zero(12,12);
+	VectorXdDiff fint =  VectorXdDiff::Zero(12);
 
-	double onetol = 0.0;
+	su2double onetol = 0.0;
 
-	Eigen::MatrixXd de1_part1 = Eigen::MatrixXd::Zero(3,12);
+	MatrixXdDiff de1_part1 = MatrixXdDiff::Zero(3,12);
 
-	de1_part1.block(1-1,1-1,3,3) = - Eigen::MatrixXd::Identity(3,3);
-	de1_part1.block(1-1,7-1,3,3) =   Eigen::MatrixXd::Identity(3,3);
+	de1_part1.block(1-1,1-1,3,3) = - MatrixXdDiff::Identity(3,3);
+	de1_part1.block(1-1,7-1,3,3) =   MatrixXdDiff::Identity(3,3);
 
-	Eigen::Vector3d de1_i = Eigen::Vector3d::Zero();
-	Eigen::Vector3d e3    = Eigen::Vector3d::Zero();
+	Vector3dDiff de1_i = Vector3dDiff::Zero();
+	Vector3dDiff e3    = Vector3dDiff::Zero();
 
 	//-------------------------------
 
 	int idofXini = 1;
-	Eigen::VectorXd XbmXa = Eigen::Vector3d::Zero(3);
+	VectorXdDiff XbmXa = Vector3dDiff::Zero(3);
 
 	int dof_jjj = 0; int dof_kkk = 0;
 
@@ -236,7 +236,7 @@ void CStructure::EvalSensRot()
 
 
 		//===   de3_du === 0    TEMPORARY HAS TO BE FIXED!!!!
-		de3 = Eigen::MatrixXd::Zero(3,12);
+		de3 = MatrixXdDiff::Zero(3,12);
 
 		// de2_du =    de3_du X e1 + e3 X de1_du
 		// HNOT EFFICIENT IN THIS WAY!
@@ -293,7 +293,7 @@ void CStructure::EvalResidual()
 	Residual = Fext - Fint;
 
 	// BC on the residuals
-	Residual.segment(1-1,6) = Eigen::VectorXd::Zero(6);
+	Residual.segment(1-1,6) = VectorXdDiff::Zero(6);
 }
 
 
@@ -311,7 +311,7 @@ void CStructure::SolveLinearStaticSystem()
 	
 	dU = Ksys.fullPivHouseholderQr().solve(Residual);
 
-	double relative_error = (Ksys*dU -Residual).norm() / Residual.norm(); // norm() is L2 norm
+	su2double relative_error = (Ksys*dU -Residual).norm() / Residual.norm(); // norm() is L2 norm
 	std::cout << "The relative error is:\n" << relative_error << std:: endl;
     if (relative_error > 1.0e-7)
     {
@@ -356,8 +356,8 @@ void CStructure::UpdateCoord()
 	int posU = 1;    // current position in the U array
 
 	/*  DEBUG  */
-	Eigen::VectorXd DX;
-	DX  = Eigen::VectorXd::Zero((nfem+1)*3);
+	VectorXdDiff DX;
+	DX  = VectorXdDiff::Zero((nfem+1)*3);
 	/**/
 
 	// Browsing all the fem nodes of the current segment
@@ -373,8 +373,8 @@ void CStructure::UpdateCoord()
 	}
 
 
-	std::ofstream myfile3 ("./output/echo_dX.out", std::ios_base::out | std::ios_base::app);
-	myfile3 <<  DX << std::endl;
+	////std::ofstream myfile3 ("./output/echo_dX.out", std::ios_base::out | std::ios_base::app);
+	//myfile3 <<  DX << std::endl;
 
 }
 
@@ -389,9 +389,9 @@ void CStructure::InitialCoord()
 {
 	std::cout << "---------  Resetting Initial Coordinate Values "  << std::endl;
 
-	X  = Eigen::VectorXd::Zero((nfem+1)*3);
+	X  = VectorXdDiff::Zero((nfem+1)*3);
 
-	double le = fem[0]->le;
+	su2double le = fem[0]->le;
 
 	int posX = 1;    // current  position in the X array
 	int count = 0;   // number of fe upstream the node
@@ -425,9 +425,9 @@ void CStructure::UpdateLength()
 	int node_ini = 1;
 
 
-	Eigen::Vector3d Xa = Eigen::Vector3d::Zero();
-	Eigen::Vector3d Xb = Eigen::Vector3d::Zero();
-	Eigen::Vector3d temp = Eigen::Vector3d::Zero();
+	Vector3dDiff Xa = Vector3dDiff::Zero();
+	Vector3dDiff Xb = Vector3dDiff::Zero();
+	Vector3dDiff temp = Vector3dDiff::Zero();
 
 	for (int id_fe=1; id_fe<=nfem; id_fe++)
 	{
@@ -465,8 +465,8 @@ void CStructure::UpdateRotationMatrix()
 
 	// dX_AB is a 6 array, dU_AB is 12 array.
 	// First/Last 6 entries are first/last node's dofs current coordinates/displ.  of current finite element
-	Eigen::VectorXd dU_AB = Eigen::VectorXd::Zero(12);
-	Eigen::VectorXd  X_AB = Eigen::VectorXd::Zero(6);
+	VectorXdDiff dU_AB = VectorXdDiff::Zero(12);
+	VectorXdDiff  X_AB = VectorXdDiff::Zero(6);
 
 	int indu = 1;  int indX =1;
 
@@ -489,9 +489,9 @@ void CStructure::UpdateRotationMatrix()
 #ifdef DEBG
 	for (int i_fe=1; i_fe<=nfem; i_fe++)
 	{
-		std::ofstream myfile4 ("./output/echo_R_Re.out", std::ios_base::out | std::ios_base::app);
-		myfile4  << fem[i_fe-1]->Rrig.block(0,0,3,3) << std::endl;
-		myfile4  << fem[i_fe-1]->R.block(0,0,3,3)  << std::endl;
+		//std::ofstream myfile4 ("./output/echo_R_Re.out", std::ios_base::out | std::ios_base::app);
+//		myfile4  << fem[i_fe-1]->Rrig.block(0,0,3,3) << std::endl;
+//		myfile4  << fem[i_fe-1]->R.block(0,0,3,3)  << std::endl;
 	}
 
 #endif
@@ -522,26 +522,26 @@ void CStructure::UpdateInternalForces()
 	int dof_ini = 1;
 
 	// Nodal full Rotation PseudoVectors and Matrices
-	Eigen::Vector3d pseudo_A = Eigen::Vector3d::Zero();
-	Eigen::Vector3d pseudo_B = Eigen::Vector3d::Zero();
+	Vector3dDiff pseudo_A = Vector3dDiff::Zero();
+	Vector3dDiff pseudo_B = Vector3dDiff::Zero();
 
-	Eigen::Matrix3d Rnode_A = Eigen::Matrix3d::Zero();
-	Eigen::Matrix3d Rnode_B = Eigen::Matrix3d::Zero();
+	Matrix3dDiff Rnode_A = Matrix3dDiff::Zero();
+	Matrix3dDiff Rnode_B = Matrix3dDiff::Zero();
 
 	// Nodal ELASTIC Rotation Matrix
-	Eigen::Matrix3d Rel_A = Eigen::Matrix3d::Zero();
-	Eigen::Matrix3d Rel_B = Eigen::Matrix3d::Zero();
+	Matrix3dDiff Rel_A = Matrix3dDiff::Zero();
+	Matrix3dDiff Rel_B = Matrix3dDiff::Zero();
 
-	Eigen::Matrix3d  Rreduc = Eigen::Matrix3d::Zero();;
-	Eigen::Matrix3d  Rtransp = Eigen::Matrix3d::Zero();;
-	Eigen::Matrix3d  R_rigtransp;
+	Matrix3dDiff  Rreduc = Matrix3dDiff::Zero();;
+	Matrix3dDiff  Rtransp = Matrix3dDiff::Zero();;
+	Matrix3dDiff  R_rigtransp;
 	int tot_dofs= (nfem+1)*6;
 
 	// Element's level  incremental   forces/elastic displ
-	Eigen::VectorXd duel     = Eigen::VectorXd::Zero(12);
+	VectorXdDiff duel     = VectorXdDiff::Zero(12);
 
 	// Nodal vecotr of internal forces
-	Fint = Eigen::VectorXd::Zero((nfem+1)*6);    // VERY IMPORTANT
+	Fint = VectorXdDiff::Zero((nfem+1)*6);    // VERY IMPORTANT
 
 	/*-------------------------------
 	//     LOOPING FINITE ELEMENTS
@@ -550,8 +550,8 @@ void CStructure::UpdateInternalForces()
 	for (int id_fe=1;     id_fe <= nfem ; id_fe++)
 	{
 
-		Eigen::Vector3d node1_disp = dU.segment(dof_ini-1,3);
-		Eigen::Vector3d node2_disp = dU.segment(dof_ini+6-1,3);
+		Vector3dDiff node1_disp = dU.segment(dof_ini-1,3);
+		Vector3dDiff node2_disp = dU.segment(dof_ini+6-1,3);
 
 		/*----------------------------
 	    //      TRANSLATIONAL PART
@@ -600,7 +600,7 @@ void CStructure::UpdateInternalForces()
 
 		//
 #ifdef DEBG
-		std::ofstream echo_dUel ("./output/echo_dUel.out", std::ios_base::out | std::ios_base::app);
+		//std::ofstream echo_dUel ("./output/echo_dUel.out", std::ios_base::out | std::ios_base::app);
 		echo_dUel << duel << std::endl;
 #endif
 
@@ -622,8 +622,8 @@ void CStructure::UpdateInternalForces()
 
 		fem[id_fe-1]->phi =  fem[id_fe-1]->Kprim*fem[id_fe-1]->eps;
 
-        Eigen::MatrixXd Na = Eigen::MatrixXd::Zero(6,6);
-        Eigen::MatrixXd Nb = Eigen::MatrixXd::Zero(6,6);
+        MatrixXdDiff Na = MatrixXdDiff::Zero(6,6);
+        MatrixXdDiff Nb = MatrixXdDiff::Zero(6,6);
 
         fem[id_fe-1]->EvalNaNb(Na , Nb);
 
@@ -635,11 +635,11 @@ void CStructure::UpdateInternalForces()
 
 
 #ifdef DEBG
-		std::ofstream echo_eps ("./output/echo_eps.out", std::ios_base::out | std::ios_base::app);
+		//std::ofstream echo_eps ("./output/echo_eps.out", std::ios_base::out | std::ios_base::app);
 		echo_eps << fem[id_fe-1]->eps << std::endl;
-		std::ofstream echo_phi ("./output/echo_phi.out", std::ios_base::out | std::ios_base::app);
+		//std::ofstream echo_phi ("./output/echo_phi.out", std::ios_base::out | std::ios_base::app);
 		echo_phi << fem[id_fe-1]->phi << std::endl;
-		std::ofstream echo_fint ("./output/echo_fint.out", std::ios_base::out | std::ios_base::app);
+		//std::ofstream echo_fint ("./output/echo_fint.out", std::ios_base::out | std::ios_base::app);
 		echo_fint << fem[id_fe-1]->fint << std::endl;
 #endif
 
@@ -657,7 +657,7 @@ void CStructure::UpdateInternalForces()
 
 	//
 #ifdef DEBG
-	std::ofstream echo_Fint ("./output/echo_Fint.out", std::ios_base::out | std::ios_base::app);
+	//std::ofstream echo_Fint ("./output/echo_Fint.out", std::ios_base::out | std::ios_base::app);
 	echo_Fint << Fint << std::endl;
 #endif
 
@@ -675,7 +675,7 @@ void CStructure::EchoCoord()
 {
 
 #ifdef DEBG
-	std::ofstream Xcoord ("./output/echo_Xcoord.out", std::ios_base::out | std::ios_base::app);
+	//std::ofstream Xcoord ("./output/echo_Xcoord.out", std::ios_base::out | std::ios_base::app);
 	Xcoord <<  X << std::endl;
 
 #endif
@@ -693,7 +693,7 @@ void CStructure::EchoDisp()
 {
 
 #ifdef DEBG
-	std::ofstream udisp ("./output/echo_udisp.out", std::ios_base::out | std::ios_base::app);
+	//std::ofstream udisp ("./output/echo_udisp.out", std::ios_base::out | std::ios_base::app);
 	udisp <<  dU << std::endl;
 #endif
 }
@@ -705,7 +705,7 @@ void CStructure::EchoDisp()
 void CStructure::EchoRes()
 {
 #ifdef DEBG
-	std::ofstream echo_Residual ("./output/echo_Residual.out", std::ios_base::out | std::ios_base::app);            //  Residual in GLOBAL REF
+	//std::ofstream echo_Residual ("./output/echo_Residual.out", std::ios_base::out | std::ios_base::app);            //  Residual in GLOBAL REF
 	echo_Residual <<  Residual << std::endl;
 #endif
 
@@ -718,7 +718,7 @@ void CStructure::EchoRes()
 void CStructure::EchoFext()
 {
 #ifdef DEBG
-	std::ofstream echo_Fext ("./output/echo_Fext.out", std::ios_base::out | std::ios_base::app);            //  Residual in GLOBAL REF
+	//std::ofstream echo_Fext ("./output/echo_Fext.out", std::ios_base::out | std::ios_base::app);            //  Residual in GLOBAL REF
 	echo_Fext <<  Fext << std::endl;
 #endif
 
@@ -731,9 +731,9 @@ void CStructure::EchoFext()
 void CStructure::EchoMatrixK()
 {
 #ifdef DEBG
-	std::ofstream echo_MatrixK ("./output/echo_MatrixK.out", std::ios_base::out | std::ios_base::app);            //  Residual in GLOBAL REF
+	//std::ofstream echo_MatrixK ("./output/echo_MatrixK.out", std::ios_base::out | std::ios_base::app);            //  Residual in GLOBAL REF
 
-	//	Eigen::MatrixXd KK = Eigen::MatrixXd::Zero(12,12);
+	//	MatrixXdDiff KK = MatrixXdDiff::Zero(12,12);
 	//	KK = Ksys.block(1-1,1-1,6,6);
 	echo_MatrixK  <<  Ksys.block(1-1,1-1,12,12)  << std::endl;
 

@@ -1,9 +1,9 @@
 /*
  * pyBeam, a Beam Solver
  *
- * Copyright (C) 2018 Ruben Sanchez, Rauno Cavallaro
+ * Copyright (C) 2018 Tim Albring, Ruben Sanchez, Rauno Cavallaro
  * 
- * Developers: Ruben Sanchez (SciComp, TU Kaiserslautern)
+ * Developers: Tim Albring, Ruben Sanchez (SciComp, TU Kaiserslautern)
  *             Rauno Cavallaro (Carlos III University Madrid)
  *
  * This file is part of pyBeam.
@@ -23,12 +23,15 @@
  * If not, see <http://www.gnu.org/licenses/>.
  *
  */
+
  
 #pragma once
 
 #include <Eigen/Dense>
 #include <Eigen/Eigenvalues>
 #include <Eigen/LU>
+
+#include "../include/types.h"
 
 #include "../include/FiniteElement.h"
 #include "../include/Rotations.h"
@@ -54,20 +57,20 @@ public:
 
 	CElement **fem;      // Pointer to the first finite element
 
-	Eigen::MatrixXd M;      // Recall in Eigen X stays for dynamic, d for double:  (nfem+1)*6  X   (nfem+1)*6
-	Eigen::MatrixXd Ksys;
+	MatrixXdDiff M;      // Recall in Eigen X stays for dynamic, d for su2double:  (nfem+1)*6  X   (nfem+1)*6
+	MatrixXdDiff Ksys;
 
 
-	Eigen::VectorXd dU;           // Displacement array (iterative)
-	Eigen::VectorXd X;            // Position of the fem nodes in global coordinate system
+	VectorXdDiff dU;           // Displacement array (iterative)
+	VectorXdDiff X;            // Position of the fem nodes in global coordinate system
 
 
-	Eigen::VectorXd Fint;        // Array of internal forces
-	Eigen::VectorXd Fext;        // Array of External Forces
-	Eigen::VectorXd Residual;    // Array of Unbalanced Forces
+	VectorXdDiff Fint;        // Array of internal forces
+	VectorXdDiff Fext;        // Array of External Forces
+	VectorXdDiff Residual;    // Array of Unbalanced Forces
 
-	Eigen::Vector3d Ftip;      // (vector read from the input file) - needed as basis to update the Fext
-	Eigen::VectorXd Fnom;        // Array of nominal forces
+	Vector3dDiff Ftip;      // (vector read from the input file) - needed as basis to update the Fext
+	VectorXdDiff Fnom;        // Array of nominal forces
 
 	CStructure(CInput *input, CElement **element);
 
@@ -79,9 +82,9 @@ public:
 	 *
 	 *###############################################################*/
 
-	void ReadForces(double forces);
+	void ReadForces(su2double forces);
 
-	void UpdateExtForces(double , int );
+	void UpdateExtForces(su2double , int );
 
 	void EvalResidual();
 
@@ -134,8 +137,8 @@ public:
 	//===================================================
 
 	void UpdateInternalForces();
-
-
+  
+  su2double GetDisplacement(int pos, int index) { return X(3*pos+index); };
 
 
 };

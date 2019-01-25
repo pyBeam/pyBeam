@@ -35,12 +35,12 @@
 /* This routine, given a rotation matrix,
 transforms it in its pseudo-vector form */
 
-void RotToPseudo(Eigen::Vector3d& pseudo , Eigen::Matrix3d R)
+void RotToPseudo(Vector3dDiff& pseudo , Matrix3dDiff R)
 {
-	double theta = 0.0;               // Angle of Rotation
-	double rho[3] = {0.0,0.0,0.0};
+	su2double theta = 0.0;               // Angle of Rotation
+	su2double rho[3] = {0.0,0.0,0.0};
 
-	double fraction = (R.trace()  - 1.0)/2.0;
+	su2double fraction = (R.trace()  - 1.0)/2.0;
 
 	if (abs(fraction) >= 1 - 5e-16)   // (FRACTION >= ONE)
 		theta = 0.0;
@@ -53,7 +53,7 @@ void RotToPseudo(Eigen::Vector3d& pseudo , Eigen::Matrix3d R)
 		rho[1] = R(1-1,3-1) - R(3-1,1-1);
 		rho[2] = R(2-1,1-1) - R(1-1,2-1);
 
-		double norm_rho = 0.0 ;
+		su2double norm_rho = 0.0 ;
 		
 		norm_rho = sqrt( pow(rho[0], 2.0) + 
 		                 pow(rho[1], 2.0) + 
@@ -61,7 +61,7 @@ void RotToPseudo(Eigen::Vector3d& pseudo , Eigen::Matrix3d R)
 
 		if (norm_rho <= 1.0e-20)
 
-			pseudo  = Eigen::Vector3d::Zero(3);
+			pseudo  = Vector3dDiff::Zero(3);
 		else
 
 			for(unsigned short iVar = 0; iVar < 3; iVar++)
@@ -73,7 +73,7 @@ void RotToPseudo(Eigen::Vector3d& pseudo , Eigen::Matrix3d R)
 	}
 	else
 	{
-		pseudo  = Eigen::VectorXd::Zero(3);
+		pseudo  = VectorXdDiff::Zero(3);
 	}
 
 }
@@ -86,23 +86,23 @@ void RotToPseudo(Eigen::Vector3d& pseudo , Eigen::Matrix3d R)
 /* This routine, given a pseudo-vector,
 transforms it in its  rotation matrix form */
 
-void PseudoToRot(Eigen::Vector3d pseudo , Eigen::Matrix3d& R)
+void PseudoToRot(Vector3dDiff pseudo , Matrix3dDiff& R)
 {
-	//const double pi = 2*acos(0.0);
+	//const su2double pi = 2*acos(0.0);
 
 
-	Eigen::Vector3d rot(0.0,0.0,0.0);
+	Vector3dDiff rot(0.0,0.0,0.0);
 
     pseudo(2-1) = ( pseudo(2-1));  // atan( pseudo(2-1));
     pseudo(3-1) = ( pseudo(3-1));  // atan( pseudo(3-1));
 
-	double theta = pseudo.norm();
+	su2double theta = pseudo.norm();
 	if (theta != 0.0 )
 	{
 	rot = pseudo/pseudo.norm();
 	}
 
-	Eigen::MatrixX3d SkewRot = Eigen::Matrix3d::Zero(3,3);
+	Matrix3dDiff SkewRot = Matrix3dDiff::Zero(3,3);
 	SkewRot(2-1,1-1) = rot(3-1);    SkewRot(1-1,2-1) = -rot(3-1);
 	SkewRot(3-1,1-1) =-rot(2-1);    SkewRot(1-1,3-1) =  rot(2-1);
 	SkewRot(3-1,2-1) = rot(1-1);    SkewRot(2-1,3-1) = -rot(1-1);
@@ -116,7 +116,7 @@ void PseudoToRot(Eigen::Vector3d pseudo , Eigen::Matrix3d& R)
 	if (theta < 1.0e-8)
 	{
 
-		R.block(0,0,3,3) =  Eigen::MatrixXd::Identity(3,3) +
+		R.block(0,0,3,3) =  MatrixXdDiff::Identity(3,3) +
 				theta*(1-theta*theta/6.0 + pow(theta,4)/120.0)  * SkewRot +
 				theta*theta*(0.5 - theta*theta/24.0 ) *SkewRot*SkewRot;
 
@@ -124,7 +124,7 @@ void PseudoToRot(Eigen::Vector3d pseudo , Eigen::Matrix3d& R)
 	else
 	{
 
-		R.block(0,0,3,3) = Eigen::MatrixXd::Identity(3,3) +
+		R.block(0,0,3,3) = MatrixXdDiff::Identity(3,3) +
 				sin(theta) * SkewRot +
 				(1 - cos(theta))*SkewRot*SkewRot;
 	}
