@@ -31,9 +31,12 @@
 #include <Eigen/Eigenvalues>
 #include <Eigen/LU>
 
+#include <vector>
+
 #include "../CoDiPack/include/codi.hpp"
 
 typedef codi::RealReverse su2double;
+typedef double passivedouble;
 
 typedef Eigen::Matrix<su2double, Eigen::Dynamic, Eigen::Dynamic> MatrixXdDiff; // MatrixXd
 typedef Eigen::Matrix<su2double, Eigen::Dynamic, 1> VectorXdDiff;       // VectorXd

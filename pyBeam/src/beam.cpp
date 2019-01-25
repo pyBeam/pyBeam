@@ -50,39 +50,65 @@ CBeamSolver::~CBeamSolver(void) {
 	
 }
 
-void CBeamSolver::Solve(void){
-  
-  su2double thickness = 1.99*1e-2;
-  
-  su2double::TapeType &globalTape = su2double::getGlobalTape();
-  
-  globalTape.setActive();
-  
-  globalTape.registerInput(thickness);
-  
-  input->SetParameters(thickness);
-  
-  //==============================================================
-	//      Finite Element initialization
-	//==============================================================
+void CBeamSolver::Initialize(void){
 
-	std::cout << "=========  Finite Element Initialization  ====" << std::endl;	
-	unsigned long nFEM = input->Get_nFEM();
-	element = new CElement*[nFEM];
-	for (unsigned long iFEM = 0; iFEM < nFEM; iFEM++){
-		element[iFEM] = new CElement(iFEM, input);
-	}
-	
+    thickness = 1.99*1e-2;
+
+    //su2double::TapeType& globalTape = su2double::getGlobalTape();
+
+    //globalTape.setActive();
+
+    //globalTape.registerInput(thickness);
+
+    input->SetParameters(thickness);
+
+    nDOF = input->Get_nDOF();
+    nTotalDOF = input->Get_nNodes() * input->Get_nDOF();
+
+    loadVector = new su2double[nTotalDOF];
+    for (int iLoad = 0; iLoad < nTotalDOF; iLoad++)
+        loadVector[iLoad] = 0.0;
+
+
+    //==============================================================
+    //      Finite Element initialization
+    //==============================================================
+
+    std::cout << "=========  Finite Element Initialization  ====" << std::endl;
+    unsigned long nFEM = input->Get_nFEM();
+    element = new CElement*[nFEM];
+    for (unsigned long iFEM = 0; iFEM < nFEM; iFEM++){
+        element[iFEM] = new CElement(iFEM, input);
+    }
+
 	structure = NULL;
 
 	//===============================================
 	//  Initialize structural solver
 	//===============================================
-	
+
 	structure = new CStructure(input, element);
+
+
+}
+
+void CBeamSolver::SetLoads(int iNode, int iDOF, passivedouble loadValue){
+
+    std::cout << "Load Value" << std::endl;
+    std::cout << iNode << " " << iDOF << " " << loadValue << endl;
+
+    int index;
+    index = iNode*nDOF + iDOF;
+
+    loadVector[index] = loadValue;
 
 	std::cout << "Reading External Forces" << std::endl;
 	structure->ReadForces(input->Get_Load());
+	structure->ReadForces(nTotalDOF, loadVector);
+
+}
+
+void CBeamSolver::Solve(void){
 
 	//===============================================
 	// LOAD STEPPING
@@ -177,26 +203,57 @@ void CBeamSolver::Solve(void){
 		std::cout << "#####    EXITING ITERATIVE SEQUENCE   #####" << std::endl;
 	}
   
-  su2double pos1, pos2, pos3;
-  su2double grad_t;
+  //su2double pos1, pos2, pos3;
+  //su2double grad_t;
   
-  pos1 = structure->GetDisplacement(100, 0);
-  pos2 = structure->GetDisplacement(100, 1);
-  pos3 = structure->GetDisplacement(100, 2);
+  //pos1 = structure->GetDisplacement(100, 0);
+  //pos2 = structure->GetDisplacement(100, 1);
+  //pos3 = structure->GetDisplacement(100, 2);
   
-  cout << pos1 << " " << pos2 << " " << pos3 << endl;
+  //cout << pos1 << " " << pos2 << " " << pos3 << endl;
   
-  globalTape.registerOutput(pos2);
+  //globalTape.registerOutput(pos2);
   
-  globalTape.setPassive();
+  //globalTape.setPassive();
   
-  pos2.setGradient(1.0);
+  //pos2.setGradient(1.0);
   
-  globalTape.evaluate();
+  //globalTape.evaluate();
   
-  grad_t = thickness.getGradient();
+  //grad_t = thickness.getGradient();
    
-  std::cout << " t' is " << grad_t << endl;
-	
+  //std::cout << " t' is " << grad_t << endl;
+
 }
+
+passivedouble CBeamSolver::ExtractDisplacements(int iNode, int iDim){
+
+  passivedouble pos;
+
+  pos = structure->GetDisplacement(iNode, iDim).getValue();
+
+  return pos;
+
+}
+
+passivedouble CBeamSolver::ExtractCoordinates(int iNode, int iDim){
+
+  passivedouble pos;
+
+  pos = structure->GetCoordinates(iNode, iDim).getValue();
+
+  return pos;
+
+}
+
+passivedouble CBeamSolver::ExtractInitialCoordinates(int iNode, int iDim){
+
+  passivedouble pos;
+
+  pos = structure->GetInitialCoordinates(iNode, iDim).getValue();
+
+  return pos;
+
+}
+
 

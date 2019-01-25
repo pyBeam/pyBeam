@@ -77,10 +77,25 @@ CStructure::~CStructure(void)
 
 void CStructure::ReadForces(su2double forces)
 {
-	int pos_loc_dof = 2;   // 1,2,3- trasl  4 5 6 -rotat
-	Ftip(pos_loc_dof-1) = forces;
-	Fnom((nfem+1 - 1)*6 + pos_loc_dof -1) = forces;
+	//int pos_loc_dof = 2;   // 1,2,3- trasl  4 5 6 -rotat
+	//Ftip(pos_loc_dof-1) = forces;
+	//Fnom((nfem+1 - 1)*6 + pos_loc_dof -1) = forces;
 }
+
+void CStructure::ReadForces(int nTotalDOF, su2double *loadVector)
+{
+
+   int iLoad, iDim, index;
+
+   for (iLoad = 0; iLoad < nTotalDOF; iLoad++){
+     Fnom(iLoad) = loadVector[iLoad];
+   }
+
+	//Fnom((nfem+1 - 1)*6 + pos_loc_dof -1) = forces;
+
+
+}
+
 
 
 /***************************************************************
@@ -390,6 +405,7 @@ void CStructure::InitialCoord()
 	std::cout << "---------  Resetting Initial Coordinate Values "  << std::endl;
 
 	X  = VectorXdDiff::Zero((nfem+1)*3);
+	X0 = VectorXdDiff::Zero((nfem+1)*3);
 
 	su2double le = fem[0]->le;
 
@@ -401,6 +417,7 @@ void CStructure::InitialCoord()
 	{
 
 		X(posX-1) = le*count;   // careful this accumulates the error
+		X0(posX-1) = le*count;
 
 		posX += 3;
 		count += 1;

@@ -63,7 +63,7 @@ public:
 
 	VectorXdDiff dU;           // Displacement array (iterative)
 	VectorXdDiff X;            // Position of the fem nodes in global coordinate system
-
+	VectorXdDiff X0;            // Position of the fem nodes in global coordinate system
 
 	VectorXdDiff Fint;        // Array of internal forces
 	VectorXdDiff Fext;        // Array of External Forces
@@ -83,6 +83,8 @@ public:
 	 *###############################################################*/
 
 	void ReadForces(su2double forces);
+
+	void ReadForces(int nTotalDOF, su2double *loadVector);
 
 	void UpdateExtForces(su2double , int );
 
@@ -138,7 +140,14 @@ public:
 
 	void UpdateInternalForces();
   
-  su2double GetDisplacement(int pos, int index) { return X(3*pos+index); };
+  su2double GetDisplacement(int pos, int index) {
+    su2double disp;
+    disp = X(3*pos+index) - X0(3*pos+index);
+    return disp;
+  };
 
+  su2double GetCoordinates(int pos, int index) {return X(3*pos+index);};
+
+  su2double GetInitialCoordinates(int pos, int index) {return X0(3*pos+index);};
 
 };

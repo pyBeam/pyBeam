@@ -47,12 +47,26 @@ public:
 
   CElement** element;  	  /*!< \brief Vector which the define the elements. */
   
-  CStructure* structure;  /*!< \brief Vector which the define the elements. */  
+  CStructure* structure;  /*!< \brief Vector which the define the elements. */
+
+  int nDOF, nTotalDOF, nDim;
+  su2double *loadVector;
+  su2double thickness;
 
   CBeamSolver(void);
   
   virtual ~CBeamSolver(void);
   
-  void Solve(void); 
-  
+  void Initialize(void);
+
+  void SetLoads(int iNode, int iDOF, passivedouble loadValue);
+
+  void Solve(void);
+
+  passivedouble ExtractDisplacements(int iNode, int iDim);
+
+  passivedouble ExtractCoordinates(int iNode, int iDim);
+
+  passivedouble ExtractInitialCoordinates(int iNode, int iDim);
+
 };

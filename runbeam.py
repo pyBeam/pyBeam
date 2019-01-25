@@ -25,9 +25,30 @@
 
 
 from pyBeam import CBeamSolver 
+import matplotlib.pyplot as plt
 
 testobject = CBeamSolver()
 
+loads = [1.0, 2.0, 3.0]
+
+testobject.Initialize()
+testobject.SetLoads(100,1,5000)
 testobject.Solve()
 
+coordinate_X = []
+coordinate_Y = []
 
+coordinate_X0 = []
+coordinate_Y0 = []
+
+for iNode in range(0,101):
+  
+  coordinate_X.append(testobject.ExtractCoordinates(iNode, 0))
+  coordinate_Y.append(testobject.ExtractCoordinates(iNode, 1))
+  
+  coordinate_X0.append(testobject.ExtractInitialCoordinates(iNode, 0))
+  coordinate_Y0.append(testobject.ExtractInitialCoordinates(iNode, 1))
+
+plt.plot(coordinate_X, coordinate_Y)
+plt.plot(coordinate_X0, coordinate_Y0)
+plt.show()
