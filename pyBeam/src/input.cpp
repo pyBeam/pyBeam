@@ -1,7 +1,7 @@
 /*
  * pyBeam, a Beam Solver
  *
- * Copyright (C) 2018 Tim Albring, Ruben Sanchez, Rauno Cavallaro
+ * Copyright (C) 2018 Tim Albring, Ruben Sanchez, Rauno Cavallaro, Rocco Bombardieri (edit attempt)
  * 
  * Developers: Tim Albring, Ruben Sanchez (SciComp, TU Kaiserslautern)
  *             Rauno Cavallaro (Carlos III University Madrid)
@@ -40,7 +40,7 @@ void CInput::SetParameters(su2double thickness){
 	
 	//##################     Numerical Inputs     ###########################
 
-	nNodes = 102; 			// number of overall nodes along the wing (no collapsed)
+	nNodes = 101; 			// number of overall nodes along the wing (no collapsed)  
 	nFEM = nNodes - 1;
 
 	nDOF = 6;                // number of rigid modes to be calculated
