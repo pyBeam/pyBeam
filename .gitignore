@@ -7,4 +7,3 @@ pyBeam/*.py
 pyBeam/*.pyc
 pyBeam/*.cxx
 pyBeam/*.o
-tests/

@@ -52,7 +52,7 @@ CBeamSolver::~CBeamSolver(void) {
 
 void CBeamSolver::Initialize(void){
 
-    thickness = 1.99*1e-2;
+    thickness = 2.0*1e-2;
 
     //su2double::TapeType& globalTape = su2double::getGlobalTape();
 
@@ -74,19 +74,18 @@ void CBeamSolver::Initialize(void){
     //      Finite Element initialization
     //==============================================================
 
-    std::cout << "=========  Finite Element Initialization  ====" << std::endl;
+    cout << "=========  Finite Element Initialization  ====" << std::endl;
     unsigned long nFEM = input->Get_nFEM();
     element = new CElement*[nFEM];
     for (unsigned long iFEM = 0; iFEM < nFEM; iFEM++){
         element[iFEM] = new CElement(iFEM, input);
     }
 
-	structure = NULL;
-
 	//===============================================
 	//  Initialize structural solver
 	//===============================================
 
+	structure = NULL;
 	structure = new CStructure(input, element);
 
 
@@ -121,6 +120,8 @@ void CBeamSolver::Solve(void){
 	unsigned long iIter;
 	unsigned long totalIter = 0;
 	unsigned long loadStep = 1;
+
+	structure->InitialCoord();
 
 	for  ( loadStep = 0; loadStep < input->Get_LoadSteps(); loadStep++)
 	{
