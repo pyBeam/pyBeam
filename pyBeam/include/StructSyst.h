@@ -82,8 +82,6 @@ public:
 	 *
 	 *###############################################################*/
 
-	void ReadForces(su2double forces);
-
 	void ReadForces(int nTotalDOF, su2double *loadVector);
 
 	void UpdateExtForces(su2double , int );

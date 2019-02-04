@@ -50,10 +50,8 @@ CStructure::CStructure(CInput *input, CElement **element)
 
 	X  = VectorXdDiff::Zero((nfem+1)*3);
 
-	InitialCoord();
-
 	// Forces nodal Vector
-	Ftip   =  Vector3dDiff::Zero();
+	Ftip     =  Vector3dDiff::Zero();
     Fnom     =  VectorXdDiff::Zero((nfem+1)*6);
 	Fext     =  VectorXdDiff::Zero((nfem+1)*6);
 	Fint     =  VectorXdDiff::Zero((nfem+1)*6);
@@ -75,13 +73,6 @@ CStructure::~CStructure(void)
  it just applies the external force at the TIP
  ***************************************************************/
 
-void CStructure::ReadForces(su2double forces)
-{
-	//int pos_loc_dof = 2;   // 1,2,3- trasl  4 5 6 -rotat
-	//Ftip(pos_loc_dof-1) = forces;
-	//Fnom((nfem+1 - 1)*6 + pos_loc_dof -1) = forces;
-}
-
 void CStructure::ReadForces(int nTotalDOF, su2double *loadVector)
 {
 
@@ -90,9 +81,6 @@ void CStructure::ReadForces(int nTotalDOF, su2double *loadVector)
    for (iLoad = 0; iLoad < nTotalDOF; iLoad++){
      Fnom(iLoad) = loadVector[iLoad];
    }
-
-	//Fnom((nfem+1 - 1)*6 + pos_loc_dof -1) = forces;
-
 
 }
 
