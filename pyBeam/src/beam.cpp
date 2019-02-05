@@ -54,7 +54,7 @@ void CBeamSolver::Initialize(void){
 
     thickness = 2.0*1e-2;
 
-    //su2double::TapeType& globalTape = su2double::getGlobalTape();
+    //addouble::TapeType& globalTape = addouble::getGlobalTape();
 
     //globalTape.setActive();
 
@@ -65,7 +65,7 @@ void CBeamSolver::Initialize(void){
     nDOF = input->Get_nDOF();
     nTotalDOF = input->Get_nNodes() * input->Get_nDOF();
 
-    loadVector = new su2double[nTotalDOF];
+    loadVector = new addouble[nTotalDOF];
     for (int iLoad = 0; iLoad < nTotalDOF; iLoad++)
         loadVector[iLoad] = 0.0;
 
@@ -102,7 +102,6 @@ void CBeamSolver::SetLoads(int iNode, int iDOF, passivedouble loadValue){
     loadVector[index] = loadValue;
 
 	std::cout << "Reading External Forces" << std::endl;
-	structure->ReadForces(input->Get_Load());
 	structure->ReadForces(nTotalDOF, loadVector);
 
 }
@@ -115,8 +114,8 @@ void CBeamSolver::Solve(void){
 	
 	std::cout << "#####    STARTING LOAD STEPPING   #####" << std::endl;
 
-	su2double  lambda = 1.0;
-	su2double dlambda =  1.0/input->Get_LoadSteps() ;
+  addouble  lambda = 1.0;
+  addouble dlambda =  1.0/input->Get_LoadSteps() ;
 	unsigned long iIter;
 	unsigned long totalIter = 0;
 	unsigned long loadStep = 1;
@@ -190,7 +189,7 @@ void CBeamSolver::Solve(void){
 			 *    Check Convergence
 			*----------------------------------------------------*/
 
-			su2double disp_factor =   structure->dU.norm()/input->Get_l();
+      addouble disp_factor =   structure->dU.norm()/input->Get_l();
 			std::cout << " disp_factor = "  <<  disp_factor << std::endl;
 
 			if (disp_factor <= input->Get_ConvCriteria())
@@ -204,8 +203,8 @@ void CBeamSolver::Solve(void){
 		std::cout << "#####    EXITING ITERATIVE SEQUENCE   #####" << std::endl;
 	}
   
-  //su2double pos1, pos2, pos3;
-  //su2double grad_t;
+  //addouble pos1, pos2, pos3;
+  //addouble grad_t;
   
   //pos1 = structure->GetDisplacement(100, 0);
   //pos2 = structure->GetDisplacement(100, 1);

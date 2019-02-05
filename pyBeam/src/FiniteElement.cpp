@@ -94,7 +94,7 @@ CElement::~CElement(void){
 void CElement::ElementMass_Rao()
 {
 	// The Finite Element Method in Engineering- S.S. Rao
-    su2double r=Jx/A;
+    addouble r=Jx/A;
 
     // Element matrix
 
@@ -147,7 +147,7 @@ void CElement::EvalNaNb(MatrixXdDiff &Na,  MatrixXdDiff  &Nb)
 
 {
 
-    su2double one_to_l = 1.0/l_act;
+    addouble one_to_l = 1.0/l_act;
 
     //-------------    KINEMATIC MATRIX  --------------------------------------
 //    % Na=1/Lact* [ -Lact   0      0     0       0      0;
@@ -238,7 +238,7 @@ void CElement::ElementTang_Rao(MatrixXdDiff & Ktang)
     /*
      *
      */
-    su2double onetol = 1.0/(l_act);
+    addouble onetol = 1.0/(l_act);
 
     df_dl(2-1) = -onetol*fint(2-1);
     df_dl(3-1) = -onetol*fint(3-1);

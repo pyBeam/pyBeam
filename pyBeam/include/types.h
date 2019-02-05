@@ -35,10 +35,10 @@
 
 #include "../CoDiPack/include/codi.hpp"
 
-typedef codi::RealReverse su2double;
+typedef codi::RealReverse addouble;
 typedef double passivedouble;
 
-typedef Eigen::Matrix<su2double, Eigen::Dynamic, Eigen::Dynamic> MatrixXdDiff; // MatrixXd
-typedef Eigen::Matrix<su2double, Eigen::Dynamic, 1> VectorXdDiff;       // VectorXd
-typedef Eigen::Matrix<su2double, 3, 3> Matrix3dDiff;             // Matrix3d
-typedef Eigen::Matrix<su2double, 3, 1> Vector3dDiff;             // Vector3d
+typedef Eigen::Matrix<addouble, Eigen::Dynamic, Eigen::Dynamic> MatrixXdDiff; // MatrixXd
+typedef Eigen::Matrix<addouble, Eigen::Dynamic, 1> VectorXdDiff;       // VectorXd
+typedef Eigen::Matrix<addouble, 3, 3> Matrix3dDiff;             // Matrix3d
+typedef Eigen::Matrix<addouble, 3, 1> Vector3dDiff;             // Vector3d

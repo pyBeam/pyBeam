@@ -38,19 +38,19 @@ private:
 public:
 	int elemdofs;
 
-	su2double le;
-	su2double Jx;
-	su2double m_e;
-	su2double A;
+	addouble le;
+	addouble Jx;
+	addouble m_e;
+	addouble A;
 
-	su2double EIz;
-	su2double EIy;
-	su2double GJ;
-	su2double AE;
+	addouble EIz;
+	addouble EIy;
+	addouble GJ;
+	addouble AE;
 
-	su2double m;
-	su2double Iyy;
-	su2double Izz;
+	addouble m;
+	addouble Iyy;
+	addouble Izz;
 
 
 	MatrixXdDiff  Rrig;         // Rodriguez Rotation Matrix (local reference system in GCS)
@@ -58,9 +58,9 @@ public:
 	MatrixXdDiff  Rprev;         // m_R previous value
 
 	// Added for Battini's CS
-	su2double l_ini;                    // Initial Length
-	su2double l_act;                    // Actual Length
-	su2double l_prev;                   // Previous length
+	addouble l_ini;                    // Initial Length
+	addouble l_act;                    // Actual Length
+	addouble l_prev;                   // Previous length
 
 
 public:
@@ -86,12 +86,12 @@ public:
 	virtual ~CElement(void);
 
 	//	// Default constructors with also parameter definition
-	//	Segment(int valore_init , su2double valore_kinit );
+	//	Segment(int valore_init , addouble valore_kinit );
 	// Default constructors with also parameter definition
 
-	void Initializer(su2double val_le, su2double val_Jx , su2double val_m_e ,su2double val_A,
-			su2double val_EIz , su2double val_EIy , su2double val_GJ, su2double val_AE ,
-			su2double val_m ,  su2double val_Iyy, su2double val_Izz,
+	void Initializer(addouble val_le, addouble val_Jx , addouble val_m_e ,addouble val_A,
+			addouble val_EIz , addouble val_EIy , addouble val_GJ, addouble val_AE ,
+			addouble val_m ,  addouble val_Iyy, addouble val_Izz,
 			int val_elemdofs=12)
 	{
 		le  = val_le;

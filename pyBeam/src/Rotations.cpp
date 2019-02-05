@@ -37,10 +37,10 @@ transforms it in its pseudo-vector form */
 
 void RotToPseudo(Vector3dDiff& pseudo , Matrix3dDiff R)
 {
-	su2double theta = 0.0;               // Angle of Rotation
-	su2double rho[3] = {0.0,0.0,0.0};
+	addouble theta = 0.0;               // Angle of Rotation
+	addouble rho[3] = {0.0,0.0,0.0};
 
-	su2double fraction = (R.trace()  - 1.0)/2.0;
+	addouble fraction = (R.trace()  - 1.0)/2.0;
 
 	if (abs(fraction) >= 1 - 5e-16)   // (FRACTION >= ONE)
 		theta = 0.0;
@@ -53,7 +53,7 @@ void RotToPseudo(Vector3dDiff& pseudo , Matrix3dDiff R)
 		rho[1] = R(1-1,3-1) - R(3-1,1-1);
 		rho[2] = R(2-1,1-1) - R(1-1,2-1);
 
-		su2double norm_rho = 0.0 ;
+		addouble norm_rho = 0.0 ;
 		
 		norm_rho = sqrt( pow(rho[0], 2.0) + 
 		                 pow(rho[1], 2.0) + 
@@ -88,7 +88,7 @@ transforms it in its  rotation matrix form */
 
 void PseudoToRot(Vector3dDiff pseudo , Matrix3dDiff& R)
 {
-	//const su2double pi = 2*acos(0.0);
+	//const addouble pi = 2*acos(0.0);
 
 
 	Vector3dDiff rot(0.0,0.0,0.0);
@@ -96,7 +96,7 @@ void PseudoToRot(Vector3dDiff pseudo , Matrix3dDiff& R)
     pseudo(2-1) = ( pseudo(2-1));  // atan( pseudo(2-1));
     pseudo(3-1) = ( pseudo(3-1));  // atan( pseudo(3-1));
 
-	su2double theta = pseudo.norm();
+	addouble theta = pseudo.norm();
 	if (theta != 0.0 )
 	{
 	rot = pseudo/pseudo.norm();

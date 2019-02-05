@@ -36,7 +36,7 @@ CInput::CInput(void) {
   
 }
 
-void CInput::SetParameters(su2double thickness){
+void CInput::SetParameters(addouble thickness){
 	
 	//##################     Numerical Inputs     ###########################
 
