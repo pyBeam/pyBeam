@@ -2,7 +2,7 @@
  * pyBeam, a Beam Solver
  *
  * Copyright (C) 2018 Tim Albring, Ruben Sanchez, Rauno Cavallaro
- * 
+ *
  * Developers: Tim Albring, Ruben Sanchez (SciComp, TU Kaiserslautern)
  *             Rauno Cavallaro (Carlos III University Madrid)
  *
@@ -24,53 +24,46 @@
  *
  */
 
-
 #pragma once
-#include <math.h>       /* exp */
+#include <math.h>
 
 #include "../include/types.h"
 
-#include "../include/FiniteElement.h"
-#include "../include/StructSyst.h"
-#include "../include/geometry.h"
-#include "../include/input.h"
-
-class CBeamSolver
-{
-
+class CNode {
 private:
-	
+
+protected:
+
+  addouble *coord;
+
+public:
+
+  CNode(void);
+
+  virtual ~CNode(void);
+
+  inline void SetCoordinate(int iDim, addouble val_coor) {coord[iDim] = val_coor;}
+
+  inline addouble GetCoordinate(int iDim) {return coord[iDim];}
+
+};
+
+
+class CConnectivity {
+private:
+
 protected:
 
 public:
 
-  CNode **node;                     /*!< \brief Vector which stores the node initial coordinates. */
-  CConnectivity **connectivity;      /*!< \brief Vector which stores the connectivity. */
+  CNode **node;
 
-  CInput* input;
+  CConnectivity(void);
 
-  CElement** element;  	  /*!< \brief Vector which the define the elements. */
-  
-  CStructure* structure;  /*!< \brief Vector which the define the elements. */
+  virtual ~CConnectivity(void);
 
-  int nDOF, nTotalDOF, nDim;
-  addouble *loadVector;
-  addouble thickness;
+  inline void SetNode_i(CNode *node_i) {node[0] = node_i;}
 
-  CBeamSolver(void);
-  
-  virtual ~CBeamSolver(void);
-  
-  void Initialize(void);
-
-  void SetLoads(int iNode, int iDOF, passivedouble loadValue);
-
-  void Solve(void);
-
-  passivedouble ExtractDisplacements(int iNode, int iDim);
-
-  passivedouble ExtractCoordinates(int iNode, int iDim);
-
-  passivedouble ExtractInitialCoordinates(int iNode, int iDim);
+  void SetNode_j(CNode *node_j) {node[1] = node_j;}
 
 };
