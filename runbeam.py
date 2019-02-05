@@ -32,7 +32,7 @@ testobject = CBeamSolver()
 loads = [1.0, 2.0, 3.0]
 
 testobject.Initialize()
-testobject.SetLoads(100,1,5000)
+testobject.SetLoads(20,1,5000)
 testobject.Solve()
 
 coordinate_X = []
@@ -41,7 +41,7 @@ coordinate_Y = []
 coordinate_X0 = []
 coordinate_Y0 = []
 
-for iNode in range(0,101):
+for iNode in range(0,21):
   
   coordinate_X.append(testobject.ExtractCoordinates(iNode, 0))
   coordinate_Y.append(testobject.ExtractCoordinates(iNode, 1))

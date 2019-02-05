@@ -80,49 +80,49 @@ protected:
 
 	unsigned short nDOF; 	// Number of degrees of freedom
 	
-	su2double load; 			// [N];
+  addouble load; 			// [N];
 	int follower_flag;		// (0) Nonfollower (1) follower (2) approx follower
 	unsigned long loadSteps;			// Number of load steps
 	unsigned long nIter;				// Number of iterations
 
-	su2double end_time;		// [sec] for SS calculation
-	su2double dt;   			// [sec] time increment for SS calculation
+  addouble end_time;		// [sec] for SS calculation
+  addouble dt;   			// [sec] time increment for SS calculation
 
 	//##############    Wing Inputs  ###########################
 	// Units Sys: SI
 
-	su2double t; 				// web & flange thickness [m]
-	su2double h;				// web height [m]
-	su2double b;				// flange width [m]
-	su2double E; 				// Elastic modulus [GPa]
-	su2double Poiss; 			// Poisson Ratio
-	su2double ro;				// Beam Density [kg/m^3]
-	su2double G;				// Shear modulus
-	su2double l; 				// Wing Length [m]
-	su2double A;				// cross section area
-	su2double As_z; 			// z Effective shear area
-	su2double As_y;			// y Effective shear area
+  addouble t; 				// web & flange thickness [m]
+  addouble h;				// web height [m]
+  addouble b;				// flange width [m]
+  addouble E; 				// Elastic modulus [GPa]
+  addouble Poiss; 			// Poisson Ratio
+  addouble ro;				// Beam Density [kg/m^3]
+  addouble G;				// Shear modulus
+  addouble l; 				// Wing Length [m]
+  addouble A;				// cross section area
+  addouble As_z; 			// z Effective shear area
+  addouble As_y;			// y Effective shear area
 
-	su2double Iyy, Izz;
-	su2double Jx; 				//Polar Moment of Inertia
+  addouble Iyy, Izz;
+  addouble Jx; 				//Polar Moment of Inertia
 
 
-	su2double Mwing;			//Wing's mass [kg]
-	su2double EIy, EIz, GJ, AE;
+  addouble Mwing;			//Wing's mass [kg]
+  addouble EIy, EIz, GJ, AE;
 
-	su2double Clalpha;  		//  recall pi = atan(1)*4;
-	su2double Cldelta;
+  addouble Clalpha;  		//  recall pi = atan(1)*4;
+  addouble Cldelta;
 
 	//#################    Elements properties    ############################
 
-	su2double le;      	//element length
-	su2double m, m_e; 		//Element's mass
-	su2double m_w, m_f; 	//web and flange mass
-	su2double Ix, Iz; 		//[kg*m^2]
+  addouble le;      	//element length
+  addouble m, m_e; 		//Element's mass
+  addouble m_w, m_f; 	//web and flange mass
+  addouble Ix, Iz; 		//[kg*m^2]
 
 	//################     Convergence Parameters    ###########################
 
-	su2double convCriteria;
+  addouble convCriteria;
 
 	
 public:
@@ -131,12 +131,16 @@ public:
   
   virtual ~CInput(void);
   
+<<<<<<< HEAD
   void SetParameters(char case_filename);
   
   /*!
    * \brief Set the config file parsing.
    */
   void SetConfig_Parsing(char case_filename);  
+=======
+  void SetParameters(addouble thickness);
+>>>>>>> e44ee0e29bae0e896cff87378328458d2d902dec
   
   unsigned long Get_nNodes(void) { return nNodes; }  
     
@@ -150,33 +154,36 @@ public:
   
   unsigned long Get_nIter(void) { return nIter;}  
   
-  su2double Get_Load(void) { return load;}  
+  addouble Get_Load(void) { return load;}
   
-  su2double Get_l(void) { return l; }  
+  addouble Get_l(void) { return l; }
   
-  su2double Get_le(void) { return le; }
+  addouble Get_le(void) { return le; }
   
-  su2double Get_Jx(void) { return Jx; }
+  addouble Get_Jx(void) { return Jx; }
   
-  su2double Get_m_e(void) { return m_e; } 
+  addouble Get_m_e(void) { return m_e; }
   
-  su2double Get_A(void) { return A; } 
+  addouble Get_A(void) { return A; }
       
-  su2double Get_EIz(void) { return EIz; } 
+  addouble Get_EIz(void) { return EIz; }
         
-  su2double Get_EIy(void) { return EIy; } 
+  addouble Get_EIy(void) { return EIy; }
   
-  su2double Get_GJ(void) { return GJ; } 
+  addouble Get_GJ(void) { return GJ; }
   
-  su2double Get_AE(void) { return AE; } 
+  addouble Get_AE(void) { return AE; }
   
-  su2double Get_m(void) { return m; }
+  addouble Get_m(void) { return m; }
   
-  su2double Get_Iyy(void) { return Iyy; }     
+  addouble Get_Iyy(void) { return Iyy; }
           
-  su2double Get_Izz(void) { return Izz; }  
+  addouble Get_Izz(void) { return Izz; }
     
-  su2double Get_ConvCriteria(void) { return convCriteria; }  
+
+  addouble Get_ConvCriteria(void) { return convCriteria; }
+    
+
   
     
   /* Please see config_structure.hpp in common/include of SU2 suite for more info about the fuction
