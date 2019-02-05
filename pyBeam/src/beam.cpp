@@ -1,10 +1,10 @@
 /*
  * pyBeam, a Beam Solver
  *
- * Copyright (C) 2018 Tim Albring, Ruben Sanchez, Rauno Cavallaro
+ * Copyright (C) 2018 Tim Albring, Ruben Sanchez, Rauno Cavallaro, Rocco Bombardieri
  * 
  * Developers: Tim Albring, Ruben Sanchez (SciComp, TU Kaiserslautern)
- *             Rauno Cavallaro (Carlos III University Madrid)
+ *             Rauno Cavallaro, Rocco Bombardieri (Carlos III University Madrid)
  *
  * This file is part of pyBeam.
  *
@@ -52,7 +52,9 @@ CBeamSolver::~CBeamSolver(void) {
 
 void CBeamSolver::Initialize(void){
 
-    thickness = 1.99*1e-2;
+    char case_filename = '/media/rocco/290CF0EB732D1122/Adjoint_project/pyBeam/pyBeam/BEAM_config.cfg';
+     
+    //thickness = 1.99*1e-2;
 
     //su2double::TapeType& globalTape = su2double::getGlobalTape();
 
@@ -60,7 +62,7 @@ void CBeamSolver::Initialize(void){
 
     //globalTape.registerInput(thickness);
 
-    input->SetParameters(thickness);
+    input->SetParameters(case_filename);
 
     nDOF = input->Get_nDOF();
     nTotalDOF = input->Get_nNodes() * input->Get_nDOF();

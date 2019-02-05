@@ -1,10 +1,10 @@
 /*
  * pyBeam, a Beam Solver
  *
- * Copyright (C) 2018 Tim Albring, Ruben Sanchez, Rauno Cavallaro
+ * Copyright (C) 2018 Tim Albring, Ruben Sanchez, Rauno Cavallaro, Rocco Bombardieri
  * 
  * Developers: Tim Albring, Ruben Sanchez (SciComp, TU Kaiserslautern)
- *             Rauno Cavallaro (Carlos III University Madrid)
+ *             Rauno Cavallaro, Rocco Bombardieri (Carlos III University Madrid)
  *
  * This file is part of pyBeam.
  *
@@ -26,8 +26,45 @@
 
 #pragma once
 #include <math.h>
+#include <map>
+#include <stdio.h>      /* printf, fopen */
+/*We can think of using #include "./mpi_structure.hpp" and the command SU2_MPI::Error
+ * once fully integrated with SU2 core
+ */ 
+#include <stdlib.h>     /* exit, EXIT_FAILURE */ 
 
 #include "../include/types.h"
+
+using namespace std;
+
+class COptionBase {
+private:
+public:
+  COptionBase() {};
+  virtual  ~COptionBase() = 0;
+  //  virtual string SetValue(string) {SU2MPI::PrintAndFinalize("shouldn't be here"); return "";};
+  virtual string SetValue(vector<string>) = 0;
+  virtual void SetDefault() = 0;
+
+  string optionCheckMultipleValues(vector<string> & option_value, string type_id, string option_name) {
+    if (option_value.size() != 1) {
+      string newString;
+      newString.append(option_name);
+      newString.append(": multiple values for type ");
+      newString.append(type_id);
+      return newString;
+    }
+    return "";
+  }
+
+  string badValue(vector<string> & option_value, string type_id, string option_name) {
+    string newString;
+    newString.append(option_name);
+    newString.append(": improper option value for type ");
+    newString.append(type_id);
+    return newString;
+  }
+};
 
 class CInput
 {
@@ -94,7 +131,12 @@ public:
   
   virtual ~CInput(void);
   
-  void SetParameters(su2double thickness);
+  void SetParameters(char case_filename);
+  
+  /*!
+   * \brief Set the config file parsing.
+   */
+  void SetConfig_Parsing(char case_filename);  
   
   unsigned long Get_nNodes(void) { return nNodes; }  
     
@@ -135,7 +177,69 @@ public:
   su2double Get_Izz(void) { return Izz; }  
     
   su2double Get_ConvCriteria(void) { return convCriteria; }  
-    
   
+    
+  /* Please see config_structure.hpp in common/include of SU2 suite for more info about the fuction
+   * */
+
+  /*--- all_options is a map containing all of the options. This is used during config file parsing
+   to track the options which have not been set (so the default values can be used). Without this map
+   there would be no list of all the config file options. ---*/
+  
+  map<string, bool> all_options;
+  
+  /*--- brief param is a map from the option name (config file string) to its decoder (the specific child
+   class of COptionBase that turns the string into a value) ---*/
+  
+  map<string, COptionBase*> option_map;   
+     
+  // All of the addXxxOptions take in the name of the option, and a refernce to the field of that option
+  // in the option structure. Depending on the specific type, it may take in a default value, and may
+  // take in extra options. The addXxxOptions mostly follow the same pattern, so please see addDoubleOption
+  // for detailed comments.     
+     
+  /*!<\brief addDoubleOption creates a config file parser for an option with the given name whose
+   value can be represented by a su2double.*/    
+    
+  void addDoubleOption(const string name, su2double & option_field, su2double default_value) {
+    // Check if the key is already in the map. If this fails, it is coder error
+    // and not user error, so throw.
+    assert(option_map.find(name) == option_map.end());
+    
+    // Add this option to the list of all the options
+    all_options.insert(pair<string, bool>(name, true));
+    
+    // Create the parser for a su2double option with a reference to the option_field and the desired
+    // default value. This will take the string in the config file, convert it to a su2double, and
+    // place that su2double in the memory location specified by the reference.
+    COptionBase* val = new COptionDouble(name, option_field, default_value);
+    
+    // Create an association between the option name ("CFL") and the parser generated above.
+    // During configuration, the parsing script will get the option name, and use this map
+    // to find how to parse that option.
+    option_map.insert(pair<string, COptionBase *>(name, val));
+  }
+  
+  void addStringOption(const string name, string & option_field, string default_value) {
+    assert(option_map.find(name) == option_map.end());
+    all_options.insert(pair<string, bool>(name, true));
+    COptionBase* val = new COptionString(name, option_field, default_value);
+    option_map.insert(pair<string, COptionBase *>(name, val));
+  }  
+  
+  void addUnsignedLongOption(const string name, unsigned long & option_field, unsigned long default_value) {
+    assert(option_map.find(name) == option_map.end());
+    all_options.insert(pair<string, bool>(name, true));
+    COptionBase* val = new COptionULong(name, option_field, default_value);
+    option_map.insert(pair<string, COptionBase *>(name, val));
+  }  
+  
+  void addUnsignedShortOption(const string name, unsigned short & option_field, unsigned short default_value) {
+    assert(option_map.find(name) == option_map.end());
+    all_options.insert(pair<string, bool>(name, true));
+    COptionBase* val = new COptionUShort(name, option_field, default_value);
+    option_map.insert(pair<string, COptionBase *>(name, val));
+  }  
+    
 };
 
