@@ -230,7 +230,7 @@ passivedouble CBeamSolver::ExtractDisplacements(int iNode, int iDim){
 
   passivedouble pos;
 
-  pos = structure->GetDisplacement(iNode, iDim).getValue();
+  pos = AD::GetValue(structure->GetDisplacement(iNode, iDim));
 
   return pos;
 
@@ -240,7 +240,7 @@ passivedouble CBeamSolver::ExtractCoordinates(int iNode, int iDim){
 
   passivedouble pos;
 
-  pos = structure->GetCoordinates(iNode, iDim).getValue();
+  pos = AD::GetValue(structure->GetCoordinates(iNode, iDim));
 
   return pos;
 
@@ -250,7 +250,7 @@ passivedouble CBeamSolver::ExtractInitialCoordinates(int iNode, int iDim){
 
   passivedouble pos;
 
-  pos = structure->GetInitialCoordinates(iNode, iDim).getValue();
+  pos = AD::GetValue(structure->GetInitialCoordinates(iNode, iDim));
 
   return pos;
 
