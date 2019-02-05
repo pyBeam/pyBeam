@@ -73,7 +73,7 @@ CStructure::~CStructure(void)
  it just applies the external force at the TIP
  ***************************************************************/
 
-void CStructure::ReadForces(int nTotalDOF, su2double *loadVector)
+void CStructure::ReadForces(int nTotalDOF, addouble *loadVector)
 {
 
    int iLoad, iDim, index;
@@ -93,7 +93,7 @@ void CStructure::ReadForces(int nTotalDOF, su2double *loadVector)
  ****************************************************************/
 // This subroutine updates the external force.
 
-void CStructure::UpdateExtForces(su2double lambda, int switcher )
+void CStructure::UpdateExtForces(addouble lambda, int switcher )
 {
 	if (switcher == 0)
 		Fext = lambda* Fnom;
@@ -204,7 +204,7 @@ void CStructure::EvalSensRot()
 	MatrixXdDiff Krot = MatrixXdDiff::Zero(12,12);
 	VectorXdDiff fint =  VectorXdDiff::Zero(12);
 
-	su2double onetol = 0.0;
+  addouble onetol = 0.0;
 
 	MatrixXdDiff de1_part1 = MatrixXdDiff::Zero(3,12);
 
@@ -314,7 +314,7 @@ void CStructure::SolveLinearStaticSystem()
 	
 	dU = Ksys.fullPivHouseholderQr().solve(Residual);
 
-	su2double relative_error = (Ksys*dU -Residual).norm() / Residual.norm(); // norm() is L2 norm
+  addouble relative_error = (Ksys*dU -Residual).norm() / Residual.norm(); // norm() is L2 norm
 	std::cout << "The relative error is:\n" << relative_error << std:: endl;
     if (relative_error > 1.0e-7)
     {
@@ -395,7 +395,7 @@ void CStructure::InitialCoord()
 	X  = VectorXdDiff::Zero((nfem+1)*3);
 	X0 = VectorXdDiff::Zero((nfem+1)*3);
 
-	su2double le = fem[0]->le;
+  addouble le = fem[0]->le;
 
 	int posX = 1;    // current  position in the X array
 	int count = 0;   // number of fe upstream the node

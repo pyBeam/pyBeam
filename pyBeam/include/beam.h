@@ -50,8 +50,8 @@ public:
   CStructure* structure;  /*!< \brief Vector which the define the elements. */
 
   int nDOF, nTotalDOF, nDim;
-  su2double *loadVector;
-  su2double thickness;
+  addouble *loadVector;
+  addouble thickness;
 
   CBeamSolver(void);
   
