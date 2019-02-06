@@ -53,49 +53,49 @@ protected:
 
 	unsigned short nDOF; 	// Number of degrees of freedom
 	
-  addouble load; 			// [N];
+	addouble load; 			// [N];
 	int follower_flag;		// (0) Nonfollower (1) follower (2) approx follower
 	unsigned long loadSteps;			// Number of load steps
 	unsigned long nIter;				// Number of iterations
 
-  addouble end_time;		// [sec] for SS calculation
-  addouble dt;   			// [sec] time increment for SS calculation
+	addouble end_time;		// [sec] for SS calculation
+	addouble dt;   			// [sec] time increment for SS calculation
 
 	//##############    Wing Inputs  ###########################
 	// Units Sys: SI
 
-  addouble t; 				// web & flange thickness [m]
-  addouble h;				// web height [m]
-  addouble b;				// flange width [m]
-  addouble E; 				// Elastic modulus [GPa]
-  addouble Poiss; 			// Poisson Ratio
-  addouble ro;				// Beam Density [kg/m^3]
-  addouble G;				// Shear modulus
-  addouble l; 				// Wing Length [m]
-  addouble A;				// cross section area
-  addouble As_z; 			// z Effective shear area
-  addouble As_y;			// y Effective shear area
+	addouble t; 				// web & flange thickness [m]
+	addouble h;				// web height [m]
+	addouble b;				// flange width [m]
+	addouble E; 				// Elastic modulus [GPa]
+	addouble Poiss; 			// Poisson Ratio
+	addouble ro;				// Beam Density [kg/m^3]
+	addouble G;				// Shear modulus
+	addouble l; 				// Wing Length [m]
+	addouble A;				// cross section area
+	addouble As_z; 			// z Effective shear area
+	addouble As_y;			// y Effective shear area
 
-  addouble Iyy, Izz;
-  addouble Jx; 				//Polar Moment of Inertia
+	addouble Iyy, Izz;
+	addouble Jx; 				//Polar Moment of Inertia
 
 
-  addouble Mwing;			//Wing's mass [kg]
-  addouble EIy, EIz, GJ, AE;
+	addouble Mwing;			//Wing's mass [kg]
+	addouble EIy, EIz, GJ, AE;
 
-  addouble Clalpha;  		//  recall pi = atan(1)*4;
-  addouble Cldelta;
+	addouble Clalpha;  		//  recall pi = atan(1)*4;
+	addouble Cldelta;
 
 	//#################    Elements properties    ############################
 
-  addouble le;      	//element length
-  addouble m, m_e; 		//Element's mass
-  addouble m_w, m_f; 	//web and flange mass
-  addouble Ix, Iz; 		//[kg*m^2]
+	addouble le;      	//element length
+	addouble m, m_e; 		//Element's mass
+	addouble m_w, m_f; 	//web and flange mass
+	addouble Ix, Iz; 		//[kg*m^2]
 
 	//################     Convergence Parameters    ###########################
 
-  addouble convCriteria;
+	addouble convCriteria;
 
 	
 public:
@@ -133,34 +133,35 @@ public:
   
   unsigned long Get_nIter(void) { return nIter;}  
   
-  addouble Get_Load(void) { return load;}
+  addouble Get_Load(void) { return load;}  
   
-  addouble Get_l(void) { return l; }
+  addouble Get_l(void) { return l; }  
   
   addouble Get_le(void) { return le; }
   
   addouble Get_Jx(void) { return Jx; }
   
-  addouble Get_m_e(void) { return m_e; }
+  addouble Get_m_e(void) { return m_e; } 
   
-  addouble Get_A(void) { return A; }
+  addouble Get_A(void) { return A; } 
       
-  addouble Get_EIz(void) { return EIz; }
+  addouble Get_EIz(void) { return EIz; } 
         
-  addouble Get_EIy(void) { return EIy; }
+  addouble Get_EIy(void) { return EIy; } 
   
-  addouble Get_GJ(void) { return GJ; }
+  addouble Get_GJ(void) { return GJ; } 
   
-  addouble Get_AE(void) { return AE; }
+  addouble Get_AE(void) { return AE; } 
   
   addouble Get_m(void) { return m; }
   
-  addouble Get_Iyy(void) { return Iyy; }
+  addouble Get_Iyy(void) { return Iyy; }     
           
-  addouble Get_Izz(void) { return Izz; }
+  addouble Get_Izz(void) { return Izz; }  
     
 
-  addouble Get_ConvCriteria(void) { return convCriteria; }
+  addouble Get_ConvCriteria(void) { return convCriteria; }  
+
     
 
   

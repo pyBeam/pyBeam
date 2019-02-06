@@ -204,7 +204,7 @@ void CStructure::EvalSensRot()
 	MatrixXdDiff Krot = MatrixXdDiff::Zero(12,12);
 	VectorXdDiff fint =  VectorXdDiff::Zero(12);
 
-  addouble onetol = 0.0;
+	addouble onetol = 0.0;
 
 	MatrixXdDiff de1_part1 = MatrixXdDiff::Zero(3,12);
 
@@ -314,7 +314,7 @@ void CStructure::SolveLinearStaticSystem()
 	
 	dU = Ksys.fullPivHouseholderQr().solve(Residual);
 
-  addouble relative_error = (Ksys*dU -Residual).norm() / Residual.norm(); // norm() is L2 norm
+	addouble relative_error = (Ksys*dU -Residual).norm() / Residual.norm(); // norm() is L2 norm
 	std::cout << "The relative error is:\n" << relative_error << std:: endl;
     if (relative_error > 1.0e-7)
     {
@@ -395,7 +395,7 @@ void CStructure::InitialCoord()
 	X  = VectorXdDiff::Zero((nfem+1)*3);
 	X0 = VectorXdDiff::Zero((nfem+1)*3);
 
-  addouble le = fem[0]->le;
+	addouble le = fem[0]->le;
 
 	int posX = 1;    // current  position in the X array
 	int count = 0;   // number of fe upstream the node

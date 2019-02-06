@@ -57,7 +57,7 @@ public:
 
 	CElement **fem;      // Pointer to the first finite element
 
-  MatrixXdDiff M;      // Recall in Eigen X stays for dynamic, d for addouble:  (nfem+1)*6  X   (nfem+1)*6
+	MatrixXdDiff M;      // Recall in Eigen X stays for dynamic, d for addouble:  (nfem+1)*6  X   (nfem+1)*6
 	MatrixXdDiff Ksys;
 
 
@@ -82,9 +82,9 @@ public:
 	 *
 	 *###############################################################*/
 
-  void ReadForces(int nTotalDOF, addouble *loadVector);
+	void ReadForces(int nTotalDOF, addouble *loadVector);
 
-  void UpdateExtForces(addouble , int );
+	void UpdateExtForces(addouble , int );
 
 	void EvalResidual();
 

@@ -9,23 +9,64 @@ INCLPATH =  -I$(EIGEN_PATH) -I$(CODI_PATH)
 PY=PY2  # PY3
 #==========================================================
 
+_SRC = ./src/ROMFM_FULLORDER.cpp \
+       ./src/ad.cpp \
+       ./src/input.cpp \
+       ./src/geometry.cpp \
+       ./src/FiniteElement.cpp \
+       ./src/StructSyst.cpp \
+       ./src/Rotations.cpp \
+       ./src/beam.cpp
 
 
-     #ifeq ($(PY),PY2) 
 
-all:
-	swig -c++ -python -Wall pyBeam.i
-	# I need to add all the requested .cpp files used in the DLM.cpp for the relative .o files... -DDEBG
-	g++ -O2 -c -w -std=gnu++11 -fPIC pyBeam_wrap.cxx ./src/ROMFM_FULLORDER.cpp ./src/input.cpp ./src/FiniteElement.cpp ./src/StructSyst.cpp ./src/Rotations.cpp ./src/beam.cpp -I/usr/include/python2.7 $(INCLPATH)
-	# ... That need to be used here so that the relative pyDLM_Cpp_wrap.o compiles the correct _pyDLM_Cpp.so
-	g++ -O2 -shared -fPIC ROMFM_FULLORDER.o input.o FiniteElement.o StructSyst.o Rotations.o beam.o pyBeam_wrap.o -o _pyBeam.so  $(INCLPATH) 
-        #else            
-	#swig -c++ -python -Wall -py3 pyBeam.i
-	## I need to add all the requested .cpp files used in the DLM.cpp for the relative .o files... -DDEBG
-	#g++ -O2 -c -w -std=gnu++11 -DLINUX=1 -fPIC pyBeam_wrap.cxx ./src/ROMFM_FULLORDER.cpp ./src/input.cpp ./src/FiniteElement.cpp ./src/StructSyst.cpp ./src/Rotations.cpp ./src/beam.cpp -I/usr/include/python3.7m $(INCLPATH)
-	## ... That need to be used here so that the relative pyDLM_Cpp_wrap.o compiles the correct _pyDLM_Cpp.so
-	#g++ -O2 -shared -fPIC ROMFM_FULLORDER.o input.o FiniteElement.o StructSyst.o Rotations.o beam.o pyBeam_wrap.o -o _pyBeam.so  $(INCLPATH) 
-        #endif
+
+
+_OBJS = ./obj/ROMFM_FULLORDER.o \
+        ./obj/ad.o \
+        ./obj/input.o \
+        ./obj/geometry.o \
+        ./obj/FiniteElement.o \
+        ./obj/StructSyst.o \
+        ./obj/Rotations.o \
+        ./obj/beam.o 
+
+primal:
+	swig -c++ -python -Wall ./swig/pyBeam.i
+	# I need to add all the requested .cpp files
+	g++ -O2 -c -w -std=gnu++11 -DLINUX=1 -fPIC ./swig/pyBeam_wrap.cxx $(_SRC) -I/usr/include/python2.7m $(INCLPATH)
+	# Move objects
+	mv *.o ./obj
+	# That need to be used here so that the relative dynamic library compiles 
+	g++ -O2 -shared -fPIC $(_OBJS) ./obj/pyBeam_wrap.o -o ./lib/_pyBeam.so  $(INCLPATH) 
+
+forward:
+	swig -c++ -python -Wall ./swig/pyBeamFM.i
+	# I need to add all the requested .cpp files
+	g++ -O2 -c -w -std=gnu++11 -DLINUX=1 -DCODI_FORWARD_TYPE -fPIC ./swig/pyBeamFM_wrap.cxx $(_SRC) -I/usr/include/python2.7m $(INCLPATH)
+	# Move objects
+	mv *.o ./obj	
+	# That need to be used here so that the relative dynamic library compiles 
+	g++ -O2 -shared -DCODI_FORWARD_TYPE -fPIC $(_OBJS) ./obj/pyBeamFM_wrap.o -o ./lib/_pyBeamFM.so  $(INCLPATH) 
+	
+reverse:
+	swig -c++ -python -Wall ./swig/pyBeamAD.i
+	# I need to add all the requested .cpp files
+	g++ -O2 -c -w -std=gnu++11 -DLINUX=1 -DCODI_REVERSE_TYPE -fPIC ./swig/pyBeamAD_wrap.cxx $(_SRC) -I/usr/include/python2.7m $(INCLPATH)
+	# Move objects
+	mv *.o ./obj	
+	# That need to be used here so that the relative dynamic library compiles 
+	g++ -O2 -shared -DCODI_REVERSE_TYPE -fPIC $(_OBJS) ./obj/pyBeamAD_wrap.o -o ./lib/_pyBeamAD.so  $(INCLPATH) 	
+	
+all: primal forward reverse
+
+
+# (alternative version of line 2)
+#g++ -O2 -c -std=gnu++11 -fPIC ./dlm/DLM.cpp ./dlm/Param.cpp $(INCLPATH) 
+#g++ -O2 -c -std=gnu++11 -fPIC pyDLM_Cpp_wrap.cxx -I/usr/include/python2.7 $(INCLPATH)
+
+#error: ImportError: './_pyDLM_Cpp.so: undefined symbol: _ZN5Param16read_AerogeneralEv'
+
 
 RMc = rm  # remove option
 # This cleans all the old object files (which are intermediate files)
