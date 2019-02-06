@@ -37,40 +37,40 @@ CInput::CInput(void) {
   
 }
 
-void CInput::SetParameters(case_filename){
+void CInput::SetParameters(char case_filename){
 	
     /*--- Parsing the config file  ---*/
 
     SetConfig_Parsing(case_filename);	
 	
-	//##################     Numerical Inputs     ###########################
+    //##################     Numerical Inputs     ###########################
 
-	//nNodes = 101; 			
-	// number of overall nodes along the wing (no collapsed)
-	addUnsignedLongOption("N_NODES", nNodes, 0);  
-	// TO ADD WARNING FOR DEFAULT VALUE	
+    //nNodes = 101; 			
+    // number of overall nodes alongthe wing (no collapsed)
+    addUnsignedLongOption("N_NODES", nNodes, 0);  
+    // TO ADD WARNING FOR DEFAULT VALUE	
 
-	//nDOF = 6;                
-	// number of rigid modes to be calculated
-	addUnsignedShortOption("N_DOF", nDOF, 0);
-	// TO ADD WARNING FOR DEFAULT VALUE
+    //nDOF = 6;                
+    // number of rigid modes to be calculated
+    addUnsignedShortOption("N_DOF", nDOF, 0);
+    // TO ADD WARNING FOR DEFAULT VALUE
 		
-	//load = 5000; 			
-	// [N];
-	addDoubleOption("LOAD", load, 0);
+    //load = 5000; 			
+    // [N];
+    addDoubleOption("LOAD", load, 0);
 		
-	//follower_flag = 0;		
-	// (0) Nonfollower (1) follower (2) approx follower
-	addDoubleOption("FOLLOWER_FLAG", follower_flag, "NON_FOLLOWER");
+    //follower_flag = 0;		
+    // (0) Nonfollower (1) follower (2) approx follower
+    addIntegerOption("FOLLOWER_FLAG", follower_flag, 0);
 	
 	
-	//loadSteps = 1;			
-	// Number of load steps
-	addUnsignedLongOption("LOAD_STEPS", loadSteps, 1);
+    //loadSteps = 1;			
+    // Number of load steps
+    addUnsignedLongOption("LOAD_STEPS", loadSteps, 1);
 	
 	
-	//nIter = 30;			
-	// Number of iterations 
+    //nIter = 30;			
+    // Number of iterations 
     addUnsignedLongOption("N_STRUCT_ITER", nIter, 1);
     
     //t = thickness;		
@@ -163,13 +163,17 @@ void CInput::SetConfig_Parsing(char case_filename) {
   ifstream case_file;
   vector<string> option_value;
   
+  
+  // .open requires const char* (somehow)
+  const char* case_filename_const = & case_filename;
+  
   /*--- Read the configuration file ---*/
   
-  case_file.open(case_filename, ios::in);
+  case_file.open(case_filename_const, ios::in);
 
   if (case_file.fail()) {
 	  
-    printf("The beam configuration file (.cfg) is missing!!");
+    std::cout << "The beam configuration file (.cfg) is missing!!" << std::endl;
     exit (EXIT_FAILURE);
   }
 
@@ -237,7 +241,7 @@ void CInput::SetConfig_Parsing(char case_filename) {
   /*--- See if there were any errors parsing the config file ---*/
       
   if (errorString.size() != 0) {
-    printf(errorString);
+    std::cout << errorString << std::endl;
     exit (EXIT_FAILURE);
   }
 
@@ -251,7 +255,158 @@ void CInput::SetConfig_Parsing(char case_filename) {
   
 }
 
+bool CInput::TokenizeString(string & str, string & option_name,
+                             vector<string> & option_value) {
+  const string delimiters(" ()[]{}:,\t\n\v\f\r");
+  // check for comments or empty string
+  string::size_type pos, last_pos;
+  pos = str.find_first_of("%");
+  if ( (str.length() == 0) || (pos == 0) ) {
+    // str is empty or a comment line, so no option here
+    return false;
+  }
+  if (pos != string::npos) {
+    // remove comment at end if necessary
+    str.erase(pos);
+  }
 
+  // look for line composed on only delimiters (usually whitespace)
+  pos = str.find_first_not_of(delimiters);
+  if (pos == string::npos) {
+    return false;
+  }
+
+  // find the equals sign and split string
+  string name_part, value_part;
+  pos = str.find("=");
+  if (pos == string::npos) {
+    cerr << "Error in TokenizeString(): "
+    << "line in the configuration file with no \"=\" sign."
+    << endl;
+    cout << "Look for: " << str << endl;
+    cout << "str.length() = " << str.length() << endl;
+    throw(-1);
+  }
+  name_part = str.substr(0, pos);
+  value_part = str.substr(pos+1, string::npos);
+  //cout << "name_part  = |" << name_part  << "|" << endl;
+  //cout << "value_part = |" << value_part << "|" << endl;
+
+  // the first_part should consist of one string with no interior delimiters
+  last_pos = name_part.find_first_not_of(delimiters, 0);
+  pos = name_part.find_first_of(delimiters, last_pos);
+  if ( (name_part.length() == 0) || (last_pos == string::npos) ) {
+    cerr << "Error in CConfig::TokenizeString(): "
+    << "line in the configuration file with no name before the \"=\" sign."
+    << endl;
+    throw(-1);
+  }
+  if (pos == string::npos) pos = name_part.length();
+  option_name = name_part.substr(last_pos, pos - last_pos);
+  last_pos = name_part.find_first_not_of(delimiters, pos);
+  if (last_pos != string::npos) {
+    cerr << "Error in TokenizeString(): "
+    << "two or more options before an \"=\" sign in the configuration file."
+    << endl;
+    throw(-1);
+  }
+  StringToUpperCase(option_name);
+
+  //cout << "option_name = |" << option_name << "|" << endl;
+  //cout << "pos = " << pos << ": last_pos = " << last_pos << endl;
+
+  // now fill the option value vector
+  option_value.clear();
+  last_pos = value_part.find_first_not_of(delimiters, 0);
+  pos = value_part.find_first_of(delimiters, last_pos);
+  while (string::npos != pos || string::npos != last_pos) {
+    // add token to the vector<string>
+    option_value.push_back(value_part.substr(last_pos, pos - last_pos));
+    // skip delimiters
+    last_pos = value_part.find_first_not_of(delimiters, pos);
+    // find next "non-delimiter"
+    pos = value_part.find_first_of(delimiters, last_pos);
+  }
+  if (option_value.size() == 0) {
+    cerr << "Error in TokenizeString(): "
+    << "option " << option_name << " in configuration file with no value assigned."
+    << endl;
+    throw(-1);
+  }
+
+#if 0
+  cout << "option value(s) = ";
+  for (unsigned int i = 0; i < option_value.size(); i++)
+    cout << option_value[i] << " ";
+  cout << endl;
+#endif
+
+  // look for ';' DV delimiters attached to values
+  vector<string>::iterator it;
+  it = option_value.begin();
+  while (it != option_value.end()) {
+    if (it->compare(";") == 0) {
+      it++;
+      continue;
+    }
+
+    pos = it->find(';');
+    if (pos != string::npos) {
+      string before_semi = it->substr(0, pos);
+      string after_semi= it->substr(pos+1, string::npos);
+      if (before_semi.empty()) {
+        *it = ";";
+        it++;
+        option_value.insert(it, after_semi);
+      } else {
+        *it = before_semi;
+        it++;
+        vector<string> to_insert;
+        to_insert.push_back(";");
+        if (!after_semi.empty())
+          to_insert.push_back(after_semi);
+        option_value.insert(it, to_insert.begin(), to_insert.end());
+      }
+      it = option_value.begin(); // go back to beginning; not efficient
+      continue;
+    } else {
+      it++;
+    }
+  }
+#if 0
+  cout << "option value(s) = ";
+  for (unsigned int i = 0; i < option_value.size(); i++)
+    cout << option_value[i] << " ";
+  cout << endl;
+#endif
+  // remove any consecutive ";"
+  it = option_value.begin();
+  bool semi_at_prev = false;
+  while (it != option_value.end()) {
+    if (semi_at_prev) {
+      if (it->compare(";") == 0) {
+        option_value.erase(it);
+        it = option_value.begin();
+        semi_at_prev = false;
+        continue;
+      }
+    }
+    if (it->compare(";") == 0) {
+      semi_at_prev = true;
+    } else {
+      semi_at_prev = false;
+    }
+    it++;
+  }
+
+#if 0
+  cout << "option value(s) = ";
+  for (unsigned int i = 0; i < option_value.size(); i++)
+    cout << option_value[i] << " ";
+  cout << endl;
+#endif
+  return true;
+}
 
 CInput::~CInput(void) {
 	

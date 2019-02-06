@@ -35,36 +35,9 @@
 
 #include "../include/types.h"
 
-using namespace std;
 
-class COptionBase {
-private:
-public:
-  COptionBase() {};
-  virtual  ~COptionBase() = 0;
-  //  virtual string SetValue(string) {SU2MPI::PrintAndFinalize("shouldn't be here"); return "";};
-  virtual string SetValue(vector<string>) = 0;
-  virtual void SetDefault() = 0;
 
-  string optionCheckMultipleValues(vector<string> & option_value, string type_id, string option_name) {
-    if (option_value.size() != 1) {
-      string newString;
-      newString.append(option_name);
-      newString.append(": multiple values for type ");
-      newString.append(type_id);
-      return newString;
-    }
-    return "";
-  }
 
-  string badValue(vector<string> & option_value, string type_id, string option_name) {
-    string newString;
-    newString.append(option_name);
-    newString.append(": improper option value for type ");
-    newString.append(type_id);
-    return newString;
-  }
-};
 
 class CInput
 {
@@ -131,16 +104,22 @@ public:
   
   virtual ~CInput(void);
   
-<<<<<<< HEAD
   void SetParameters(char case_filename);
   
   /*!
    * \brief Set the config file parsing.
    */
   void SetConfig_Parsing(char case_filename);  
-=======
-  void SetParameters(addouble thickness);
->>>>>>> e44ee0e29bae0e896cff87378328458d2d902dec
+  
+  /*!
+   * \brief breaks an input line from the config file into a set of tokens
+   * \param[in] str - the input line string
+   * \param[out] option_name - the name of the option found at the beginning of the line
+   * \param[out] option_value - the tokens found after the "=" sign on the line
+   * \returns false if the line is empty or a commment, true otherwise
+   */
+  bool TokenizeString(string & str, string & option_name,
+                      vector<string> & option_value);  
   
   unsigned long Get_nNodes(void) { return nNodes; }  
     
@@ -206,9 +185,9 @@ public:
   // for detailed comments.     
      
   /*!<\brief addDoubleOption creates a config file parser for an option with the given name whose
-   value can be represented by a su2double.*/    
+   value can be represented by a addouble.*/    
     
-  void addDoubleOption(const string name, su2double & option_field, su2double default_value) {
+  void addDoubleOption(const string name, addouble & option_field, addouble default_value) {
     // Check if the key is already in the map. If this fails, it is coder error
     // and not user error, so throw.
     assert(option_map.find(name) == option_map.end());
@@ -247,6 +226,14 @@ public:
     COptionBase* val = new COptionUShort(name, option_field, default_value);
     option_map.insert(pair<string, COptionBase *>(name, val));
   }  
+  
+  void addIntegerOption(const string name, int & option_field, int default_value) {
+    assert(option_map.find(name) == option_map.end());
+    all_options.insert(pair<string, bool>(name, true));
+    COptionBase* val = new COptionInt(name, option_field, default_value);
+    option_map.insert(pair<string, COptionBase *>(name, val));
+  }  
     
 };
+
 
