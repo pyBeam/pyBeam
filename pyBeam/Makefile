@@ -1,7 +1,8 @@
 #============================  LIBS & INCLUDES
 
-EIGEN_PATH = /home/rsanfer/Software/eigen3.2.4/
-CODI_PATH = /home/rsanfer/pyBeam/pyBeam/CoDiPack/include
+#EIGEN_PATH = /home/rsanfer/Software/eigen3.2.4/
+EIGEN_PATH = ./externals/Eigen
+CODI_PATH = ./externals/CoDiPack/include
 
 INCLPATH =  -I$(EIGEN_PATH) -I$(CODI_PATH)
 #==========================================================
