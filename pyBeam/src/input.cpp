@@ -36,11 +36,11 @@ CInput::CInput(void) {
   
 }
 
-void CInput::SetParameters(su2double thickness){
+void CInput::SetParameters(addouble thickness){
 	
 	//##################     Numerical Inputs     ###########################
 
-	nNodes = 101; 			// number of overall nodes along the wing (no collapsed)  
+	nNodes = 21; 			// number of overall nodes along the wing (no collapsed)
 	nFEM = nNodes - 1;
 
 	nDOF = 6;                // number of rigid modes to be calculated

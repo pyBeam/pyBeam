@@ -57,7 +57,7 @@ public:
 
 	CElement **fem;      // Pointer to the first finite element
 
-	MatrixXdDiff M;      // Recall in Eigen X stays for dynamic, d for su2double:  (nfem+1)*6  X   (nfem+1)*6
+	MatrixXdDiff M;      // Recall in Eigen X stays for dynamic, d for addouble:  (nfem+1)*6  X   (nfem+1)*6
 	MatrixXdDiff Ksys;
 
 
@@ -82,11 +82,9 @@ public:
 	 *
 	 *###############################################################*/
 
-	void ReadForces(su2double forces);
+	void ReadForces(int nTotalDOF, addouble *loadVector);
 
-	void ReadForces(int nTotalDOF, su2double *loadVector);
-
-	void UpdateExtForces(su2double , int );
+	void UpdateExtForces(addouble , int );
 
 	void EvalResidual();
 
@@ -140,14 +138,14 @@ public:
 
 	void UpdateInternalForces();
   
-  su2double GetDisplacement(int pos, int index) {
-    su2double disp;
+  addouble GetDisplacement(int pos, int index) {
+    addouble disp;
     disp = X(3*pos+index) - X0(3*pos+index);
     return disp;
   };
 
-  su2double GetCoordinates(int pos, int index) {return X(3*pos+index);};
+  addouble GetCoordinates(int pos, int index) {return X(3*pos+index);};
 
-  su2double GetInitialCoordinates(int pos, int index) {return X0(3*pos+index);};
+  addouble GetInitialCoordinates(int pos, int index) {return X0(3*pos+index);};
 
 };

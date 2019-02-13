@@ -2,7 +2,7 @@
  * pyBeam, a Beam Solver
  *
  * Copyright (C) 2018 Tim Albring, Ruben Sanchez, Rauno Cavallaro
- * 
+ *
  * Developers: Tim Albring, Ruben Sanchez (SciComp, TU Kaiserslautern)
  *             Rauno Cavallaro (Carlos III University Madrid)
  *
@@ -24,29 +24,21 @@
  *
  */
 
- 
-#pragma once
 
-#include <Eigen/Dense>
-#include <Eigen/Eigenvalues>
-#include <Eigen/LU>
-
-#include <vector>
-
-#include "../CoDiPack/include/codi.hpp"
 
 #ifdef CODI_REVERSE_TYPE
-#include "./datatypes/ad_reverse.hpp"
+#include "../include/datatypes/ad_reverse.hpp"
 #elif CODI_FORWARD_TYPE
-#include "./datatypes/ad_forward.hpp"
+#include "../include/datatypes/ad_forward.hpp"
 #else
-#include "./datatypes/ad_passive.hpp"
+#include "../include/datatypes/ad_passive.hpp"
 #endif
 
-typedef double passivedouble;
+namespace AD {
+#ifdef CODI_REVERSE_TYPE
 
-// Redefine Eigen types depending on compilation
-typedef Eigen::Matrix<addouble, Eigen::Dynamic, Eigen::Dynamic> MatrixXdDiff; // MatrixXd
-typedef Eigen::Matrix<addouble, Eigen::Dynamic, 1> VectorXdDiff;              // VectorXd
-typedef Eigen::Matrix<addouble, 3, 3> Matrix3dDiff;                           // Matrix3d
-typedef Eigen::Matrix<addouble, 3, 1> Vector3dDiff;                           // Vector3d
+  /*--- Initialization of the tape ---*/
+  addouble::TapeType& globalTape = addouble::getGlobalTape();
+
+#endif
+}

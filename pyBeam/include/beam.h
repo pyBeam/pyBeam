@@ -32,26 +32,34 @@
 
 #include "../include/FiniteElement.h"
 #include "../include/StructSyst.h"
+#include "../include/geometry.h"
 #include "../include/input.h"
 
 class CBeamSolver
 {
 
 private:
-	
-protected:
 
-public:
+  addouble objective_function;
+  bool register_loads;
+  passivedouble *loadGradient;
+
+  CNode **node;                     /*!< \brief Vector which stores the node initial coordinates. */
+  CConnectivity **connectivity;      /*!< \brief Vector which stores the connectivity. */
 
   CInput* input;
 
   CElement** element;  	  /*!< \brief Vector which the define the elements. */
-  
-  CStructure* structure;  /*!< \brief Vector which the define the elements. */
+
+  CStructure* structure;  /*!< \brief Pointer which the defines the structure. */
 
   int nDOF, nTotalDOF, nDim;
-  su2double *loadVector;
-  su2double thickness;
+  addouble *loadVector;
+  addouble thickness;
+
+protected:
+
+public:
 
   CBeamSolver(void);
   
@@ -59,14 +67,30 @@ public:
   
   void Initialize(void);
 
-  void SetLoads(int iNode, int iDOF, passivedouble loadValue);
+  void RegisterLoads(void);
 
   void Solve(void);
 
-  passivedouble ExtractDisplacements(int iNode, int iDim);
+  passivedouble OF_NodeDisplacement(int iNode);
 
-  passivedouble ExtractCoordinates(int iNode, int iDim);
+  passivedouble ComputeAdjoint(void);
 
-  passivedouble ExtractInitialCoordinates(int iNode, int iDim);
+  // Inlined functions
+
+  inline void SetThickness(passivedouble val_thickness) {thickness = val_thickness;}
+
+  inline void SetLoads(int iNode, int iDOF, passivedouble loadValue) { loadVector[iNode*nDOF + iDOF] = loadValue; }
+
+  inline passivedouble ExtractDisplacements(int iNode, int iDim) {return AD::GetValue(structure->GetDisplacement(iNode, iDim));}
+
+  inline passivedouble ExtractCoordinates(int iNode, int iDim) {return AD::GetValue(structure->GetCoordinates(iNode, iDim));}
+
+  inline passivedouble ExtractInitialCoordinates(int iNode, int iDim) {return AD::GetValue(structure->GetInitialCoordinates(iNode, iDim));}
+
+  inline void StartRecording(void) { AD::StartRecording(); AD::RegisterInput(thickness);}
+
+  inline void StopRecording(void) { AD::RegisterOutput(objective_function); AD::StopRecording(); }
+
+  inline passivedouble ExtractLoadGradient(int iNode, int iDOF) {return loadGradient[iNode*nDOF + iDOF];}
 
 };

@@ -44,6 +44,9 @@ CBeamSolver::CBeamSolver(void) {
 	
 	input = new CInput();
 
+  register_loads = false;
+  objective_function = 0.0;
+
 }
 
 CBeamSolver::~CBeamSolver(void) {
@@ -52,63 +55,43 @@ CBeamSolver::~CBeamSolver(void) {
 
 void CBeamSolver::Initialize(void){
 
-    thickness = 1.99*1e-2;
+  input->SetParameters(thickness);
 
-    //su2double::TapeType& globalTape = su2double::getGlobalTape();
+  nDOF = input->Get_nDOF();
+  nTotalDOF = input->Get_nNodes() * input->Get_nDOF();
 
-    //globalTape.setActive();
+  //==============================================================
+  //      Load Vector initialization
+  //==============================================================
 
-    //globalTape.registerInput(thickness);
+  loadVector = new addouble[nTotalDOF];
+  for (int iLoad = 0; iLoad < nTotalDOF; iLoad++)
+    loadVector[iLoad] = 0.0;
 
-    input->SetParameters(thickness);
+  //==============================================================
+  //      Finite Element initialization
+  //==============================================================
 
-    nDOF = input->Get_nDOF();
-    nTotalDOF = input->Get_nNodes() * input->Get_nDOF();
-
-    loadVector = new su2double[nTotalDOF];
-    for (int iLoad = 0; iLoad < nTotalDOF; iLoad++)
-        loadVector[iLoad] = 0.0;
-
-
-    //==============================================================
-    //      Finite Element initialization
-    //==============================================================
-
-    std::cout << "=========  Finite Element Initialization  ====" << std::endl;
-    unsigned long nFEM = input->Get_nFEM();
-    element = new CElement*[nFEM];
-    for (unsigned long iFEM = 0; iFEM < nFEM; iFEM++){
-        element[iFEM] = new CElement(iFEM, input);
-    }
-
-	structure = NULL;
+  cout << "=========  Finite Element Initialization  ====" << std::endl;
+  unsigned long nFEM = input->Get_nFEM();
+  element = new CElement*[nFEM];
+  for (unsigned long iFEM = 0; iFEM < nFEM; iFEM++){
+      element[iFEM] = new CElement(iFEM, input);
+  }
 
 	//===============================================
 	//  Initialize structural solver
 	//===============================================
 
+	structure = NULL;
 	structure = new CStructure(input, element);
-
-
-}
-
-void CBeamSolver::SetLoads(int iNode, int iDOF, passivedouble loadValue){
-
-    std::cout << "Load Value" << std::endl;
-    std::cout << iNode << " " << iDOF << " " << loadValue << endl;
-
-    int index;
-    index = iNode*nDOF + iDOF;
-
-    loadVector[index] = loadValue;
-
-	std::cout << "Reading External Forces" << std::endl;
-	structure->ReadForces(input->Get_Load());
-	structure->ReadForces(nTotalDOF, loadVector);
 
 }
 
 void CBeamSolver::Solve(void){
+
+  std::cout << "#####    SETTING EXTERNAL FORCES   #####" << std::endl;
+  structure->ReadForces(nTotalDOF, loadVector);
 
 	//===============================================
 	// LOAD STEPPING
@@ -116,11 +99,13 @@ void CBeamSolver::Solve(void){
 	
 	std::cout << "#####    STARTING LOAD STEPPING   #####" << std::endl;
 
-	su2double  lambda = 1.0;
-	su2double dlambda =  1.0/input->Get_LoadSteps() ;
+  addouble  lambda = 1.0;
+  addouble dlambda =  1.0/input->Get_LoadSteps() ;
 	unsigned long iIter;
 	unsigned long totalIter = 0;
 	unsigned long loadStep = 1;
+
+	structure->InitialCoord();
 
 	for  ( loadStep = 0; loadStep < input->Get_LoadSteps(); loadStep++)
 	{
@@ -189,7 +174,7 @@ void CBeamSolver::Solve(void){
 			 *    Check Convergence
 			*----------------------------------------------------*/
 
-			su2double disp_factor =   structure->dU.norm()/input->Get_l();
+      addouble disp_factor =   structure->dU.norm()/input->Get_l();
 			std::cout << " disp_factor = "  <<  disp_factor << std::endl;
 
 			if (disp_factor <= input->Get_ConvCriteria())
@@ -203,57 +188,58 @@ void CBeamSolver::Solve(void){
 		std::cout << "#####    EXITING ITERATIVE SEQUENCE   #####" << std::endl;
 	}
   
-  //su2double pos1, pos2, pos3;
-  //su2double grad_t;
-  
-  //pos1 = structure->GetDisplacement(100, 0);
-  //pos2 = structure->GetDisplacement(100, 1);
-  //pos3 = structure->GetDisplacement(100, 2);
-  
-  //cout << pos1 << " " << pos2 << " " << pos3 << endl;
-  
-  //globalTape.registerOutput(pos2);
-  
-  //globalTape.setPassive();
-  
-  //pos2.setGradient(1.0);
-  
-  //globalTape.evaluate();
-  
-  //grad_t = thickness.getGradient();
-   
-  //std::cout << " t' is " << grad_t << endl;
+}
+
+passivedouble CBeamSolver::OF_NodeDisplacement(int iNode){
+
+  addouble pos1, pos2, pos3;
+
+  pos1 = structure->GetDisplacement(iNode, 0);
+  pos2 = structure->GetDisplacement(iNode, 1);
+  pos3 = structure->GetDisplacement(iNode, 2);
+
+  objective_function = sqrt(pow(pos1, 2.0) + pow(pos2, 2.0) + pow(pos3, 2.0));
+
+  return AD::GetValue(objective_function);
 
 }
 
-passivedouble CBeamSolver::ExtractDisplacements(int iNode, int iDim){
+void CBeamSolver::RegisterLoads(void){
 
-  passivedouble pos;
+  register_loads = true;
 
-  pos = structure->GetDisplacement(iNode, iDim).getValue();
+  /*--- Initialize vector to store the gradient ---*/
+  loadGradient = new passivedouble[nTotalDOF];
 
-  return pos;
+  for (int iLoad = 0; iLoad < nTotalDOF; iLoad++){
 
-}
+    /*--- Register the load vector ---*/
+    AD::RegisterInput(loadVector[iLoad]);
 
-passivedouble CBeamSolver::ExtractCoordinates(int iNode, int iDim){
-
-  passivedouble pos;
-
-  pos = structure->GetCoordinates(iNode, iDim).getValue();
-
-  return pos;
+    /*--- Initialize the load gradient to 0 ---*/
+    loadGradient[iLoad] = 0.0;
+  }
 
 }
 
-passivedouble CBeamSolver::ExtractInitialCoordinates(int iNode, int iDim){
+passivedouble CBeamSolver::ComputeAdjoint(void){
 
-  passivedouble pos;
+  addouble gradient;
 
-  pos = structure->GetInitialCoordinates(iNode, iDim).getValue();
+  AD::SetDerivative(objective_function, 1.0);
 
-  return pos;
+  AD::ComputeAdjoint();
 
+  gradient = AD::GetDerivative(thickness);
+
+  if (register_loads){
+    for (int iLoad = 0; iLoad < nTotalDOF; iLoad++){
+      loadGradient[iLoad] = AD::GetValue(AD::GetDerivative(loadVector[iLoad]));
+    }
+  }
+
+  return AD::GetValue(gradient);
 }
+
 
 
