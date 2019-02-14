@@ -65,7 +65,7 @@ public:
   
   virtual ~CBeamSolver(void);
   
-  void Initialize(void);
+  void Initialize(CInput *input );
 
   void RegisterLoads(void);
 
@@ -77,7 +77,7 @@ public:
 
   // Inlined functions
 
-  inline void SetThickness(passivedouble val_thickness) {thickness = val_thickness;}
+  //inline void SetThickness(passivedouble val_thickness) {thickness = val_thickness;}
 
   inline void SetLoads(int iNode, int iDOF, passivedouble loadValue) { loadVector[iNode*nDOF + iDOF] = loadValue; }
 

@@ -6,7 +6,9 @@
 %module pyBeam
 %{
     #include "../include/beam.h"
+    #include "../include/input.h"
 %}
 
 %include "../include/beam.h";
+%include "../include/input.h";
 

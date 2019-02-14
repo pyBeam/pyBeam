@@ -36,7 +36,7 @@ CInput::CInput(void) {
   
 }
 
-void CInput::SetParameters(addouble thickness){
+void CInput::SetParameters(){
 	
 	//##################     Numerical Inputs     ###########################
 
@@ -45,22 +45,22 @@ void CInput::SetParameters(addouble thickness){
 
 	nDOF = 6;                // number of rigid modes to be calculated
 	
-	load = 5000; 			// [N];
-	follower_flag = 0;		// (0) Nonfollower (1) follower (2) approx follower
-	loadSteps = 1;			// Number of load steps
-	nIter = 30;			// Number of iterations  --30
+	//load = 5000; 			// [N];
+	//follower_flag = 0;		// (0) Nonfollower (1) follower (2) approx follower
+	//loadSteps = 1;			// Number of load steps
+	//nIter = 30;			// Number of iterations  --30
 
 	//##############    Wing Inputs  ###########################
 	// Units Sys: SI
 
-	t = thickness;		// web & flange thickness [m]
-	h = 40*1e-2;			// web height [m]
-	b = 20*1e-2;			// flange width [m]
-	E = 70*1e9; 			// Elastic modulus [GPa]
-	Poiss = 0.3; 			// Poisson Ratio
-	ro = 2.7e3;				// Beam Density [kg/m^3]
+	//t = thickness;		// web & flange thickness [m]
+	//h = 40*1e-2;			// web height [m]
+	//b = 20*1e-2;			// flange width [m]
+	//E = 70*1e9; 			// Elastic modulus [GPa]
+	//Poiss = 0.3; 			// Poisson Ratio
+	//ro = 2.7e3;				// Beam Density [kg/m^3]
 	G = E/(2*(1+Poiss) );	// Shear modulus
-	l = 30; 				// Wing Length [m]
+	//l = 30; 				// Wing Length [m]
 	A = t*h+2*t*b;			// cross section area
 	As_z = t*h; 			// z Effective shear area
 	As_y = 5/6.0*2*t*b;		// y Effective shear area
@@ -99,7 +99,7 @@ void CInput::SetParameters(addouble thickness){
 
 	//################     Convergence Parameters    ###########################
 
-	convCriteria = 1e-4;
+	//convCriteria = 1e-4;
     
 }
 

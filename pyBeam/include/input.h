@@ -94,7 +94,32 @@ public:
   
   virtual ~CInput(void);
   
-  void SetParameters(addouble thickness);
+  void SetWebThickness(passivedouble thickness) {t = thickness; }
+
+  void SetWebHeight(passivedouble height) {h = height; }  
+  
+  void SetFlangeWidth(passivedouble FlangeWidth) {b = FlangeWidth; }   
+ 
+  void SetYoungModulus(passivedouble YoungModulus) {E = YoungModulus; } 
+
+  void SetPoisson(passivedouble Poisson) {Poiss = Poisson; }  
+  
+  void SetDensity(passivedouble Density) {ro = Density; }
+    
+  void SetBeamLength(passivedouble BeamLength) {l = BeamLength; } 
+  
+  void SetLoad(passivedouble Load) {load = Load; }  
+  
+  void SetFollowerFlag(int FollowerFlag) {follower_flag = FollowerFlag; }  
+  
+  void SetLoadSteps(unsigned long LoadSteps) { loadSteps = LoadSteps; }   
+  
+  void SetNStructIter(unsigned long NStructIter) {nIter = NStructIter; }   
+  
+  void SetConvCriterium(passivedouble ConvCriterium) {convCriteria = ConvCriterium; }   
+
+
+  void SetParameters();
   
   unsigned long Get_nNodes(void) { return nNodes; }  
     
@@ -107,6 +132,8 @@ public:
   unsigned long Get_LoadSteps(void) { return loadSteps;}
   
   unsigned long Get_nIter(void) { return nIter;}  
+  
+  addouble Get_Thickness(void) { return t;}
   
   addouble Get_Load(void) { return load;}  
   

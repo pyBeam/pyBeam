@@ -1,7 +1,8 @@
 #============================  LIBS & INCLUDES
 
-EIGEN_PATH = /home/rsanfer/Software/eigen3.2.4/
-CODI_PATH = /home/rsanfer/pyBeam/pyBeam/CoDiPack/include
+#EIGEN_PATH = /home/rsanfer/Software/eigen3.2.4/
+EIGEN_PATH = /opt/eigen-eigen-5a0156e40feb
+CODI_PATH = ./CoDiPack/include
 
 INCLPATH =  -I$(EIGEN_PATH) -I$(CODI_PATH)
 #==========================================================
@@ -25,31 +26,31 @@ _OBJS = ./obj/ROMFM_FULLORDER.o \
         ./obj/beam.o 
 
 primal:
-	swig -c++ -python -Wall -py3 ./swig/pyBeam.i
+	swig -c++ -python -Wall ./swig/pyBeam.i
 	# I need to add all the requested .cpp files
-	g++ -O2 -c -w -std=gnu++11 -DLINUX=1 -fPIC ./swig/pyBeam_wrap.cxx $(_SRC) -I/usr/include/python3.7m $(INCLPATH)
+	g++ -O2 -c -w -std=gnu++11 -DLINUX=1 -fPIC ./swig/pyBeam_wrap.cxx $(_SRC) -I/usr/include/python2.7 $(INCLPATH)
 	# Move objects
 	mv *.o ./obj
 	# That need to be used here so that the relative dynamic library compiles 
-	g++ -O2 -shared -fPIC $(_OBJS) ./obj/pyBeam_wrap.o -o ./lib/_pyBeam.so  $(INCLPATH) 
+	g++ -O2 -shared -fPIC $(_OBJS) ./obj/pyBeam_wrap.o -o ./swig/_pyBeam.so  $(INCLPATH) 
 
 forward:
-	swig -c++ -python -Wall -py3 ./swig/pyBeamFM.i
+	swig -c++ -python -Wall ./swig/pyBeamFM.i
 	# I need to add all the requested .cpp files
-	g++ -O2 -c -w -std=gnu++11 -DLINUX=1 -DCODI_FORWARD_TYPE -fPIC ./swig/pyBeamFM_wrap.cxx $(_SRC) -I/usr/include/python3.7m $(INCLPATH)
+	g++ -O2 -c -w -std=gnu++11 -DLINUX=1 -DCODI_FORWARD_TYPE -fPIC ./swig/pyBeamFM_wrap.cxx $(_SRC) -I/usr/include/python2.7 $(INCLPATH)
 	# Move objects
 	mv *.o ./obj	
 	# That need to be used here so that the relative dynamic library compiles 
-	g++ -O2 -shared -DCODI_FORWARD_TYPE -fPIC $(_OBJS) ./obj/pyBeamFM_wrap.o -o ./lib/_pyBeamFM.so  $(INCLPATH) 
+	g++ -O2 -shared -DCODI_FORWARD_TYPE -fPIC $(_OBJS) ./obj/pyBeamFM_wrap.o -o ./swig/_pyBeamFM.so  $(INCLPATH) 
 	
 reverse:
-	swig -c++ -python -Wall -py3 ./swig/pyBeamAD.i
+	swig -c++ -python -Wall ./swig/pyBeamAD.i
 	# I need to add all the requested .cpp files
-	g++ -O2 -c -w -std=gnu++11 -DLINUX=1 -DCODI_REVERSE_TYPE -fPIC ./swig/pyBeamAD_wrap.cxx $(_SRC) -I/usr/include/python3.7m $(INCLPATH)
+	g++ -O2 -c -w -std=gnu++11 -DLINUX=1 -DCODI_REVERSE_TYPE -fPIC ./swig/pyBeamAD_wrap.cxx $(_SRC) -I/usr/include/python2.7 $(INCLPATH)
 	# Move objects
 	mv *.o ./obj	
 	# That need to be used here so that the relative dynamic library compiles 
-	g++ -O2 -shared -DCODI_REVERSE_TYPE -fPIC $(_OBJS) ./obj/pyBeamAD_wrap.o -o ./lib/_pyBeamAD.so  $(INCLPATH) 	
+	g++ -O2 -shared -DCODI_REVERSE_TYPE -fPIC $(_OBJS) ./obj/pyBeamAD_wrap.o -o ./swig/_pyBeamAD.so  $(INCLPATH) 	
 	
 all: primal forward reverse
 

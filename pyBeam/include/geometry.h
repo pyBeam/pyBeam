@@ -35,6 +35,12 @@ private:
 protected:
 
   addouble *coord;
+  
+  addouble *coord0; 
+  
+  addouble *Vel;
+
+  addouble *Force;
 
 public:
 
@@ -44,7 +50,19 @@ public:
 
   inline void SetCoordinate(int iDim, addouble val_coor) {coord[iDim] = val_coor;}
 
+  inline void SetCoordinate0(int iDim, addouble val_coor) {coord[iDim] = val_coor;}  
+  
+  inline void SetVel(int iDim, addouble val_vel) {Vel[iDim] = val_vel;}  
+  
+  inline void SetForce(int iDim, addouble val_force) {Vel[Force] = val_force;}   
+  
   inline addouble GetCoordinate(int iDim) {return coord[iDim];}
+  
+  inline addouble GetCoordinate0(int iDim) {return coord0[iDim];}  
+  
+  inline addouble GetVel(int iDim) {return Vel[iDim];} 
+  
+  inline addouble GetForce(int iDim) {return Force[iDim];}   
 
 };
 
@@ -57,6 +75,8 @@ protected:
 public:
 
   CNode **node;
+  
+  unsigned short property;
 
   CConnectivity(void);
 
@@ -65,5 +85,7 @@ public:
   inline void SetNode_i(CNode *node_i) {node[0] = node_i;}
 
   void SetNode_j(CNode *node_j) {node[1] = node_j;}
+  
+  void SetProperty(unsigned short Prop) {property= Prop;}  
 
 };
