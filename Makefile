@@ -1,10 +1,9 @@
 #============================  LIBS & INCLUDES
 
-#EIGEN_PATH = /home/rsanfer/Software/eigen3.2.4/
 EIGEN_PATH = ./pyBeam/externals/Eigen
 CODI_PATH = ./pyBeam/externals/CoDiPack/include
 
-INCLPATH =  -I$(EIGEN_PATH) -I$(CODI_PATH) $(PYTHON_INCLUDE)
+INCLPATH =  -I$(EIGEN_PATH) -I$(CODI_PATH) $(PYBEAM_INCLUDEPY)
 #==========================================================
 
 _SRC = ./pyBeam/src/main.cpp \

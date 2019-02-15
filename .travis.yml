@@ -49,7 +49,7 @@ before_install:
     - conda update -q conda
     - conda install -q python=$TRAVIS_PYTHON_VERSION numpy scipy swig
     
-    - export PYTHON_INCLUDE="$(python-config --includes)"
+    - export PYBEAM_INCLUDEPY="$(python-config --includes)"
 
     # to avoid interference with MPI
     - test -n $CC  && unset CC
