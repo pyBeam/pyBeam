@@ -16,7 +16,7 @@ notifications:
   
 branches:
     only:
-        - feature_restructure_code
+        - develop
 
 python:
     - 2.7

@@ -73,7 +73,7 @@ test_val = np.abs(thickness_gradient) - np.abs(-515.5113533327299)
 print("Tolerance: ",test_val)
 
 # Tolerance is set to 1E-6
-if (test_val < 1e-6):
+if (test_val < 1e-5):
   exit(0)
 else:
   exit(1)

@@ -63,8 +63,8 @@ test_val = np.sqrt((coordinate_X[20]-24.020327385028295)**2+
 
 print("Tolerance: ",test_val)
 
-# Tolerance is set to 1E-10
-if (test_val < 1e-10):
+# Tolerance is set to 1E-8
+if (test_val < 1e-8):
   exit(0)
 else:
   exit(1)
