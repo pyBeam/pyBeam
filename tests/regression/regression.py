@@ -25,6 +25,7 @@
 
 
 from pyBeam import CBeamSolver
+import numpy as np
 
 beam = CBeamSolver()
 
@@ -56,4 +57,11 @@ for iNode in range(0,21):
   coordinate_Y0.append(beam.ExtractInitialCoordinates(iNode, 1))
   coordinate_Z0.append(beam.ExtractInitialCoordinates(iNode, 2))    
 
-print("Coordinate (20): (%8.5f, %8.5f, %8.6f)"%(coordinate_X[20],coordinate_Y[20],coordinate_Z[20]))
+test_val = np.sqrt((coordinate_X[20]-24.020327386226434)**2+
+                   (coordinate_Y[20]-16.295527323412085)**2+
+                   (coordinate_Z[20]-0.37523716214311015)**2)
+
+if (test_val > 1e-10):
+  exit(0)
+else:
+  exit(1)
