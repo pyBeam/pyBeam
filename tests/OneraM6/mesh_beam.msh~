@@ -1,4 +1,4 @@
-% Respect the format, mesh and conectivity have to start in line following NPOINline and NELEMline
+% Respect the format, mesh and conectivity have to start in line following NPOIN and NELEM
 
 NDIM = 3
 

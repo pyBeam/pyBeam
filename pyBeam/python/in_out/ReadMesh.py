@@ -12,6 +12,7 @@ class Point:
   """ Description. """
 
   def __init__(self):
+    self.ID = 0
     self.Coord0 = np.zeros((3,1)) # marks the initial position of the nodes: to this we superimpose the mode shape      
     self.Coord = np.zeros((3,1))
     self.Vel = np.zeros((3,1))
@@ -52,34 +53,40 @@ class Point:
     self.Force[0] = fx
     self.Force[1] = fy
     self.Force[2] = fz
+   
+  def SetID(self,ID):
+    self.ID = ID
 
 class Element:  # for boundary elements
     
   def __init__(self):    
-    self.kind = 0
-    self.Conn = np.zeros((3,1))    
+    self.Conn = np.zeros((2,1))    
     self.ID = 0
-    self.Property = 0   
-    
-  def SetKind(self,kind):    
-      self.Kind = kind
-   
+    self.Property = 0  
+    self.AuxVect = np.zeros((3,1))
+       
   def SetID(self,ID):    
-      self.ID = ID     
+    self.ID = ID     
       
   def SetProperty(self,Property):    
-      self.Property = Property         
+    self.Property = Property         
     
-  def SetConnectivity_line(self,val_Conn): # line element
+  def SetConnectivity(self,val_Conn): # line element
     node1, node2, = val_Conn
     self.Conn[0] = node1
-    self.Conn[1] = node2  
+    self.Conn[1] = node2 
     
-  def SetConnectivity_tria(self,val_Conn): # triangular element
-    node1, node2, node3 = val_Conn
-    self.Conn[0] = node1
-    self.Conn[1] = node2          
-    self.Conn[2] = node3    
+  def SetAuxVector(self,Auxval_Coord):    
+    x, y, z = Auxval_Coord
+    self.AuxVect[0] = x
+    self.AuxVect[1] = y
+    self.AuxVect[2] = z   
+    
+  #def SetConnectivity_tria(self,val_Conn): # triangular element
+  #  node1, node2, node3 = val_Conn
+  #  self.Conn[0] = node1
+  #  self.Conn[1] = node2          
+  #  self.Conn[2] = node3    
     
   def GetNodes(self):
     return self.Conn
@@ -96,7 +103,7 @@ def readDimension(Mesh_file):
     nDim = 0
 
     with open(Mesh_file, 'r') as meshfile:
-      print('Opened mesh file ' + Mesh_file + '.')
+      print('Opened Structural mesh file ' + Mesh_file + '.')
       while 1:
         line = meshfile.readline()
 	if not line:
@@ -119,7 +126,7 @@ def readMesh(Mesh_file,nDim):
     node = []     
      
     with open(Mesh_file, 'r') as meshfile:
-      print('Opened mesh file ' + Mesh_file + '.')
+      #print('Opened mesh file ' + Mesh_file + '.')
       while 1:
         line = meshfile.readline()
 	if not line:
@@ -144,17 +151,18 @@ def readMesh(Mesh_file,nDim):
 	      z = float(line[2])
 	    node[iPoint].SetCoord((x,y,z))
             node[iPoint].SetCoord0((x,y,z))
+            node[iPoint].SetID(iPoint) # sequential ID
 	  continue	
 	
     return node, nPoint	
 	
 	
-def readConnectivity(Mesh_file, nDim):	
+def readConnectivity(Mesh_file):	
 	
     Elem = []
           
     with open(Mesh_file, 'r') as meshfile:
-      print('Opened mesh file ' + Mesh_file + '.')
+      #print('Opened mesh file ' + Mesh_file + '.')
       while 1:
         line = meshfile.readline()
 	if not line:
@@ -173,21 +181,13 @@ def readConnectivity(Mesh_file, nDim):
 	      line = meshfile.readline()
 	      line = line.strip('\r\n')
 	      line = line.split() ## important modification in case the formatting includes tabs
-	      elemType = int(line[0])
-              Elem[iElem].SetKind(elemType)
-	      if elemType == 1:
-	        nodes = line[1:4]#.split()  ## important modification in case the formatting includes tabs
-                Elem[iElem].SetConnectivity_line([ int(nodes[0]), int(nodes[1]) ])   
-                Elem[iElem].SetConnectivity_line([ int(nodes[0]), int(nodes[1]) ])
-                Elem[iElem].SetID(iElem)   
-                Elem[iElem].SetProperty(nodes[2])                
-	      elif elemType == 3:
-	        nodes = line[1:5]#.split()   ## important modification in case the formatting includes tabs
-                Elem[iElem].SetConnectivity_tria([ int(nodes[0]), int(nodes[1]), int(nodes[2])  ]) 
-                Elem[iElem].SetID(iElem)   
-                Elem[iElem].SetProperty(nodes[3])
-	      else:
-		print "Element type {} is not recognized !!".format(elemType)
+              nodes = line[0:3]#.split()  ## important modification in case the formatting includes tabs
+              AuxVector = line[3:6]
+              Elem[iElem].SetConnectivity([ int(nodes[0]), int(nodes[1]) ])   
+              Elem[iElem].SetConnectivity([ int(nodes[0]), int(nodes[1]) ])
+              Elem[iElem].SetID(iElem)   
+              Elem[iElem].SetProperty(nodes[2])   
+              Elem[iElem].SetAuxVector([ float(AuxVector[0]) , float(AuxVector[1]), float(AuxVector[2]) ])
 	  continue
 	else:
 	  continue	

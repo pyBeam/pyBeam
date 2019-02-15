@@ -63,7 +63,7 @@ void CBeamSolver::Initialize(CInput* input_in ){
     nDOF = input->Get_nDOF();
     nTotalDOF = input->Get_nNodes() * input->Get_nDOF();
     
-    /*
+    
     /// debug print input parameters
     std::cout << "thick" <<   thickness  << std::endl;
     std::cout << "nDOF" <<   nDOF  << std::endl;
@@ -76,7 +76,7 @@ void CBeamSolver::Initialize(CInput* input_in ){
     std::cout << "Get_le" <<   input->Get_le()  << std::endl;
     std::cout << "Get_ConvCriteria" <<   input->Get_ConvCriteria()  << std::endl;
     std::cout << "Get_nNodes" <<   input->Get_nNodes()  << std::endl;
-    */
+    
     
     //==============================================================
     //      Load Vector initialization
@@ -92,11 +92,11 @@ void CBeamSolver::Initialize(CInput* input_in ){
     
     cout << "=========  Finite Element Initialization  ====" << std::endl;
     unsigned long nFEM = input->Get_nFEM();
-    element = new CElement*[nFEM];
+    element = new CElement*[nFEM];    
     for (unsigned long iFEM = 0; iFEM < nFEM; iFEM++){
         element[iFEM] = new CElement(iFEM, input);
     }
-    
+    cout << "DEBUG: CHECK" << endl;    
     //===============================================
     //  Initialize structural solver
     //===============================================

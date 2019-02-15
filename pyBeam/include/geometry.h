@@ -34,13 +34,13 @@ private:
 
 protected:
 
-  addouble *coord;
+  Vector3dDiff coord;
   
-  addouble *coord0; 
+  Vector3dDiff coord0; 
   
-  addouble *Vel;
+  Vector3dDiff Vel;
 
-  addouble *Force;
+  Vector3dDiff Force;
 
 public:
 
@@ -48,21 +48,21 @@ public:
 
   virtual ~CNode(void);
 
-  inline void SetCoordinate(int iDim, addouble val_coor) {coord[iDim] = val_coor;}
+  inline void SetCoordinate(int iDim, addouble val_coor) {coord(iDim) = val_coor;}
 
-  inline void SetCoordinate0(int iDim, addouble val_coor) {coord[iDim] = val_coor;}  
+  inline void SetCoordinate0(int iDim, addouble val_coor) {coord(iDim) = val_coor;}  
   
-  inline void SetVel(int iDim, addouble val_vel) {Vel[iDim] = val_vel;}  
+  inline void SetVel(int iDim, addouble val_vel) {Vel(iDim) = val_vel;}  
   
-  inline void SetForce(int iDim, addouble val_force) {Vel[Force] = val_force;}   
+  inline void SetForce(int iDim, addouble val_force) {Vel(iDim) = val_force;}   
   
-  inline addouble GetCoordinate(int iDim) {return coord[iDim];}
+  inline addouble GetCoordinate(int iDim) {return coord(iDim);}
   
-  inline addouble GetCoordinate0(int iDim) {return coord0[iDim];}  
+  inline addouble GetCoordinate0(int iDim) {return coord0(iDim);}  
   
-  inline addouble GetVel(int iDim) {return Vel[iDim];} 
+  inline addouble GetVel(int iDim) {return Vel(iDim);} 
   
-  inline addouble GetForce(int iDim) {return Force[iDim];}   
+  inline addouble GetForce(int iDim) {return Force(iDim);}   
 
 };
 

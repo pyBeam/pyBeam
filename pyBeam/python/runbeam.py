@@ -48,12 +48,9 @@ def RunBeam():
   
   # Parsing mesh file
   nDim = in_out.readDimension(BEAM_config['B_MESH'])
-  print("nDim = {}".format(nDim))
   node, nPoint = in_out.readMesh(BEAM_config['B_MESH'],nDim)
-  #iddi =18
-  #print("NODE ID {}, Coord = {}".format(iddi, node[iddi].GetCoord()))
-  Elem = in_out.readConnectivity(BEAM_config['B_MESH'],nDim)  
-  #print("ELEM ID {}, Conectivity = {}, property = {}".format( Elem[iddi].GetID(), Elem[iddi].GetNodes(), Elem[iddi].GetProperty() ))
+  Elem = in_out.readConnectivity(BEAM_config['B_MESH'])  
+
  
   
   
