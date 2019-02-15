@@ -25,13 +25,11 @@ env:
     global:
         CXXFLAGS="" 
     matrix:
-        # Primal build and test
+        # Primal and adjoint builds and tests
         - MAKE_COMMAND="make primal reverse"
-          TEST_SCRIPT=$TRAVIS_BUILD_DIR/tests/regression/regression.py
+          TEST_PRIMAL=$TRAVIS_BUILD_DIR/tests/regression/regression.py
+          TEST_ADJOINT=$TRAVIS_BUILD_DIR/tests/regressionAD/regressionAD.py
 
-        # Reverse build and test
-        #- CONFIGURE_COMMAND="make reverse"
-        #  TEST_SCRIPT=reverse_regression.py
 
 before_install:
     # Temporarily fixes Travis CI issue with paths for Python packages
@@ -63,8 +61,6 @@ install:
     - echo $CONFIGURE_COMMAND
     - echo $PYTHON_INCLUDE
     - $MAKE_COMMAND
-    #- make -j 4
-    #- make install
 
     # Add environmental variables according to the configure step
     - export PYBEAM_LIB=$TRAVIS_BUILD_DIR/pyBeam/lib
@@ -73,5 +69,5 @@ install:
 
 script: 
     # Run the tests via the Python scripts
-    - echo $TEST_SCRIPT
-    - python $TEST_SCRIPT
+    - python $TEST_PRIMAL
+    - python $TEST_ADJOINT    
