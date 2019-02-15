@@ -26,7 +26,7 @@ env:
         CXXFLAGS="" 
     matrix:
         # Primal build and test
-        - MAKE_COMMAND="make primal"
+        - MAKE_COMMAND="make primal reverse"
           TEST_SCRIPT=$TRAVIS_BUILD_DIR/tests/regression/regression.py
 
         # Reverse build and test
