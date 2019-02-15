@@ -5,6 +5,8 @@ EIGEN_PATH = /opt/eigen-eigen-5a0156e40feb
 CODI_PATH = ./CoDiPack/include
 
 INCLPATH =  -I$(EIGEN_PATH) -I$(CODI_PATH)
+
+PY=PY2  # PY3
 #==========================================================
 
 _SRC = ./src/ROMFM_FULLORDER.cpp \
@@ -15,6 +17,10 @@ _SRC = ./src/ROMFM_FULLORDER.cpp \
        ./src/StructSyst.cpp \
        ./src/Rotations.cpp \
        ./src/beam.cpp
+
+
+
+
 
 _OBJS = ./obj/ROMFM_FULLORDER.o \
         ./obj/ad.o \
@@ -61,6 +67,7 @@ all: primal forward reverse
 
 #error: ImportError: './_pyDLM_Cpp.so: undefined symbol: _ZN5Param16read_AerogeneralEv'
 
+
 RMc = rm  # remove option
 # This cleans all the old object files (which are intermediate files)
 clean:
@@ -68,6 +75,6 @@ clean:
 	-$(RMc) -f *.o
 	-$(RMc) -f *.so
 	-$(RMc) -f *.pyc
-	-$(RMc) -f pyMLS_Cpp.py
+	-$(RMc) -f pyBeam.py
 	-$(RMc) -f *.cxx
 

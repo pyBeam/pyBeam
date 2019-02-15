@@ -1,10 +1,10 @@
 /*
  * pyBeam, a Beam Solver
  *
- * Copyright (C) 2018 Tim Albring, Ruben Sanchez, Rauno Cavallaro
+ * Copyright (C) 2018 Tim Albring, Ruben Sanchez, Rauno Cavallaro, Rocco Bombardieri
  * 
  * Developers: Tim Albring, Ruben Sanchez (SciComp, TU Kaiserslautern)
- *             Rauno Cavallaro (Carlos III University Madrid)
+ *             Rauno Cavallaro, Rocco Bombardieri (Carlos III University Madrid)
  *
  * This file is part of pyBeam.
  *
@@ -31,9 +31,15 @@
 #include <Eigen/Eigenvalues>
 #include <Eigen/LU>
 
+#include <iostream>
 #include <vector>
+#include <string>
 
 #include "../CoDiPack/include/codi.hpp"
+
+
+using namespace std;
+
 
 #ifdef CODI_REVERSE_TYPE
 #include "./datatypes/ad_reverse.hpp"
@@ -50,3 +56,4 @@ typedef Eigen::Matrix<addouble, Eigen::Dynamic, Eigen::Dynamic> MatrixXdDiff; //
 typedef Eigen::Matrix<addouble, Eigen::Dynamic, 1> VectorXdDiff;              // VectorXd
 typedef Eigen::Matrix<addouble, 3, 3> Matrix3dDiff;                           // Matrix3d
 typedef Eigen::Matrix<addouble, 3, 1> Vector3dDiff;                           // Vector3d
+

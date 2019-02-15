@@ -1,10 +1,10 @@
 /*
  * pyBeam, a Beam Solver
  *
- * Copyright (C) 2018 Tim Albring, Ruben Sanchez, Rauno Cavallaro, Rocco Bombardieri (edit attempt)
+ * Copyright (C) 2018 Tim Albring, Ruben Sanchez, Rauno Cavallaro, Rocco Bombardieri
  * 
  * Developers: Tim Albring, Ruben Sanchez (SciComp, TU Kaiserslautern)
- *             Rauno Cavallaro (Carlos III University Madrid)
+ *             Rauno Cavallaro, Rocco Bombardieri (Carlos III University Madrid)
  *
  * This file is part of pyBeam.
  *
@@ -28,6 +28,7 @@
 #include <fstream>
 #include <chrono>
 
+
 #include "../include/input.h"
 
 using namespace std;
@@ -37,19 +38,21 @@ CInput::CInput(void) {
 }
 
 void CInput::SetParameters(){
+
 	
-	//##################     Numerical Inputs     ###########################
+    //##################     Numerical Inputs     ###########################
 
 	nNodes = 21; 			// number of overall nodes along the wing (no collapsed)
 	nFEM = nNodes - 1;
-
-	nDOF = 6;                // number of rigid modes to be calculated
+	
 	
 	//load = 5000; 			// [N];
 	//follower_flag = 0;		// (0) Nonfollower (1) follower (2) approx follower
 	//loadSteps = 1;			// Number of load steps
 	//nIter = 30;			// Number of iterations  --30
-
+	   
+  
+    nFEM = nNodes - 1;
 	//##############    Wing Inputs  ###########################
 	// Units Sys: SI
 
@@ -96,10 +99,6 @@ void CInput::SetParameters(){
 		 2*m_f*( (pow(t,2)+pow(b,2))/12+
 		 pow((t/2+h/2),2)) ; 		//[kg*m^2]
 
-
-	//################     Convergence Parameters    ###########################
-
-	//convCriteria = 1e-4;
     
 }
 
