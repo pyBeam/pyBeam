@@ -19,7 +19,7 @@ branches:
         - feature_restructure_code
 
 python:
-    - 3.6
+    - 2.7
 
 env:
     global:

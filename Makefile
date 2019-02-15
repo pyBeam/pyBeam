@@ -26,7 +26,7 @@ _OBJS = ./pyBeam/obj/main.o \
         ./pyBeam/obj/beam.o 
 
 primal:
-	swig -c++ -python -Wall -py3 ./pyBeam/swig/pyBeam.i
+	swig -c++ -python -Wall ./pyBeam/swig/pyBeam.i
 	# I need to add all the requested .cpp files
 	g++ -O2 -c -w -std=gnu++11 -DLINUX=1 -fPIC ./pyBeam/swig/pyBeam_wrap.cxx $(_SRC) $(INCLPATH)
 	# Move objects
@@ -35,7 +35,7 @@ primal:
 	g++ -O2 -shared -fPIC $(_OBJS) ./pyBeam/obj/pyBeam_wrap.o -o ./pyBeam/lib/_pyBeam.so  $(INCLPATH) 
 
 forward:
-	swig -c++ -python -Wall -py3 ./pyBeam/swig/pyBeamFM.i
+	swig -c++ -python -Wall ./pyBeam/swig/pyBeamFM.i
 	# I need to add all the requested .cpp files
 	g++ -O2 -c -w -std=gnu++11 -DLINUX=1 -DCODI_FORWARD_TYPE -fPIC ./pyBeam/swig/pyBeamFM_wrap.cxx $(_SRC) $(INCLPATH)
 	# Move objects
@@ -44,7 +44,7 @@ forward:
 	g++ -O2 -shared -DCODI_FORWARD_TYPE -fPIC $(_OBJS) ./pyBeam/obj/pyBeamFM_wrap.o -o ./pyBeam/lib/_pyBeamFM.so  $(INCLPATH) 
 	
 reverse:
-	swig -c++ -python -Wall -py3 ./pyBeam/swig/pyBeamAD.i
+	swig -c++ -python -Wall ./pyBeam/swig/pyBeamAD.i
 	# I need to add all the requested .cpp files
 	g++ -O2 -c -w -std=gnu++11 -DLINUX=1 -DCODI_REVERSE_TYPE -fPIC ./pyBeam/swig/pyBeamAD_wrap.cxx $(_SRC) $(INCLPATH) 
 	# Move objects
@@ -53,13 +53,6 @@ reverse:
 	g++ -O2 -shared -DCODI_REVERSE_TYPE -fPIC $(_OBJS) ./pyBeam/obj/pyBeamAD_wrap.o -o ./pyBeam/lib/_pyBeamAD.so  $(INCLPATH) 	
 	
 all: primal forward reverse
-
-
-# (alternative version of line 2)
-#g++ -O2 -c -std=gnu++11 -fPIC ./dlm/DLM.cpp ./dlm/Param.cpp $(INCLPATH) 
-#g++ -O2 -c -std=gnu++11 -fPIC pyDLM_Cpp_wrap.cxx -I/usr/include/python2.7 $(INCLPATH)
-
-#error: ImportError: './_pyDLM_Cpp.so: undefined symbol: _ZN5Param16read_AerogeneralEv'
 
 RMc = rm  # remove option
 # This cleans all the old object files (which are intermediate files)
