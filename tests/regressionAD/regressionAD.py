@@ -68,7 +68,9 @@ for iNode in range(0,21):
   coordinate_Z0.append(beam.ExtractInitialCoordinates(iNode, 2))    
 
 
-test_val = thickness_gradient + 515.51135445892
+test_val = np.abs(thickness_gradient) - np.abs(-515.5113533327299)
+
+print("Tolerance: ",test_val)
 
 # Tolerance is set to 1E-6
 if (test_val < 1e-6):

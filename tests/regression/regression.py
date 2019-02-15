@@ -57,9 +57,11 @@ for iNode in range(0,21):
   coordinate_Y0.append(beam.ExtractInitialCoordinates(iNode, 1))
   coordinate_Z0.append(beam.ExtractInitialCoordinates(iNode, 2))    
 
-test_val = np.sqrt((coordinate_X[20]-24.020327386226434)**2+
-                   (coordinate_Y[20]-16.295527323412085)**2+
-                   (coordinate_Z[20]-0.37523716214311015)**2)
+test_val = np.sqrt((coordinate_X[20]-24.020327385028295)**2+
+                   (coordinate_Y[20]-16.29552732537537)**2+
+                   (coordinate_Z[20]-0.3752371597829022)**2)
+
+print("Tolerance: ",test_val)
 
 # Tolerance is set to 1E-10
 if (test_val < 1e-10):
