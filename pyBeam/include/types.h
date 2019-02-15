@@ -33,7 +33,7 @@
 
 #include <vector>
 
-#include "../CoDiPack/include/codi.hpp"
+#include "../externals/CoDiPack/include/codi.hpp"
 
 #ifdef CODI_REVERSE_TYPE
 #include "./datatypes/ad_reverse.hpp"

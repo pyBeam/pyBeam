@@ -26,7 +26,7 @@
 
 #pragma once
 
-#include "../../CoDiPack/include/codi.hpp"
+#include "../../externals/CoDiPack/include/codi.hpp"
 
 typedef codi::RealForward addouble;
 
