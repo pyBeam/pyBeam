@@ -26,12 +26,12 @@ env:
         CXXFLAGS="" 
     matrix:
         # Primal build and test
-        - CONFIGURE_COMMAND="make primal"
-          TEST_SCRIPT=primal_regression.py
+        - MAKE_COMMAND="make primal"
+          TEST_SCRIPT=$TRAVIS_BUILD_DIR/tests/regression/regression.py
 
         # Reverse build and test
-        - CONFIGURE_COMMAND="make reverse"
-          TEST_SCRIPT=reverse_regression.py
+        #- CONFIGURE_COMMAND="make reverse"
+        #  TEST_SCRIPT=reverse_regression.py
 
 before_install:
     # Temporarily fixes Travis CI issue with paths for Python packages
@@ -56,17 +56,19 @@ before_install:
     - test -n $CXX && unset CXX
 
 install:
-    # Configure, make, and install SU2
+    # Configure, make, and install pyBeam
     - echo $TRAVIS_BUILD_DIR
     - echo $CONFIGURE_COMMAND
-    #- ./bootstrap
-    #- autoreconf -f -i
-    #- $CONFIGURE_COMMAND
+    - $MAKE_COMMAND
     #- make -j 4
     #- make install
 
     # Add environmental variables according to the configure step
-    #- export SU2_RUN=$TRAVIS_BUILD_DIR/bin
-    #- export SU2_HOME=$TRAVIS_BUILD_DIR
-    #- export PATH=$PATH:$SU2_RUN
-    #- export PYTHONPATH=$PYTHONPATH:$SU2_RUN
+    - export PYBEAM_LIB=$TRAVIS_BUILD_DIR/pyBeam/lib
+    - export PYTHONPATH=$PYTHONPATH:$PYBEAM_LIB
+    
+
+script: 
+    # Run the tests via the Python scripts
+    - echo $TEST_SCRIPT
+    - python $TEST_SCRIPT
