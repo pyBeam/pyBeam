@@ -29,7 +29,7 @@
 
 #include "../include/types.h"
 
-#include "../include/Rotations.h"
+#include "../include/rotations.h"
 #include "../include/input.h"
 
 class CElement

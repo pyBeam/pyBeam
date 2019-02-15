@@ -7,22 +7,22 @@ CODI_PATH = ./externals/CoDiPack/include
 INCLPATH =  -I$(EIGEN_PATH) -I$(CODI_PATH)
 #==========================================================
 
-_SRC = ./src/ROMFM_FULLORDER.cpp \
+_SRC = ./src/main.cpp \
        ./src/ad.cpp \
        ./src/input.cpp \
        ./src/geometry.cpp \
-       ./src/FiniteElement.cpp \
-       ./src/StructSyst.cpp \
-       ./src/Rotations.cpp \
+       ./src/element.cpp \
+       ./src/structure.cpp \
+       ./src/rotations.cpp \
        ./src/beam.cpp
 
-_OBJS = ./obj/ROMFM_FULLORDER.o \
+_OBJS = ./obj/main.o \
         ./obj/ad.o \
         ./obj/input.o \
         ./obj/geometry.o \
-        ./obj/FiniteElement.o \
-        ./obj/StructSyst.o \
-        ./obj/Rotations.o \
+        ./obj/element.o \
+        ./obj/structure.o \
+        ./obj/rotations.o \
         ./obj/beam.o 
 
 primal:

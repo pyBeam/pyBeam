@@ -30,8 +30,8 @@
 
 #include "../include/types.h"
 
-#include "../include/FiniteElement.h"
-#include "../include/StructSyst.h"
+#include "../include/element.h"
+#include "../include/structure.h"
 #include "../include/geometry.h"
 #include "../include/input.h"
 
