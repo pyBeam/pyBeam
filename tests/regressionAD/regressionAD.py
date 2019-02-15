@@ -70,8 +70,8 @@ for iNode in range(0,21):
 
 test_val = thickness_gradient + 515.51135445892
 
-# Tolerance is set to 1E-10
-if (test_val < 1e-10):
+# Tolerance is set to 1E-6
+if (test_val < 1e-6):
   exit(0)
 else:
   exit(1)
