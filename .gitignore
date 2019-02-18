@@ -8,6 +8,7 @@ pyBeam/*.pyc
 pyBeam/*.cxx
 pyBeam/*.o
 pyBeam/obj/
+pyBeam/externals/*
 
 .idea/
 pyBeam.config
