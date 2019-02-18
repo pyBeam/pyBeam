@@ -85,6 +85,7 @@ void CBeamSolver::Initialize(void){
 
 	structure = NULL;
 	structure = new CStructure(input, element);
+  structure->InitialCoord();
 
 }
 
@@ -104,8 +105,6 @@ void CBeamSolver::Solve(void){
 	unsigned long iIter;
 	unsigned long totalIter = 0;
 	unsigned long loadStep = 1;
-
-	structure->InitialCoord();
 
 	for  ( loadStep = 0; loadStep < input->Get_LoadSteps(); loadStep++)
 	{

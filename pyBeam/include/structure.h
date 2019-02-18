@@ -33,8 +33,8 @@
 
 #include "../include/types.h"
 
-#include "../include/FiniteElement.h"
-#include "../include/Rotations.h"
+#include "../include/element.h"
+#include "../include/rotations.h"
 #include "../include/input.h"
 
 #include <iostream>

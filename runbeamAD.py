@@ -24,7 +24,7 @@
 #
 
 
-from pyBeam import CBeamSolver
+from pyBeamAD import CBeamSolver 
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
@@ -34,11 +34,19 @@ loads = [1.0, 2.0, 3.0]
 iNode = 20
 
 beam.SetThickness(0.02)
+beam.StartRecording()
 beam.Initialize()
 beam.SetLoads(iNode,1,5000)
 beam.SetLoads(iNode,2,1000)
+beam.RegisterLoads()
 beam.Solve()
+displacement = beam.OF_NodeDisplacement(iNode)
+beam.StopRecording()
 
+thickness_gradient = beam.ComputeAdjoint()
+
+print("Objective Function - Displacement(",iNode,") = ", displacement)
+print("t' = ", thickness_gradient)
 
 coordinate_X = []
 coordinate_Y = []
@@ -49,7 +57,9 @@ coordinate_Y0 = []
 coordinate_Z0 = []
 
 for iNode in range(0,21):
-    
+  
+  print("F'(",iNode,") = (", beam.ExtractLoadGradient(iNode,0), beam.ExtractLoadGradient(iNode,1), beam.ExtractLoadGradient(iNode,2), ")")
+  
   coordinate_X.append(beam.ExtractCoordinates(iNode, 0))
   coordinate_Y.append(beam.ExtractCoordinates(iNode, 1))
   coordinate_Z.append(beam.ExtractCoordinates(iNode, 2))  

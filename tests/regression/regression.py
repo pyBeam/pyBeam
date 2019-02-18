@@ -25,8 +25,7 @@
 
 
 from pyBeam import CBeamSolver
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
+import numpy as np
 
 beam = CBeamSolver()
 
@@ -58,11 +57,14 @@ for iNode in range(0,21):
   coordinate_Y0.append(beam.ExtractInitialCoordinates(iNode, 1))
   coordinate_Z0.append(beam.ExtractInitialCoordinates(iNode, 2))    
 
-fig = plt.figure()
-ax = fig.add_subplot(111, projection='3d')
+test_val = np.sqrt((coordinate_X[20]-24.020327385028295)**2+
+                   (coordinate_Y[20]-16.29552732537537)**2+
+                   (coordinate_Z[20]-0.3752371597829022)**2)
 
-plt.plot(coordinate_X, coordinate_Y, coordinate_Z)
-plt.plot(coordinate_X0, coordinate_Y0, coordinate_Z0)
-plt.show(block=False)
+print("Tolerance: ",test_val)
 
-wait = input("Press Enter to finalize.")
+# Tolerance is set to 1E-8
+if (test_val < 1e-8):
+  exit(0)
+else:
+  exit(1)
