@@ -1,0 +1,73 @@
+# Continous Integration setup for pyBeam.
+# Tests on the develop branch in both serial and parallel.
+
+dist: trusty
+sudo: required
+
+language: python
+
+compiler:
+    - gcc
+
+notifications:
+    email:
+        recipients:
+            - ruben.sanchez@scicomp.uni-kl.de
+  
+branches:
+    only:
+        - develop
+
+python:
+    - 2.7
+
+env:
+    global:
+        CXXFLAGS="" 
+    matrix:
+        # Primal and adjoint builds and tests
+        - MAKE_COMMAND="make primal reverse"
+          TEST_PRIMAL=$TRAVIS_BUILD_DIR/tests/regression/regression.py
+          TEST_ADJOINT=$TRAVIS_BUILD_DIR/tests/regressionAD/regressionAD.py
+
+
+before_install:
+    # Temporarily fixes Travis CI issue with paths for Python packages
+    - export PATH=/usr/bin:$PATH
+
+    # Install the necessary packages using apt-get with sudo
+    - sudo apt-get update -qq
+    - sudo apt-get install -qq build-essential 
+ 
+    # Install Python dependencies
+    # http://conda.pydata.org/docs/travis.html#the-travis-yml-file
+    - wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
+    - bash miniconda.sh -b -p $HOME/miniconda
+    - export PATH="$HOME/miniconda/bin:$PATH"
+    - hash -r
+    - conda config --set always_yes yes --set changeps1 no
+    - conda update -q conda
+    - conda install -q python=$TRAVIS_PYTHON_VERSION numpy scipy swig
+    
+    - export PYBEAM_INCLUDEPY="$(python-config --includes)"
+
+    # to avoid interference with MPI
+    - test -n $CC  && unset CC
+    - test -n $CXX && unset CXX
+
+install:
+    # Configure, make, and install pyBeam
+    - echo $TRAVIS_BUILD_DIR
+    - echo $CONFIGURE_COMMAND
+    - echo $PYTHON_INCLUDE
+    - $MAKE_COMMAND
+
+    # Add environmental variables according to the configure step
+    - export PYBEAM_LIB=$TRAVIS_BUILD_DIR/pyBeam/lib
+    - export PYTHONPATH=$PYTHONPATH:$PYBEAM_LIB
+    
+
+script: 
+    # Run the tests via the Python scripts
+    - python $TEST_PRIMAL
+    - python $TEST_ADJOINT    

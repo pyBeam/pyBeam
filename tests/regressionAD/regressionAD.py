@@ -24,9 +24,8 @@
 #
 
 
-from pyBeam import CBeamSolver
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
+from pyBeamAD import CBeamSolver 
+import numpy as np
 
 beam = CBeamSolver()
 
@@ -34,11 +33,19 @@ loads = [1.0, 2.0, 3.0]
 iNode = 20
 
 beam.SetThickness(0.02)
+beam.StartRecording()
 beam.Initialize()
 beam.SetLoads(iNode,1,5000)
 beam.SetLoads(iNode,2,1000)
+beam.RegisterLoads()
 beam.Solve()
+displacement = beam.OF_NodeDisplacement(iNode)
+beam.StopRecording()
 
+thickness_gradient = beam.ComputeAdjoint()
+
+print("Objective Function - Displacement(",iNode,") = ", displacement)
+print("t' = ", thickness_gradient)
 
 coordinate_X = []
 coordinate_Y = []
@@ -49,7 +56,9 @@ coordinate_Y0 = []
 coordinate_Z0 = []
 
 for iNode in range(0,21):
-    
+  
+  print("F'(",iNode,") = (", beam.ExtractLoadGradient(iNode,0), beam.ExtractLoadGradient(iNode,1), beam.ExtractLoadGradient(iNode,2), ")")
+  
   coordinate_X.append(beam.ExtractCoordinates(iNode, 0))
   coordinate_Y.append(beam.ExtractCoordinates(iNode, 1))
   coordinate_Z.append(beam.ExtractCoordinates(iNode, 2))  
@@ -58,11 +67,15 @@ for iNode in range(0,21):
   coordinate_Y0.append(beam.ExtractInitialCoordinates(iNode, 1))
   coordinate_Z0.append(beam.ExtractInitialCoordinates(iNode, 2))    
 
-fig = plt.figure()
-ax = fig.add_subplot(111, projection='3d')
 
-plt.plot(coordinate_X, coordinate_Y, coordinate_Z)
-plt.plot(coordinate_X0, coordinate_Y0, coordinate_Z0)
-plt.show(block=False)
+test_val = np.abs(thickness_gradient) - np.abs(-515.5113533327299)
 
-wait = input("Press Enter to finalize.")
+print("Tolerance: ",test_val)
+
+# Tolerance is set to 1E-6
+if (test_val < 1e-5):
+  exit(0)
+else:
+  exit(1)
+
+

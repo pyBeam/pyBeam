@@ -54,136 +54,138 @@ CBeamSolver::~CBeamSolver(void) {
 }
 
 void CBeamSolver::Initialize(CInput* input_in ){
+
+
+  // I'm memorizing as a member variable the object input passed from outside
+  input = input_in;
+
+  //input->SetParameters();
+  thickness = input->Get_Thickness();
+  //input->SetParameters(thickness);
+  nDOF = input->Get_nDOF();
+  nTotalDOF = input->Get_nNodes() * input->Get_nDOF();
+
+  /*
+  /// debug print input parameters
+  std::cout << "thick" <<   thickness  << std::endl;
+  std::cout << "nDOF" <<   nDOF  << std::endl;
+  std::cout << "nTotalDOF" <<   nTotalDOF  << std::endl;
+  std::cout << "Get_nNodes" <<   input->Get_nNodes()  << std::endl;
+  std::cout << "Get_FollowerFlag" <<   input->Get_FollowerFlag()  << std::endl;
+  std::cout << "Get_LoadSteps" <<   input->Get_LoadSteps()  << std::endl;
+  std::cout << "Get_nIter" <<   input->Get_nIter()  << std::endl;
+  std::cout << "Get_l" <<   input->Get_l()  << std::endl;
+  std::cout << "Get_le" <<   input->Get_le()  << std::endl;
+  std::cout << "Get_ConvCriteria" <<   input->Get_ConvCriteria()  << std::endl;
+  std::cout << "Get_nNodes" <<   input->Get_nNodes()  << std::endl;
+  */
     
-    // I'm memorizing as a member variable the object input passed from outside
-    input = input_in;
-    
-    //input->SetParameters();
-    thickness = input->Get_Thickness();
-    nDOF = input->Get_nDOF();
-    nTotalDOF = input->Get_nNodes() * input->Get_nDOF();
-    
-    /*
-    /// debug print input parameters
-    std::cout << "thick" <<   thickness  << std::endl;
-    std::cout << "nDOF" <<   nDOF  << std::endl;
-    std::cout << "nTotalDOF" <<   nTotalDOF  << std::endl;
-    std::cout << "Get_nNodes" <<   input->Get_nNodes()  << std::endl;
-    std::cout << "Get_FollowerFlag" <<   input->Get_FollowerFlag()  << std::endl;
-    std::cout << "Get_LoadSteps" <<   input->Get_LoadSteps()  << std::endl;
-    std::cout << "Get_nIter" <<   input->Get_nIter()  << std::endl;
-    std::cout << "Get_l" <<   input->Get_l()  << std::endl;
-    std::cout << "Get_le" <<   input->Get_le()  << std::endl;
-    std::cout << "Get_ConvCriteria" <<   input->Get_ConvCriteria()  << std::endl;
-    std::cout << "Get_nNodes" <<   input->Get_nNodes()  << std::endl;
-    */
-    
-    //==============================================================
-    //      Load Vector initialization
-    //==============================================================
-    
-    loadVector = new addouble[nTotalDOF];
-    for (int iLoad = 0; iLoad < nTotalDOF; iLoad++)
-        loadVector[iLoad] = 0.0;
-    
-    //==============================================================
-    //      Finite Element initialization
-    //==============================================================
-    
-    cout << "=========  Finite Element Initialization  ====" << std::endl;
-    unsigned long nFEM = input->Get_nFEM();
-    element = new CElement*[nFEM];    
-    for (unsigned long iFEM = 0; iFEM < nFEM; iFEM++){
-        element[iFEM] = new CElement(iFEM, input);
-    }
-    cout << "DEBUG: CHECK" << endl;    
-    //===============================================
-    //  Initialize structural solver
-    //===============================================
-    
-    structure = NULL;
-    structure = new CStructure(input, element);
-    
+  //==============================================================
+  //      Load Vector initialization
+  //==============================================================
+
+  loadVector = new addouble[nTotalDOF];
+  for (int iLoad = 0; iLoad < nTotalDOF; iLoad++)
+    loadVector[iLoad] = 0.0;
+
+  //==============================================================
+  //      Finite Element initialization
+  //==============================================================
+
+  cout << "=========  Finite Element Initialization  ====" << std::endl;
+  unsigned long nFEM = input->Get_nFEM();
+  element = new CElement*[nFEM];
+  for (unsigned long iFEM = 0; iFEM < nFEM; iFEM++){
+      element[iFEM] = new CElement(iFEM, input);
+  }
+
+	//===============================================
+	//  Initialize structural solver
+	//===============================================
+
+	structure = NULL;
+	structure = new CStructure(input, element);
+
 }
 
 void CBeamSolver::Solve(void){
-    
-    std::cout << "#####    SETTING EXTERNAL FORCES   #####" << std::endl;
-    structure->ReadForces(nTotalDOF, loadVector);
-    
-    //===============================================
-    // LOAD STEPPING
-    //===============================================
-    
-    std::cout << "#####    STARTING LOAD STEPPING   #####" << std::endl;
-    
-    addouble  lambda = 1.0;    
-    addouble dlambda =  1.0/input->Get_LoadSteps() ;
-    unsigned long iIter;
-    unsigned long totalIter = 0;
-    unsigned long loadStep = 1;
 
-    structure->InitialCoord();
-    
-    for  ( loadStep = 0; loadStep < input->Get_LoadSteps(); loadStep++)
-    {
-        std::cout << "==============================" << std::endl;
-        std::cout << "==       LOAD STEP     " << loadStep << std::endl;
-        std::cout << "==============================" << std::endl;
-        
-        lambda = dlambda*(loadStep+1);
-        std::cout << "lambda = " << lambda << std::endl;
-        
-        //===============================================
-        //               ITERATIVE SEQUENCE
-        //===============================================
-        bool converged = false;
-        
-        for (iIter = 0; iIter < input->Get_nIter(); iIter++) {
-            
-            std::cout << "   ----- ITERATION  -----" << iIter << std::endl;
-            
-            /*--------------------------------------------------
-             *   Updates  Fext, Residual,
-             *----------------------------------------------------*/
-            
-            // Update External Forces (if they are follower )
-            structure->UpdateExtForces(lambda,input->Get_FollowerFlag());
-            structure->EchoFext();
-            
-            // Evaluate the Residual
-            structure->EvalResidual();
-            
-            std::cout << " Residual = "  <<  structure->Residual.norm() << std::endl;
-            structure->EchoRes();
-            
-            /*--------------------------------------------------
-             *   Assembly Ktang, Solve System
-             *----------------------------------------------------*/
-            
-            // Reassembling Stiffness Matrix + Applying Boundary Conditions
-            structure->AssemblyTang();
-            
-            // Solve Linear System   K*dU = Res = Fext - Fin
-            structure->SolveLinearStaticSystem();
-            
-            /*--------------------------------------------------
-             *   Updates Coordinates, Updates Rotation Matrices
-             *----------------------------------------------------*/
-            
-            structure->UpdateCoord();
-            
-            structure->EchoDisp();   structure->EchoCoord();
-            
-            // Now only X is updated!
-            
-            structure->UpdateRotationMatrix();  // based on the rotational displacements
-            structure->UpdateLength();          // Updating length, important
-            
-            
-            /*--------------------------------------------------
-             *   Update Internal Forces
-             *----------------------------------------------------*/
+  std::cout << "#####    SETTING EXTERNAL FORCES   #####" << std::endl;
+  structure->ReadForces(nTotalDOF, loadVector);
+
+	//===============================================
+	// LOAD STEPPING
+	//===============================================
+	
+	std::cout << "#####    STARTING LOAD STEPPING   #####" << std::endl;
+
+  addouble  lambda = 1.0;
+  addouble dlambda =  1.0/input->Get_LoadSteps() ;
+	unsigned long iIter;
+	unsigned long totalIter = 0;
+	unsigned long loadStep = 1;
+
+	structure->InitialCoord();
+
+	for  ( loadStep = 0; loadStep < input->Get_LoadSteps(); loadStep++)
+	{
+		std::cout << "==============================" << std::endl;
+		std::cout << "==       LOAD STEP     " << loadStep << std::endl;
+		std::cout << "==============================" << std::endl;
+
+		lambda = dlambda*(loadStep+1);
+		std::cout << "lambda = " << lambda << std::endl;
+
+		//===============================================
+		//               ITERATIVE SEQUENCE
+		//===============================================
+		bool converged = false;
+
+		for (iIter = 0; iIter < input->Get_nIter(); iIter++) {
+			
+			std::cout << "   ----- ITERATION  -----" << iIter << std::endl;
+
+			/*--------------------------------------------------
+			 *   Updates  Fext, Residual,
+			 *----------------------------------------------------*/
+
+			// Update External Forces (if they are follower )
+			structure->UpdateExtForces(lambda,input->Get_FollowerFlag());
+			structure->EchoFext();
+
+			// Evaluate the Residual
+			structure->EvalResidual();
+
+			std::cout << " Residual = "  <<  structure->Residual.norm() << std::endl;
+			structure->EchoRes();
+
+			/*--------------------------------------------------
+			 *   Assembly Ktang, Solve System
+			*----------------------------------------------------*/
+
+			// Reassembling Stiffness Matrix + Applying Boundary Conditions
+			structure->AssemblyTang();
+
+			// Solve Linear System   K*dU = Res = Fext - Fin
+			structure->SolveLinearStaticSystem();
+
+			/*--------------------------------------------------
+			 *   Updates Coordinates, Updates Rotation Matrices
+			*----------------------------------------------------*/
+
+			structure->UpdateCoord();
+
+			structure->EchoDisp();   structure->EchoCoord();
+
+			// Now only X is updated!
+
+			structure->UpdateRotationMatrix();  // based on the rotational displacements
+			structure->UpdateLength();          // Updating length, important
+
+
+			/*--------------------------------------------------
+			 *   Update Internal Forces
+			*----------------------------------------------------*/
             // Now, X, R, l are updated
             
             structure->UpdateInternalForces();

@@ -35,7 +35,7 @@
 #include <vector>
 #include <string>
 
-#include "../CoDiPack/include/codi.hpp"
+#include "../externals/CoDiPack/include/codi.hpp"
 
 
 using namespace std;

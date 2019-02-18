@@ -24,7 +24,7 @@
  *
  */
 
-#include "../include/StructSyst.h"
+#include "../include/structure.h"
 
 CStructure::CStructure(CInput *input, CElement **element)
 {

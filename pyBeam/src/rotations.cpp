@@ -24,7 +24,7 @@
  *
  */
 
-#include "../include/Rotations.h"
+#include "../include/rotations.h"
 
 
 /**********************************
