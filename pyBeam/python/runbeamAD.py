@@ -2,10 +2,10 @@
 #
 # pyBeam, a Beam Solver
 #
-# Copyright (C) 2018 Ruben Sanchez, Rauno Cavallaro
+# Copyright (C) 2018 Ruben Sanchez, Rocco Bombardieri, Rauno Cavallaro
 # 
 # Developers: Ruben Sanchez (SciComp, TU Kaiserslautern)
-#             Rauno Cavallaro (Carlos III University Madrid)
+#             Rocco Bombardieri, Rauno Cavallaro (Carlos III University Madrid)
 #
 # This file is part of pyBeam.
 #

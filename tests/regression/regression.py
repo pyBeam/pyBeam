@@ -1,10 +1,11 @@
+#!/usr/bin/env python
 #
 # pyBeam, a Beam Solver
 #
-# Copyright (C) 2018 Ruben Sanchez, Rauno Cavallaro
+# Copyright (C) 2018 Ruben Sanchez, Rocco Bombardieri, Rauno Cavallaro
 # 
 # Developers: Ruben Sanchez (SciComp, TU Kaiserslautern)
-#             Rauno Cavallaro (Carlos III University Madrid)
+#             Rocco Bombardieri, Rauno Cavallaro (Carlos III University Madrid)
 #
 # This file is part of pyBeam.
 #
@@ -24,16 +25,59 @@
 #
 
 
-from pyBeam import CBeamSolver
+import pdb
 import numpy as np
+import sys, os
+sys.path.append('../../pyBeam')
+sys.path.append('../../pyBeam/python')
+import in_out
+import swig
 
-beam = CBeamSolver()
+def Input_parsing(BEAM_config, inputs):  
+    
+    inputs.SetBeamLength(BEAM_config['B_LENGTH'])
+    inputs.SetWebThickness(BEAM_config['W_THICKNESS'])
+    inputs.SetWebHeight(BEAM_config['W_HEIGHT'])
+    inputs.SetFlangeWidth(BEAM_config['F_WIDTH'])
+    inputs.SetYoungModulus(BEAM_config['Y_MODULUS'])
+    inputs.SetPoisson(BEAM_config['POISSON'])
+    inputs.SetDensity(BEAM_config['RHO'])
+    inputs.SetLoad(BEAM_config['LOAD'])
+    inputs.SetFollowerFlag(BEAM_config['FOLLOWER_FLAG'])
+    inputs.SetLoadSteps(BEAM_config['LOAD_STEPS'])
+    inputs.SetNStructIter(BEAM_config['N_STRUCT_ITER'])
+    inputs.SetConvCriterium(BEAM_config['CONV_CRITERIUM'])  
 
-loads = [1.0, 2.0, 3.0]
+
+
+confFile = '../OneraM6/BEAM_config.cfg'
+BEAM_config = in_out.BEAMConfig(confFile) 		# FSI configuration file
+
+# Initializing objects
+beam = swig.CBeamSolver()
+inputs = swig.CInput()
+  
+    
+# Parsing config file ans sending to CInput object  
+Input_parsing(BEAM_config, inputs)
+inputs.SetParameters()
+  
+# Parsing mesh file
+nDim = in_out.readDimension(BEAM_config['B_MESH'])
+node, nPoint = in_out.readMesh(BEAM_config['B_MESH'],nDim)
+Elem, nElem = in_out.readConnectivity(BEAM_config['B_MESH'])  
+# Parsing Property file
+Prop, nProp = in_out.readProp(BEAM_config['B_PROPERTY'])
+
+# Assigning property values to the property objects in C++
+beam_prop = []
+for i in range(nProp):
+    beam_prop.append(swig.CProperty(i))
+    beam_prop[i].SetSectionProperties( Prop[i].GetA(),  Prop[i].GetIyy(),  Prop[i].GetIzz(),  Prop[i].GetJt())
+ 
 iNode = 20
 
-beam.SetThickness(0.02)
-beam.Initialize()
+beam.Initialize(inputs)
 beam.SetLoads(iNode,1,5000)
 beam.SetLoads(iNode,2,1000)
 beam.Solve()
@@ -68,3 +112,9 @@ if (test_val < 1e-8):
   exit(0)
 else:
   exit(1)
+  
+  
+  
+  
+  
+  

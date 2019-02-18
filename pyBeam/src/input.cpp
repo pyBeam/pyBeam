@@ -1,7 +1,7 @@
 /*
  * pyBeam, a Beam Solver
  *
- * Copyright (C) 2018 Tim Albring, Ruben Sanchez, Rocco Bombardieri, Rauno Cavallaro
+ * Copyright (C) 2018 Tim Albring, Ruben Sanchez, Rocco Bombardieri, Rauno Cavallaro 
  * 
  * Developers: Tim Albring, Ruben Sanchez (SciComp, TU Kaiserslautern)
  *             Rocco Bombardieri, Rauno Cavallaro (Carlos III University Madrid)
