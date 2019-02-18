@@ -96,7 +96,6 @@ void CBeamSolver::Initialize(CInput* input_in ){
     for (unsigned long iFEM = 0; iFEM < nFEM; iFEM++){
         element[iFEM] = new CElement(iFEM, input);
     }
-    cout << "DEBUG: CHECK" << endl;    
     //===============================================
     //  Initialize structural solver
     //===============================================

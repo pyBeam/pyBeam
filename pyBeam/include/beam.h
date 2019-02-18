@@ -30,8 +30,8 @@
 
 #include "../include/types.h"
 
-#include "../include/FiniteElement.h"
-#include "../include/StructSyst.h"
+#include "../include/element.h"
+#include "../include/structure.h"
 #include "../include/geometry.h"
 #include "../include/input.h"
 
@@ -92,5 +92,7 @@ public:
   inline void StopRecording(void) { AD::RegisterOutput(objective_function); AD::StopRecording(); }
 
   inline passivedouble ExtractLoadGradient(int iNode, int iDOF) {return loadGradient[iNode*nDOF + iDOF];}
+
+  inline unsigned long Get_nNodes(void) {return input->Get_nNodes();}
 
 };
