@@ -69,8 +69,8 @@ class BEAMConfig:
 		    break
 
 	        #string values  MEMO_GEN_FORCE_OUTPUT
-                if case("B_MESH")          :                  
-                #if case("FSI_MARKER")                 : pass                
+                if case("B_MESH")          :       pass           
+                if case("B_PROPERTY")                 :               
 		    self._ConfigContent[this_param] = this_value
 		    break
                               

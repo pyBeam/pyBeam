@@ -65,11 +65,11 @@ void CInput::SetParameters(){
 	G = E/(2*(1+Poiss) );	// Shear modulus
 	//l = 30; 				// Wing Length [m]
 	A = t*h+2*t*b;			// cross section area
-	//As_z = t*h; 			// z Effective shear area
-	//As_y = 5/6.0*2*t*b;		// y Effective shear area
+	//////As_z = t*h; 			// z Effective shear area
+	///////As_y = 5/6.0*2*t*b;		// y Effective shear area
 
 	Iyy = (pow(t,3)*h)/12.0 + 2.0* (  b*pow(t,3)/12.0 + b*t*pow( (h+t)/2.0 , 2)    );  //cross section Izz [m^4]
-	Izz = ( h*pow(t,3) + 2*t*pow(b,3))/12.0;
+	Izz = ( h*pow(t,3) + 2*t*pow(b,3))/12.0;      
 	Jx = Iyy+Izz; 			//Polar Moment of Inertia
 
 
@@ -92,12 +92,12 @@ void CInput::SetParameters(){
 	m_w = ro*le*t*h; 		//web mass
 	m_f = ro*le*t*b; 		//flange mass
 	
-	//Iz = ( m_w*(pow(t,2)+pow(le,2)) +
-	//	 2*m_f*(pow(b,2)+pow(le,2)) )/12.0;     //[kg*m^2]
+	/////Iz = ( m_w*(pow(t,2)+pow(le,2)) +
+	/////	 2*m_f*(pow(b,2)+pow(le,2)) )/12.0;     //[kg*m^2]
 		 
-	//Ix = m_w/12.0*(pow(h,2)+pow(t,2))+
-	//	 2*m_f*( (pow(t,2)+pow(b,2))/12+
-	//	 pow((t/2+h/2),2)) ; 		//[kg*m^2]
+	/////Ix = m_w/12.0*(pow(h,2)+pow(t,2))+
+	/////	 2*m_f*( (pow(t,2)+pow(b,2))/12+
+	/////	 pow((t/2+h/2),2)) ; 		//[kg*m^2]
 
     
 }

@@ -1,2 +1,2 @@
 from BEAM_config import BEAMConfig
-from ReadMesh import *
+from ReadInputs import *

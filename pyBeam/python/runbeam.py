@@ -41,6 +41,7 @@ def RunBeam():
   # Initializing objects
   beam = swig.CBeamSolver()
   inputs = swig.CInput()
+  
     
   # Parsing config file ans sending to CInput object  
   Input_parsing(BEAM_config, inputs)
@@ -49,8 +50,15 @@ def RunBeam():
   # Parsing mesh file
   nDim = in_out.readDimension(BEAM_config['B_MESH'])
   node, nPoint = in_out.readMesh(BEAM_config['B_MESH'],nDim)
-  Elem = in_out.readConnectivity(BEAM_config['B_MESH'])  
+  Elem, nElem = in_out.readConnectivity(BEAM_config['B_MESH'])  
+  # Parsing Property file
+  Prop, nProp = in_out.readProp(BEAM_config['B_PROPERTY'])
 
+  # Assigning property values to the property objects in C++
+  beam_prop = []
+  for i in range(nProp):
+      beam_prop.append(swig.CProperty(i))
+      beam_prop[i].SetSectionProperties( Prop[i].GetA(),  Prop[i].GetIyy(),  Prop[i].GetIzz(),  Prop[i].GetJt())
  
   
   

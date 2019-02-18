@@ -44,7 +44,7 @@ LOAD = 5000
 FOLLOWER_FLAG = 0		
 
 % Number of loadsteps used in the analysis (DEFAULT = 1)
-LOAD_STEPS = 2
+LOAD_STEPS = 1
 
 % Number of iterations used in the analysis  (DEFAULT = 1)
 N_STRUCT_ITER = 30

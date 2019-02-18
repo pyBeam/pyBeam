@@ -16,7 +16,8 @@ _SRC = ./src/ROMFM_FULLORDER.cpp \
        ./src/FiniteElement.cpp \
        ./src/StructSyst.cpp \
        ./src/Rotations.cpp \
-       ./src/beam.cpp
+       ./src/beam.cpp \
+	./src/property.cpp
 
 
 
@@ -29,7 +30,8 @@ _OBJS = ./obj/ROMFM_FULLORDER.o \
         ./obj/FiniteElement.o \
         ./obj/StructSyst.o \
         ./obj/Rotations.o \
-        ./obj/beam.o 
+        ./obj/beam.o \
+	./obj/property.o 
 
 primal:
 	swig -c++ -python -Wall ./swig/pyBeam.i

@@ -41,55 +41,55 @@
 
 class CProperty
 {
-
+    
 private:
-	
+    
 protected:
-
-	// Units Sys: SI
-
-
-	addouble A;				// cross section area
-	addouble Iyy, Izz;
-	addouble Jt; 				//Torsional Moment of Inertia
-        addouble J0; 				//Polar Moment of Inertia
-        
-
-	
+    
+    // Units Sys: SI
+    
+    
+    addouble A;				// cross section area
+    addouble Iyy, Izz;
+    addouble Jt; 				//Torsional Moment of Inertia
+    addouble J0; 				//Polar Moment of Inertia
+    unsigned long PropertyID  ;        
+    
+    
 public:
     
-  unsigned long PropertyID  
     
-  CProperty(unsigned long ID) {PropertyID = ID};
-  
-  virtual ~CProperty(void);
-  
-  //void SetWebThickness(passivedouble thickness) {t = thickness; }
-
-  //void SetWebHeight(passivedouble height) {h = height; }  
-  
-  //void SetFlangeWidth(passivedouble FlangeWidth) {b = FlangeWidth; } 
-  
-  void SetSectionProperties(passivedouble A_in, passivedouble Iyy_in, passivedouble Izz_in, passivedouble Jt_in) { A = A_in;  Iyy = Iyy_in; Izz = Izz_in;  J0 = Iyy + Izz;} 
-  
-  //void SetAuxVect(passivedouble x, passivedouble y, passivedouble z ) {AuxVector(0) = x; AuxVector(1) = y; AuxVector(2) = z; };
-
-  //addouble GetWebThickness(void) { return t;}
-  
-  //addouble GetWebHeight(void) { return h;}
-
-  //addouble GetFlangeWidth(void) { return b;}  
-  
-  addouble GetIyy(void) { return Iyy; }     
-          
-  addouble GetIzz(void) { return Izz; } 
-  
-  addouble GetA(void) { return A; }   
-  
-  addouble GetJt(void) { return Jt; }
-
-  addouble GetJ0(void) { return J0; }  
-  
-  //Vector3dDiff GetAuxVect { return AuxVector;}
-  
-  virtual CalcSection();
+    
+    CProperty(int ID) ;
+    
+    ~CProperty(void);
+    
+    //void SetWebThickness(passivedouble thickness) {t = thickness; }
+    
+    //void SetWebHeight(passivedouble height) {h = height; }  
+    
+    //void SetFlangeWidth(passivedouble FlangeWidth) {b = FlangeWidth; } 
+    
+    void SetSectionProperties(passivedouble A_in, passivedouble Iyy_in, passivedouble Izz_in, passivedouble Jt_in) ; 
+    
+    //void SetAuxVect(passivedouble x, passivedouble y, passivedouble z ) {AuxVector(0) = x; AuxVector(1) = y; AuxVector(2) = z; };
+    
+    //addouble GetWebThickness(void) { return t;}
+    
+    //addouble GetWebHeight(void) { return h;}
+    
+    //addouble GetFlangeWidth(void) { return b;}  
+    
+    addouble GetIyy(void) { return Iyy; }     
+    
+    addouble GetIzz(void) { return Izz; } 
+    
+    addouble GetA(void) { return A; }   
+    
+    addouble GetJt(void) { return Jt; }
+    
+    addouble GetJ0(void) { return J0; }  
+    
+    //Vector3dDiff GetAuxVect { return AuxVector;}
+    
+};

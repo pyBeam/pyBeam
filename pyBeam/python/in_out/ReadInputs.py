@@ -97,6 +97,39 @@ class Element:  # for boundary elements
   def GetID(self):
     return self.ID
 
+class Property:
+  """ Description. """
+    
+  def __init__(self):
+    self.A = 0
+    self.Iyy = 0
+    self.Izz = 0
+    self.Jt = 0
+
+  def SetA(self,A):
+    self.A = A 
+    
+  def SetIyy(self,Iyy):
+    self.Iyy = Iyy    
+    
+  def SetIzz(self,Izz):
+    self.Izz = Izz    
+    
+  def SetJt(self,Jt):
+    self.Jt = Jt  
+    
+  def GetA(self):
+    return self.A
+
+  def GetIyy(self):
+    return self.Iyy
+
+  def GetIzz(self):
+    return self.Izz
+
+  def GetJt(self):
+    return self.Jt
+
 
 def readDimension(Mesh_file):
 
@@ -192,15 +225,37 @@ def readConnectivity(Mesh_file):
 	else:
 	  continue	
 	
-    return Elem	
+    return Elem, nElem	
 	
+
+def readProp(Prop_file):	
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	  
+    Prop = []    
+    
+    with open(Prop_file, 'r') as propfile:
+      print('Opened property file ' + Prop_file + '.')
+      while 1:
+        line = propfile.readline()
+	if not line:
+	  break	
+        if line.strip():
+          if (line[0] == '%'):
+            continue	
+	pos = line.find('NPROP')
+	if pos != -1:
+	  line = line.strip('\r\n')
+	  line = line.replace(" ", "")
+          line = line.split("=",1)
+	  nProp = int(line[1])
+	  for iProp in range(nProp):    
+              Prop.append(Property())
+	      line = propfile.readline()
+	      line = line.strip('\r\n')
+	      line = line.split() ## important modification in case the formatting includes tabs    
+              A = float(line[0]); Iyy = float(line[1]); Izz = float(line[2]); Jt = float(line[3]); 
+              Prop[iProp].SetA(A); Prop[iProp].SetIyy(Iyy); Prop[iProp].SetIzz(Izz); Prop[iProp].SetJt(Jt); 
+              
+              
+    return Prop, nProp         
+        
+  
