@@ -28,8 +28,8 @@
 import pdb
 import numpy as np
 import sys, os
-sys.path.append(str(os.getcwd())[:-19] + '/pyBeam')
-sys.path.append(str(os.getcwd())[:-19] + '/pyBeam/python')
+sys.path.append(str(os.path.realpath(__file__))[:-35] + '/pyBeam')
+sys.path.append(str(os.path.realpath(__file__))[:-35] + '/pyBeam/python')
 import in_out
 import swig
 
@@ -50,7 +50,7 @@ def Input_parsing(BEAM_config, inputs):
 
 
 
-confFile = '../OneraM6/BEAM_config.cfg'
+confFile = str(os.path.realpath(__file__))[:-29] + '/OneraM6/BEAM_config.cfg'
 BEAM_config = in_out.BEAMConfig(confFile) 		# FSI configuration file
 
 # Initializing objects
@@ -61,6 +61,10 @@ inputs = swig.CInput()
 # Parsing config file ans sending to CInput object  
 Input_parsing(BEAM_config, inputs)
 inputs.SetParameters()
+
+# Specifically added for the test
+BEAM_config['B_PROPERTY'] = str(os.path.realpath(__file__))[:-29] + BEAM_config['B_PROPERTY'][2:]
+BEAM_config['B_MESH'] = str(os.path.realpath(__file__))[:-29] + BEAM_config['B_MESH'][2:]  
   
 # Parsing mesh file
 nDim = in_out.readDimension(BEAM_config['B_MESH'])
