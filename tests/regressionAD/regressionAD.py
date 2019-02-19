@@ -28,8 +28,8 @@
 import pdb
 import numpy as np
 import sys, os
-sys.path.append('../../pyBeam')
-sys.path.append('../../pyBeam/python')
+sys.path.append(str(os.getcwd())[:-19] + '/pyBeam')
+sys.path.append(str(os.getcwd())[:-19] + '/pyBeam/python')
 import in_out
 import swig
 
