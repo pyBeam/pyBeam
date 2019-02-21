@@ -33,33 +33,15 @@ sys.path.append(str(os.path.realpath(__file__))[:-35] + '/pyBeam/python')
 import in_out
 import swig
 
-def Input_parsing(BEAM_config, inputs):  
-    
-    inputs.SetBeamLength(BEAM_config['B_LENGTH'])
-    inputs.SetWebThickness(BEAM_config['W_THICKNESS'])
-    inputs.SetWebHeight(BEAM_config['W_HEIGHT'])
-    inputs.SetFlangeWidth(BEAM_config['F_WIDTH'])
-    inputs.SetYoungModulus(BEAM_config['Y_MODULUS'])
-    inputs.SetPoisson(BEAM_config['POISSON'])
-    inputs.SetDensity(BEAM_config['RHO'])
-    inputs.SetLoad(BEAM_config['LOAD'])
-    inputs.SetFollowerFlag(BEAM_config['FOLLOWER_FLAG'])
-    inputs.SetLoadSteps(BEAM_config['LOAD_STEPS'])
-    inputs.SetNStructIter(BEAM_config['N_STRUCT_ITER'])
-    inputs.SetConvCriterium(BEAM_config['CONV_CRITERIUM'])  
-
-
-
 confFile = str(os.path.realpath(__file__))[:-29] + '/OneraM6/BEAM_config.cfg'
 BEAM_config = in_out.BEAMConfig(confFile) 		# FSI configuration file
 
 # Initializing objects
 beam = swig.CBeamSolver()
 inputs = swig.CInput()
-  
     
 # Parsing config file ans sending to CInput object  
-Input_parsing(BEAM_config, inputs)
+swig.Input_parsing(BEAM_config, inputs)
 inputs.SetParameters()
 
 # Specifically added for the test
