@@ -45,7 +45,7 @@ void CInput::SetParameters(){
 	nNodes = 21; 			// number of overall nodes along the wing (no collapsed)
 	nFEM = nNodes - 1;
 	
-	nDOF = 6;                // number of rigid modes to be calculated
+	nDOF = 6;                // To be removed
 	//load = 5000; 			// [N];
 	//follower_flag = 0;		// (0) Nonfollower (1) follower (2) approx follower
 	//loadSteps = 1;			// Number of load steps

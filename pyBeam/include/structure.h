@@ -84,7 +84,7 @@ public:
 
 	void ReadForces(int nTotalDOF, addouble *loadVector);
 
-	void UpdateExtForces(addouble , int );
+	void UpdateExtForces(addouble  );
 
 	void EvalResidual();
 

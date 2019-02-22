@@ -73,9 +73,9 @@ class BEAMConfig:
 
             for case in switch(this_param):
 	        #integer values
-		if case("N_DOF")		      : pass  
-                if case("FOLLOWER_FLAG")		      : pass        
-		if case("LOAD_STEPS")	      : pass     
+		if case("N_DOF")		      : pass  # in case: CSD_SOLVER = NITRO_FRAMEWORK 
+                if case("FOLLOWER_FLAG")		      : pass  # in case: CSD_SOLVER = NITRO_FRAMEWORK       
+		if case("LOAD_STEPS")	      : pass  # in case: CSD_SOLVER = NITRO_FRAMEWORK      
 		if case("N_STRUCT_ITER")	                      : 
 		    self._ConfigContent[this_param] = int(this_value)
 		    break

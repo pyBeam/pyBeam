@@ -35,25 +35,28 @@ def RunBeam():
 
   confFile = '/media/rocco/290CF0EB732D1122/Adjoint_project/pyBeam/tests/OneraM6/BEAM_config.cfg'
 
+
+  # Parsing Conf file
   BEAM_config = in_out.BEAMConfig(confFile) 		# FSI configuration file
 
+  # Parsing mesh file
+  nDim = in_out.readDimension(BEAM_config['B_MESH'])
+  node, nPoint = in_out.readMesh(BEAM_config['B_MESH'],nDim)
+  Elem, nElem = in_out.readConnectivity(BEAM_config['B_MESH'])  
+  Constr, nConstr = in_out.readConstr(BEAM_config['B_MESH'])    
+  # Parsing Property file
+  Prop, nProp = in_out.readProp(BEAM_config['B_PROPERTY'])
+  
 
   # Initializing objects
   beam = swig.CBeamSolver()
   inputs = swig.CInput()
   
     
-  # Parsing config file ans sending to CInput object  
-  Input_parsing(BEAM_config, inputs)
+  # Sending to CInput object  
+  Input_parsing(BEAM_config, inputs, Constr, nConstr)
+  # Assigning input values to the input object in C++
   inputs.SetParameters()
-  
-  # Parsing mesh file
-  nDim = in_out.readDimension(BEAM_config['B_MESH'])
-  node, nPoint = in_out.readMesh(BEAM_config['B_MESH'],nDim)
-  Elem, nElem = in_out.readConnectivity(BEAM_config['B_MESH'])  
-  # Parsing Property file
-  Prop, nProp = in_out.readProp(BEAM_config['B_PROPERTY'])
-
   # Assigning property values to the property objects in C++
   beam_prop = []
   for i in range(nProp):
@@ -110,7 +113,7 @@ def RunBeam():
 
   
   
-def Input_parsing(BEAM_config, inputs):  
+def Input_parsing(BEAM_config, inputs,Constr, nConstr):  
     
     inputs.SetBeamLength(BEAM_config['B_LENGTH'])
     inputs.SetWebThickness(BEAM_config['W_THICKNESS'])
@@ -124,7 +127,11 @@ def Input_parsing(BEAM_config, inputs):
     inputs.SetLoadSteps(BEAM_config['LOAD_STEPS'])
     inputs.SetNStructIter(BEAM_config['N_STRUCT_ITER'])
     inputs.SetConvCriterium(BEAM_config['CONV_CRITERIUM'])
-
+    
+    #Now setting the constraints
+    inputs.SetnConstr(nConstr)
+    for iConstr in range(nConstr): 
+        inputs.SetSingleConstr(int iConstr, int node_id, int DOF_id)
   
 # -------------------------------------------------------------------
 #  Run Main Program

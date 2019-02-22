@@ -209,10 +209,40 @@ def readMesh(Mesh_file,nDim):
 	      z = float(line[2])
 	    node[iPoint].SetCoord((x,y,z))
             node[iPoint].SetCoord0((x,y,z))
-            node[iPoint].SetID(iPoint) # sequential ID
+            node[iPoint].SetID(iPoint+1) # sequential ID
 	  continue	
 	
     return node, nPoint	
+
+def readConstr(Mesh_file):	  
+	
+    nConstr = 0         
+     
+    with open(Mesh_file, 'r') as meshfile:
+      #print('Opened mesh file ' + Mesh_file + '.')
+      while 1:
+        line = meshfile.readline()
+	if not line:
+	  break	
+        if line.strip():
+          if (line[0] == '%'):
+            continue
+	pos = line.find('NCONSTR')
+	if pos != -1:
+	  line = line.strip('\r\n')
+          line = line.split("=",1)
+	  nConstr = int(line[1])
+          Constr = np.zeros((nConstr,2))
+          for iConstr in range(nConstr):
+	    line = meshfile.readline()
+	    line = line.strip('\r\n')
+	    line = line.split() ## important modification in case the formatting includes tabs
+	    nid = int(line[0])
+	    dofid = int(line[1])
+            Constr[iConstr,0] = nid;onstr[iConstr,1] = dofid; 
+	  continue	
+	
+    return Constr, nConstr	
 	
 	
 def readConnectivity(Mesh_file):	

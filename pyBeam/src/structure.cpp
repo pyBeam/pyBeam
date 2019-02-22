@@ -29,9 +29,9 @@
 CStructure::CStructure(CInput *input, CElement **element)
 {
 
-	FollFlag = 0;
+	FollFlag = input->Get_FollowerFlag();
 
-	DOF = input->Get_nDOF();
+	DOF = input->Get_nDOF();   // To be replaced             
 
 	// Links to the finite-element object
 	fem = element;
@@ -52,7 +52,7 @@ CStructure::CStructure(CInput *input, CElement **element)
 
 	// Forces nodal Vector
 	Ftip     =  Vector3dDiff::Zero();
-    Fnom     =  VectorXdDiff::Zero((nfem+1)*6);
+        Fnom     =  VectorXdDiff::Zero((nfem+1)*6);
 	Fext     =  VectorXdDiff::Zero((nfem+1)*6);
 	Fint     =  VectorXdDiff::Zero((nfem+1)*6);
 	Residual =  VectorXdDiff::Zero((nfem+1)*6);
@@ -93,11 +93,11 @@ void CStructure::ReadForces(int nTotalDOF, addouble *loadVector)
  ****************************************************************/
 // This subroutine updates the external force.
 
-void CStructure::UpdateExtForces(addouble lambda, int switcher )
+void CStructure::UpdateExtForces(addouble lambda)
 {
-	if (switcher == 0)
+	if (FollFlag == 0)
 		Fext = lambda* Fnom;
-	else if (switcher == 1)
+	else if (FollFlag == 1)
 	{
 		// NOT READY YET!!!
 	}
@@ -462,7 +462,7 @@ void CStructure::UpdateLength()
 void CStructure::UpdateRotationMatrix()
 {
 
-
+    //To be generalized for the considered connectivity
 
 	//=============   Updating Rotation Matrix   ======================
 

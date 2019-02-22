@@ -36,6 +36,8 @@ private:
 
 protected:
 
+  int ID;  
+    
   Vector3dDiff coord;
   
   Vector3dDiff coord0; 
@@ -54,6 +56,8 @@ public:
 
   inline void SetCoordinate0(int iDim, addouble val_coor) {coord(iDim) = val_coor;}  
   
+  inline void SetVel(int ID_ext) {ID = ID_ext;}    
+  
   inline void SetVel(int iDim, addouble val_vel) {Vel(iDim) = val_vel;}  
   
   inline void SetForce(int iDim, addouble val_force) {Vel(iDim) = val_force;}   
@@ -65,6 +69,8 @@ public:
   inline addouble GetVel(int iDim) {return Vel(iDim);} 
   
   inline addouble GetForce(int iDim) {return Force(iDim);}   
+  
+  inline int GeID() {return ID;}    
 
 };
 

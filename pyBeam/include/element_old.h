@@ -36,7 +36,7 @@ class CElement
 {
 private:
 public:
-	int elemdofs;
+	int elemdofs = 6 ; // DOFs of a beam element
 
 	addouble le;
 	addouble Jx;
