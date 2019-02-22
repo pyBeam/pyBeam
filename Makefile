@@ -3,7 +3,7 @@
 EIGEN_PATH = ./pyBeam/externals/Eigen
 CODI_PATH = ./pyBeam/externals/CoDiPack/include
 
-INCLPATH =  -I$(EIGEN_PATH) -I$(CODI_PATH) -I$(PYBEAM_INCLUDEPY)
+INCLPATH =  -I$(EIGEN_PATH) -I$(CODI_PATH) $(PYBEAM_INCLUDEPY)
 #==========================================================
 
 _SRC = ./pyBeam/src/main.cpp \
