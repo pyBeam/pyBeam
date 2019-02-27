@@ -17,6 +17,9 @@ pyBeam.creator.user
 pyBeam.files
 pyBeam.includes
 
+pybeam/include/element_old.h
+pybeam/src/element_old.cpp
+
 pyBeam/lib/__pycache__/
 pyBeam/lib/_pyBeam.so
 pyBeam/lib/_pyBeamAD.so
@@ -37,3 +40,4 @@ pyBeam/swig/pyBeamAD_wrap.cxx
 pyBeam/swig/pyBeamFM.py
 pyBeam/swig/pyBeamFM_wrap.cxx
 pyBeam/swig/pyBeam_wrap.cxx
+pyBeam/swig/Input_parsing.pyc

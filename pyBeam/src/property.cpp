@@ -42,7 +42,10 @@ void CProperty::SetSectionProperties(passivedouble A_in, passivedouble Iyy_in, p
     
     
     A = A_in;  Iyy = Iyy_in; Izz = Izz_in;  J0 = Iyy + Izz;
-    
+    //cout << A << endl;
+    //cout << Iyy << endl;
+    //cout << Izz << endl;
+    //cout << J0 << endl;
 } 
 
 

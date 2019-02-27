@@ -1,6 +1,6 @@
 from pyBeam import CInput
 
-def Input_parsing(BEAM_config, inputs):
+def Input_parsing(BEAM_config, inputs,Constr, nConstr):
     
     inputs.SetBeamLength(BEAM_config['B_LENGTH'])
     inputs.SetWebThickness(BEAM_config['W_THICKNESS'])
@@ -14,3 +14,12 @@ def Input_parsing(BEAM_config, inputs):
     inputs.SetLoadSteps(BEAM_config['LOAD_STEPS'])
     inputs.SetNStructIter(BEAM_config['N_STRUCT_ITER'])
     inputs.SetConvCriterium(BEAM_config['CONV_CRITERIUM'])
+    
+    #Now setting the constraints
+    inputs.SetnConstr(nConstr)
+    for iConstr in range(nConstr): 
+        inputs.SetSingleConstr( iConstr, Constr[iConstr,0], Constr[iConstr,1] )
+        
+    
+        
+        

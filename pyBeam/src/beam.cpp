@@ -53,7 +53,7 @@ CBeamSolver::~CBeamSolver(void) {
     
 }
 
-void CBeamSolver::Initialize(CInput* input_in ){
+void CBeamSolver::Initialize(CInput* input_in ){   // insert node class and connectivity
 
 
   // I'm memorizing as a member variable the object input passed from outside
@@ -96,7 +96,7 @@ void CBeamSolver::Initialize(CInput* input_in ){
   unsigned long nFEM = input->Get_nFEM();   //substitute from mesh file
   element = new CElement*[nFEM];
   for (unsigned long iFEM = 0; iFEM < nFEM; iFEM++){
-      element[iFEM] = new CElement(iFEM, input);
+      element[iFEM] = new CElement(iFEM);
       // inserti element[iFem]->Initializer();
   }
 
