@@ -68,6 +68,8 @@ public:
   
   void InitializeInput(CInput *py_input);
 
+  void InitializeNode(CNode *py_node, unsigned long iNode);
+
   void InitializeElement(CElement *py_element, unsigned long iFEM);
 
   void InitializeStructure(void);

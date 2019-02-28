@@ -74,6 +74,7 @@ for i in range(nPoint):
    for j in range(nDim):
       node[i].SetCoordinate(j , float(node_py[i].GetCoord()[j][0]) )
       node[i].SetCoordinate0(j , float(node_py[i].GetCoord0()[j][0]) )
+   beam.InitializeNode(node[i], i)
     
 # Assigning property values to the property objects in C++
 beam_prop = []

@@ -35,6 +35,7 @@
 
 #include "../include/element.h"
 #include "../include/rotations.h"
+#include "../include/geometry.h"
 #include "../include/input.h"
 
 #include <iostream>
@@ -56,6 +57,7 @@ public:
 	int FollFlag;             // Flag for Follower forces (1)
 
 	CElement **fem;      // Pointer to the first finite element
+  CNode **node;        // Pointer to the first finite element
 
 	MatrixXdDiff M;      // Recall in Eigen X stays for dynamic, d for addouble:  (nfem+1)*6  X   (nfem+1)*6
 	MatrixXdDiff Ksys;
@@ -73,7 +75,7 @@ public:
 	Vector3dDiff Ftip;      // (vector read from the input file) - needed as basis to update the Fext
 	VectorXdDiff Fnom;        // Array of nominal forces
 
-	CStructure(CInput *input, CElement **element);
+  CStructure(CInput *input, CElement **element, CNode **container_node);
 
 	~CStructure();
 

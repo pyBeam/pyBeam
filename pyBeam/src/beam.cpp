@@ -74,6 +74,14 @@ void CBeamSolver::InitializeInput(CInput* py_input){   // insert node class and 
     loadVector[iLoad] = 0.0;
 
   //==============================================================
+  //      Node vector initialization
+  //==============================================================
+
+  cout << "=========  Node Structure Initialization  ====" << std::endl;
+  unsigned long nNodes = input->Get_nNodes();   //substitute from mesh file
+  node = new CNode*[nNodes];
+
+  //==============================================================
   //      Finite Element vector initialization
   //==============================================================
 
@@ -83,6 +91,13 @@ void CBeamSolver::InitializeInput(CInput* py_input){   // insert node class and 
 
 }
 
+
+void CBeamSolver::InitializeNode(CNode *py_node, unsigned long iNode){
+
+  node[iNode] = py_node;
+  cout << "Node " << iNode << " coord(0): " << AD::GetValue(node[iNode]->GetCoordinate0(0)) << endl;
+
+}
 
 void CBeamSolver::InitializeElement(CElement* py_element,unsigned long iFEM){
 
@@ -99,7 +114,7 @@ void CBeamSolver::InitializeStructure(void){
   //===============================================
 
   structure = NULL;
-  structure = new CStructure(input, element);
+  structure = new CStructure(input, element, node);
 
 }
 

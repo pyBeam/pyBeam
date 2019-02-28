@@ -26,7 +26,7 @@
 
 #include "../include/structure.h"
 
-CStructure::CStructure(CInput *input, CElement **element)
+CStructure::CStructure(CInput *input, CElement **element, CNode **container_node)
 {
 
 	FollFlag = input->Get_FollowerFlag();
@@ -35,6 +35,8 @@ CStructure::CStructure(CInput *input, CElement **element)
 
 	// Links to the finite-element object
 	fem = element;
+
+  node = container_node;
 
 	// Resizes and zeros the M matrices
 	nfem = input->Get_nFEM();             // to be replaced
@@ -418,6 +420,8 @@ void CStructure::InitialCoord()
 
     X(posX-1) = le*count;   // careful this accumulates the error
     X0(posX-1) = le*count;
+
+    cout << "Coord: " << node[id_node]->GetCoordinate(0) << " " << node[id_node]->GetCoordinate(1) << endl;
 
     posX += 3;
     count += 1;
