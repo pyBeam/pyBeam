@@ -46,7 +46,7 @@ class pyBeamConfig:
     def __str__(self):
         tempString = str()
         for key, value in self._ConfigContent.items():
-        tempString += "{} = {}\n".format(key,value)
+          tempString += "{} = {}\n".format(key,value)
         return tempString
 
     def __getitem__(self,key):
