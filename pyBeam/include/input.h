@@ -137,15 +137,15 @@ public:
   
   void SetSingleConstr(int iConstr, int node_id, int DOF_id) {Constr_matrix(iConstr,1 -1) = node_id; Constr_matrix(iConstr,2 -1) = DOF_id;};
   
-   MatrixXdDiff  GetConstrMatrix() {return Constr_matrix;};
+  MatrixXdDiff  GetConstrMatrix() {return Constr_matrix;};
   
-  passivedouble GetYoungModulus() {return E; }   
+  passivedouble GetYoungModulus() {return AD::GetValue(E); }
 
-  passivedouble GetPoisson() {return Poiss; }    
+  passivedouble GetPoisson() {return AD::GetValue(Poiss); }
   
-  passivedouble GetShear() {return G; }   
+  passivedouble GetShear() {return AD::GetValue(G); }
   
-  passivedouble GetDensity() {return ro; }  
+  passivedouble GetDensity() {return AD::GetValue(ro); }
   
   unsigned long Get_nNodes(void) { return nNodes; }  //To Be Removed
     

@@ -128,7 +128,7 @@ void CStructure::AssemblyTang()
 	std::cout  << " Assembly Tangent Matrix"  << std::endl;
 
 	int iii = 0; int dof = 0;   int dof_jjj = 0;   int dof_kkk = 0;
-        int constr_dof_id;
+  int constr_dof_id;
 	MatrixXdDiff Krotated = MatrixXdDiff::Zero(6,6);   // Matrice di appoggio
 
 	// Setting to Zero the SYSTEM Stiffness
@@ -182,7 +182,7 @@ void CStructure::AssemblyTang()
 	// Imposing BC
         for (iii =1; iii<= Constr_matrix.rows(); iii++)
         {
-            constr_dof_id = ( Constr_matrix(iii-1,1-1) -1) *6 + Constr_matrix(iii-1,2-1);
+            constr_dof_id = round(AD::GetValue((Constr_matrix(iii-1,1-1) -1) *6 + Constr_matrix(iii-1,2-1)));
             Ksys.row(constr_dof_id-1) = VectorXdDiff::Zero((nfem+1)*6);
             Ksys.col(constr_dof_id-1) = VectorXdDiff::Zero((nfem+1)*6);
             Ksys(constr_dof_id-1,constr_dof_id-1) = 1.0;          
@@ -305,7 +305,7 @@ void CStructure::EvalResidual()
         
 	// BC on the residuals
         for (iii =1; iii<= Constr_matrix.rows(); iii++) {
-            constr_dof_id = ( Constr_matrix(iii-1,1-1) -1) *6 + Constr_matrix(iii-1,2-1);
+            constr_dof_id = round(AD::GetValue((Constr_matrix(iii-1,1-1) -1) *6 + Constr_matrix(iii-1,2-1)));
             Residual(constr_dof_id-1) = 0.0;
         }
         

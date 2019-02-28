@@ -44,10 +44,10 @@ void CElement::setGlobalDOFs(){
 };  
 
 void CElement::setLength() {
-    double a = nodeA->GetCoordinate0(0) - nodeB->GetCoordinate0(0);
-    double b = nodeA->GetCoordinate0(1) - nodeB->GetCoordinate0(1);
-    double c = nodeA->GetCoordinate0(2) - nodeB->GetCoordinate0(2);
-    double intermediate = pow(a ,2) + pow(b,2) + pow( c ,2) ;
+    addouble a = nodeA->GetCoordinate0(0) - nodeB->GetCoordinate0(0);
+    addouble b = nodeA->GetCoordinate0(1) - nodeB->GetCoordinate0(1);
+    addouble c = nodeA->GetCoordinate0(2) - nodeB->GetCoordinate0(2);
+    addouble intermediate = pow(a ,2) + pow(b,2) + pow( c ,2) ;
     le =  sqrt(intermediate );
 };
 
