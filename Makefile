@@ -33,7 +33,7 @@ primal:
 	# Move objects
 	mv *.o ./pyBeam/obj
 	# That need to be used here so that the relative dynamic library compiles   (the library is called in regression.py from swig folder)
-	g++ -O2 -shared -fPIC $(_OBJS) ./pyBeam/obj/pyBeam_wrap.o -o ./pyBeam/swig/_pyBeam.so  $(INCLPATH) 
+	g++ -O2 -shared -fPIC $(_OBJS) ./pyBeam/obj/pyBeam_wrap.o -o ./pyBeam/lib/_pyBeam.so  $(INCLPATH) 
 
 forward:
 	swig -c++ -python -Wall ./pyBeam/swig/pyBeamFM.i
@@ -42,7 +42,7 @@ forward:
 	# Move objects
 	mv *.o ./pyBeam/obj	
 	# That need to be used here so that the relative dynamic library compiles 
-	g++ -O2 -shared -DCODI_FORWARD_TYPE -fPIC $(_OBJS) ./pyBeam/obj/pyBeamFM_wrap.o -o ./pyBeam/swig/_pyBeamFM.so  $(INCLPATH) 
+	g++ -O2 -shared -DCODI_FORWARD_TYPE -fPIC $(_OBJS) ./pyBeam/obj/pyBeamFM_wrap.o -o ./pyBeam/lib/_pyBeamFM.so  $(INCLPATH) 
 	
 reverse:
 	swig -c++ -python -Wall ./pyBeam/swig/pyBeamAD.i
@@ -51,7 +51,7 @@ reverse:
 	# Move objects
 	mv *.o ./pyBeam/obj	
 	# That need to be used here so that the relative dynamic library compiles 
-	g++ -O2 -shared -DCODI_REVERSE_TYPE -fPIC $(_OBJS) ./pyBeam/obj/pyBeamAD_wrap.o -o ./pyBeam/swig/_pyBeamAD.so  $(INCLPATH) 	
+	g++ -O2 -shared -DCODI_REVERSE_TYPE -fPIC $(_OBJS) ./pyBeam/obj/pyBeamAD_wrap.o -o ./pyBeam/lib/_pyBeamAD.so  $(INCLPATH) 	
 	
 all: primal forward reverse
 
