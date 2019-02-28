@@ -48,6 +48,7 @@ void CElement::setLength() {
     addouble b = nodeA->GetCoordinate0(1) - nodeB->GetCoordinate0(1);
     addouble c = nodeA->GetCoordinate0(2) - nodeB->GetCoordinate0(2);
     addouble intermediate = pow(a ,2) + pow(b,2) + pow( c ,2) ;
+    cout << " a " << nodeA->GetCoordinate0(0) << " b " << nodeB->GetCoordinate0(0) << " c " << nodeA->GetCoordinate0(1) << endl;
     le =  sqrt(intermediate );
 };
 

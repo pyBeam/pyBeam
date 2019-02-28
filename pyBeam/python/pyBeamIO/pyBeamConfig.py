@@ -24,7 +24,7 @@
 # If not, see <http://www.gnu.org/licenses/>.
 #
 import os, sys, shutil, copy
-from util import switch
+from util.switch import switch
 #import ast
 from math import *
 
