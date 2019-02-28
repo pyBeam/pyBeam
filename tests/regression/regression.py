@@ -37,14 +37,14 @@ from pyBeamIO import ReadInputs as input
 from pyBeamIO import parseInput as parser
 import pyBeam
 
-confFile = str(os.path.realpath(__file__))[:-25] + '/OneraM6/BEAM_config.cfg'
+confFile = './BEAM_config.cfg'
 
 # Parsing Conf file
 BEAM_config = config.pyBeamConfig(confFile) 		# FSI configuration file
 
 # Specifically added for the test
-BEAM_config['B_PROPERTY'] = str(os.path.realpath(__file__))[:-25] + BEAM_config['B_PROPERTY'][2:]
-BEAM_config['B_MESH'] = str(os.path.realpath(__file__))[:-25] + BEAM_config['B_MESH'][2:] 
+BEAM_config['B_PROPERTY'] = BEAM_config['B_PROPERTY'][:]
+BEAM_config['B_MESH'] = BEAM_config['B_MESH'][:] 
 
 # Parsing mesh file
 nDim = input.readDimension(BEAM_config['B_MESH'])
@@ -57,13 +57,15 @@ Prop, nProp = input.readProp(BEAM_config['B_PROPERTY'])
 
 # Initializing objects
 beam = pyBeam.CBeamSolver()
-inputs = pyBeam.CInput()
+inputs = pyBeam.CInput(nPoint, nElem)
   
     
 # Sending to CInput object 
 parser.parseInput(BEAM_config, inputs, Constr, nConstr)
 # Assigning input values to the input object in C++
 inputs.SetParameters()
+# Initialize the input in the beam solver
+beam.InitializeInput(inputs)
 
 # Assigning values to the CNode objects in C++
 node = []  
@@ -71,7 +73,7 @@ for i in range(nPoint):
    node.append( pyBeam.CNode(node_py[i].GetID()) )
    for j in range(nDim):
       node[i].SetCoordinate(j , float(node_py[i].GetCoord()[j][0]) )
-      node[i].SetCoordinate0(j , node_py[i].GetCoord0()[j][0])
+      node[i].SetCoordinate0(j , float(node_py[i].GetCoord0()[j][0]) )
     
 # Assigning property values to the property objects in C++
 beam_prop = []
@@ -86,10 +88,11 @@ for i in range(nElem):
    #element[i].Initializer(CNode* Node1, CNode* Node2, CProperty* Property, CInput* Input, addouble AuxVector_x, addouble AuxVector_y, addouble AuxVector_z)
    #NB node starts from index 0 and the same happen in beam_prop. But in element_py (connectivity) indexes start from 1 as it is the physical connectivity read from input file
    element[i].Initializer(node[elem_py[i].GetNodes()[0,0] -1], node[elem_py[i].GetNodes()[1,0] -1], beam_prop[elem_py[i].GetProperty() -1], inputs, elem_py[i].GetAuxVector()[0,0], elem_py[i].GetAuxVector()[1,0], elem_py[i].GetAuxVector()[2,0]  )
+   beam.InitializeElement(element[i], i)
   
-iNode = 20
+beam.InitializeStructure()
 
-beam.Initialize(inputs)
+iNode = 20
 beam.SetLoads(iNode,1,5000)
 beam.SetLoads(iNode,2,1000)
 beam.Solve()

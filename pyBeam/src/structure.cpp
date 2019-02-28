@@ -324,13 +324,13 @@ void CStructure::SolveLinearStaticSystem()
 
 	std::cout << "-->  Solving Linear System, "  << std::endl;
 	
-	dU = Ksys.fullPivHouseholderQr().solve(Residual);
+  dU = Ksys.fullPivHouseholderQr().solve(Residual);
 
 	addouble relative_error = (Ksys*dU -Residual).norm() / Residual.norm(); // norm() is L2 norm
 	std::cout << "The relative error is:\n" << relative_error << std:: endl;
     if (relative_error > 1.0e-7)
     {
-    	std::cout << "Solution of Linear SYstem not precise enough!" << std:: endl;
+      std::cout << "Solution of Linear System not precise enough!" << std:: endl;
     	throw std::exception();
     }
 
@@ -402,26 +402,26 @@ void CStructure::UpdateCoord()
  */
 void CStructure::InitialCoord()
 {
-	std::cout << "---------  Resetting Initial Coordinate Values "  << std::endl;
+  std::cout << "---------  Resetting Initial Coordinate Values "  << std::endl;
 
-	X  = VectorXdDiff::Zero((nfem+1)*3);
-	X0 = VectorXdDiff::Zero((nfem+1)*3);
+  X  = VectorXdDiff::Zero((nfem+1)*3);
+  X0 = VectorXdDiff::Zero((nfem+1)*3);
 
-	addouble le = fem[0]->le;
+  addouble le = fem[0]->le;
 
-	int posX = 1;    // current  position in the X array
-	int count = 0;   // number of fe upstream the node
+  int posX = 1;    // current  position in the X array
+  int count = 0;   // number of fe upstream the node
 
-	//Browse the nodes
-	for (int id_node=1-1; id_node<= nfem + 1 -1; id_node++)
-	{
+  //Browse the nodes
+  for (int id_node=1-1; id_node<= nfem + 1 -1; id_node++)
+  {
 
-		X(posX-1) = le*count;   // careful this accumulates the error
-		X0(posX-1) = le*count;
+    X(posX-1) = le*count;   // careful this accumulates the error
+    X0(posX-1) = le*count;
 
-		posX += 3;
-		count += 1;
-	}
+    posX += 3;
+    count += 1;
+  }
 
 
 }

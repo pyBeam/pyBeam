@@ -112,6 +112,8 @@ public:
     void setGlobalDOFs();    
     
     void setLength();
+
+    addouble getLength() {return l_ini;}
     
     void setElementMass();        
     
