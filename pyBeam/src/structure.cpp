@@ -29,15 +29,19 @@
 CStructure::CStructure(CInput *input, CElement **element)
 {
 
-	FollFlag = 0;
+	FollFlag = input->Get_FollowerFlag();
 
-	DOF = input->Get_nDOF();
+	DOF = input->Get_nDOF();   // To be replaced             
 
 	// Links to the finite-element object
 	fem = element;
 
 	// Resizes and zeros the M matrices
-	nfem = input->Get_nFEM();
+	nfem = input->Get_nFEM();             // to be replaced
+        
+        // Get the constrain matrix [NODE_ID DOF_ID]
+        Constr_matrix = input->GetConstrMatrix();
+        
 
 	// Resizes and zeros the K matrices
 	Ksys.resize((nfem+1)*6,(nfem+1)*6);
@@ -52,7 +56,7 @@ CStructure::CStructure(CInput *input, CElement **element)
 
 	// Forces nodal Vector
 	Ftip     =  Vector3dDiff::Zero();
-    Fnom     =  VectorXdDiff::Zero((nfem+1)*6);
+        Fnom     =  VectorXdDiff::Zero((nfem+1)*6);
 	Fext     =  VectorXdDiff::Zero((nfem+1)*6);
 	Fint     =  VectorXdDiff::Zero((nfem+1)*6);
 	Residual =  VectorXdDiff::Zero((nfem+1)*6);
@@ -93,11 +97,11 @@ void CStructure::ReadForces(int nTotalDOF, addouble *loadVector)
  ****************************************************************/
 // This subroutine updates the external force.
 
-void CStructure::UpdateExtForces(addouble lambda, int switcher )
+void CStructure::UpdateExtForces(addouble lambda)
 {
-	if (switcher == 0)
+	if (FollFlag == 0)
 		Fext = lambda* Fnom;
-	else if (switcher == 1)
+	else if (FollFlag == 1)
 	{
 		// NOT READY YET!!!
 	}
@@ -121,16 +125,17 @@ void CStructure::AssemblyTang()
 {
 	//
 
-	std::cout  << " Assembly Tangent"  << std::endl;
+	std::cout  << " Assembly Tangent Matrix"  << std::endl;
 
-	int dof = 0;   int dof_jjj = 0;   int dof_kkk = 0;
+	int iii = 0; int dof = 0;   int dof_jjj = 0;   int dof_kkk = 0;
+        int constr_dof_id;
 	MatrixXdDiff Krotated = MatrixXdDiff::Zero(6,6);   // Matrice di appoggio
 
 	// Setting to Zero the SYSTEM Stiffness
 	Ksys = MatrixXdDiff::Zero((nfem+1)*6,(nfem+1)*6);
 
 	// Element's contribution to Ktang
-	MatrixXdDiff Ktang(12,12);
+	MatrixXdDiff Ktang(12,12);  // 12 is the dimension of the Ktang element level
 	/*------------------------------------
 	 *    Cycle on the finite elements
 	 *------------------------------------*/
@@ -172,15 +177,16 @@ void CStructure::AssemblyTang()
 
 	/*------------------------------------
 	 *    Imposing  B.C.
-	 *------------------------------------*/
-
+         *------------------------------------*/
+        
 	// Imposing BC
-	for (int iii=1; iii<= 6; iii++)
-	{
-		Ksys.row(iii-1) = VectorXdDiff::Zero((nfem+1)*6);
-		Ksys.col(iii-1) = VectorXdDiff::Zero((nfem+1)*6);
-		Ksys(iii-1,iii-1) = 1.0;
-	}
+        for (iii =1; iii<= Constr_matrix.rows(); iii++)
+        {
+            constr_dof_id = ( Constr_matrix(iii-1,1-1) -1) *6 + Constr_matrix(iii-1,2-1);
+            Ksys.row(constr_dof_id-1) = VectorXdDiff::Zero((nfem+1)*6);
+            Ksys.col(constr_dof_id-1) = VectorXdDiff::Zero((nfem+1)*6);
+            Ksys(constr_dof_id-1,constr_dof_id-1) = 1.0;          
+        }
 
 
 }
@@ -295,8 +301,14 @@ void CStructure::EvalResidual()
 {
 	Residual = Fext - Fint;
 
+        int iii = 0; int constr_dof_id = 0;
+        
 	// BC on the residuals
-	Residual.segment(1-1,6) = VectorXdDiff::Zero(6);
+        for (iii =1; iii<= Constr_matrix.rows(); iii++) {
+            constr_dof_id = ( Constr_matrix(iii-1,1-1) -1) *6 + Constr_matrix(iii-1,2-1);
+            Residual(constr_dof_id-1) = 0.0;
+        }
+        
 }
 
 
@@ -318,7 +330,7 @@ void CStructure::SolveLinearStaticSystem()
 	std::cout << "The relative error is:\n" << relative_error << std:: endl;
     if (relative_error > 1.0e-7)
     {
-    	std::cout << "Solution of Linear SYstem not enough Precise!" << std:: endl;
+    	std::cout << "Solution of Linear SYstem not precise enough!" << std:: endl;
     	throw std::exception();
     }
 
@@ -364,7 +376,7 @@ void CStructure::UpdateCoord()
 	/**/
 
 	// Browsing all the fem nodes of the current segment
-	for (int i_node=1-1; i_node<=(nfem+1)-1 ; i_node++)
+	for (int i_node=1-1; i_node<=(nfem+1)-1 ; i_node++)  // Here we need to check through the connectivity (nfem is not related to the number of nodes)
 	{
 
 		DX.segment(posX-1,3) = dU.segment(posU-1,3);  //  *
@@ -462,7 +474,7 @@ void CStructure::UpdateLength()
 void CStructure::UpdateRotationMatrix()
 {
 
-
+    //To be generalized for the considered connectivity
 
 	//=============   Updating Rotation Matrix   ======================
 

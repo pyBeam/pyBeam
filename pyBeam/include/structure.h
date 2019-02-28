@@ -50,7 +50,7 @@ private:
 
 public:
 
-    int nfem;                // number of finite elements
+    int nfem;                // number of finite elements   // has to be assigned in the constructor
 
 	int DOF;                  // In space, 6
 	int FollFlag;             // Flag for Follower forces (1)
@@ -59,7 +59,8 @@ public:
 
 	MatrixXdDiff M;      // Recall in Eigen X stays for dynamic, d for addouble:  (nfem+1)*6  X   (nfem+1)*6
 	MatrixXdDiff Ksys;
-
+ 
+        MatrixXdDiff  Constr_matrix;    // COnstraint matrix [ NODE_ID DOF_ID ]
 
 	VectorXdDiff dU;           // Displacement array (iterative)
 	VectorXdDiff X;            // Position of the fem nodes in global coordinate system
@@ -84,7 +85,7 @@ public:
 
 	void ReadForces(int nTotalDOF, addouble *loadVector);
 
-	void UpdateExtForces(addouble , int );
+	void UpdateExtForces(addouble  );
 
 	void EvalResidual();
 

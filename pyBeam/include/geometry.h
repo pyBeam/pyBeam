@@ -27,36 +27,43 @@
  */
 
 #pragma once
+#include <iostream>
+#include <fstream>
+#include <chrono>
+
 #include <math.h>
 
 #include "../include/types.h"
 
-class CNode {
+class CNode 
+{
 private:
 
 protected:
 
-  Vector3dDiff coord;
+  unsigned long ID;  
+    
+  Vector3dDiff coord = VectorXdDiff::Zero(3);
   
-  Vector3dDiff coord0; 
+  Vector3dDiff coord0 = VectorXdDiff::Zero(3); 
   
-  Vector3dDiff Vel;
+  Vector3dDiff Vel = VectorXdDiff::Zero(3);
 
-  Vector3dDiff Force;
+  Vector3dDiff Force = VectorXdDiff::Zero(3);
 
 public:
 
-  CNode(void);
+  CNode( int id);
 
-  virtual ~CNode(void);
+  ~CNode(void);
 
-  inline void SetCoordinate(int iDim, addouble val_coor) {coord(iDim) = val_coor;}
+  inline void SetCoordinate(int iDim, passivedouble val_coor) {coord(iDim) = val_coor;}
 
-  inline void SetCoordinate0(int iDim, addouble val_coor) {coord(iDim) = val_coor;}  
+  inline void SetCoordinate0(int iDim, passivedouble val_coor) {coord(iDim) = val_coor;}  
   
-  inline void SetVel(int iDim, addouble val_vel) {Vel(iDim) = val_vel;}  
+  inline void SetVel(int iDim, passivedouble val_vel) {Vel(iDim) = val_vel;}  
   
-  inline void SetForce(int iDim, addouble val_force) {Vel(iDim) = val_force;}   
+  inline void SetForce(int iDim, passivedouble val_force) {Vel(iDim) = val_force;}   
   
   inline addouble GetCoordinate(int iDim) {return coord(iDim);}
   
@@ -65,9 +72,11 @@ public:
   inline addouble GetVel(int iDim) {return Vel(iDim);} 
   
   inline addouble GetForce(int iDim) {return Force(iDim);}   
+  
+  inline int GeID() {return ID;}    
 
 };
-
+/*
 
 class CConnectivity {
 private:
@@ -76,18 +85,23 @@ protected:
 
 public:
 
-  CNode **node;
+  unsigned long nodeA;
   
-  unsigned short property;
+  unsigned long nodeB;
+  
+  unsigned long property;
+  
+  VectorXdDiff aux_vector;
 
   CConnectivity(void);
 
   virtual ~CConnectivity(void);
 
-  inline void SetNode_i(CNode *node_i) {node[0] = node_i;}
+  inline void SetNode_i(unsigned long node_i) {nodeA = node_i;};
 
-  void SetNode_j(CNode *node_j) {node[1] = node_j;}
+  void SetNode_j(unsigned long node_j) {nodeB = node_j;};
   
-  void SetProperty(unsigned short Prop) {property= Prop;}  
+  void SetProperty(unsigned long Prop) {property= Prop;} ; 
 
 };
+*/

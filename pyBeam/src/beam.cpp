@@ -53,7 +53,7 @@ CBeamSolver::~CBeamSolver(void) {
     
 }
 
-void CBeamSolver::Initialize(CInput* input_in ){
+void CBeamSolver::Initialize(CInput* input_in ){   // insert node class and connectivity
 
 
   // I'm memorizing as a member variable the object input passed from outside
@@ -93,10 +93,11 @@ void CBeamSolver::Initialize(CInput* input_in ){
   //==============================================================
 
   cout << "=========  Finite Element Initialization  ====" << std::endl;
-  unsigned long nFEM = input->Get_nFEM();
+  unsigned long nFEM = input->Get_nFEM();   //substitute from mesh file
   element = new CElement*[nFEM];
   for (unsigned long iFEM = 0; iFEM < nFEM; iFEM++){
-      element[iFEM] = new CElement(iFEM, input);
+      element[iFEM] = new CElement(iFEM);
+      // inserti element[iFem]->Initializer();
   }
 
 	//===============================================
@@ -111,7 +112,7 @@ void CBeamSolver::Initialize(CInput* input_in ){
 void CBeamSolver::Solve(void){
 
   std::cout << "#####    SETTING EXTERNAL FORCES   #####" << std::endl;
-  structure->ReadForces(nTotalDOF, loadVector);
+  structure->ReadForces(nTotalDOF, loadVector); // to be interfaced with the aerodynamic part
 
 	//===============================================
 	// LOAD STEPPING
@@ -150,7 +151,7 @@ void CBeamSolver::Solve(void){
 			 *----------------------------------------------------*/
 
 			// Update External Forces (if they are follower )
-			structure->UpdateExtForces(lambda,input->Get_FollowerFlag());
+			structure->UpdateExtForces(lambda);
 			structure->EchoFext();
 
 			// Evaluate the Residual

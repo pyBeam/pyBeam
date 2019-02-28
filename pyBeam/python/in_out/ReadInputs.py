@@ -44,7 +44,8 @@ class Point:
     self.Force = np.zeros((3,1))
     
   def GetCoord0(self):
-    return self.Coord0    
+    return self.Coord0   
+ 
 
   def GetCoord(self):
     return self.Coord
@@ -55,11 +56,15 @@ class Point:
   def GetForce(self):
     return self.Force
 
+  def GetID(self):
+    return self.ID
+
   def SetCoord0(self, val_Coord):
     x, y, z = val_Coord
     self.Coord0[0] = x
     self.Coord0[1] = y
     self.Coord0[2] = z
+  
 
   def SetCoord(self, val_Coord):
     x, y, z = val_Coord
@@ -80,12 +85,12 @@ class Point:
     self.Force[2] = fz
    
   def SetID(self,ID):
-    self.ID = ID
+    self.ID = int(ID)
 
 class Element:  # for boundary elements
     
   def __init__(self):    
-    self.Conn = np.zeros((2,1))    
+    self.Conn = np.zeros((2,1), dtype=int)    
     self.ID = 0
     self.Property = 0  
     self.AuxVect = np.zeros((3,1))
@@ -117,10 +122,13 @@ class Element:  # for boundary elements
     return self.Conn
 
   def GetProperty(self):
-    return self.Kind
+    return self.Property
 
   def GetID(self):
     return self.ID
+
+  def GetAuxVector(self):
+    return self.AuxVect
 
 class Property:
   """ Description. """
@@ -209,10 +217,40 @@ def readMesh(Mesh_file,nDim):
 	      z = float(line[2])
 	    node[iPoint].SetCoord((x,y,z))
             node[iPoint].SetCoord0((x,y,z))
-            node[iPoint].SetID(iPoint) # sequential ID
+            node[iPoint].SetID(int(iPoint+1)) # sequential ID
 	  continue	
 	
     return node, nPoint	
+
+def readConstr(Mesh_file):	  
+	
+    nConstr = 0         
+     
+    with open(Mesh_file, 'r') as meshfile:
+      #print('Opened mesh file ' + Mesh_file + '.')
+      while 1:
+        line = meshfile.readline()
+	if not line:
+	  break	
+        if line.strip():
+          if (line[0] == '%'):
+            continue
+	pos = line.find('NCONSTR')
+	if pos != -1:
+	  line = line.strip('\r\n')
+          line = line.split("=",1)
+	  nConstr = int(line[1])
+          Constr = np.zeros((nConstr,2), dtype=int)
+          for iConstr in range(nConstr):
+	    line = meshfile.readline()
+	    line = line.strip('\r\n')
+	    line = line.split() ## important modification in case the formatting includes tabs
+	    nid = int(line[0])
+	    dofid = int(line[1])
+            Constr[iConstr,0] = nid;Constr[iConstr,1] = dofid; 
+	  continue	
+	
+    return Constr, nConstr	
 	
 	
 def readConnectivity(Mesh_file):	
@@ -244,7 +282,7 @@ def readConnectivity(Mesh_file):
               Elem[iElem].SetConnectivity([ int(nodes[0]), int(nodes[1]) ])   
               Elem[iElem].SetConnectivity([ int(nodes[0]), int(nodes[1]) ])
               Elem[iElem].SetID(iElem)   
-              Elem[iElem].SetProperty(nodes[2])   
+              Elem[iElem].SetProperty(int(nodes[2]))   
               Elem[iElem].SetAuxVector([ float(AuxVector[0]) , float(AuxVector[1]), float(AuxVector[2]) ])
 	  continue
 	else:

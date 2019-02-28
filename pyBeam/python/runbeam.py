@@ -35,33 +35,50 @@ def RunBeam():
 
   confFile = '/media/rocco/290CF0EB732D1122/Adjoint_project/pyBeam/tests/OneraM6/BEAM_config.cfg'
 
-  BEAM_config = in_out.BEAMConfig(confFile) 		# FSI configuration file
+# Parsing Conf file
+BEAM_config = in_out.BEAMConfig(confFile) 		# FSI configuration file
+
+# Parsing mesh file
+nDim = in_out.readDimension(BEAM_config['B_MESH'])
+node_py, nPoint = in_out.readMesh(BEAM_config['B_MESH'],nDim)
+elem_py, nElem = in_out.readConnectivity( BEAM_config['B_MESH']) 
+Constr, nConstr = in_out.readConstr(BEAM_config['B_MESH'])  
+# Parsing Property file
+Prop, nProp = in_out.readProp(BEAM_config['B_PROPERTY'])
 
 
-  # Initializing objects
-  beam = swig.CBeamSolver()
-  inputs = swig.CInput()
+# Initializing objects
+beam = swig.CBeamSolver()
+inputs = swig.CInput()
   
     
-  # Parsing config file ans sending to CInput object  
-  Input_parsing(BEAM_config, inputs)
-  inputs.SetParameters()
-  
-  # Parsing mesh file
-  nDim = in_out.readDimension(BEAM_config['B_MESH'])
-  node, nPoint = in_out.readMesh(BEAM_config['B_MESH'],nDim)
-  Elem, nElem = in_out.readConnectivity(BEAM_config['B_MESH'])  
-  # Parsing Property file
-  Prop, nProp = in_out.readProp(BEAM_config['B_PROPERTY'])
+# Sending to CInput object 
+swig.Input_parsing(BEAM_config, inputs, Constr, nConstr)
+# Assigning input values to the input object in C++
+inputs.SetParameters()
 
-  # Assigning property values to the property objects in C++
-  beam_prop = []
-  for i in range(nProp):
-      beam_prop.append(swig.CProperty(i))
-      beam_prop[i].SetSectionProperties( Prop[i].GetA(),  Prop[i].GetIyy(),  Prop[i].GetIzz(),  Prop[i].GetJt())
- 
+# Assigning values to the CNode objects in C++
+node = []  
+for i in range(nPoint):
+   node.append( swig.CNode(node_py[i].GetID()) )
+   for j in range(nDim):
+      node[i].SetCoordinate(j , float(node_py[i].GetCoord()[j][0]) )
+      node[i].SetCoordinate0(j , node_py[i].GetCoord0()[j][0])
+    
+# Assigning property values to the property objects in C++
+beam_prop = []
+for i in range(nProp):
+    beam_prop.append(swig.CProperty(i))
+    beam_prop[i].SetSectionProperties( Prop[i].GetA(),  Prop[i].GetIyy(),  Prop[i].GetIzz(),  Prop[i].GetJt())
   
-  
+# Assigning element values to the property objects in C++ 
+element =[]
+for i in range(nElem): 
+   element.append(swig.CElement(i))
+   #element[i].Initializer(CNode* Node1, CNode* Node2, CProperty* Property, CInput* Input, addouble AuxVector_x, addouble AuxVector_y, addouble AuxVector_z)
+   #NB node starts from index 0 and the same happen in beam_prop. But in element_py (connectivity) indexes start from 1 as it is the physical connectivity read from input file
+   element[i].Initializer(node[elem_py[i].GetNodes()[0,0] -1], node[elem_py[i].GetNodes()[1,0] -1], beam_prop[elem_py[i].GetProperty() -1], inputs, elem_py[i].GetAuxVector()[0,0], elem_py[i].GetAuxVector()[1,0], elem_py[i].GetAuxVector()[2,0]  )
+   
   
   iNode = 20
 
@@ -110,7 +127,7 @@ def RunBeam():
 
   
   
-def Input_parsing(BEAM_config, inputs):  
+def Input_parsing(BEAM_config, inputs,Constr, nConstr):  
     
     inputs.SetBeamLength(BEAM_config['B_LENGTH'])
     inputs.SetWebThickness(BEAM_config['W_THICKNESS'])
@@ -124,7 +141,11 @@ def Input_parsing(BEAM_config, inputs):
     inputs.SetLoadSteps(BEAM_config['LOAD_STEPS'])
     inputs.SetNStructIter(BEAM_config['N_STRUCT_ITER'])
     inputs.SetConvCriterium(BEAM_config['CONV_CRITERIUM'])
-
+    
+    #Now setting the constraints
+    inputs.SetnConstr(nConstr)
+    for iConstr in range(nConstr): 
+        inputs.SetSingleConstr( iConstr, Constr[iConstr,0], Constr[iConstr,1] )
   
 # -------------------------------------------------------------------
 #  Run Main Program

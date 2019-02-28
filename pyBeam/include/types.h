@@ -27,6 +27,8 @@
  
 #pragma once
 
+#include <math.h>     
+#include <cmath> 
 #include <Eigen/Dense>
 #include <Eigen/Eigenvalues>
 #include <Eigen/LU>

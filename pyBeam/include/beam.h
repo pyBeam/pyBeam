@@ -45,7 +45,7 @@ private:
   passivedouble *loadGradient;
 
   CNode **node;                     /*!< \brief Vector which stores the node initial coordinates. */
-  CConnectivity **connectivity;      /*!< \brief Vector which stores the connectivity. */
+  //CConnectivity **connectivity;      /*!< \brief Vector which stores the connectivity. */
 
   CInput* input;
 
