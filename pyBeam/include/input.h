@@ -103,7 +103,7 @@ protected:
 	
 public:
 
-  CInput(void);
+  CInput(int py_nPoint, int py_nElem);
   
   virtual ~CInput(void);
   

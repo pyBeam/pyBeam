@@ -54,6 +54,7 @@ private:
   CStructure* structure;  /*!< \brief Pointer which the defines the structure. */
 
   int nDOF, nTotalDOF, nDim;
+  unsigned long nFEM;
   addouble *loadVector;
   addouble thickness;
 
@@ -65,7 +66,11 @@ public:
   
   virtual ~CBeamSolver(void);
   
-  void Initialize(CInput *input );
+  void InitializeInput(CInput *py_input);
+
+  void InitializeElement(CElement *py_element, unsigned long iFEM);
+
+  void InitializeStructure(void);
 
   void RegisterLoads(void);
 
