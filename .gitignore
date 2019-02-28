@@ -26,6 +26,7 @@ pyBeam/lib/_pyBeamAD.so
 pyBeam/lib/_pyBeamFM.so
 
 pybeam/python/in_out/__init__.pyc
+pybeam/python/in_out/__pycache__/
 pybeam/python/in_out/BEAM_config.pyc
 pybeam/python/in_out/ReadInputs.pyc
 pybeam/python/util/__init__.pyc
@@ -41,3 +42,4 @@ pyBeam/swig/pyBeamFM.py
 pyBeam/swig/pyBeamFM_wrap.cxx
 pyBeam/swig/pyBeam_wrap.cxx
 pyBeam/swig/Input_parsing.pyc
+pyBeam/swig/*.so
