@@ -59,7 +59,7 @@ public:
 
   inline void SetCoordinate(int iDim, passivedouble val_coor) {coord(iDim) = val_coor;}
 
-  inline void SetCoordinate0(int iDim, passivedouble val_coor) {coord(iDim) = val_coor;}  
+  inline void SetCoordinate0(int iDim, passivedouble val_coor) {coord0(iDim) = val_coor;}
   
   inline void SetVel(int iDim, passivedouble val_vel) {Vel(iDim) = val_vel;}  
   
