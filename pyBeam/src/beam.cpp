@@ -89,34 +89,19 @@ void CBeamSolver::InitializeInput(CInput* py_input){   // insert node class and 
   unsigned long nFEM = input->Get_nFEM();   //substitute from mesh file
   element = new CElement*[nFEM];
 
-}
-
-
-void CBeamSolver::InitializeNode(CNode *py_node, unsigned long iNode){
-
-  node[iNode] = py_node;
-  cout << "Node " << iNode << " coord(0): " << AD::GetValue(node[iNode]->GetCoordinate0(0)) << endl;
-
-}
-
-void CBeamSolver::InitializeElement(CElement* py_element,unsigned long iFEM){
-
-  element[iFEM] = py_element;
-  cout << "Element " << iFEM << " length: " << AD::GetValue(element[iFEM]->getLength()) << endl;
-
-}
-
-
-void CBeamSolver::InitializeStructure(void){
-
   //===============================================
   //  Initialize structural solver
   //===============================================
-
   structure = NULL;
-  structure = new CStructure(input, element, node);
 
 }
+
+
+void CBeamSolver::InitializeNode(CNode *py_node, unsigned long iNode) {node[iNode] = py_node;}
+
+void CBeamSolver::InitializeElement(CElement* py_element,unsigned long iFEM) {element[iFEM] = py_element;}
+
+void CBeamSolver::InitializeStructure(void){structure = new CStructure(input, element, node);}
 
 void CBeamSolver::Solve(void){
 
