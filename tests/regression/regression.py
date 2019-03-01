@@ -34,7 +34,7 @@ import pyBeam
 
 # Load running directory
 rundir = os.path.dirname(os.path.realpath(__file__))
-confFile = rundir + '/BEAM_config.cfg'
+confFile = rundir + '/config.cfg'
 
 # Parsing Conf file
 BEAM_config = config.pyBeamConfig(confFile)  # Beam configuration file
@@ -123,9 +123,3 @@ if (test_val < 1e-8):
   exit(0)
 else:
   exit(1)
-  
-  
-  
-  
-  
-  

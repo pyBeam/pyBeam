@@ -80,7 +80,7 @@ public:
 
   passivedouble OF_NodeDisplacement(int iNode);
 
-  passivedouble ComputeAdjoint(void);
+  void ComputeAdjoint(void);
 
   // Inlined functions
 
@@ -94,7 +94,9 @@ public:
 
   inline passivedouble ExtractInitialCoordinates(int iNode, int iDim) {return AD::GetValue(structure->GetInitialCoordinates(iNode, iDim));}
 
-  inline void StartRecording(void) { AD::StartRecording(); AD::RegisterInput(thickness);}
+  inline void StartRecording(void) { AD::StartRecording();}
+
+  inline void RegisterThickness(void) { AD::RegisterInput(thickness);}
 
   inline void StopRecording(void) { AD::RegisterOutput(objective_function); AD::StopRecording(); }
 

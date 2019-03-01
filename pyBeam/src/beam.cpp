@@ -237,23 +237,17 @@ void CBeamSolver::RegisterLoads(void){
     
 }
 
-passivedouble CBeamSolver::ComputeAdjoint(void){
-    
-    addouble gradient;
-    
+void CBeamSolver::ComputeAdjoint(void){
+       
     AD::SetDerivative(objective_function, 1.0);
     
     AD::ComputeAdjoint();
-    
-    gradient = AD::GetDerivative(thickness);
     
     if (register_loads){
         for (int iLoad = 0; iLoad < nTotalDOF; iLoad++){
             loadGradient[iLoad] = AD::GetValue(AD::GetDerivative(loadVector[iLoad]));
         }
     }
-    
-    return AD::GetValue(gradient);
 }
 
 

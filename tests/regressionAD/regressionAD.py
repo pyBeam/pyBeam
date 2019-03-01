@@ -25,68 +25,73 @@
 #
 
 
-import pdb
 import numpy as np
 import sys, os
-sys.path.append(str(os.path.realpath(__file__))[:-35] + '/pyBeam')
-sys.path.append(str(os.path.realpath(__file__))[:-35] + '/pyBeam/python')
-import in_out
-import swig
+from pyBeamIO import pyBeamConfig as config
+from pyBeamIO import ReadInputs as input
+from pyBeamIO import parseInput as parser
+import pyBeamAD
 
-confFile = str(os.path.realpath(__file__))[:-29] + '/OneraM6/BEAM_config.cfg'
+# Load running directory
+rundir = os.path.dirname(os.path.realpath(__file__))
+confFile = rundir + '/config.cfg'
 
 # Parsing Conf file
-BEAM_config = in_out.BEAMConfig(confFile) 		# FSI configuration file
+BEAM_config = config.pyBeamConfig(confFile)  # Beam configuration file
 
 # Specifically added for the test
-BEAM_config['B_PROPERTY'] = str(os.path.realpath(__file__))[:-29] + BEAM_config['B_PROPERTY'][2:]
-BEAM_config['B_MESH'] = str(os.path.realpath(__file__))[:-29] + BEAM_config['B_MESH'][2:]  
+BEAM_config['B_PROPERTY'] = rundir + '/' + BEAM_config['B_PROPERTY'][:]
+BEAM_config['B_MESH'] = rundir + '/' + BEAM_config['B_MESH'][:]
   
 # Parsing mesh file
-nDim = in_out.readDimension(BEAM_config['B_MESH'])
-node_py, nPoint = in_out.readMesh(BEAM_config['B_MESH'],nDim)
-elem_py, nElem = in_out.readConnectivity( BEAM_config['B_MESH']) 
-Constr, nConstr = in_out.readConstr(BEAM_config['B_MESH'])  
+nDim = input.readDimension(BEAM_config['B_MESH'])
+node_py, nPoint = input.readMesh(BEAM_config['B_MESH'],nDim)
+elem_py, nElem = input.readConnectivity( BEAM_config['B_MESH'])
+Constr, nConstr = input.readConstr(BEAM_config['B_MESH'])
 # Parsing Property file
-Prop, nProp = in_out.readProp(BEAM_config['B_PROPERTY'])
-
+Prop, nProp = input.readProp(BEAM_config['B_PROPERTY'])
 
 # Initializing objects
-beam = swig.CBeamSolver()
-inputs = swig.CInput()
-  
+beam = pyBeamAD.CBeamSolver()
+inputs = pyBeamAD.CInput(nPoint, nElem)
+
+# Start recording
+beam.StartRecording()
     
 # Sending to CInput object 
-swig.Input_parsing(BEAM_config, inputs, Constr, nConstr)
+parser.parseInput(BEAM_config, inputs, Constr, nConstr)
 # Assigning input values to the input object in C++
 inputs.SetParameters()
+# Initialize the input in the beam solver
+beam.InitializeInput(inputs)
 
 # Assigning values to the CNode objects in C++
 node = []  
 for i in range(nPoint):
-   node.append( swig.CNode(node_py[i].GetID()) )
+   node.append( pyBeamAD.CNode(node_py[i].GetID()) )
    for j in range(nDim):
       node[i].SetCoordinate(j , float(node_py[i].GetCoord()[j][0]) )
-      node[i].SetCoordinate0(j , node_py[i].GetCoord0()[j][0])
+      node[i].SetCoordinate0(j , float(node_py[i].GetCoord0()[j][0]) )
+   beam.InitializeNode(node[i], i)
     
 # Assigning property values to the property objects in C++
 beam_prop = []
 for i in range(nProp):
-    beam_prop.append(swig.CProperty(i))
+    beam_prop.append(pyBeamAD.CProperty(i))
     beam_prop[i].SetSectionProperties( Prop[i].GetA(),  Prop[i].GetIyy(),  Prop[i].GetIzz(),  Prop[i].GetJt())
   
 # Assigning element values to the property objects in C++ 
 element =[]
 for i in range(nElem): 
-   element.append(swig.CElement(i))
+   element.append(pyBeamAD.CElement(i))
    #element[i].Initializer(CNode* Node1, CNode* Node2, CProperty* Property, CInput* Input, addouble AuxVector_x, addouble AuxVector_y, addouble AuxVector_z)
    #NB node starts from index 0 and the same happen in beam_prop. But in element_py (connectivity) indexes start from 1 as it is the physical connectivity read from input file
    element[i].Initializer(node[elem_py[i].GetNodes()[0,0] -1], node[elem_py[i].GetNodes()[1,0] -1], beam_prop[elem_py[i].GetProperty() -1], inputs, elem_py[i].GetAuxVector()[0,0], elem_py[i].GetAuxVector()[1,0], elem_py[i].GetAuxVector()[2,0]  )
+   beam.InitializeElement(element[i], i)
+  
+beam.InitializeStructure()
   
 iNode = 20
-
-beam.StartRecording()
-beam.Initialize(inputs)
 beam.SetLoads(iNode,1,5000)
 beam.SetLoads(iNode,2,1000)
 beam.RegisterLoads()
@@ -94,10 +99,9 @@ beam.Solve()
 displacement = beam.OF_NodeDisplacement(iNode)
 beam.StopRecording()
 
-thickness_gradient = beam.ComputeAdjoint()
+beam.ComputeAdjoint()
 
 print("Objective Function - Displacement(",iNode,") = ", displacement)
-print("t' = ", thickness_gradient)
 
 coordinate_X = []
 coordinate_Y = []
@@ -119,15 +123,16 @@ for iNode in range(0,21):
   coordinate_Y0.append(beam.ExtractInitialCoordinates(iNode, 1))
   coordinate_Z0.append(beam.ExtractInitialCoordinates(iNode, 2))    
 
+delta_gradient_x = beam.ExtractLoadGradient(iNode,0) + 0.0017035445423928379
+delta_gradient_y = beam.ExtractLoadGradient(iNode,1) - 0.0020190915772016127
+delta_gradient_z = beam.ExtractLoadGradient(iNode,2) - 1.4059868175534144e-05
 
-test_val = np.abs(thickness_gradient) - np.abs(-515.5113533327299)
+test_val = np.sqrt(delta_gradient_x**2 + delta_gradient_y**2 + delta_gradient_z**2)
 
 print("Tolerance: ",test_val)
 
-# Tolerance is set to 1E-6
-if (test_val < 1e-5):
+# Tolerance is set to 1E-8
+if (abs(test_val) < 1e-8):
   exit(0)
 else:
   exit(1)
-
-
