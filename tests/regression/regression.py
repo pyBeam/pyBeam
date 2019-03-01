@@ -27,9 +27,8 @@
 
 import numpy as np
 import sys, os
-from pyBeamIO import pyBeamConfig as config
-from pyBeamIO import ReadInputs as input
-from pyBeamIO import parseInput as parser
+from pyBeamIO import pyBeamConfig as pyConfig
+from pyBeamIO import pyBeamInput as pyInput
 import pyBeam
 
 # Load running directory
@@ -37,26 +36,26 @@ rundir = os.path.dirname(os.path.realpath(__file__))
 confFile = rundir + '/config.cfg'
 
 # Parsing Conf file
-BEAM_config = config.pyBeamConfig(confFile)  # Beam configuration file
+config = pyConfig.pyBeamConfig(confFile)  # Beam configuration file
 
 # Specifically added for the test
-BEAM_config['B_PROPERTY'] = rundir + '/' + BEAM_config['B_PROPERTY'][:]
-BEAM_config['B_MESH'] = rundir + '/' + BEAM_config['B_MESH'][:]
+config['B_PROPERTY'] = rundir + '/' + config['B_PROPERTY'][:]
+config['B_MESH'] = rundir + '/' + config['B_MESH'][:]
 
 # Parsing mesh file
-nDim = input.readDimension(BEAM_config['B_MESH'])
-node_py, nPoint = input.readMesh(BEAM_config['B_MESH'],nDim)
-elem_py, nElem = input.readConnectivity( BEAM_config['B_MESH'])
-Constr, nConstr = input.readConstr(BEAM_config['B_MESH'])
+nDim = pyInput.readDimension(config['B_MESH'])
+node_py, nPoint = pyInput.readMesh(config['B_MESH'],nDim)
+elem_py, nElem = pyInput.readConnectivity( config['B_MESH'])
+Constr, nConstr = pyInput.readConstr(config['B_MESH'])
 # Parsing Property file
-Prop, nProp = input.readProp(BEAM_config['B_PROPERTY'])
+Prop, nProp = pyInput.readProp(config['B_PROPERTY'])
 
 # Initializing objects
 beam = pyBeam.CBeamSolver()
 inputs = pyBeam.CInput(nPoint, nElem)
 
 # Sending to CInput object 
-parser.parseInput(BEAM_config, inputs, Constr, nConstr)
+pyInput.parseInput(config, inputs, Constr, nConstr)
 # Assigning input values to the input object in C++
 inputs.SetParameters()
 # Initialize the input in the beam solver
