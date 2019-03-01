@@ -418,10 +418,13 @@ void CStructure::InitialCoord()
   for (int id_node=1-1; id_node<= nfem + 1 -1; id_node++)
   {
 
-    X(posX-1) = le*count;   // careful this accumulates the error
-    X0(posX-1) = le*count;
+    //X(posX-1) = le*count;   // careful this accumulates the error
+    //X0(posX-1) = le*count;
 
-    cout << "Coord: " << node[id_node]->GetCoordinate(0) << " " << node[id_node]->GetCoordinate(1) << endl;
+    for (int iDim=0; iDim < 3; iDim++) {
+      X(posX+iDim-1) = node[id_node]->GetCoordinate(iDim);
+      X0(posX+iDim-1) = node[id_node]->GetCoordinate0(iDim);
+    }
 
     posX += 3;
     count += 1;
