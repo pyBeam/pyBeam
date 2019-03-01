@@ -131,8 +131,9 @@ test_val = np.sqrt(delta_gradient_x**2 + delta_gradient_y**2 + delta_gradient_z*
 
 print("Tolerance: ",test_val)
 
+
 # Tolerance is set to 1E-8
-if (abs(test_val) < 1e-8):
+if (abs(test_val) < abs(1e-8)):
   exit(0)
 else:
   exit(1)
