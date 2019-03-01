@@ -25,26 +25,23 @@
 #
 
 
-#import pdb
 import numpy as np
 import sys, os
-#sys.path.append(str(os.path.realpath(__file__))[:-31] + '/pyBeam')
-#sys.path.append(str(os.path.realpath(__file__))[:-31] + '/pyBeam/python')
-#sys.path.append('../../pyBeam')
-#sys.path.append('../../pyBeam/python')
 from pyBeamIO import pyBeamConfig as config
 from pyBeamIO import ReadInputs as input
 from pyBeamIO import parseInput as parser
 import pyBeam
 
-confFile = './BEAM_config.cfg'
+# Load running directory
+rundir = os.path.dirname(os.path.realpath(__file__))
+confFile = rundir + '/BEAM_config.cfg'
 
 # Parsing Conf file
-BEAM_config = config.pyBeamConfig(confFile) 		# FSI configuration file
+BEAM_config = config.pyBeamConfig(confFile)  # Beam configuration file
 
 # Specifically added for the test
-BEAM_config['B_PROPERTY'] = BEAM_config['B_PROPERTY'][:]
-BEAM_config['B_MESH'] = BEAM_config['B_MESH'][:] 
+BEAM_config['B_PROPERTY'] = rundir + '/' + BEAM_config['B_PROPERTY'][:]
+BEAM_config['B_MESH'] = rundir + '/' + BEAM_config['B_MESH'][:]
 
 # Parsing mesh file
 nDim = input.readDimension(BEAM_config['B_MESH'])
@@ -54,12 +51,10 @@ Constr, nConstr = input.readConstr(BEAM_config['B_MESH'])
 # Parsing Property file
 Prop, nProp = input.readProp(BEAM_config['B_PROPERTY'])
 
-
 # Initializing objects
 beam = pyBeam.CBeamSolver()
 inputs = pyBeam.CInput(nPoint, nElem)
-  
-    
+
 # Sending to CInput object 
 parser.parseInput(BEAM_config, inputs, Constr, nConstr)
 # Assigning input values to the input object in C++
