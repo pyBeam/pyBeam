@@ -1,10 +1,10 @@
 /*
  * pyBeam, a Beam Solver
  *
- * Copyright (C) 2018 Tim Albring, Ruben Sanchez, Rauno Cavallaro
+ * Copyright (C) 2018 Tim Albring, Ruben Sanchez, Rocco Bombardieri, Rauno Cavallaro 
  * 
  * Developers: Tim Albring, Ruben Sanchez (SciComp, TU Kaiserslautern)
- *             Rauno Cavallaro (Carlos III University Madrid)
+ *             Rocco Bombardieri, Rauno Cavallaro (Carlos III University Madrid)
  *
  * This file is part of pyBeam.
  *
@@ -35,6 +35,7 @@
 
 #include "../include/element.h"
 #include "../include/rotations.h"
+#include "../include/geometry.h"
 #include "../include/input.h"
 
 #include <iostream>
@@ -50,16 +51,18 @@ private:
 
 public:
 
-    int nfem;                // number of finite elements
+    int nfem;                // number of finite elements   // has to be assigned in the constructor
 
 	int DOF;                  // In space, 6
 	int FollFlag;             // Flag for Follower forces (1)
 
 	CElement **fem;      // Pointer to the first finite element
+  CNode **node;        // Pointer to the first finite element
 
 	MatrixXdDiff M;      // Recall in Eigen X stays for dynamic, d for addouble:  (nfem+1)*6  X   (nfem+1)*6
 	MatrixXdDiff Ksys;
-
+ 
+        MatrixXdDiff  Constr_matrix;    // COnstraint matrix [ NODE_ID DOF_ID ]
 
 	VectorXdDiff dU;           // Displacement array (iterative)
 	VectorXdDiff X;            // Position of the fem nodes in global coordinate system
@@ -72,7 +75,7 @@ public:
 	Vector3dDiff Ftip;      // (vector read from the input file) - needed as basis to update the Fext
 	VectorXdDiff Fnom;        // Array of nominal forces
 
-	CStructure(CInput *input, CElement **element);
+  CStructure(CInput *input, CElement **element, CNode **container_node);
 
 	~CStructure();
 
@@ -84,7 +87,7 @@ public:
 
 	void ReadForces(int nTotalDOF, addouble *loadVector);
 
-	void UpdateExtForces(addouble , int );
+	void UpdateExtForces(addouble  );
 
 	void EvalResidual();
 

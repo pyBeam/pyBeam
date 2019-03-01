@@ -24,21 +24,29 @@
  *
  */
 
+#include <iostream>
+#include <fstream>
+#include <chrono>
+
+#include <Eigen/Dense>
+#include <Eigen/Eigenvalues>
+
+#include "../include/property.h"
+
+using namespace std;
+using namespace Eigen;
+
+CProperty::CProperty(int ID) {PropertyID = ID; }
+
+void CProperty::SetSectionProperties(passivedouble A_in, passivedouble Iyy_in, passivedouble Izz_in, passivedouble Jt_in) { 
+    
+    
+    A = A_in;  Iyy = Iyy_in; Izz = Izz_in;  J0 = Iyy + Izz;  Jt = Jt_in;
+    //cout << A << endl;
+    //cout << Iyy << endl;
+    //cout << Izz << endl;
+    //cout << J0 << endl;
+} 
 
 
-#ifdef CODI_REVERSE_TYPE
-#include "../include/datatypes/ad_reverse.hpp"
-#elif CODI_FORWARD_TYPE
-#include "../include/datatypes/ad_forward.hpp"
-#else
-#include "../include/datatypes/ad_passive.hpp"
-#endif
-
-namespace AD {
-#ifdef CODI_REVERSE_TYPE
-
-  /*--- Initialization of the tape ---*/
-  addouble::TapeType& globalTape = addouble::getGlobalTape();
-
-#endif
-}
+CProperty::~CProperty(void) {};

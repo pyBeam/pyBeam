@@ -28,97 +28,65 @@
 #include "../include/element.h"
 #include <iostream>
 
+CElement::CElement(void){
+	
+}
 
-CElement::CElement(int element_ID) { iElement = element_ID; };
+CElement::CElement(unsigned long iElement, CInput *input){
+    
+  le  = input->Get_le();
+	Jx  = input->Get_Jx();
+	m_e = input->Get_m_e();
+	A   = input->Get_A();
+	EIz = input->Get_EIz();
+	EIy = input->Get_EIy();
+	GJ  = input->Get_GJ();
+	AE  = input->Get_AE();
+	m   = input->Get_m();
+	Iyy = input->Get_Iyy();
+	Izz = input->Get_Izz();
 
-void CElement::setGlobalDOFs(){
-  
-  int nodeIndexA =  nodeA-> GeID();
-  int nodeIndexB =  nodeB-> GeID();
-  int i = 0;
-  for (int i=1; i<=6; i++)
-  GlobalDOFs(i-1) = (nodeIndexA-1)*6 + i -1;// <<  (nodeIndexA-1)*6 + i -1  << (nodeIndexA-1)*6 + i -1 << (nodeIndexA-1)*6 + i -1 << (nodeIndexA-1)*6 + i -1 << (nodeIndexA-1)*6 + i -1;      
-  GlobalDOFs(6+i-1) = (nodeIndexB-1)*6 + i -1; // <<  (nodeIndexB-1)*6 + i -1  << (nodeIndexB-1)*6 + i -1 << (nodeIndexB-1)*6 + 4 -1 << (nodeIndexB-1)*6 + 5 -1 << (nodeIndexB-1)*6 + 6 -1;      
+	elemdofs = 2*input->Get_nDOF();
 
-  
-};  
+	Mfem  = MatrixXdDiff::Zero(elemdofs,elemdofs);
 
-void CElement::setLength() {
-    addouble a = nodeA->GetCoordinate0(0) - nodeB->GetCoordinate0(0);
-    addouble b = nodeA->GetCoordinate0(1) - nodeB->GetCoordinate0(1);
-    addouble c = nodeA->GetCoordinate0(2) - nodeB->GetCoordinate0(2);
-    addouble intermediate = pow(a ,2) + pow(b,2) + pow( c ,2) ;
-    le =  sqrt(intermediate );
-};
-
-void CElement::setElementMass(){
-    // Still don't get why I need two variables for that
-    m = property->GetA()*le* input->GetDensity();
-    m_e = property->GetA()*le* input->GetDensity();
-}; 
+	fint = VectorXdDiff::Zero(elemdofs);
 
 
-void CElement::Initializer(CNode* Node1, CNode* Node2, CProperty* Property, CInput* Input, passivedouble AuxVector_x, passivedouble AuxVector_y, passivedouble AuxVector_z){
-    
-    // Associate the nodes object   
-    SetNode_1( Node1) ;
-    SetNode_2( Node2);  
-    // Calculate element DOFs
-    setGlobalDOFs();
-    //  Associate property
-    SetProperty(Property);
-    // Associate all inputs
-    SetInput(Input);        
-    // set auxiliary vector        
-    SetAuxVector(AuxVector_x, AuxVector_y, AuxVector_z);
-    
-    
-    setLength();
-    setElementMass();
-    J0 = property->GetJ0();
-    A = property->GetA();
-    EIz = input->GetYoungModulus()*property->GetIzz();
-    EIy = input->GetYoungModulus()*property->GetIyy();
-    GJ = input->GetShear()*property->GetJt();
-    AE = input->GetYoungModulus()*property->GetA();
-    Iyy = property->GetIyy();
-    Izz = property->GetIzz();
-    
-    
-    //Mass matrix initialization (element level)
-    Mfem  = MatrixXdDiff::Zero(elemdofs,elemdofs);   
-    //Internal forces vector initialization (element level)
-    fint = VectorXdDiff::Zero(elemdofs);    
-    
-    Rrig = MatrixXdDiff::Zero(6,6);         // Rotation Matrix
-    R     = MatrixXdDiff::Identity(6,6);    // Initial Rotation Matrix
-    Rprev = MatrixXdDiff::Identity(6,6);    // Initial Rotation Matrix
-    
-    l_act  = le;
-    l_ini  = le;
-    l_prev = le;    
-    
-    eps  = VectorXdDiff::Zero(6);   // Elastic Cumulative deformation
+	Rrig = MatrixXdDiff::Zero(6,6);         // Rotation Matrix
+	R     = MatrixXdDiff::Identity(6,6);    // Initial Rotation Matrix
+	Rprev = MatrixXdDiff::Identity(6,6);    // Initial Rotation Matrix
+
+	l_act  = le;
+	l_ini  = le;
+	l_prev = le;
+
+	eps  = VectorXdDiff::Zero(6);   // Elastic Cumulative deformation
     phi  = VectorXdDiff::Zero(6);   // Elastic Cumulative tension
-    
-    // INITIALIZATION of KPRIM  (linear)
-    
+
+    // INITIALIZATION of KPRIM
+
     VectorXdDiff diagonale = VectorXdDiff::Zero(6);
     Kprim = MatrixXdDiff::Zero(6,6);
-    
+
     diagonale << AE/l_ini  , GJ/l_ini  ,  4*EIy/l_ini  ,   4*EIz/l_ini , 4*EIy/l_ini , 4*EIz/l_ini ;
-    
+
     // Writing the diagonal
     for (unsigned short index=0; index < 6; index++)
     {
-        Kprim(index,index) = diagonale(index);
-    }
-    
+      Kprim(index,index) = diagonale(index);
+     }
+
     Kprim(3-1,5-1) = 2*EIy/l_ini;  Kprim(5-1,3-1) = Kprim(3-1,5-1);
     Kprim(4-1,6-1) = 2*EIz/l_ini;  Kprim(6-1,4-1) = Kprim(4-1,6-1);
-    
-    
+
+	
 }
+
+CElement::~CElement(void){
+	
+}
+
 
 //-----------------------------------------------
 // Evaluates FEM element matrix according to Rao
@@ -126,7 +94,7 @@ void CElement::Initializer(CNode* Node1, CNode* Node2, CProperty* Property, CInp
 void CElement::ElementMass_Rao()
 {
 	// The Finite Element Method in Engineering- S.S. Rao
-    addouble r=J0/A;
+    addouble r=Jx/A;
 
     // Element matrix
 
@@ -455,5 +423,3 @@ void CElement::EvalRotMatDEBUG(VectorXdDiff &dU_AB , VectorXdDiff &X_AB , Matrix
 
 
 }
-
-CElement::~CElement(void) {};

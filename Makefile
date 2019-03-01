@@ -13,7 +13,8 @@ _SRC = ./pyBeam/src/main.cpp \
        ./pyBeam/src/element.cpp \
        ./pyBeam/src/structure.cpp \
        ./pyBeam/src/rotations.cpp \
-       ./pyBeam/src/beam.cpp
+       ./pyBeam/src/beam.cpp \
+       ./pyBeam/src/property.cpp
 
 _OBJS = ./pyBeam/obj/main.o \
         ./pyBeam/obj/ad.o \
@@ -22,7 +23,8 @@ _OBJS = ./pyBeam/obj/main.o \
         ./pyBeam/obj/element.o \
         ./pyBeam/obj/structure.o \
         ./pyBeam/obj/rotations.o \
-        ./pyBeam/obj/beam.o 
+        ./pyBeam/obj/beam.o \
+        ./pyBeam/obj/property.o 
 
 primal:
 	swig -c++ -python -Wall ./pyBeam/swig/pyBeam.i
@@ -30,7 +32,7 @@ primal:
 	g++ -O2 -c -w -std=gnu++11 -DLINUX=1 -fPIC ./pyBeam/swig/pyBeam_wrap.cxx $(_SRC) $(INCLPATH)
 	# Move objects
 	mv *.o ./pyBeam/obj
-	# That need to be used here so that the relative dynamic library compiles 
+	# That need to be used here so that the relative dynamic library compiles   (the library is called in regression.py from swig folder)
 	g++ -O2 -shared -fPIC $(_OBJS) ./pyBeam/obj/pyBeam_wrap.o -o ./pyBeam/lib/_pyBeam.so  $(INCLPATH) 
 
 forward:

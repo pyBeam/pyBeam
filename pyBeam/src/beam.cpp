@@ -1,10 +1,10 @@
 /*
  * pyBeam, a Beam Solver
  *
- * Copyright (C) 2018 Tim Albring, Ruben Sanchez, Rauno Cavallaro
+ * Copyright (C) 2018 Tim Albring, Ruben Sanchez, Rocco Bombardieri, Rauno Cavallaro 
  * 
  * Developers: Tim Albring, Ruben Sanchez (SciComp, TU Kaiserslautern)
- *             Rauno Cavallaro (Carlos III University Madrid)
+ *             Rocco Bombardieri, Rauno Cavallaro (Carlos III University Madrid)
  *
  * This file is part of pyBeam.
  *
@@ -37,27 +37,32 @@ using namespace std;
 using namespace Eigen;
 
 CBeamSolver::CBeamSolver(void) {
-	
-	//==============================================================
-	//      Input initialization
-	//==============================================================	
-	
-	input = new CInput();
-
-  register_loads = false;
-  objective_function = 0.0;
-
+    
+    //==============================================================
+    //      Input initialization
+    //==============================================================	
+    
+    //input = new CInput();
+    
+    register_loads = false;
+    objective_function = 0.0;
+    
 }
 
 CBeamSolver::~CBeamSolver(void) {
-	
+    
 }
 
-void CBeamSolver::Initialize(void){
+void CBeamSolver::InitializeInput(CInput* py_input){   // insert node class and connectivity
 
-  input->SetParameters(thickness);
+  // I'm memorizing as a member variable the object input passed from outside
+  input = py_input;
 
+  //input->SetParameters();
+  thickness = input->Get_Thickness();
+  //input->SetParameters(thickness);
   nDOF = input->Get_nDOF();
+  nFEM = input->Get_nFEM();
   nTotalDOF = input->Get_nNodes() * input->Get_nDOF();
 
   //==============================================================
@@ -69,30 +74,39 @@ void CBeamSolver::Initialize(void){
     loadVector[iLoad] = 0.0;
 
   //==============================================================
-  //      Finite Element initialization
+  //      Node vector initialization
+  //==============================================================
+
+  cout << "=========  Node Structure Initialization  ====" << std::endl;
+  unsigned long nNodes = input->Get_nNodes();   //substitute from mesh file
+  node = new CNode*[nNodes];
+
+  //==============================================================
+  //      Finite Element vector initialization
   //==============================================================
 
   cout << "=========  Finite Element Initialization  ====" << std::endl;
-  unsigned long nFEM = input->Get_nFEM();
+  unsigned long nFEM = input->Get_nFEM();   //substitute from mesh file
   element = new CElement*[nFEM];
-  for (unsigned long iFEM = 0; iFEM < nFEM; iFEM++){
-      element[iFEM] = new CElement(iFEM, input);
-  }
 
-	//===============================================
-	//  Initialize structural solver
-	//===============================================
-
-	structure = NULL;
-	structure = new CStructure(input, element);
-  structure->InitialCoord();
+  //===============================================
+  //  Initialize structural solver
+  //===============================================
+  structure = NULL;
 
 }
+
+
+void CBeamSolver::InitializeNode(CNode *py_node, unsigned long iNode) {node[iNode] = py_node;}
+
+void CBeamSolver::InitializeElement(CElement* py_element,unsigned long iFEM) {element[iFEM] = py_element;}
+
+void CBeamSolver::InitializeStructure(void){structure = new CStructure(input, element, node);}
 
 void CBeamSolver::Solve(void){
 
   std::cout << "#####    SETTING EXTERNAL FORCES   #####" << std::endl;
-  structure->ReadForces(nTotalDOF, loadVector);
+  structure->ReadForces(nTotalDOF, loadVector); // to be interfaced with the aerodynamic part
 
 	//===============================================
 	// LOAD STEPPING
@@ -105,6 +119,8 @@ void CBeamSolver::Solve(void){
 	unsigned long iIter;
 	unsigned long totalIter = 0;
 	unsigned long loadStep = 1;
+
+	structure->InitialCoord();
 
 	for  ( loadStep = 0; loadStep < input->Get_LoadSteps(); loadStep++)
 	{
@@ -129,7 +145,7 @@ void CBeamSolver::Solve(void){
 			 *----------------------------------------------------*/
 
 			// Update External Forces (if they are follower )
-			structure->UpdateExtForces(lambda,input->Get_FollowerFlag());
+			structure->UpdateExtForces(lambda);
 			structure->EchoFext();
 
 			// Evaluate the Residual
@@ -166,78 +182,72 @@ void CBeamSolver::Solve(void){
 			 *   Update Internal Forces
 			*----------------------------------------------------*/
             // Now, X, R, l are updated
-
-			structure->UpdateInternalForces();
-
-			/*--------------------------------------------------
-			 *    Check Convergence
-			*----------------------------------------------------*/
-
-      addouble disp_factor =   structure->dU.norm()/input->Get_l();
-			std::cout << " disp_factor = "  <<  disp_factor << std::endl;
-
-			if (disp_factor <= input->Get_ConvCriteria())
-			{
-				converged = true;
-				std::cout << " CONVERGED at iteration  "  << iIter <<   std::endl;
-				totalIter += iIter;
-				break;
-			}
-		}
-		std::cout << "#####    EXITING ITERATIVE SEQUENCE   #####" << std::endl;
-	}
-  
+            
+            structure->UpdateInternalForces();
+            
+            /*--------------------------------------------------
+             *    Check Convergence
+             *----------------------------------------------------*/
+            
+            addouble disp_factor =   structure->dU.norm()/input->Get_l();
+            std::cout << " disp_factor = "  <<  disp_factor << std::endl;
+            
+            if (disp_factor <= input->Get_ConvCriteria())
+            {
+                converged = true;
+                std::cout << " CONVERGED at iteration  "  << iIter <<   std::endl;
+                totalIter += iIter;
+                break;
+            }
+        }
+        std::cout << "#####    EXITING ITERATIVE SEQUENCE   #####" << std::endl;
+    }
+    
 }
 
 passivedouble CBeamSolver::OF_NodeDisplacement(int iNode){
-
-  addouble pos1, pos2, pos3;
-
-  pos1 = structure->GetDisplacement(iNode, 0);
-  pos2 = structure->GetDisplacement(iNode, 1);
-  pos3 = structure->GetDisplacement(iNode, 2);
-
-  objective_function = sqrt(pow(pos1, 2.0) + pow(pos2, 2.0) + pow(pos3, 2.0));
-
-  return AD::GetValue(objective_function);
-
+    
+    addouble pos1, pos2, pos3;
+    
+    pos1 = structure->GetDisplacement(iNode, 0);
+    pos2 = structure->GetDisplacement(iNode, 1);
+    pos3 = structure->GetDisplacement(iNode, 2);
+    
+    objective_function = sqrt(pow(pos1, 2.0) + pow(pos2, 2.0) + pow(pos3, 2.0));
+    
+    return AD::GetValue(objective_function);
+    
 }
 
 void CBeamSolver::RegisterLoads(void){
-
-  register_loads = true;
-
-  /*--- Initialize vector to store the gradient ---*/
-  loadGradient = new passivedouble[nTotalDOF];
-
-  for (int iLoad = 0; iLoad < nTotalDOF; iLoad++){
-
-    /*--- Register the load vector ---*/
-    AD::RegisterInput(loadVector[iLoad]);
-
-    /*--- Initialize the load gradient to 0 ---*/
-    loadGradient[iLoad] = 0.0;
-  }
-
+    
+    register_loads = true;
+    
+    /*--- Initialize vector to store the gradient ---*/
+    loadGradient = new passivedouble[nTotalDOF];
+    
+    for (int iLoad = 0; iLoad < nTotalDOF; iLoad++){
+        
+        /*--- Register the load vector ---*/
+        AD::RegisterInput(loadVector[iLoad]);
+        
+        /*--- Initialize the load gradient to 0 ---*/
+        loadGradient[iLoad] = 0.0;
+    }
+    
 }
 
-passivedouble CBeamSolver::ComputeAdjoint(void){
-
-  addouble gradient;
-
-  AD::SetDerivative(objective_function, 1.0);
-
-  AD::ComputeAdjoint();
-
-  gradient = AD::GetDerivative(thickness);
-
-  if (register_loads){
-    for (int iLoad = 0; iLoad < nTotalDOF; iLoad++){
-      loadGradient[iLoad] = AD::GetValue(AD::GetDerivative(loadVector[iLoad]));
+void CBeamSolver::ComputeAdjoint(void){
+       
+    AD::SetDerivative(objective_function, 1.0);
+    
+    AD::ComputeAdjoint();
+    
+    if (register_loads){
+        for (int iLoad = 0; iLoad < nTotalDOF; iLoad++){
+            loadGradient[iLoad] = AD::GetValue(AD::GetDerivative(loadVector[iLoad]));
+        }
     }
-  }
-
-  return AD::GetValue(gradient);
 }
 
 

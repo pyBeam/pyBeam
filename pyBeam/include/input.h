@@ -1,10 +1,10 @@
 /*
  * pyBeam, a Beam Solver
  *
- * Copyright (C) 2018 Tim Albring, Ruben Sanchez, Rauno Cavallaro
+ * Copyright (C) 2018 Tim Albring, Ruben Sanchez, Rocco Bombardieri, Rauno Cavallaro 
  * 
  * Developers: Tim Albring, Ruben Sanchez (SciComp, TU Kaiserslautern)
- *             Rauno Cavallaro (Carlos III University Madrid)
+ *             Rocco Bombardieri, Rauno Cavallaro (Carlos III University Madrid)
  *
  * This file is part of pyBeam.
  *
@@ -26,8 +26,18 @@
 
 #pragma once
 #include <math.h>
+#include <map>
+#include <stdio.h>      /* printf, fopen */
+/*We can think of using #include "./mpi_structure.hpp" and the command SU2_MPI::Error
+ * once fully integrated with SU2 core
+ */ 
+#include <stdlib.h>     /* exit, EXIT_FAILURE */ 
 
 #include "../include/types.h"
+
+
+
+
 
 class CInput
 {
@@ -38,50 +48,53 @@ protected:
 
 	//##################     Numerical Inputs     ###########################
 
-	unsigned long nNodes;	// Number of overall nodes along the wing (no collapsed)
-	unsigned long nFEM;		// Number of finite elements
+     int nConstr;       // Total number of constraints
+    MatrixXdDiff  Constr_matrix;  // COnstraint matrix [ NODE_ID DOF_ID ]
+    
+	unsigned long nNodes;	// Number of overall nodes along the wing (no collapsed)   // To be removed
+	unsigned long nFEM;		// Number of finite elements     // To be removed
 
-	unsigned short nDOF; 	// Number of degrees of freedom
+	unsigned short nDOF; 	// Number of degrees of freedom     // To be removed
 	
-	addouble load; 			// [N];
+	addouble load; 			// [N];              // To be removed
 	int follower_flag;		// (0) Nonfollower (1) follower (2) approx follower
 	unsigned long loadSteps;			// Number of load steps
 	unsigned long nIter;				// Number of iterations
 
-	addouble end_time;		// [sec] for SS calculation
-	addouble dt;   			// [sec] time increment for SS calculation
+	addouble end_time;		// [sec] for SS calculation                    // To be removed
+	addouble dt;   			// [sec] time increment for SS calculation     // To be removed
 
 	//##############    Wing Inputs  ###########################
 	// Units Sys: SI
 
-	addouble t; 				// web & flange thickness [m]
-	addouble h;				// web height [m]
-	addouble b;				// flange width [m]
-	addouble E; 				// Elastic modulus [GPa]
+	addouble t; 				// web & flange thickness [m]    // To be removed
+	addouble h;				// web height [m]               // To be removed
+	addouble b;				// flange width [m]             // To be removed
+	addouble E; 				// Elastic modulus [GPa]  
 	addouble Poiss; 			// Poisson Ratio
 	addouble ro;				// Beam Density [kg/m^3]
 	addouble G;				// Shear modulus
-	addouble l; 				// Wing Length [m]
-	addouble A;				// cross section area
-	addouble As_z; 			// z Effective shear area
-	addouble As_y;			// y Effective shear area
+	addouble l; 				// Wing Length [m]                    // To be removed
+	addouble A;				// cross section area               // To be removed
+	addouble As_z; 			// z Effective shear area                 // To be removed
+	addouble As_y;			// y Effective shear area                  // To be removed
 
-	addouble Iyy, Izz;
-	addouble Jx; 				//Polar Moment of Inertia
+	addouble Iyy, Izz;                                                          // To be removed
+	addouble Jx; 				//Polar Moment of Inertia            // To be removed
 
 
-	addouble Mwing;			//Wing's mass [kg]
-	addouble EIy, EIz, GJ, AE;
+	addouble Mwing;			//Wing's mass [kg]                             // To be removed
+	addouble EIy, EIz, GJ, AE;                                                        // To be removed
 
 	addouble Clalpha;  		//  recall pi = atan(1)*4;
 	addouble Cldelta;
 
 	//#################    Elements properties    ############################
 
-	addouble le;      	//element length
-	addouble m, m_e; 		//Element's mass
-	addouble m_w, m_f; 	//web and flange mass
-	addouble Ix, Iz; 		//[kg*m^2]
+	addouble le;      	//element length                                                // To be removed
+	addouble m, m_e; 		//Element's mass                                  // To be removed
+	addouble m_w, m_f; 	//web and flange mass                                     // To be removed
+	addouble Ix, Iz; 		//[kg*m^2]                                            // To be removed
 
 	//################     Convergence Parameters    ###########################
 
@@ -90,17 +103,55 @@ protected:
 	
 public:
 
-  CInput(void);
+  CInput(int py_nPoint, int py_nElem);
   
   virtual ~CInput(void);
   
-  void SetParameters(addouble thickness);
+  void SetParameters();
   
-  unsigned long Get_nNodes(void) { return nNodes; }  
+  void SetWebThickness(passivedouble thickness) {t = thickness; }  //To Be Removed
+
+  void SetWebHeight(passivedouble height) {h = height; }  //To Be Removed
+  
+  void SetFlangeWidth(passivedouble FlangeWidth) {b = FlangeWidth; }   //To Be Removed
+ 
+  void SetYoungModulus(passivedouble YoungModulus) {E = YoungModulus; } 
+
+  void SetPoisson(passivedouble Poisson) {Poiss = Poisson; }  
+  
+  void SetDensity(passivedouble Density) {ro = Density; }
     
-  unsigned long Get_nFEM(void) { return nFEM; }
+  void SetBeamLength(passivedouble BeamLength) {l = BeamLength; }   //To Be Removed
   
-  unsigned short Get_nDOF(void) { return nDOF; }
+  void SetLoad(passivedouble Load) {load = Load; }  //To Be Removed
+  
+  void SetFollowerFlag(int FollowerFlag) {follower_flag = FollowerFlag; cout << "Warning! Follower loads are not implemented yet!! FOLLOWER_FLAG =0" << endl; }  
+  
+  void SetLoadSteps(unsigned long LoadSteps) { loadSteps = LoadSteps; }   
+  
+  void SetNStructIter(unsigned long NStructIter) {nIter = NStructIter; }   
+  
+  void SetConvCriterium(passivedouble ConvCriterium) {convCriteria = ConvCriterium; }   
+
+  void SetnConstr(int nconstr) {nConstr = nconstr; Constr_matrix = MatrixXdDiff::Zero(nconstr,2);};
+  
+  void SetSingleConstr(int iConstr, int node_id, int DOF_id) {Constr_matrix(iConstr,1 -1) = node_id; Constr_matrix(iConstr,2 -1) = DOF_id;};
+  
+  MatrixXdDiff  GetConstrMatrix() {return Constr_matrix;};
+  
+  passivedouble GetYoungModulus() {return AD::GetValue(E); }
+
+  passivedouble GetPoisson() {return AD::GetValue(Poiss); }
+  
+  passivedouble GetShear() {return AD::GetValue(G); }
+  
+  passivedouble GetDensity() {return AD::GetValue(ro); }
+  
+  unsigned long Get_nNodes(void) { return nNodes; }  //To Be Removed
+    
+  unsigned long Get_nFEM(void) { return nFEM; }  //To Be Removed
+  
+  unsigned short Get_nDOF(void) { return nDOF; }  //To Be Removed
   
   unsigned short Get_FollowerFlag(void) { return follower_flag; }  
   
@@ -108,34 +159,38 @@ public:
   
   unsigned long Get_nIter(void) { return nIter;}  
   
-  addouble Get_Load(void) { return load;}  
+  addouble Get_Thickness(void) { return t;}  //To Be Removed
   
-  addouble Get_l(void) { return l; }  
+  addouble Get_Load(void) { return load;}  //To Be Removed
   
-  addouble Get_le(void) { return le; }
+  addouble Get_l(void) { return l; }  //To Be Removed
   
-  addouble Get_Jx(void) { return Jx; }
+  addouble Get_le(void) { return le; }  //To Be Removed
   
-  addouble Get_m_e(void) { return m_e; } 
+  addouble Get_Jx(void) { return Jx; }  //To Be Removed
   
-  addouble Get_A(void) { return A; } 
+  addouble Get_m_e(void) { return m_e; }  //To Be Removed
+  
+  addouble Get_A(void) { return A; }  //To Be Removed
       
-  addouble Get_EIz(void) { return EIz; } 
+  addouble Get_EIz(void) { return EIz; } //To Be Removed
         
-  addouble Get_EIy(void) { return EIy; } 
+  addouble Get_EIy(void) { return EIy; } //To Be Removed
   
-  addouble Get_GJ(void) { return GJ; } 
+  addouble Get_GJ(void) { return GJ; } //To Be Removed
   
-  addouble Get_AE(void) { return AE; } 
+  addouble Get_AE(void) { return AE; } //To Be Removed
   
-  addouble Get_m(void) { return m; }
+  addouble Get_m(void) { return m; }  //To Be Removed
   
-  addouble Get_Iyy(void) { return Iyy; }     
+  addouble Get_Iyy(void) { return Iyy; }     //To Be Removed
           
-  addouble Get_Izz(void) { return Izz; }  
+  addouble Get_Izz(void) { return Izz; }  //To Be Removed
     
+
   addouble Get_ConvCriteria(void) { return convCriteria; }  
-    
-  
+
+ 
 };
+
 

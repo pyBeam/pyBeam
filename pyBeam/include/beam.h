@@ -1,10 +1,10 @@
 /*
  * pyBeam, a Beam Solver
  *
- * Copyright (C) 2018 Tim Albring, Ruben Sanchez, Rauno Cavallaro
+ * Copyright (C) 2018 Tim Albring, Ruben Sanchez, Rocco Bombardieri, Rauno Cavallaro 
  * 
  * Developers: Tim Albring, Ruben Sanchez (SciComp, TU Kaiserslautern)
- *             Rauno Cavallaro (Carlos III University Madrid)
+ *             Rocco Bombardieri, Rauno Cavallaro (Carlos III University Madrid)
  *
  * This file is part of pyBeam.
  *
@@ -45,7 +45,7 @@ private:
   passivedouble *loadGradient;
 
   CNode **node;                     /*!< \brief Vector which stores the node initial coordinates. */
-  CConnectivity **connectivity;      /*!< \brief Vector which stores the connectivity. */
+  //CConnectivity **connectivity;      /*!< \brief Vector which stores the connectivity. */
 
   CInput* input;
 
@@ -54,6 +54,7 @@ private:
   CStructure* structure;  /*!< \brief Pointer which the defines the structure. */
 
   int nDOF, nTotalDOF, nDim;
+  unsigned long nFEM;
   addouble *loadVector;
   addouble thickness;
 
@@ -65,7 +66,13 @@ public:
   
   virtual ~CBeamSolver(void);
   
-  void Initialize(void);
+  void InitializeInput(CInput *py_input);
+
+  void InitializeNode(CNode *py_node, unsigned long iNode);
+
+  void InitializeElement(CElement *py_element, unsigned long iFEM);
+
+  void InitializeStructure(void);
 
   void RegisterLoads(void);
 
@@ -73,11 +80,11 @@ public:
 
   passivedouble OF_NodeDisplacement(int iNode);
 
-  passivedouble ComputeAdjoint(void);
+  void ComputeAdjoint(void);
 
   // Inlined functions
 
-  inline void SetThickness(passivedouble val_thickness) {thickness = val_thickness;}
+  //inline void SetThickness(passivedouble val_thickness) {thickness = val_thickness;}
 
   inline void SetLoads(int iNode, int iDOF, passivedouble loadValue) { loadVector[iNode*nDOF + iDOF] = loadValue; }
 
@@ -87,7 +94,9 @@ public:
 
   inline passivedouble ExtractInitialCoordinates(int iNode, int iDim) {return AD::GetValue(structure->GetInitialCoordinates(iNode, iDim));}
 
-  inline void StartRecording(void) { AD::StartRecording(); AD::RegisterInput(thickness);}
+  inline void StartRecording(void) { AD::StartRecording();}
+
+  inline void RegisterThickness(void) { AD::RegisterInput(thickness);}
 
   inline void StopRecording(void) { AD::RegisterOutput(objective_function); AD::StopRecording(); }
 

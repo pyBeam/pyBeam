@@ -1,10 +1,10 @@
 /*
  * pyBeam, a Beam Solver
  *
- * Copyright (C) 2018 Tim Albring, Ruben Sanchez, Rauno Cavallaro
+ * Copyright (C) 2018 Tim Albring, Ruben Sanchez, Rocco Bombardieri, Rauno Cavallaro 
  * 
  * Developers: Tim Albring, Ruben Sanchez (SciComp, TU Kaiserslautern)
- *             Rauno Cavallaro (Carlos III University Madrid)
+ *             Rocco Bombardieri, Rauno Cavallaro (Carlos III University Madrid)
  *
  * This file is part of pyBeam.
  *
@@ -28,45 +28,51 @@
 #include <fstream>
 #include <chrono>
 
+
 #include "../include/input.h"
 
 using namespace std;
 
-CInput::CInput(void) {
+CInput::CInput(int py_nPoint, int py_nElem) {
+
+  nNodes = py_nPoint;
+  nFEM = py_nElem;
   
 }
 
-void CInput::SetParameters(addouble thickness){
+void CInput::SetParameters(){
+
 	
-	//##################     Numerical Inputs     ###########################
+    //##################     Numerical Inputs     ###########################
 
-	nNodes = 21; 			// number of overall nodes along the wing (no collapsed)
-	nFEM = nNodes - 1;
-
-	nDOF = 6;                // number of rigid modes to be calculated
+  //nNodes = 21; 			// number of overall nodes along the wing (no collapsed)
+  //nFEM = nNodes - 1;
 	
-	load = 5000; 			// [N];
-	follower_flag = 0;		// (0) Nonfollower (1) follower (2) approx follower
-	loadSteps = 1;			// Number of load steps
-	nIter = 30;			// Number of iterations  --30
-
+	nDOF = 6;                // To be removed
+	//load = 5000; 			// [N];
+	//follower_flag = 0;		// (0) Nonfollower (1) follower (2) approx follower
+	//loadSteps = 1;			// Number of load steps
+	//nIter = 30;			// Number of iterations  --30
+	   
+  
+  //nFEM = nNodes - 1;
 	//##############    Wing Inputs  ###########################
 	// Units Sys: SI
 
-	t = thickness;		// web & flange thickness [m]
-	h = 40*1e-2;			// web height [m]
-	b = 20*1e-2;			// flange width [m]
-	E = 70*1e9; 			// Elastic modulus [GPa]
-	Poiss = 0.3; 			// Poisson Ratio
-	ro = 2.7e3;				// Beam Density [kg/m^3]
+	//t = thickness;		// web & flange thickness [m]
+	//h = 40*1e-2;			// web height [m]
+	//b = 20*1e-2;			// flange width [m]
+	//E = 70*1e9; 			// Elastic modulus [GPa]
+	//Poiss = 0.3; 			// Poisson Ratio
+	//ro = 2.7e3;				// Beam Density [kg/m^3]
 	G = E/(2*(1+Poiss) );	// Shear modulus
-	l = 30; 				// Wing Length [m]
+	//l = 30; 				// Wing Length [m]
 	A = t*h+2*t*b;			// cross section area
-	As_z = t*h; 			// z Effective shear area
-	As_y = 5/6.0*2*t*b;		// y Effective shear area
+	//////As_z = t*h; 			// z Effective shear area
+	///////As_y = 5/6.0*2*t*b;		// y Effective shear area
 
 	Iyy = (pow(t,3)*h)/12.0 + 2.0* (  b*pow(t,3)/12.0 + b*t*pow( (h+t)/2.0 , 2)    );  //cross section Izz [m^4]
-	Izz = ( h*pow(t,3) + 2*t*pow(b,3))/12.0;
+	Izz = ( h*pow(t,3) + 2*t*pow(b,3))/12.0;      
 	Jx = Iyy+Izz; 			//Polar Moment of Inertia
 
 
@@ -89,17 +95,13 @@ void CInput::SetParameters(addouble thickness){
 	m_w = ro*le*t*h; 		//web mass
 	m_f = ro*le*t*b; 		//flange mass
 	
-	Iz = ( m_w*(pow(t,2)+pow(le,2)) +
-		 2*m_f*(pow(b,2)+pow(le,2)) )/12.0;     //[kg*m^2]
+	/////Iz = ( m_w*(pow(t,2)+pow(le,2)) +
+	/////	 2*m_f*(pow(b,2)+pow(le,2)) )/12.0;     //[kg*m^2]
 		 
-	Ix = m_w/12.0*(pow(h,2)+pow(t,2))+
-		 2*m_f*( (pow(t,2)+pow(b,2))/12+
-		 pow((t/2+h/2),2)) ; 		//[kg*m^2]
+	/////Ix = m_w/12.0*(pow(h,2)+pow(t,2))+
+	/////	 2*m_f*( (pow(t,2)+pow(b,2))/12+
+	/////	 pow((t/2+h/2),2)) ; 		//[kg*m^2]
 
-
-	//################     Convergence Parameters    ###########################
-
-	convCriteria = 1e-4;
     
 }
 
