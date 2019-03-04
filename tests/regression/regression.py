@@ -24,7 +24,8 @@
 # If not, see <http://www.gnu.org/licenses/>.
 #
 
-
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 import sys, os
 from pyBeamIO import pyBeamConfig as pyConfig
@@ -55,7 +56,7 @@ beam = pyBeam.CBeamSolver()
 inputs = pyBeam.CInput(nPoint, nElem)
 
 # Sending to CInput object 
-pyInput.parseInput(config, inputs, Constr, nConstr)
+pyConfig.parseInput(config, inputs, Constr, nConstr)
 # Assigning input values to the input object in C++
 inputs.SetParameters()
 # Initialize the input in the beam solver
@@ -109,7 +110,16 @@ for iNode in range(0,21):
   
   coordinate_X0.append(beam.ExtractInitialCoordinates(iNode, 0))
   coordinate_Y0.append(beam.ExtractInitialCoordinates(iNode, 1))
-  coordinate_Z0.append(beam.ExtractInitialCoordinates(iNode, 2))    
+  coordinate_Z0.append(beam.ExtractInitialCoordinates(iNode, 2))
+  
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
+  
+plt.plot(coordinate_X, coordinate_Y, coordinate_Z)
+plt.plot(coordinate_X0, coordinate_Y0, coordinate_Z0)
+plt.show()  
+  
+  
 
 test_val = np.sqrt((coordinate_X[20]-24.020327385028295)**2+
                    (coordinate_Y[20]-16.29552732537537)**2+

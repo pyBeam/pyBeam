@@ -94,7 +94,7 @@ void CElement::Initializer(CNode* Node1, CNode* Node2, CProperty* Property, CInp
     R     = MatrixXdDiff::Identity(6,6);    // Initial Rotation Matrix
     Rprev = MatrixXdDiff::Identity(6,6);    // Initial Rotation Matrix
     
-    l_act  = le;
+    l_act  = le;  // These can be removed
     l_ini  = le;
     l_prev = le;    
     

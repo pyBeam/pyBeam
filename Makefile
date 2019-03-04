@@ -1,3 +1,8 @@
+# To add to your .bashrc
+
+#export PYTHONPATH=$PYTHONPATH:"/YOUR_PYBEAM_LOCATION/pyBeam/pyBeam/lib"
+#export PYTHONPATH=$PYTHONPATH:"/YOUR_PYBEAM_LOCATION/pyBeam/pyBeam/pylib"
+#export PYBEAM_INCLUDEPY="$(python-config --includes)"
 #============================  LIBS & INCLUDES
 
 EIGEN_PATH = ./pyBeam/externals/Eigen

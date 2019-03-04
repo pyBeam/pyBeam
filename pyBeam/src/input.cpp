@@ -67,33 +67,33 @@ void CInput::SetParameters(){
 	//ro = 2.7e3;				// Beam Density [kg/m^3]
 	G = E/(2*(1+Poiss) );	// Shear modulus
 	//l = 30; 				// Wing Length [m]
-	A = t*h+2*t*b;			// cross section area
+	//A = t*h+2*t*b;			// cross section area
 	//////As_z = t*h; 			// z Effective shear area
 	///////As_y = 5/6.0*2*t*b;		// y Effective shear area
 
-	Iyy = (pow(t,3)*h)/12.0 + 2.0* (  b*pow(t,3)/12.0 + b*t*pow( (h+t)/2.0 , 2)    );  //cross section Izz [m^4]
-	Izz = ( h*pow(t,3) + 2*t*pow(b,3))/12.0;      
-	Jx = Iyy+Izz; 			//Polar Moment of Inertia
+	//Iyy = (pow(t,3)*h)/12.0 + 2.0* (  b*pow(t,3)/12.0 + b*t*pow( (h+t)/2.0 , 2)    );  //cross section Izz [m^4]
+	//Izz = ( h*pow(t,3) + 2*t*pow(b,3))/12.0;      
+	//Jx = Iyy+Izz; 			//Polar Moment of Inertia
 
 
-	Mwing = A*l*ro;		//Wing's mass [kg]
-	EIy = E*Iyy;
-	EIz = E*Izz;
-	GJ = G*Jx;
-	AE = A*E;
+	//Mwing = A*l*ro;		//Wing's mass [kg]
+	//EIy = E*Iyy;
+	//EIz = E*Izz;
+	//GJ = G*Jx;
+	//AE = A*E;
 
-	Clalpha = 2*   atan(1)*4;  //  recall pi = atan(1)*4;
-	Cldelta = 1;
+	//Clalpha = 2*   atan(1)*4;  //  recall pi = atan(1)*4;
+	//Cldelta = 1;
 
 
 	//#################    Elements properties    ############################
 
-	le = l/(nNodes-1);      	//element length
-	m_e = Mwing/(nNodes-1); 	//Element mass
-	m = m_e; 				//Element's mass
+	//le = l/(nNodes-1);      	//element length
+	//m_e = Mwing/(nNodes-1); 	//Element mass
+	//m = m_e; 				//Element's mass
 
-	m_w = ro*le*t*h; 		//web mass
-	m_f = ro*le*t*b; 		//flange mass
+	//m_w = ro*le*t*h; 		//web mass
+	//m_f = ro*le*t*b; 		//flange mass
 	
 	/////Iz = ( m_w*(pow(t,2)+pow(le,2)) +
 	/////	 2*m_f*(pow(b,2)+pow(le,2)) )/12.0;     //[kg*m^2]

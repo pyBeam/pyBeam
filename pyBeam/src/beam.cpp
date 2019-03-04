@@ -58,9 +58,6 @@ void CBeamSolver::InitializeInput(CInput* py_input){   // insert node class and 
   // I'm memorizing as a member variable the object input passed from outside
   input = py_input;
 
-  //input->SetParameters();
-  thickness = input->Get_Thickness();
-  //input->SetParameters(thickness);
   nDOF = input->Get_nDOF();
   nFEM = input->Get_nFEM();
   nTotalDOF = input->Get_nNodes() * input->Get_nDOF();
@@ -105,6 +102,14 @@ void CBeamSolver::InitializeStructure(void){structure = new CStructure(input, el
 
 void CBeamSolver::Solve(void){
 
+  // Beam total length
+  addouble TotalLength = 0;
+  for  ( unsigned long iFEM = 0; iFEM < nFEM; iFEM++)   
+  {
+      TotalLength += element[iFEM]->getLength();
+  }
+    
+    
   std::cout << "#####    SETTING EXTERNAL FORCES   #####" << std::endl;
   structure->ReadForces(nTotalDOF, loadVector); // to be interfaced with the aerodynamic part
 
@@ -188,8 +193,9 @@ void CBeamSolver::Solve(void){
             /*--------------------------------------------------
              *    Check Convergence
              *----------------------------------------------------*/
+
+            addouble disp_factor =   structure->dU.norm()/TotalLength;
             
-            addouble disp_factor =   structure->dU.norm()/input->Get_l();
             std::cout << " disp_factor = "  <<  disp_factor << std::endl;
             
             if (disp_factor <= input->Get_ConvCriteria())
