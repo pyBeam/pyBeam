@@ -49,7 +49,7 @@ protected:
 	//##################     Numerical Inputs     ###########################
 
      int nConstr;       // Total number of constraints
-    MatrixXdDiff  Constr_matrix;  // NODE_ID DOF_ID
+    MatrixXdDiff  Constr_matrix;  // COnstraint matrix [ NODE_ID DOF_ID ]
     
 	unsigned long nNodes;	// Number of overall nodes along the wing (no collapsed)   // To be removed
 	unsigned long nFEM;		// Number of finite elements     // To be removed
@@ -103,9 +103,11 @@ protected:
 	
 public:
 
-  CInput(void);
+  CInput(int py_nPoint, int py_nElem);
   
   virtual ~CInput(void);
+  
+  void SetParameters();
   
   void SetWebThickness(passivedouble thickness) {t = thickness; }  //To Be Removed
 
@@ -127,23 +129,23 @@ public:
   
   void SetLoadSteps(unsigned long LoadSteps) { loadSteps = LoadSteps; }   
   
-  void SetLoadSteps(unsigned long LoadSteps) { loadSteps = LoadSteps; }   
-  
   void SetNStructIter(unsigned long NStructIter) {nIter = NStructIter; }   
   
   void SetConvCriterium(passivedouble ConvCriterium) {convCriteria = ConvCriterium; }   
 
-  void SetnConstr(int nconstr) {nConstr = nconstr Constr_matrix = MatrixXdDiff::Zero(nconstr-1,2);};
+  void SetnConstr(int nconstr) {nConstr = nconstr; Constr_matrix = MatrixXdDiff::Zero(nconstr,2);};
   
-  void SetSingleConstr(int iConstr, int node_id, int DOF_id) {Constr_matrix(iconstr,1 -1) = node_id; Constr_matrix(iconstr,2 -1) = DOF_id;};
+  void SetSingleConstr(int iConstr, int node_id, int DOF_id) {Constr_matrix(iConstr,1 -1) = node_id; Constr_matrix(iConstr,2 -1) = DOF_id;};
   
-  passivedouble GetYoungModulus() {return E; }   
+  MatrixXdDiff  GetConstrMatrix() {return Constr_matrix;};
+  
+  passivedouble GetYoungModulus() {return AD::GetValue(E); }
 
-  passivedouble GetPoisson() {return Poiss; }    
+  passivedouble GetPoisson() {return AD::GetValue(Poiss); }
   
-  passivedouble GetShear() {return G; }   
+  passivedouble GetShear() {return AD::GetValue(G); }
   
-  passivedouble GetDensity() {return ro; }  
+  passivedouble GetDensity() {return AD::GetValue(ro); }
   
   unsigned long Get_nNodes(void) { return nNodes; }  //To Be Removed
     

@@ -44,7 +44,8 @@ class Point:
     self.Force = np.zeros((3,1))
     
   def GetCoord0(self):
-    return self.Coord0    
+    return self.Coord0   
+ 
 
   def GetCoord(self):
     return self.Coord
@@ -55,11 +56,15 @@ class Point:
   def GetForce(self):
     return self.Force
 
+  def GetID(self):
+    return self.ID
+
   def SetCoord0(self, val_Coord):
     x, y, z = val_Coord
     self.Coord0[0] = x
     self.Coord0[1] = y
     self.Coord0[2] = z
+  
 
   def SetCoord(self, val_Coord):
     x, y, z = val_Coord
@@ -80,12 +85,12 @@ class Point:
     self.Force[2] = fz
    
   def SetID(self,ID):
-    self.ID = ID
+    self.ID = int(ID)
 
 class Element:  # for boundary elements
     
   def __init__(self):    
-    self.Conn = np.zeros((2,1))    
+    self.Conn = np.zeros((2,1), dtype=int)    
     self.ID = 0
     self.Property = 0  
     self.AuxVect = np.zeros((3,1))
@@ -117,10 +122,13 @@ class Element:  # for boundary elements
     return self.Conn
 
   def GetProperty(self):
-    return self.Kind
+    return self.Property
 
   def GetID(self):
     return self.ID
+
+  def GetAuxVector(self):
+    return self.AuxVect
 
 class Property:
   """ Description. """
@@ -164,20 +172,20 @@ def readDimension(Mesh_file):
       print('Opened Structural mesh file ' + Mesh_file + '.')
       while 1:
         line = meshfile.readline()
-	if not line:
-	  break
+        if not line:
+          break
         if line.strip():
           if (line[0] == '%'):
             continue	  
-	pos = line.find('NDIM')
-	if pos != -1:
-	  line = line.strip('\r\n')
+        pos = line.find('NDIM')
+        if pos != -1:
+          line = line.strip('\r\n')
           line = line.split("=",1)
-	  nDim = (int(line[1]))
-	  continue
-	
+          nDim = (int(line[1]))
+          continue
+
     return nDim      
-	  
+
 def readMesh(Mesh_file,nDim):	  
 	
     nPoint = 0      
@@ -187,130 +195,145 @@ def readMesh(Mesh_file,nDim):
       #print('Opened mesh file ' + Mesh_file + '.')
       while 1:
         line = meshfile.readline()
-	if not line:
-	  break	
+        if not line:
+          break	
         if line.strip():
           if (line[0] == '%'):
             continue
-	pos = line.find('NPOIN')
-	if pos != -1:
-	  line = line.strip('\r\n')
+        pos = line.find('NPOIN')
+        if pos != -1:
+          line = line.strip('\r\n')
           line = line.split("=",1)
-	  nPoint = int(line[1])
+          nPoint = int(line[1])
           for iPoint in range(nPoint):
-	    node.append(Point())
-	    line = meshfile.readline()
-	    line = line.strip('\r\n')
-	    line = line.split() ## important modification in case the formatting includes tabs
-	    x = float(line[0])
-	    y = float(line[1])
+            node.append(Point())
+            line = meshfile.readline()
+            line = line.strip('\r\n')
+            line = line.split() ## important modification in case the formatting includes tabs
+            x = float(line[0])
+            y = float(line[1])
             z = 0.0
-	    if nDim == 3:
-	      z = float(line[2])
-	    node[iPoint].SetCoord((x,y,z))
+            if nDim == 3:
+              z = float(line[2])
+            node[iPoint].SetCoord((x,y,z))
             node[iPoint].SetCoord0((x,y,z))
-            node[iPoint].SetID(iPoint+1) # sequential ID
-	  continue	
-	
+            node[iPoint].SetID(int(iPoint+1)) # sequential ID
+          continue	
+
     return node, nPoint	
 
 def readConstr(Mesh_file):	  
-	
+
     nConstr = 0         
      
     with open(Mesh_file, 'r') as meshfile:
       #print('Opened mesh file ' + Mesh_file + '.')
       while 1:
         line = meshfile.readline()
-	if not line:
-	  break	
+        if not line:
+          break	
         if line.strip():
           if (line[0] == '%'):
             continue
-	pos = line.find('NCONSTR')
-	if pos != -1:
-	  line = line.strip('\r\n')
+        pos = line.find('NCONSTR')
+        if pos != -1:
+          line = line.strip('\r\n')
           line = line.split("=",1)
-	  nConstr = int(line[1])
-          Constr = np.zeros((nConstr,2))
+          nConstr = int(line[1])
+          Constr = np.zeros((nConstr,2), dtype=int)
           for iConstr in range(nConstr):
-	    line = meshfile.readline()
-	    line = line.strip('\r\n')
-	    line = line.split() ## important modification in case the formatting includes tabs
-	    nid = int(line[0])
-	    dofid = int(line[1])
-            Constr[iConstr,0] = nid;onstr[iConstr,1] = dofid; 
-	  continue	
-	
+            line = meshfile.readline()
+            line = line.strip('\r\n')
+            line = line.split() ## important modification in case the formatting includes tabs
+            nid = int(line[0])
+            dofid = int(line[1])
+            Constr[iConstr,0] = nid;Constr[iConstr,1] = dofid; 
+          continue	
+
     return Constr, nConstr	
-	
-	
+
 def readConnectivity(Mesh_file):	
-	
+
     Elem = []
           
     with open(Mesh_file, 'r') as meshfile:
       #print('Opened mesh file ' + Mesh_file + '.')
       while 1:
         line = meshfile.readline()
-	if not line:
-	  break	
+        if not line:
+          break	
         if line.strip():
           if (line[0] == '%'):
             continue	
-	pos = line.find('NELEM')
-	if pos != -1:
-	  line = line.strip('\r\n')
-	  line = line.replace(" ", "")
+        pos = line.find('NELEM')
+        if pos != -1:
+          line = line.strip('\r\n')
+          line = line.replace(" ", "")
           line = line.split("=",1)
-	  nElem = int(line[1])
-	  for iElem in range(nElem):
+          nElem = int(line[1])
+          for iElem in range(nElem):
               Elem.append(Element())
-	      line = meshfile.readline()
-	      line = line.strip('\r\n')
-	      line = line.split() ## important modification in case the formatting includes tabs
+              line = meshfile.readline()
+              line = line.strip('\r\n')
+              line = line.split() ## important modification in case the formatting includes tabs
               nodes = line[0:3]#.split()  ## important modification in case the formatting includes tabs
               AuxVector = line[3:6]
               Elem[iElem].SetConnectivity([ int(nodes[0]), int(nodes[1]) ])   
               Elem[iElem].SetConnectivity([ int(nodes[0]), int(nodes[1]) ])
               Elem[iElem].SetID(iElem)   
-              Elem[iElem].SetProperty(nodes[2])   
+              Elem[iElem].SetProperty(int(nodes[2]))   
               Elem[iElem].SetAuxVector([ float(AuxVector[0]) , float(AuxVector[1]), float(AuxVector[2]) ])
-	  continue
-	else:
-	  continue	
-	
+          continue
+        else:
+          continue	
+        
     return Elem, nElem	
-	
 
 def readProp(Prop_file):	
-	
+
     Prop = []    
     
     with open(Prop_file, 'r') as propfile:
       print('Opened property file ' + Prop_file + '.')
       while 1:
         line = propfile.readline()
-	if not line:
-	  break	
+        if not line:
+          break	
         if line.strip():
           if (line[0] == '%'):
             continue	
-	pos = line.find('NPROP')
-	if pos != -1:
-	  line = line.strip('\r\n')
-	  line = line.replace(" ", "")
+        pos = line.find('NPROP')
+        if pos != -1:
+          line = line.strip('\r\n')
+          line = line.replace(" ", "")
           line = line.split("=",1)
-	  nProp = int(line[1])
-	  for iProp in range(nProp):    
+          nProp = int(line[1])
+          for iProp in range(nProp):    
               Prop.append(Property())
-	      line = propfile.readline()
-	      line = line.strip('\r\n')
-	      line = line.split() ## important modification in case the formatting includes tabs    
+              line = propfile.readline()
+              line = line.strip('\r\n')
+              line = line.split() ## important modification in case the formatting includes tabs    
               A = float(line[0]); Iyy = float(line[1]); Izz = float(line[2]); Jt = float(line[3]); 
               Prop[iProp].SetA(A); Prop[iProp].SetIyy(Iyy); Prop[iProp].SetIzz(Izz); Prop[iProp].SetJt(Jt); 
               
-              
-    return Prop, nProp         
-        
-  
+    return Prop, nProp
+
+def parseInput(BEAM_config, inputs,Constr, nConstr):
+    
+    inputs.SetBeamLength(BEAM_config['B_LENGTH'])
+    inputs.SetWebThickness(BEAM_config['W_THICKNESS'])
+    inputs.SetWebHeight(BEAM_config['W_HEIGHT'])
+    inputs.SetFlangeWidth(BEAM_config['F_WIDTH'])
+    inputs.SetYoungModulus(BEAM_config['Y_MODULUS'])
+    inputs.SetPoisson(BEAM_config['POISSON'])
+    inputs.SetDensity(BEAM_config['RHO'])
+    inputs.SetLoad(BEAM_config['LOAD'])
+    inputs.SetFollowerFlag(BEAM_config['FOLLOWER_FLAG'])
+    inputs.SetLoadSteps(BEAM_config['LOAD_STEPS'])
+    inputs.SetNStructIter(BEAM_config['N_STRUCT_ITER'])
+    inputs.SetConvCriterium(BEAM_config['CONV_CRITERIUM'])
+    
+    #Now setting the constraints
+    inputs.SetnConstr(nConstr)
+    for iConstr in range(nConstr): 
+        inputs.SetSingleConstr( iConstr, int(Constr[iConstr,0]), int(Constr[iConstr,1]) )

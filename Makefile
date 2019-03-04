@@ -3,7 +3,7 @@
 EIGEN_PATH = ./pyBeam/externals/Eigen
 CODI_PATH = ./pyBeam/externals/CoDiPack/include
 
-INCLPATH =  -I$(EIGEN_PATH) -I$(CODI_PATH) -I$(PYBEAM_INCLUDEPY)
+INCLPATH =  -I$(EIGEN_PATH) -I$(CODI_PATH) $(PYBEAM_INCLUDEPY)
 #==========================================================
 
 _SRC = ./pyBeam/src/main.cpp \
@@ -32,7 +32,7 @@ primal:
 	g++ -O2 -c -w -std=gnu++11 -DLINUX=1 -fPIC ./pyBeam/swig/pyBeam_wrap.cxx $(_SRC) $(INCLPATH)
 	# Move objects
 	mv *.o ./pyBeam/obj
-	# That need to be used here so that the relative dynamic library compiles 
+	# That need to be used here so that the relative dynamic library compiles   (the library is called in regression.py from swig folder)
 	g++ -O2 -shared -fPIC $(_OBJS) ./pyBeam/obj/pyBeam_wrap.o -o ./pyBeam/lib/_pyBeam.so  $(INCLPATH) 
 
 forward:

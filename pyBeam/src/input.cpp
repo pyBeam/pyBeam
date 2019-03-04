@@ -33,7 +33,10 @@
 
 using namespace std;
 
-CInput::CInput(void) {
+CInput::CInput(int py_nPoint, int py_nElem) {
+
+  nNodes = py_nPoint;
+  nFEM = py_nElem;
   
 }
 
@@ -42,8 +45,8 @@ void CInput::SetParameters(){
 	
     //##################     Numerical Inputs     ###########################
 
-	nNodes = 21; 			// number of overall nodes along the wing (no collapsed)
-	nFEM = nNodes - 1;
+  //nNodes = 21; 			// number of overall nodes along the wing (no collapsed)
+  //nFEM = nNodes - 1;
 	
 	nDOF = 6;                // To be removed
 	//load = 5000; 			// [N];
@@ -52,7 +55,7 @@ void CInput::SetParameters(){
 	//nIter = 30;			// Number of iterations  --30
 	   
   
-    nFEM = nNodes - 1;
+  //nFEM = nNodes - 1;
 	//##############    Wing Inputs  ###########################
 	// Units Sys: SI
 

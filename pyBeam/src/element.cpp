@@ -29,32 +29,52 @@
 #include <iostream>
 
 
+CElement::CElement(int element_ID) { iElement = element_ID; };
+
 void CElement::setGlobalDOFs(){
   
-  nodeIndexA =  nodeA-> GeID()
-  nodeIndexB =  nodeB-> GeID()
-  GlobalDOFs.head(6) = (nodeIndexA-1)*6 + 1 -1 <<  (nodeIndexA-1)*6 + 2 -1  << (nodeIndexA-1)*6 + 3 -1 << (nodeIndexA-1)*6 + 4 -1 << (nodeIndexA-1)*6 + 5 -1 << (nodeIndexA-1)*6 + 6 -1;      
-  GlobalDOFs.tail(6) = (nodeIndexB-1)*6 + 1 -1 <<  (nodeIndexB-1)*6 + 2 -1  << (nodeIndexB-1)*6 + 3 -1 << (nodeIndexB-1)*6 + 4 -1 << (nodeIndexB-1)*6 + 5 -1 << (nodeIndexB-1)*6 + 6 -1;      
+  int nodeIndexA =  nodeA-> GeID();
+  int nodeIndexB =  nodeB-> GeID();
+  int i = 0;
+  for (int i=1; i<=6; i++)
+  GlobalDOFs(i-1) = (nodeIndexA-1)*6 + i -1;// <<  (nodeIndexA-1)*6 + i -1  << (nodeIndexA-1)*6 + i -1 << (nodeIndexA-1)*6 + i -1 << (nodeIndexA-1)*6 + i -1 << (nodeIndexA-1)*6 + i -1;      
+  GlobalDOFs(6+i-1) = (nodeIndexB-1)*6 + i -1; // <<  (nodeIndexB-1)*6 + i -1  << (nodeIndexB-1)*6 + i -1 << (nodeIndexB-1)*6 + 4 -1 << (nodeIndexB-1)*6 + 5 -1 << (nodeIndexB-1)*6 + 6 -1;      
 
   
 };  
 
 void CElement::setLength() {
-    le =  sqrt( pow(nodeA->coord0(0) - nodeB->coord0(0),2) + pow(nodeA->coord0(1) - nodeB->coord0(1),2), pow(nodeA->coord0(2) - nodeB->coord0(2),2) );
+    addouble a = nodeA->GetCoordinate0(0) - nodeB->GetCoordinate0(0);
+    addouble b = nodeA->GetCoordinate0(1) - nodeB->GetCoordinate0(1);
+    addouble c = nodeA->GetCoordinate0(2) - nodeB->GetCoordinate0(2);
+    addouble intermediate = pow(a ,2) + pow(b,2) + pow( c ,2) ;
+    le =  sqrt(intermediate );
 };
 
-        void CElement::setElementMass(){
-           // Still don't get why I need two variables for that
-           m = property->GetA()*le* input->GetDensity();
-           m_e = property->GetA()*le* input->GetDensity();
-        }; 
+void CElement::setElementMass(){
+    // Still don't get why I need two variables for that
+    m = property->GetA()*le* input->GetDensity();
+    m_e = property->GetA()*le* input->GetDensity();
+}; 
 
 
-CElement::Initializer(){
+void CElement::Initializer(CNode* Node1, CNode* Node2, CProperty* Property, CInput* Input, passivedouble AuxVector_x, passivedouble AuxVector_y, passivedouble AuxVector_z){
+    
+    // Associate the nodes object   
+    SetNode_1( Node1) ;
+    SetNode_2( Node2);  
+    // Calculate element DOFs
+    setGlobalDOFs();
+    //  Associate property
+    SetProperty(Property);
+    // Associate all inputs
+    SetInput(Input);        
+    // set auxiliary vector        
+    SetAuxVector(AuxVector_x, AuxVector_y, AuxVector_z);
     
     
     setLength();
-    setElementMass()
+    setElementMass();
     J0 = property->GetJ0();
     A = property->GetA();
     EIz = input->GetYoungModulus()*property->GetIzz();
@@ -99,11 +119,6 @@ CElement::Initializer(){
     
     
 }
-
-CElement::~CElement(void){
-	
-}
-
 
 //-----------------------------------------------
 // Evaluates FEM element matrix according to Rao
@@ -440,3 +455,5 @@ void CElement::EvalRotMatDEBUG(VectorXdDiff &dU_AB , VectorXdDiff &X_AB , Matrix
 
 
 }
+
+CElement::~CElement(void) {};

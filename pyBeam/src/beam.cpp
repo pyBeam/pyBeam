@@ -53,33 +53,18 @@ CBeamSolver::~CBeamSolver(void) {
     
 }
 
-void CBeamSolver::Initialize(CInput* input_in ){
-
+void CBeamSolver::InitializeInput(CInput* py_input){   // insert node class and connectivity
 
   // I'm memorizing as a member variable the object input passed from outside
-  input = input_in;
+  input = py_input;
 
   //input->SetParameters();
   thickness = input->Get_Thickness();
   //input->SetParameters(thickness);
   nDOF = input->Get_nDOF();
+  nFEM = input->Get_nFEM();
   nTotalDOF = input->Get_nNodes() * input->Get_nDOF();
 
-  /*
-  /// debug print input parameters
-  std::cout << "thick" <<   thickness  << std::endl;
-  std::cout << "nDOF" <<   nDOF  << std::endl;
-  std::cout << "nTotalDOF" <<   nTotalDOF  << std::endl;
-  std::cout << "Get_nNodes" <<   input->Get_nNodes()  << std::endl;
-  std::cout << "Get_FollowerFlag" <<   input->Get_FollowerFlag()  << std::endl;
-  std::cout << "Get_LoadSteps" <<   input->Get_LoadSteps()  << std::endl;
-  std::cout << "Get_nIter" <<   input->Get_nIter()  << std::endl;
-  std::cout << "Get_l" <<   input->Get_l()  << std::endl;
-  std::cout << "Get_le" <<   input->Get_le()  << std::endl;
-  std::cout << "Get_ConvCriteria" <<   input->Get_ConvCriteria()  << std::endl;
-  std::cout << "Get_nNodes" <<   input->Get_nNodes()  << std::endl;
-  */
-    
   //==============================================================
   //      Load Vector initialization
   //==============================================================
@@ -89,25 +74,34 @@ void CBeamSolver::Initialize(CInput* input_in ){
     loadVector[iLoad] = 0.0;
 
   //==============================================================
-  //      Finite Element initialization
+  //      Node vector initialization
+  //==============================================================
+
+  cout << "=========  Node Structure Initialization  ====" << std::endl;
+  unsigned long nNodes = input->Get_nNodes();   //substitute from mesh file
+  node = new CNode*[nNodes];
+
+  //==============================================================
+  //      Finite Element vector initialization
   //==============================================================
 
   cout << "=========  Finite Element Initialization  ====" << std::endl;
   unsigned long nFEM = input->Get_nFEM();   //substitute from mesh file
   element = new CElement*[nFEM];
-  for (unsigned long iFEM = 0; iFEM < nFEM; iFEM++){
-      element[iFEM] = new CElement(iFEM, input);
-      // inserti element[iFem]->Initializer();
-  }
 
-	//===============================================
-	//  Initialize structural solver
-	//===============================================
-
-	structure = NULL;
-	structure = new CStructure(input, element);
+  //===============================================
+  //  Initialize structural solver
+  //===============================================
+  structure = NULL;
 
 }
+
+
+void CBeamSolver::InitializeNode(CNode *py_node, unsigned long iNode) {node[iNode] = py_node;}
+
+void CBeamSolver::InitializeElement(CElement* py_element,unsigned long iFEM) {element[iFEM] = py_element;}
+
+void CBeamSolver::InitializeStructure(void){structure = new CStructure(input, element, node);}
 
 void CBeamSolver::Solve(void){
 
@@ -243,23 +237,17 @@ void CBeamSolver::RegisterLoads(void){
     
 }
 
-passivedouble CBeamSolver::ComputeAdjoint(void){
-    
-    addouble gradient;
-    
+void CBeamSolver::ComputeAdjoint(void){
+       
     AD::SetDerivative(objective_function, 1.0);
     
     AD::ComputeAdjoint();
-    
-    gradient = AD::GetDerivative(thickness);
     
     if (register_loads){
         for (int iLoad = 0; iLoad < nTotalDOF; iLoad++){
             loadGradient[iLoad] = AD::GetValue(AD::GetDerivative(loadVector[iLoad]));
         }
     }
-    
-    return AD::GetValue(gradient);
 }
 
 

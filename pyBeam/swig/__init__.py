@@ -1,1 +1,0 @@
-from pyBeam import CBeamSolver, CInput, CProperty

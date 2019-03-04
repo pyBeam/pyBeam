@@ -26,14 +26,10 @@
 
 #include "../include/geometry.h"
 
-CNode::CNode(void) {
+CNode::CNode( int id) { ID = id; }
 
-}
-
-CNode::~CNode(void) {
-
-}
-
+CNode::~CNode(void) {};
+/*
 CConnectivity::CConnectivity(void) {
 
 }
@@ -41,4 +37,4 @@ CConnectivity::CConnectivity(void) {
 CConnectivity::~CConnectivity(void) {
 
 }
-
+*/
