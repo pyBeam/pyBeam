@@ -64,37 +64,12 @@ protected:
 	addouble end_time;		// [sec] for SS calculation                    // To be removed
 	addouble dt;   			// [sec] time increment for SS calculation     // To be removed
 
-	//##############    Wing Inputs  ###########################
+	//##############    Material inputs (only ONE homogeneous material is allowed by now)  ###########################
 	// Units Sys: SI
-
-	//addouble t; 				// web & flange thickness [m]    // To be removed
-	//addouble h;				// web height [m]               // To be removed
-	//addouble b;				// flange width [m]             // To be removed
 	addouble E; 				// Elastic modulus [GPa]  
 	addouble Poiss; 			// Poisson Ratio
 	addouble ro;				// Beam Density [kg/m^3]
-	addouble G;				// Shear modulus
-	//addouble l; 				// Wing Length [m]                    // To be removed
-	//addouble A;				// cross section area               // To be removed
-	//addouble As_z; 			// z Effective shear area                 // To be removed
-	//addouble As_y;			// y Effective shear area                  // To be removed
-
-	//addouble Iyy, Izz;                                                          // To be removed
-	//addouble Jx; 				//Polar Moment of Inertia            // To be removed
-
-
-	//addouble Mwing;			//Wing's mass [kg]                             // To be removed
-	//addouble EIy, EIz, GJ, AE;                                                        // To be removed
-
-	//addouble Clalpha;  		//  recall pi = atan(1)*4;
-	//addouble Cldelta;
-
-	//#################    Elements properties    ############################
-
-	//addouble le;      	//element length                                                // To be removed
-	//addouble m, m_e; 		//Element's mass                                  // To be removed
-	//addouble m_w, m_f; 	//web and flange mass                                     // To be removed
-	//addouble Ix, Iz; 		//[kg*m^2]                                            // To be removed
+	addouble G;				// Shear modulus                                        // To be removed
 
 	//################     Convergence Parameters    ###########################
 
@@ -109,22 +84,12 @@ public:
   
   void SetParameters();
   
-  //void SetWebThickness(passivedouble thickness) {t = thickness; }  //To Be Removed
-
-  //void SetWebHeight(passivedouble height) {h = height; }  //To Be Removed
-  
-  //void SetFlangeWidth(passivedouble FlangeWidth) {b = FlangeWidth; }   //To Be Removed
- 
   void SetYoungModulus(passivedouble YoungModulus) {E = YoungModulus; } 
 
   void SetPoisson(passivedouble Poisson) {Poiss = Poisson; }  
   
   void SetDensity(passivedouble Density) {ro = Density; }
     
-  //void SetBeamLength(passivedouble BeamLength) {l = BeamLength; }   //To Be Removed
-  
-  //void SetLoad(passivedouble Load) {load = Load; }  //To Be Removed
-  
   void SetFollowerFlag(int FollowerFlag) {follower_flag = FollowerFlag; cout << "Warning! Follower loads are not implemented yet!! FOLLOWER_FLAG =0" << endl; }  
   
   void SetLoadSteps(unsigned long LoadSteps) { loadSteps = LoadSteps; }   
@@ -158,35 +123,7 @@ public:
   unsigned long Get_LoadSteps(void) { return loadSteps;}
   
   unsigned long Get_nIter(void) { return nIter;}  
-  
-  //addouble Get_Thickness(void) { return t;}  //To Be Removed
-  
-  //addouble Get_Load(void) { return load;}  //To Be Removed
-  
-  //addouble Get_l(void) { return l; }  //To Be Removed
-  
-  //addouble Get_le(void) { return le; }  //To Be Removed
-  
-  //addouble Get_Jx(void) { return Jx; }  //To Be Removed
-  
-  //addouble Get_m_e(void) { return m_e; }  //To Be Removed
-  
-  //addouble Get_A(void) { return A; }  //To Be Removed
-      
-  //addouble Get_EIz(void) { return EIz; } //To Be Removed
-        
-  //addouble Get_EIy(void) { return EIy; } //To Be Removed
-  
-  //addouble Get_GJ(void) { return GJ; } //To Be Removed
-  
-  //addouble Get_AE(void) { return AE; } //To Be Removed
-  
-  //addouble Get_m(void) { return m; }  //To Be Removed
-  
-  //addouble Get_Iyy(void) { return Iyy; }     //To Be Removed
-          
-  //addouble Get_Izz(void) { return Izz; }  //To Be Removed
-    
+
 
   addouble Get_ConvCriteria(void) { return convCriteria; }  
 

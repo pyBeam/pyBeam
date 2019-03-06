@@ -46,7 +46,6 @@ public:
     int elemdofs = 12;   // Beam element DOFs
     VectorXdDiff GlobalDOFs  =  VectorXdDiff::Zero(12); // Global DOFs 
     
-    addouble le;
     addouble J0;
     addouble m_e;
     addouble A;
@@ -69,8 +68,8 @@ public:
     addouble l_ini;                    // Initial Length
     addouble l_act;                    // Actual Length
     addouble l_prev;                   // Previous length
-    VectorXdDiff aux_vector  =  VectorXdDiff::Zero(6);                // Versor directed from nodeA to nodeB
-
+    Vector3dDiff aux_vector  =  Vector3dDiff::Zero(3);                // Versor directed from nodeA to nodeB
+    
     
 public:
     MatrixXdDiff Mfem;
@@ -100,7 +99,7 @@ public:
     // Default constructors with also parameter definition
     
     inline void SetNode_1( CNode* Node1) { nodeA = Node1; };
-
+    
     inline void SetNode_2( CNode* Node2) { nodeB = Node2;};    
     
     inline void SetProperty(CProperty* Property) {property = Property;};
@@ -112,13 +111,13 @@ public:
     void setGlobalDOFs();    
     
     void setLength();
-
-    addouble getLength() {return l_ini;}
+    
+    //addouble getLength() {return l_ini;}
     
     void setElementMass();        
     
     void Initializer(CNode* Node1, CNode* Node2, CProperty* Property, CInput* Input, passivedouble AuxVector_x, passivedouble AuxVector_y, passivedouble AuxVector_z);
-
+    
     
     // Evaluates FEM element matrix
     void ElementMass_Rao();
@@ -135,6 +134,6 @@ public:
     
     void EvalRotMatDEBUG(VectorXdDiff &dU_AB , VectorXdDiff &X_AB , MatrixXdDiff &Rtest);
     
-    
+    void InitializeRotMats();
 };
 

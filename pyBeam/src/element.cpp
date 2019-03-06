@@ -32,15 +32,15 @@
 CElement::CElement(int element_ID) { iElement = element_ID; };
 
 void CElement::setGlobalDOFs(){
-  
-  int nodeIndexA =  nodeA-> GeID();
-  int nodeIndexB =  nodeB-> GeID();
-  int i = 0;
-  for (int i=1; i<=6; i++)
-  GlobalDOFs(i-1) = (nodeIndexA-1)*6 + i -1;// <<  (nodeIndexA-1)*6 + i -1  << (nodeIndexA-1)*6 + i -1 << (nodeIndexA-1)*6 + i -1 << (nodeIndexA-1)*6 + i -1 << (nodeIndexA-1)*6 + i -1;      
-  GlobalDOFs(6+i-1) = (nodeIndexB-1)*6 + i -1; // <<  (nodeIndexB-1)*6 + i -1  << (nodeIndexB-1)*6 + i -1 << (nodeIndexB-1)*6 + 4 -1 << (nodeIndexB-1)*6 + 5 -1 << (nodeIndexB-1)*6 + 6 -1;      
-
-  
+    
+    int nodeIndexA =  nodeA-> GeID();
+    int nodeIndexB =  nodeB-> GeID();
+    int i = 0;
+    for (int i=1; i<=6; i++)
+        GlobalDOFs(i-1) = (nodeIndexA-1)*6 + i -1;// <<  (nodeIndexA-1)*6 + i -1  << (nodeIndexA-1)*6 + i -1 << (nodeIndexA-1)*6 + i -1 << (nodeIndexA-1)*6 + i -1 << (nodeIndexA-1)*6 + i -1;      
+    GlobalDOFs(6+i-1) = (nodeIndexB-1)*6 + i -1; // <<  (nodeIndexB-1)*6 + i -1  << (nodeIndexB-1)*6 + i -1 << (nodeIndexB-1)*6 + 4 -1 << (nodeIndexB-1)*6 + 5 -1 << (nodeIndexB-1)*6 + 6 -1;      
+    
+    
 };  
 
 void CElement::setLength() {
@@ -48,13 +48,14 @@ void CElement::setLength() {
     addouble b = nodeA->GetCoordinate0(1) - nodeB->GetCoordinate0(1);
     addouble c = nodeA->GetCoordinate0(2) - nodeB->GetCoordinate0(2);
     addouble intermediate = pow(a ,2) + pow(b,2) + pow( c ,2) ;
-    le =  sqrt(intermediate );
+    l_ini =  sqrt(intermediate );
 };
 
 void CElement::setElementMass(){
     // Still don't get why I need two variables for that
-    m = property->GetA()*le* input->GetDensity();
-    m_e = property->GetA()*le* input->GetDensity();
+    //referred to the undeformed configuration
+    m = property->GetA()*l_ini* input->GetDensity();
+    m_e = property->GetA()*l_ini* input->GetDensity();
 }; 
 
 
@@ -89,14 +90,14 @@ void CElement::Initializer(CNode* Node1, CNode* Node2, CProperty* Property, CInp
     Mfem  = MatrixXdDiff::Zero(elemdofs,elemdofs);   
     //Internal forces vector initialization (element level)
     fint = VectorXdDiff::Zero(elemdofs);    
-    
-    Rrig = MatrixXdDiff::Zero(6,6);         // Rotation Matrix
-    R     = MatrixXdDiff::Identity(6,6);    // Initial Rotation Matrix
-    Rprev = MatrixXdDiff::Identity(6,6);    // Initial Rotation Matrix
-    
-    l_act  = le;  // These can be removed
-    l_ini  = le;
-    l_prev = le;    
+
+    // Initializing rotation matrices for the undeformed element
+    InitializeRotMats();  
+ 
+    // Length intialization
+    l_act  = l_ini;  // This is the current length
+    //l_ini  = le;  // This is the original
+    l_prev = l_ini;  // This is the previous length  
     
     eps  = VectorXdDiff::Zero(6);   // Elastic Cumulative deformation
     phi  = VectorXdDiff::Zero(6);   // Elastic Cumulative tension
@@ -125,38 +126,39 @@ void CElement::Initializer(CNode* Node1, CNode* Node2, CProperty* Property, CInp
 //-----------------------------------------------
 void CElement::ElementMass_Rao()
 {
-	// The Finite Element Method in Engineering- S.S. Rao
+    // This mass matrix is currently evaluated using the original length of the element
+    // The Finite Element Method in Engineering- S.S. Rao
     addouble r=J0/A;
-
+    
     // Element matrix
-
+    
     // Needed for storing the diagonal
     VectorXdDiff diagonale(12);
-    diagonale << 1.0/3.0, 13.0/35.0, 13.0/35.0, r/3.0, pow(le,2)/105.0, pow(le,2)/105.0,
-    		          1.0/3.0, 13.0/35.0, 13.0/35.0, r/3.0, pow(le,2)/105.0, pow(le,2)/105.0;
-
-
+    diagonale << 1.0/3.0, 13.0/35.0, 13.0/35.0, r/3.0, pow(l_ini,2)/105.0, pow(l_ini,2)/105.0,
+            1.0/3.0, 13.0/35.0, 13.0/35.0, r/3.0, pow(l_ini,2)/105.0, pow(l_ini,2)/105.0;
+    
+    
     Mfem(1-1,7-1) = 1/6.0;
-    Mfem(2-1,6-1) = 11/210.0*le;    Mfem(2-1,8-1)=  9/70.0;  Mfem(2-1,12-1)= -13/420.0*le;
-    Mfem(3-1,5-1) = -11/210.0*le;   Mfem(3-1,9-1)=  9/70.0;  Mfem(3-1,11-1)=  13/420.0*le;
+    Mfem(2-1,6-1) = 11/210.0*l_ini;    Mfem(2-1,8-1)=  9/70.0;  Mfem(2-1,12-1)= -13/420.0*l_ini;
+    Mfem(3-1,5-1) = -11/210.0*l_ini;   Mfem(3-1,9-1)=  9/70.0;  Mfem(3-1,11-1)=  13/420.0*l_ini;
     Mfem(4-1,10-1)= r/6.0;
-    Mfem(5-1,9-1) =  -13/420.0*le ;  Mfem(5-1,11-1) = -pow(le,2)/140.0;
-    Mfem(6-1,8-1) = 13/420.0*le;     Mfem(6-1,12-1) = -pow(le,2)/140.0;
-    Mfem(8-1,12-1) =  -11/210.0*le;
-    Mfem(9-1,11-1) =   11/210.0*le;
-
+    Mfem(5-1,9-1) =  -13/420.0*l_ini ;  Mfem(5-1,11-1) = -pow(l_ini,2)/140.0;
+    Mfem(6-1,8-1) = 13/420.0*l_ini;     Mfem(6-1,12-1) = -pow(l_ini,2)/140.0;
+    Mfem(8-1,12-1) =  -11/210.0*l_ini;
+    Mfem(9-1,11-1) =   11/210.0*l_ini;
+    
     // Writing the diagonal
     for (int iii=0; iii<12; iii++)
     {
     	Mfem(iii,iii) = diagonale(iii);
     }
-
-
+    
+    
     // Symmetrizing the matrix
     for (int iii=0; iii<12; iii++)
     {
     	for (int jjj=iii; jjj<12; jjj++)
-    	Mfem(jjj,iii) = Mfem(iii,jjj);
+            Mfem(jjj,iii) = Mfem(iii,jjj);
     }
     // Rescaling with the element's mass
     Mfem = m_e*Mfem;
@@ -178,40 +180,40 @@ void CElement::ElementMass_Rao()
 void CElement::EvalNaNb(MatrixXdDiff &Na,  MatrixXdDiff  &Nb)
 
 {
-
+    
     addouble one_to_l = 1.0/l_act;
-
+    
     //-------------    KINEMATIC MATRIX  --------------------------------------
-//    % Na=1/Lact* [ -Lact   0      0     0       0      0;
-//    %                0     0      0    -Lact    0      0;
-//    %                0     0     -1     0       0      0;
-//    %                0     1      0     0       0      0;
-//    %                0     0     -1     0      Lact    0;
-//    %                0     1      0     0       0     Lact];
-
-
-
+    //    % Na=1/Lact* [ -Lact   0      0     0       0      0;
+    //    %                0     0      0    -Lact    0      0;
+    //    %                0     0     -1     0       0      0;
+    //    %                0     1      0     0       0      0;
+    //    %                0     0     -1     0      Lact    0;
+    //    %                0     1      0     0       0     Lact];
+    
+    
+    
     Na(1-1,1-1) =   -1.0;    Na(2-1,4-1) =  -1.0;
     Na(3-1,3-1) =   -one_to_l;
     Na(4-1,2-1) =    one_to_l;
     Na(5-1,3-1) =   -one_to_l;     Na(5-1,5-1) = 1.0;
     Na(6-1,2-1) =    one_to_l;     Na(6-1,6-1) = 1.0;
-
-//    % Nb=1/Lact* [  Lact    0       0     0     0      0;
-//    %                0      0       0    Lact   0      0;
-//    %                0      0       1     0    Lact    0;
-//    %                0     -1       0     0     0    Lact;
-//    %                0      0       1     0     0      0;
-//    %                0     -1       0     0     0      0];
-
+    
+    //    % Nb=1/Lact* [  Lact    0       0     0     0      0;
+    //    %                0      0       0    Lact   0      0;
+    //    %                0      0       1     0    Lact    0;
+    //    %                0     -1       0     0     0    Lact;
+    //    %                0      0       1     0     0      0;
+    //    %                0     -1       0     0     0      0];
+    
     Nb(1-1,1-1) =  1.0;
     Nb(2-1,4-1) =  1.0;
     Nb(3-1,3-1) = one_to_l;     Nb(3-1,5-1) = 1.0;
     Nb(4-1,2-1) = -one_to_l;    Nb(4-1,6-1) = 1.0;
     Nb(5-1,3-1) = one_to_l;
     Nb(6-1,2-1) = -one_to_l;
-
-
+    
+    
 }
 
 
@@ -224,22 +226,22 @@ void CElement::EvalNaNb(MatrixXdDiff &Na,  MatrixXdDiff  &Nb)
 void CElement::ElementElastic_Rao(MatrixXdDiff &Kel)
 
 {
-
-	// The Finite Element Method in Engineering- S.S. Rao
-
+    
+    // The Finite Element Method in Engineering- S.S. Rao
+    
     MatrixXdDiff Na = MatrixXdDiff::Zero(6,6);
     MatrixXdDiff Nb = MatrixXdDiff::Zero(6,6);
-
-	EvalNaNb(Na,  Nb);
-
+    
+    EvalNaNb(Na,  Nb);
+    
     // =================   ELASTIC MATRIX
     // KEL   = [Na'; Nb']*Kprim *[ Na Nb];
-
+    
     Kel.block(1-1,1-1,6,6) = Na.transpose()*Kprim*Na;
     Kel.block(1-1,7-1,6,6) = Na.transpose()*Kprim*Nb;
     Kel.block(7-1,1-1,6,6) = Nb.transpose()*Kprim*Na;
     Kel.block(7-1,7-1,6,6) = Nb.transpose()*Kprim*Nb;
-
+    
 }
 
 
@@ -255,35 +257,35 @@ void CElement::ElementTang_Rao(MatrixXdDiff & Ktang)
 {
     MatrixXdDiff Na = MatrixXdDiff::Zero(6,6);
     MatrixXdDiff Nb = MatrixXdDiff::Zero(6,6);
-
-	EvalNaNb(Na,  Nb);
-
+    
+    EvalNaNb(Na,  Nb);
+    
     VectorXdDiff df_dl =  VectorXdDiff::Zero(12);
-
-	//---------------------------------------------
-	//          dKel/dl*uel* dl/du
-	//---------------------------------------------
+    
+    //---------------------------------------------
+    //          dKel/dl*uel* dl/du
+    //---------------------------------------------
     VectorXdDiff dl_du =  VectorXdDiff::Zero(12);
     dl_du(1-1) = -1.0;    dl_du(7-1) = 1.0;
-
+    
     MatrixXdDiff Kstretch = MatrixXdDiff::Zero(12,12);
     /*
      *
      */
     addouble onetol = 1.0/(l_act);
-
+    
     df_dl(2-1) = -onetol*fint(2-1);
     df_dl(3-1) = -onetol*fint(3-1);
     df_dl(8-1) = -onetol*fint(8-1);
     df_dl(9-1) = -onetol*fint(9-1);
     Kstretch = df_dl*dl_du.transpose();
-
+    
     MatrixXdDiff Kel = MatrixXdDiff::Zero(12,12);
     ElementElastic_Rao(Kel);
-
+    
     Ktang = Kstretch + Kel;  // Element Level tangent Matrix (not all! Needs to be rotated and also added the rigid contribution)
-
-
+    
+    
 }
 
 
@@ -302,158 +304,227 @@ void CElement::ElementTang_Rao(MatrixXdDiff & Ktang)
 
 void CElement::EvalRotMat(VectorXdDiff &dU_AB,  VectorXdDiff  &X_AB)
 {
-
-
-	Vector3dDiff pa = Vector3dDiff::Zero();
-	Vector3dDiff pb = Vector3dDiff::Zero();
-	Vector3dDiff p= Vector3dDiff::Zero();
-	Vector3dDiff pseudo= Vector3dDiff::Zero();
-	Matrix3dDiff Rnode= Matrix3dDiff::Zero();
-
-
-	// New versor in old local coord system
-	Vector3dDiff e1 = Vector3dDiff::Zero();
-	Vector3dDiff e2 = Vector3dDiff::Zero();
-	Vector3dDiff e3 = Vector3dDiff::Zero();
-
-
-	/*---------------------
-	 *       e1
-	 *---------------------*/
-
-	e1 = X_AB.tail(3) - X_AB.head(3);
-	e1 = e1/e1.norm();
-
-
-	/*---------------------
-	 *      p
-	 *---------------------*/
-
-	//===> Node A
-
-	Vector3dDiff e2_old = Vector3dDiff::Zero();
-	e2_old = R.block(1-1,2-1,3,1);    // This is the old y in global ref
-	pseudo = dU_AB.segment(4-1,3);      // Rotation at triad A
-	PseudoToRot(pseudo ,  Rnode);
-	pa = Rnode*e2_old;
-
-	//===> Node B
-
-	pseudo = dU_AB.segment(10-1,3);      // Rotation at triad A
-	PseudoToRot(pseudo ,  Rnode);
-	pb = Rnode*e2_old;
-
+    
+    
+    Vector3dDiff pa = Vector3dDiff::Zero();
+    Vector3dDiff pb = Vector3dDiff::Zero();
+    Vector3dDiff p= Vector3dDiff::Zero();
+    Vector3dDiff pseudo= Vector3dDiff::Zero();
+    Matrix3dDiff Rnode= Matrix3dDiff::Zero();
+    
+    
+    // New versor in old local coord system
+    Vector3dDiff e1 = Vector3dDiff::Zero();
+    Vector3dDiff e2 = Vector3dDiff::Zero();
+    Vector3dDiff e3 = Vector3dDiff::Zero();
+    
+    
+    /*---------------------
+     *       e1
+     *---------------------*/
+    
+    e1 = X_AB.tail(3) - X_AB.head(3);
+    e1 = e1/e1.norm();
+    
+    
+    /*---------------------
+     *      p
+     *---------------------*/
+    
+    //===> Node A
+    
+    Vector3dDiff e2_old = Vector3dDiff::Zero();
+    e2_old = R.block(1-1,2-1,3,1);    // This is the old y in global ref
+    pseudo = dU_AB.segment(4-1,3);      // Rotation at triad A
+    PseudoToRot(pseudo ,  Rnode);
+    pa = Rnode*e2_old;
+    
+    //===> Node B
+    
+    pseudo = dU_AB.segment(10-1,3);      // Rotation at triad A
+    PseudoToRot(pseudo ,  Rnode);
+    pb = Rnode*e2_old;
+    
     // Auxiliary Vector for building the new e3
     p = 0.5*(pa + pb);
-
-	/*---------------------
-	 *       e3
-	 *---------------------*/
-
+    
+    /*---------------------
+     *       e3
+     *---------------------*/
+    
     // Find the new e3 versor (in old local CS)
     e3 = e1.cross(p);
     e3 = e3/e3.norm();
-
-	/*---------------------
-	 *       e2
-	 *---------------------*/
-
+    
+    /*---------------------
+     *       e2
+     *---------------------*/
+    
     // Find the new e2 versor (in old local CS)
     e2 = e3.cross(e1);
-
+    
     Rprev = R;
     // Update
-
+    
     R.block(1-1,1-1,3,1) = e1.segment(1-1,3);
     R.block(1-1,2-1,3,1) = e2.segment(1-1,3);
     R.block(1-1,3-1,3,1) = e3.segment(1-1,3);
-
+    
     R.block(4-1,4-1,3,3) = R.block(1-1,1-1,3,3);
-
+    
     Rrig= Rprev.transpose()*R;
-
-
+    
+    
 }
 
 
 void CElement::EvalRotMatDEBUG(VectorXdDiff &dU_AB , VectorXdDiff &X_AB , MatrixXdDiff &R)
 {
-
-	Vector3dDiff pa = Vector3dDiff::Zero();
-	Vector3dDiff pb = Vector3dDiff::Zero();
-	Vector3dDiff p= Vector3dDiff::Zero();
-	Vector3dDiff pseudo= Vector3dDiff::Zero();
-	Matrix3dDiff Rnode= Matrix3dDiff::Zero();
-	
-
-	// New versor in old local coord system
-	Vector3dDiff e1 = Vector3dDiff::Zero();
-	Vector3dDiff e2 = Vector3dDiff::Zero();
-	Vector3dDiff e3 = Vector3dDiff::Zero();
-
-
-	/*---------------------
-	 *       e1
-	 *---------------------*/
-
-	e1 = X_AB.tail(3) - X_AB.head(3);
-	e1 = e1/e1.norm();
-
-
-	/*---------------------
-	 *      p
-	 *---------------------*/
-
-	//===> Node A
-
-	Vector3dDiff e2_old = Vector3dDiff::Zero();
-	e2_old = R.block(1-1,2-1,3,1);    // This is the old y in global ref
-	pseudo = dU_AB.segment(4-1,3);      // Rotation at triad A
-	PseudoToRot(pseudo ,  Rnode);
-	pa = Rnode*e2_old;
-
-	//===> Node B
-
-	pseudo = dU_AB.segment(10-1,3);      // Rotation at triad A
-	PseudoToRot(pseudo ,  Rnode);
-	pb = Rnode*e2_old;
-
+    
+    Vector3dDiff pa = Vector3dDiff::Zero();
+    Vector3dDiff pb = Vector3dDiff::Zero();
+    Vector3dDiff p= Vector3dDiff::Zero();
+    Vector3dDiff pseudo= Vector3dDiff::Zero();
+    Matrix3dDiff Rnode= Matrix3dDiff::Zero();
+    
+    
+    // New versor in old local coord system
+    Vector3dDiff e1 = Vector3dDiff::Zero();
+    Vector3dDiff e2 = Vector3dDiff::Zero();
+    Vector3dDiff e3 = Vector3dDiff::Zero();
+    
+    
+    /*---------------------
+     *       e1
+     *---------------------*/
+    
+    e1 = X_AB.tail(3) - X_AB.head(3);
+    e1 = e1/e1.norm();
+    
+    
+    /*---------------------
+     *      p
+     *---------------------*/
+    
+    //===> Node A
+    
+    Vector3dDiff e2_old = Vector3dDiff::Zero();
+    e2_old = R.block(1-1,2-1,3,1);    // This is the old y in global ref  (this may be source of error)
+    pseudo = dU_AB.segment(4-1,3);      // Rotation at triad A
+    PseudoToRot(pseudo ,  Rnode);
+    pa = Rnode*e2_old;
+    
+    //===> Node B
+    
+    pseudo = dU_AB.segment(10-1,3);      // Rotation at triad A
+    PseudoToRot(pseudo ,  Rnode);
+    pb = Rnode*e2_old;
+    
     // Auxiliary Vector for building the new e3
     p = 0.5*(pa + pb);
-
-
-	/*---------------------
-	 *       e3
-	 *---------------------*/
-
-
+    
+    
+    /*---------------------
+     *       e3
+     *---------------------*/
+    
+    
     // Find the new e3 versor (in old local CS)
     e3 = e1.cross(p);
     e3 = e3/e3.norm();
-
+    
     e3(1-1) = 0.0;  e3(2-1) = 0.0;    e3(3-1) = 1.0;
     
-
-	/*---------------------
-	 *       e2
-	 *---------------------*/
-
+    
+    /*---------------------
+     *       e2
+     *---------------------*/
+    
     // Find the new e2 versor (in old local CS)
     e2 = e3.cross(e1);
-
-
+    
+    
     // Update
     R = MatrixXdDiff::Zero(6,6);
-
-
+    
+    
     R.block(1-1,1-1,3,1) = e1.segment(1-1,3);
     R.block(1-1,2-1,3,1) = e2.segment(1-1,3);
     R.block(1-1,3-1,3,1) = e3.segment(1-1,3);
-
+    
     R.block(4-1,4-1,3,3) = R.block(1-1,1-1,3,3);
+    
+    
+    
+}
 
+/***************************************************************
+ *
+ *         EvalInitialRotMat
+ *
+ ************************************************************/
+/*
+ * This routine, given the auxiliary vector of the finite element in the undeformed configuration
+ * (a) Initializes the Rotation matrix R
+ * (b) Initializes the rigid Rotation matrix Rrig
+ * (c) Initializes Rprev
+ */
 
+void CElement::InitializeRotMats()
+{
+    
+    // Initialization
+    Rrig = MatrixXdDiff::Zero(6,6);         // Rotation Matrix
+    R     = MatrixXdDiff::Identity(6,6);    // ROtation from global to rigid in current deformed conf
+    Rprev = MatrixXdDiff::Identity(6,6);    // ROtation from global to rigid in old deformed conf
+       
+    
+    // New versor in old local coord system
+    Vector3dDiff e1 = Vector3dDiff::Zero();
+    Vector3dDiff e2 = Vector3dDiff::Zero();
+    Vector3dDiff e3 = Vector3dDiff::Zero();
+    
+
+    /*---------------------
+     *       e1  (along element exis)
+     *---------------------*/
+    e1(1 -1,0) = nodeB->GetCoordinate0(1 - 1) - nodeA->GetCoordinate0(1 - 1);
+    e1(2 -1,0) = nodeB->GetCoordinate0(2 - 1) - nodeA->GetCoordinate0(2 - 1);
+    e1(3 -1,0) = nodeB->GetCoordinate0(3 - 1) - nodeA->GetCoordinate0(3 - 1);
+    e1 = e1/e1.norm();    
+    
+    /*---------------------
+     *       e3 (local z axis)
+     *---------------------*/
+    
+    // Find the new e3 versor (in old local CS)
+    e3 = e1.cross(aux_vector);
+    e3 = e3/e3.norm();
+    
+    /*---------------------
+     *       e2
+     *---------------------*/
+    
+    // Find the  e2 versor (in old local CS)
+    e2 = e3.cross(e1);   
+    
+    // Find the new e2 versor (in old local CS)
+    e2 = e3.cross(e1);
+    
+    
+    // Update
+    
+    R.block(1-1,1-1,3,1) = e1.segment(1-1,3);
+    R.block(1-1,2-1,3,1) = e2.segment(1-1,3);
+    R.block(1-1,3-1,3,1) = e3.segment(1-1,3);
+    
+    R.block(4-1,4-1,3,3) = R.block(1-1,1-1,3,3);
+    
+    Rprev = R;    
+    
+    Rrig= Rprev.transpose()*R;
 
 }
+
 
 CElement::~CElement(void) {};

@@ -106,7 +106,7 @@ void CBeamSolver::Solve(void){
   addouble TotalLength = 0;
   for  ( unsigned long iFEM = 0; iFEM < nFEM; iFEM++)   
   {
-      TotalLength += element[iFEM]->getLength();
+      TotalLength += element[iFEM]->l_ini;
   }
     
     

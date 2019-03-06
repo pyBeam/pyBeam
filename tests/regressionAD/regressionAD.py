@@ -58,7 +58,7 @@ inputs = pyBeamAD.CInput(nPoint, nElem)
 beam.StartRecording()
     
 # Sending to CInput object 
-pyInput.parseInput(config, inputs, Constr, nConstr)
+pyConfig.parseInput(config, inputs, Constr, nConstr)
 # Assigning input values to the input object in C++
 inputs.SetParameters()
 # Initialize the input in the beam solver

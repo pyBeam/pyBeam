@@ -89,8 +89,8 @@ for i in range(nElem):
 beam.InitializeStructure()
 
 iNode = 20
-beam.SetLoads(iNode,1,5000)
-beam.SetLoads(iNode,2,1000)
+beam.SetLoads(iNode,1,50000)
+beam.SetLoads(iNode,2,10000)
 beam.Solve()
 
 
@@ -117,6 +117,9 @@ ax = fig.add_subplot(111, projection='3d')
   
 plt.plot(coordinate_X, coordinate_Y, coordinate_Z)
 plt.plot(coordinate_X0, coordinate_Y0, coordinate_Z0)
+plt.xlabel('X')
+plt.ylabel('Y')
+
 plt.show()  
   
   

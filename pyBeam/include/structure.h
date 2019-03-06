@@ -51,6 +51,8 @@ private:
 
 public:
 
+    
+    int nNode;               // Number of structural nodes  
     int nfem;                // number of finite elements   // has to be assigned in the constructor
 
 	int DOF;                  // In space, 6
