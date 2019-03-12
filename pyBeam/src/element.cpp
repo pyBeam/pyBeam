@@ -49,6 +49,17 @@ void CElement::setLength() {
     addouble c = nodeA->GetCoordinate0(2) - nodeB->GetCoordinate0(2);
     addouble intermediate = pow(a ,2) + pow(b,2) + pow( c ,2) ;
     l_ini =  sqrt(intermediate );
+    //std::cout<< "nodeA-> GeID() = " << nodeA-> GeID() << std::endl;
+    //std::cout<< "nodeB-> GeID() = " << nodeB-> GeID() << std::endl;
+    //std::cout<< "nodeA->GetCoordinate0(0) = " << nodeA->GetCoordinate0(0) << std::endl;
+    //std::cout<< "nodeA->GetCoordinate0(1) = " << nodeA->GetCoordinate0(1) << std::endl;
+    //std::cout<< "nodeA->GetCoordinate0(2) = " << nodeA->GetCoordinate0(2) << std::endl;
+    //std::cout<< "nodeB->GetCoordinate0(0) = " << nodeB->GetCoordinate0(0) << std::endl;
+    //std::cout<< "nodeB->GetCoordinate0(1) = " << nodeB->GetCoordinate0(1) << std::endl;
+    //std::cout<< "nodeB->GetCoordinate0(2) = " << nodeB->GetCoordinate0(2) << std::endl;
+    //std::cout<< "a = " << a << std::endl;
+    //std::cout<< "b = " << b << std::endl;
+    //std::cout<< "c = " << c << std::endl;
 };
 
 void CElement::setElementMass(){
@@ -118,7 +129,10 @@ void CElement::Initializer(CNode* Node1, CNode* Node2, CProperty* Property, CInp
     Kprim(3-1,5-1) = 2*EIy/l_ini;  Kprim(5-1,3-1) = Kprim(3-1,5-1);
     Kprim(4-1,6-1) = 2*EIz/l_ini;  Kprim(6-1,4-1) = Kprim(4-1,6-1);
     
-    
+    std::cout<< "iElement = \n" << iElement << std::endl;
+    std::cout<< "l_ini = \n" << l_ini << std::endl;
+    std::cout<< "l_ini = \n" << l_ini << std::endl;
+    std::cout<< "Kprim = \n" << Kprim << std::endl;
 }
 
 //-----------------------------------------------
@@ -508,8 +522,6 @@ void CElement::InitializeRotMats()
     // Find the  e2 versor (in old local CS)
     e2 = e3.cross(e1);   
     
-    // Find the new e2 versor (in old local CS)
-    e2 = e3.cross(e1);
     
     
     // Update

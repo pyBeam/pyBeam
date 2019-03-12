@@ -339,6 +339,9 @@ void CStructure::SolveLinearStaticSystem()
     dU = Ksys.fullPivHouseholderQr().solve(Residual);
     
     addouble relative_error = (Ksys*dU -Residual).norm() / Residual.norm(); // norm() is L2 norm
+    //std::cout<< "Ksys = \n" << Ksys << std::endl;
+    //std::cout<< "Residual = \n" << Residual.norm() << std::endl;
+    //std::cout << "dU = \n" << dU << std::endl;
     std::cout << "The relative error is:\n" << relative_error << std:: endl;
     if (relative_error > 1.0e-7)
     {

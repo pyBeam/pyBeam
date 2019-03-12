@@ -178,9 +178,11 @@ void CBeamSolver::Solve(void){
 			structure->EchoDisp();   structure->EchoCoord();
 
 			// Now only X is updated!
-
+                        cout << "Rot matrix prima = \n" << structure->fem[1]->R.block(0,0,3,3) <<endl;
 			structure->UpdateRotationMatrix();  // based on the rotational displacements
-			structure->UpdateLength();          // Updating length, important
+			cout << "Rot matrix dopo = \n" << structure->fem[1]->R.block(0,0,3,3) <<endl;
+                        cout << "Displacement tip = \n" << structure->fem[1]->nodeB->GetCoordinate(2) <<endl;
+                        structure->UpdateLength();          // Updating length, important
 
 
 			/*--------------------------------------------------
@@ -208,7 +210,7 @@ void CBeamSolver::Solve(void){
         }
         std::cout << "#####    EXITING ITERATIVE SEQUENCE   #####" << std::endl;
     }
-    
+        //cout << "Ksys!!" << structure->Ksys << endl;
 }
 
 passivedouble CBeamSolver::OF_NodeDisplacement(int iNode){

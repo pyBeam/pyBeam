@@ -34,7 +34,7 @@ import pyBeam
 
 # Load running directory
 rundir = os.path.dirname(os.path.realpath(__file__))
-confFile = rundir + '/config.cfg'
+confFile = rundir + '/config_NL.cfg'
 
 # Parsing Conf file
 config = pyConfig.pyBeamConfig(confFile)  # Beam configuration file
@@ -88,7 +88,7 @@ for i in range(nElem):
   
 beam.InitializeStructure()
 
-iNode = 20   -1
+iNode = 101   -1
 #beam.SetLoads(iNode,1,50000)
 #beam.SetLoads(iNode,2 -1,5000)
 #beam.SetLoads(iNode,4 -1,5000000)
@@ -115,6 +115,7 @@ for jNode in range(0,nPoint):
   coordinate_Z0.append(beam.ExtractInitialCoordinates(jNode, 2))
   
 #for iNode in range(0,nPoint):  
+iNode = 100 # te one I'm studying
 print("Node {} Coord_tip indef= {} {} {}".format(iNode, coordinate_X0[iNode], coordinate_Y0[iNode], coordinate_Z0[iNode]))  
   
   

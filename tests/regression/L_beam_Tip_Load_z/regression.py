@@ -34,7 +34,7 @@ import pyBeam
 
 # Load running directory
 rundir = os.path.dirname(os.path.realpath(__file__))
-confFile = rundir + '/config.cfg'
+confFile = rundir + '/config_NL.cfg'
 
 # Parsing Conf file
 config = pyConfig.pyBeamConfig(confFile)  # Beam configuration file
@@ -92,7 +92,7 @@ iNode = 20   -1
 #beam.SetLoads(iNode,1,50000)
 #beam.SetLoads(iNode,2 -1,5000)
 #beam.SetLoads(iNode,4 -1,5000000)
-beam.SetLoads(iNode,2 -1,5000)#100000)
+beam.SetLoads(iNode,3 -1,50000)#100000)
 #beam.SetLoads(iNode-1,3 -1,50000)
 beam.Solve()
 
