@@ -24,8 +24,8 @@
 # If not, see <http://www.gnu.org/licenses/>.
 #
 
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
+#import matplotlib.pyplot as plt
+#from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 import sys, os
 from pyBeamIO import pyBeamConfig as pyConfig
@@ -88,12 +88,9 @@ for i in range(nElem):
   
 beam.InitializeStructure()
 
-iNode = 20   -1
-#beam.SetLoads(iNode,1,50000)
-#beam.SetLoads(iNode,2 -1,5000)
-#beam.SetLoads(iNode,4 -1,5000000)
-beam.SetLoads(iNode,2 -1,5000)#100000)
-#beam.SetLoads(iNode-1,3 -1,50000)
+iNode = 21   -1
+beam.SetLoads(iNode,1,5000)
+beam.SetLoads(iNode,2,1000)
 beam.Solve()
 
 coordinate_X = []
@@ -121,7 +118,8 @@ print("Node {} Coord_tip indef= {} {} {}".format(iNode, coordinate_X0[iNode], co
 print("Coord_tip= {} {} {}".format(coordinate_X[iNode], coordinate_Y[iNode], coordinate_Z[iNode]))  
   
 print("Displ_tip= {} {} {}".format(coordinate_X[iNode] - coordinate_X0[iNode], coordinate_Y[iNode] - coordinate_Y0[iNode], coordinate_Z[iNode] - coordinate_Z0[iNode]))  
-  
+
+'''  
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
   
@@ -139,12 +137,13 @@ plt.plot(coordinate_X0, coordinate_Y0, coordinate_Z0)
 plt.xlabel('X')
 plt.ylabel('Y')
 plt.show()
-  
+'''  
   
 
-test_val = np.sqrt((coordinate_X[20]-24.020327385028295)**2+
-                   (coordinate_Y[20]-16.29552732537537)**2+
-                   (coordinate_Z[20]-0.3752371597829022)**2)
+test_val = np.sqrt((coordinate_X[20]-24.0199380449)**2+
+                   (coordinate_Y[20]-16.2954561231)**2+
+                   (coordinate_Z[20]-0.38986115235)**2)
+
 
 print("Tolerance: ",test_val)
 

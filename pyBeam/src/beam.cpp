@@ -164,7 +164,7 @@ void CBeamSolver::Solve(void){
 			*----------------------------------------------------*/
 
 			// Reassembling Stiffness Matrix + Applying Boundary Conditions
-			structure->AssemblyTang();
+			structure->AssemblyTang(iIter);
 
 			// Solve Linear System   K*dU = Res = Fext - Fin
 			structure->SolveLinearStaticSystem();
@@ -178,10 +178,8 @@ void CBeamSolver::Solve(void){
 			structure->EchoDisp();   structure->EchoCoord();
 
 			// Now only X is updated!
-                        cout << "Rot matrix prima = \n" << structure->fem[1]->R.block(0,0,3,3) <<endl;
+                        //cout << "Rot matrix prima = \n" << structure->fem[1]->R.block(0,0,3,3) <<endl;
 			structure->UpdateRotationMatrix();  // based on the rotational displacements
-			cout << "Rot matrix dopo = \n" << structure->fem[1]->R.block(0,0,3,3) <<endl;
-                        cout << "Displacement tip = \n" << structure->fem[1]->nodeB->GetCoordinate(2) <<endl;
                         structure->UpdateLength();          // Updating length, important
 
 

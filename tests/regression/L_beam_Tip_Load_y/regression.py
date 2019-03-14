@@ -34,7 +34,7 @@ import pyBeam
 
 # Load running directory
 rundir = os.path.dirname(os.path.realpath(__file__))
-confFile = rundir + '/config.cfg'
+confFile = rundir + '/config_NL.cfg'
 
 # Parsing Conf file
 config = pyConfig.pyBeamConfig(confFile)  # Beam configuration file

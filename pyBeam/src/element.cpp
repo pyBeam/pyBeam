@@ -95,7 +95,7 @@ void CElement::Initializer(CNode* Node1, CNode* Node2, CProperty* Property, CInp
     AE = input->GetYoungModulus()*property->GetA();
     Iyy = property->GetIyy();
     Izz = property->GetIzz();
-    
+        
     
     //Mass matrix initialization (element level)
     Mfem  = MatrixXdDiff::Zero(elemdofs,elemdofs);   
@@ -112,7 +112,8 @@ void CElement::Initializer(CNode* Node1, CNode* Node2, CProperty* Property, CInp
     
     eps  = VectorXdDiff::Zero(6);   // Elastic Cumulative deformation
     phi  = VectorXdDiff::Zero(6);   // Elastic Cumulative tension
-    
+ 
+        
     // INITIALIZATION of KPRIM  (linear)
     
     VectorXdDiff diagonale = VectorXdDiff::Zero(6);
@@ -129,10 +130,17 @@ void CElement::Initializer(CNode* Node1, CNode* Node2, CProperty* Property, CInp
     Kprim(3-1,5-1) = 2*EIy/l_ini;  Kprim(5-1,3-1) = Kprim(3-1,5-1);
     Kprim(4-1,6-1) = 2*EIz/l_ini;  Kprim(6-1,4-1) = Kprim(4-1,6-1);
     
-    std::cout<< "iElement = \n" << iElement << std::endl;
-    std::cout<< "l_ini = \n" << l_ini << std::endl;
-    std::cout<< "l_ini = \n" << l_ini << std::endl;
-    std::cout<< "Kprim = \n" << Kprim << std::endl;
+    //std::cout<< "iElement = \n" << iElement << std::endl;
+    //std::cout<< "l_ini = \n" << l_ini << std::endl;
+    /*if (iElement == 2){
+    cout.precision(17);
+    std::cout<< "Jt = \n" << property->GetJt() << std::endl;
+    std::cout<< "Izz = \n" << property->GetIzz() << std::endl;
+    std::cout<< "Iyy = \n" << property->GetIyy() << std::endl; 
+    std::cout<< "A = \n" << property->GetA() << std::endl; } 
+    //std::cout<< "Kprim = \n" << Kprim << std::endl; */
+     
+    
 }
 
 //-----------------------------------------------
@@ -256,6 +264,10 @@ void CElement::ElementElastic_Rao(MatrixXdDiff &Kel)
     Kel.block(7-1,1-1,6,6) = Nb.transpose()*Kprim*Na;
     Kel.block(7-1,7-1,6,6) = Nb.transpose()*Kprim*Nb;
     
+    //std::cout << "Kel = \n" << Kel <<std::endl;
+    //std::cout << "Kprim = \n" << Kprim <<std::endl;
+    //std::cout << "Na = \n" << Na <<std::endl;
+    //std::cout << "Nb = \n" << Nb <<std::endl;    
 }
 
 
@@ -267,7 +279,7 @@ void CElement::ElementElastic_Rao(MatrixXdDiff &Kel)
  *##############################################*/
 
 
-void CElement::ElementTang_Rao(MatrixXdDiff & Ktang)
+void CElement::ElementTang_Rao(int iIter, MatrixXdDiff & Ktang)
 {
     MatrixXdDiff Na = MatrixXdDiff::Zero(6,6);
     MatrixXdDiff Nb = MatrixXdDiff::Zero(6,6);
@@ -298,8 +310,9 @@ void CElement::ElementTang_Rao(MatrixXdDiff & Ktang)
     ElementElastic_Rao(Kel);
     
     Ktang = Kstretch + Kel;  // Element Level tangent Matrix (not all! Needs to be rotated and also added the rigid contribution)
-    
-    
+    //std::cout << "Kstretch = \n" << Kstretch <<std::endl;
+    //std::cout << "Kel = \n" << Kel <<std::endl;
+
 }
 
 
@@ -387,8 +400,7 @@ void CElement::EvalRotMat(VectorXdDiff &dU_AB,  VectorXdDiff  &X_AB)
     R.block(4-1,4-1,3,3) = R.block(1-1,1-1,3,3);
     
     Rrig= Rprev.transpose()*R;
-    
-    
+        
 }
 
 

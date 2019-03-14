@@ -124,7 +124,7 @@ void CStructure::UpdateExtForces(addouble lambda)
  *
  */
 //--------------------------     Evaluates Segment Stiffness FEM
-void CStructure::AssemblyTang()
+void CStructure::AssemblyTang(int iIter)
 {
     //
     
@@ -152,8 +152,8 @@ void CStructure::AssemblyTang()
         
         //  To evaluate the Tangent the Updated Elastic Matrix needs top be Updated
         
-        fem[id_el-1]->ElementTang_Rao(Ktang);       //--> writes the fem[id_el].Ktang
-        
+        fem[id_el-1]->ElementTang_Rao(iIter, Ktang);       //--> writes the fem[id_el].Ktang
+        //std::cout << "Ktang = \n" << Ktang <<std::endl;        
         // For a general approach the element level matrix has to be reorganized into 
         // the global matrix according to the element DOFs
         
@@ -169,7 +169,7 @@ void CStructure::AssemblyTang()
                 
                 // Rotates the element's SUBMATRIX tangent
                 Krotated = (   fem[id_el-1]->R * Ktang.block((jjj-1)*6+1 -1,(kkk-1)*6+1 -1,6,6)  ) * fem[id_el-1]->R.transpose() ;
-                
+                //std::cout << "Krotated = \n" << Krotated <<std::endl; 
                 // Contribution in the appropriate SPOT of the SYSTEM TANGENT
                 Ksys.block(dof_jjj-1,dof_kkk-1,6,6) += Krotated;
                 
@@ -177,14 +177,14 @@ void CStructure::AssemblyTang()
         }
         
     }
-    
+
     /*--------------------------------------------------------
      *    Rigid rotation contribution to the Stiffness Matrix
      * -------------------------------------------------------*/
     
     
     EvalSensRot();
-    
+
     
     /*------------------------------------
      *    Imposing  B.C.
@@ -289,7 +289,7 @@ void CStructure::EvalSensRot()
             {
                 if (kkk==1) {dof_kkk  =  (nodeA_id-1)*6 +1;} else {dof_kkk  =  (nodeB_id-1)*6 +1;} 
                 
-                Ksys.block(dof_jjj-1,dof_kkk-1,6,6) += Krot.block((jjj-1)*6+1 -1,(jjj-1)*6+1 -1,6,6) ;
+                Ksys.block(dof_jjj-1,dof_kkk-1,6,6) += Krot.block((jjj-1)*6+1 -1,(kkk-1)*6+1 -1,6,6) ;
                 
             }
         }
@@ -333,15 +333,13 @@ void CStructure::EvalResidual()
 
 void CStructure::SolveLinearStaticSystem()
 {
-    
     std::cout << "-->  Solving Linear System, "  << std::endl;
-    
+
     dU = Ksys.fullPivHouseholderQr().solve(Residual);
-    
+    //std::cout << "dU (after) = \n" << dU << std::endl;
     addouble relative_error = (Ksys*dU -Residual).norm() / Residual.norm(); // norm() is L2 norm
     //std::cout<< "Ksys = \n" << Ksys << std::endl;
     //std::cout<< "Residual = \n" << Residual.norm() << std::endl;
-    //std::cout << "dU = \n" << dU << std::endl;
     std::cout << "The relative error is:\n" << relative_error << std:: endl;
     if (relative_error > 1.0e-7)
     {
@@ -402,7 +400,7 @@ void CStructure::UpdateCoord()
         posX += 3;
         posU += 6;
     }
-    
+    //std::cout << "dU = \n" << dU <<std::endl;
     
     ////std::ofstream myfile3 ("./output/echo_dX.out", std::ios_base::out | std::ios_base::app);
     //myfile3 <<  DX << std::endl;
@@ -476,7 +474,6 @@ void CStructure::UpdateLength()
         temp = Xb - Xa;
         fem[id_fe-1]->l_prev = fem[id_fe-1]->l_act;
         fem[id_fe-1]->l_act = temp.norm();
-        
     }
     
 }
@@ -526,6 +523,9 @@ void CStructure::UpdateRotationMatrix()
         dU_AB.tail(6) = dU.segment((nodeB_id-1)*6+1 -1,6)  ;   // They are already in the local CS (but not the updated final one).
         
         fem[i_fe-1]->EvalRotMat(dU_AB,X_AB);     // Calling the coordinate update routine
+        
+        //cout << "X_AB = \n" << X_AB <<endl;
+        //cout << "dU_AB = \n" << dU_AB <<endl;        
     }
     
     

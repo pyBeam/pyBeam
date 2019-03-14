@@ -128,7 +128,7 @@ public:
     void ElementElastic_Rao(MatrixXdDiff &Kel);
     
     // Evaluates FEM element matrix
-    void ElementTang_Rao(MatrixXdDiff &Ktang);
+    void ElementTang_Rao(int iIter, MatrixXdDiff &Ktang);
     
     void EvalRotMat(VectorXdDiff &dU_AB , VectorXdDiff &X_AB );
     

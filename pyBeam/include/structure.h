@@ -97,7 +97,7 @@ public:
 	//      Assembly System Stiffness Matrix
 	//===================================================
 
-	void AssemblyTang();
+	void AssemblyTang(int iIter);
 
 	void EvalSensRot();  // Evaluate the sensitivity of Rotation Matrix - need for Jacobian
 
