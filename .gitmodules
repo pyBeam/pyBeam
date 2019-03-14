@@ -1,4 +1,4 @@
-[submodule "pyBeam/CoDiPack"]
+[submodule "pyBeam/externals/CoDiPack"]
 	path = pyBeam/externals/CoDiPack
 	url = https://github.com/SciCompKL/CoDiPack.git
 [submodule "pyBeam/externals/Eigen"]
