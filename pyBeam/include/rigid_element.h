@@ -24,38 +24,48 @@
  *
  */
 
-#include <iostream>
-#include <fstream>
-#include <chrono>
-
+#pragma once
+#include "../include/types.h"
 
 #include "../include/input.h"
+#include "../include/geometry.h"
 
-using namespace std;
+class CRBE2
+{
+private:
+public:
+    
+    int iRBE2;
+    CNode* node_master;
+    CNode* node_slave;
+    
+    int RBE2dofs = 12;   // RBE2 DOFs
 
-CInput::CInput(int py_nPoint, int py_nElem, int py_nRBE2) {
-
-  nNodes = py_nPoint;
-  nFEM = py_nElem;
-  nRBE2 = py_nRBE2;
-  
-}
-
-void CInput::SetParameters(){	
-    //##################     Numerical Inputs     ###########################
-	
-	nDOF = 6;                // To be removed
-
-	//##############    Material inputs (only ONE homogeneous material is allowed by now)  ###########################
-	// Units Sys: SI
-
-
-	G = E/(2*(1+Poiss) );	// Shear modulus
-
-}
-
-CInput::~CInput(void) {
-	
-}
-
-
+    addouble l_rigid;                    // Rigid Length  
+    VectorXdDiff axisvector;             // axis vector master --> slave (non unitary)
+    
+    VectorXdDiff GlobalDOFs  =  VectorXdDiff::Zero(12); // Global DOFs 
+    MatrixXdDiff Kinem_matrix;
+    
+    // Menber functions
+private:
+    
+    
+public:
+    
+    
+    // In the constructor we assign to the RBE2 its nodes 
+    CRBE2(int RBE2_ID) ; 
+    
+    ~CRBE2(void);
+    
+    
+    inline void SetNode_1( CNode* Node_mast) { node_master = Node_mast; };
+    
+    inline void SetNode_2( CNode* Node_slv) { node_slave = Node_slv;};  
+    
+    void setGlobalDOFs();    
+    
+    void setLength();
+    
+};    

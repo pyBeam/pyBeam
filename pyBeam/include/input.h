@@ -53,6 +53,7 @@ protected:
     
 	unsigned long nNodes;	// Number of overall nodes along the wing (no collapsed)   
 	unsigned long nFEM;		// Number of finite elements   
+	unsigned long nRBE2;		// Number of RBE2 rigid elements          
 
 	unsigned short nDOF; 	// Number of degrees of freedom     // To be removed
 	

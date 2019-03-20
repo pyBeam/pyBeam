@@ -80,23 +80,17 @@ public:
     MatrixXdDiff Kprim;
     
     
+    // member functions
     
 private:
     
     
 public:
-    //	FiniteElement(){}
-    
-    //CElement(void);	
     
     // In the constructor we assign to the element its nodes and properties
-    CElement(int element_ID) ; // { iElement = element_ID; };
+    CElement(int element_ID) ; 
     
     ~CElement(void);
-    
-    //	// Default constructors with also parameter definition
-    //	Segment(int valore_init , addouble valore_kinit );
-    // Default constructors with also parameter definition
     
     inline void SetNode_1( CNode* Node1) { nodeA = Node1; };
     

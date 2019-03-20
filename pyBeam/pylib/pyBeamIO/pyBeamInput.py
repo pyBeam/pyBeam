@@ -111,13 +111,7 @@ class Element:  # for boundary elements
     self.AuxVect[0] = x
     self.AuxVect[1] = y
     self.AuxVect[2] = z   
-    
-  #def SetConnectivity_tria(self,val_Conn): # triangular element
-  #  node1, node2, node3 = val_Conn
-  #  self.Conn[0] = node1
-  #  self.Conn[1] = node2          
-  #  self.Conn[2] = node3    
-    
+      
   def GetNodes(self):
     return self.Conn
 
@@ -129,6 +123,20 @@ class Element:  # for boundary elements
 
   def GetAuxVector(self):
     return self.AuxVect
+
+class RBE2_elem:  # for boundary elements
+    
+  def __init__(self):    
+    self.Conn = np.zeros((2,1), dtype=int)    
+    self.ID = 0
+
+  def SetConnectivity(self,val_Conn): # line element
+    node1, node2, = val_Conn
+    self.Conn[0] = node1
+    self.Conn[1] = node2 
+    
+  def GetNodes(self):
+    return self.Conn    
 
 class Property:
   """ Description. """
@@ -279,7 +287,6 @@ def readConnectivity(Mesh_file):
               nodes = line[0:3]#.split()  ## important modification in case the formatting includes tabs
               AuxVector = line[3:6]
               Elem[iElem].SetConnectivity([ int(nodes[0]), int(nodes[1]) ])   
-              Elem[iElem].SetConnectivity([ int(nodes[0]), int(nodes[1]) ])
               Elem[iElem].SetID(iElem)   
               Elem[iElem].SetProperty(int(nodes[2]))   
               Elem[iElem].SetAuxVector([ float(AuxVector[0]) , float(AuxVector[1]), float(AuxVector[2]) ])
@@ -288,6 +295,41 @@ def readConnectivity(Mesh_file):
           continue	
         
     return Elem, nElem	
+
+def readRBE2(Mesh_file):	
+
+    Elem = []
+          
+    with open(Mesh_file, 'r') as meshfile:
+      #print('Opened mesh file ' + Mesh_file + '.')
+      while 1:
+        line = meshfile.readline()
+        if not line:
+          break	
+        if line.strip():
+          if (line[0] == '%'):
+            continue	
+        pos = line.find('NRBE2')
+        if pos != -1:
+          line = line.strip('\r\n')
+          line = line.replace(" ", "")
+          line = line.split("=",1)
+          nRBE2 = int(line[1])
+          for iRBE2 in range(nRBE2):
+              RBE2.append(RBE2_elem())
+              line = meshfile.readline()
+              line = line.strip('\r\n')
+              line = line.split() ## important modification in case the formatting includes tabs
+              nodes = line[0:3]#.split()  ## important modification in case the formatting includes tabs
+              AuxVector = line[3:6]
+              RBE2[iRBE2].SetConnectivity([ int(nodes[0]), int(nodes[1]) ])   
+              RBE2[iRBE2].SetID(iRBE2)   
+
+          continue
+        else:
+          continue	
+        
+    return RBE2, nRBE2	
 
 def readProp(Prop_file):	
 

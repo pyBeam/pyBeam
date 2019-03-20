@@ -2,7 +2,7 @@
 
 NDIM = 3
 
-NPOIN=	3
+NPOIN=	102
          0         0         0
     0.3000         0         0
     0.6000         0         0
@@ -104,10 +104,11 @@ NPOIN=	3
    29.4000         0         0
    29.7000         0         0
    30.0000         0         0
+   30.0000       5.0         0
 
 % Element type: 1 = line, 5 = triangular
 % ELEM_TYPE  ELEM_NODEID_1  ELEM_NODEID_2  ELEM_PROPERTY  AUXILIARY_Vector
-NELEM=	2
+NELEM=	3
      1     2     1     0     1     0
      2     3     1     0     1     0
      3     4     1     0     1     0
@@ -218,7 +219,9 @@ NCONSTR = 6
 1 5
 1 6
 
-
+% MASTER_NODE SLAVE_NODE  (
+NRBE2 = 1
+101 102
 
 
 

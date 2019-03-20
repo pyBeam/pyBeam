@@ -36,10 +36,10 @@ void CElement::setGlobalDOFs(){
     int nodeIndexA =  nodeA-> GeID();
     int nodeIndexB =  nodeB-> GeID();
     int i = 0;
-    for (int i=1; i<=6; i++)
-        GlobalDOFs(i-1) = (nodeIndexA-1)*6 + i -1;// <<  (nodeIndexA-1)*6 + i -1  << (nodeIndexA-1)*6 + i -1 << (nodeIndexA-1)*6 + i -1 << (nodeIndexA-1)*6 + i -1 << (nodeIndexA-1)*6 + i -1;      
-    GlobalDOFs(6+i-1) = (nodeIndexB-1)*6 + i -1; // <<  (nodeIndexB-1)*6 + i -1  << (nodeIndexB-1)*6 + i -1 << (nodeIndexB-1)*6 + 4 -1 << (nodeIndexB-1)*6 + 5 -1 << (nodeIndexB-1)*6 + 6 -1;      
-    
+    for (int i=1; i<=6; i++){
+        GlobalDOFs(i-1) = (nodeIndexA-1)*6 + i -1;      
+        GlobalDOFs(6+i-1) = (nodeIndexB-1)*6 + i -1;       
+    };
     
 };  
 
