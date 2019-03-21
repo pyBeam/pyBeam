@@ -42,7 +42,7 @@ public:
     int RBE2dofs = 12;   // RBE2 DOFs
 
     addouble l_rigid;                    // Rigid Length  
-    VectorXdDiff axisvector;             // axis vector master --> slave (non unitary)
+    VectorXdDiff axis_vector;             // axis vector master --> slave (non unitary)
     
     VectorXdDiff GlobalDOFs  =  VectorXdDiff::Zero(12); // Global DOFs 
     MatrixXdDiff Kinem_matrix;
@@ -58,7 +58,8 @@ public:
     CRBE2(int RBE2_ID) ; 
     
     ~CRBE2(void);
-    
+
+    void  Initializer(CNode* Node_mast, CNode* Node_slv);     
     
     inline void SetNode_1( CNode* Node_mast) { node_master = Node_mast; };
     

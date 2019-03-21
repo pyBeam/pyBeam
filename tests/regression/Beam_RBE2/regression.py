@@ -86,6 +86,16 @@ for i in range(nElem):
    #NB node starts from index 0 and the same happen in beam_prop. But in element_py (connectivity) indexes start from 1 as it is the physical connectivity read from input file
    element[i].Initializer(node[elem_py[i].GetNodes()[0,0] -1], node[elem_py[i].GetNodes()[1,0] -1], beam_prop[elem_py[i].GetProperty() -1], inputs, elem_py[i].GetAuxVector()[0,0], elem_py[i].GetAuxVector()[1,0], elem_py[i].GetAuxVector()[2,0]  )
    beam.InitializeElement(element[i], i)
+
+# IF ANY, assigning RBE2_element values to the RBE2 objects in C++ 
+if nRBE2 != 0:
+   RBE2 = []
+   for i in range(nRBE2): 
+      RBE2.append(pyBeam.CRBE2(i))
+      RBE2[i].Initializer(node[RBE2_py[i].GetNodes()[0,0] -1], node[RBE2_py[i].GetNodes()[1,0] -1])
+      beam.InitializeRBE2(RBE2[i], i)
+ 
+  
   
 beam.InitializeStructure()
 

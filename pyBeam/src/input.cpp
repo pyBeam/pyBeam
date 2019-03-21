@@ -33,6 +33,14 @@
 
 using namespace std;
 
+CInput::CInput(int py_nPoint, int py_nElem) {
+
+  nNodes = py_nPoint;
+  nFEM = py_nElem;
+  nRBE2 = 0;
+  
+}
+
 CInput::CInput(int py_nPoint, int py_nElem, int py_nRBE2) {
 
   nNodes = py_nPoint;

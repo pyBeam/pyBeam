@@ -79,7 +79,11 @@ protected:
 	
 public:
 
-  CInput(int py_nPoint, int py_nElem);
+    
+  // Double constructor to make it compatible for old cases in which RBE2 were not defined  
+  CInput(int py_nPoint, int py_nElem);  
+    
+  CInput(int py_nPoint, int py_nElem, int py_nRBE2);
   
   virtual ~CInput(void);
   
@@ -116,6 +120,8 @@ public:
   unsigned long Get_nNodes(void) { return nNodes; } 
     
   unsigned long Get_nFEM(void) { return nFEM; } 
+  
+  unsigned long Get_nRBE2(void) { return nRBE2; }   
   
   unsigned short Get_nDOF(void) { return nDOF; } 
   

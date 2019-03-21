@@ -31,6 +31,7 @@
 #include "../include/types.h"
 
 #include "../include/element.h"
+#include "../include/rigid_element.h"
 #include "../include/structure.h"
 #include "../include/geometry.h"
 #include "../include/input.h"
@@ -50,10 +51,12 @@ private:
   CInput* input;
 
   CElement** element;  	  /*!< \brief Vector which the define the elements. */
+  
+  CRBE2** RBE2;  	  /*!< \brief Vector which the define the elements. */  
 
   CStructure* structure;  /*!< \brief Pointer which the defines the structure. */
 
-  int nDOF, nTotalDOF, nDim;
+  int nDOF, nTotalDOF, nRBE2, nDim;
   unsigned long nFEM;
   addouble *loadVector;
   addouble thickness;
@@ -71,6 +74,8 @@ public:
   void InitializeNode(CNode *py_node, unsigned long iNode);
 
   void InitializeElement(CElement *py_element, unsigned long iFEM);
+  
+  void InitializeRBE2(CRBE2* py_RBE2,unsigned long iRBE2);  
 
   void InitializeStructure(void);
 

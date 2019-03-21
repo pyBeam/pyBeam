@@ -296,9 +296,25 @@ def readConnectivity(Mesh_file):
         
     return Elem, nElem	
 
+def Check_RBE2(RBE2, nRBE2):
+    
+    if nRBE2 !=0:
+       masters = np.zeros((nRBE2,1))
+       slaves = np.zeros((nRBE2,1))
+    
+       for i in range(0,nRBE2):
+          masters[i,0] = RBE2[i].GetNodes()[0,0];
+          slaves[i,0] = RBE2[i].GetNodes()[1,0];
+       
+       check = np.isin(slaves,masters)
+    
+       if np.any(check) == True:
+          raise ValueError('RBE2 issue: a slave cannot be master as well. Execution aborted') 
+
+
 def readRBE2(Mesh_file):	
 
-    Elem = []
+    RBE2 = []
           
     with open(Mesh_file, 'r') as meshfile:
       #print('Opened mesh file ' + Mesh_file + '.')
@@ -328,7 +344,9 @@ def readRBE2(Mesh_file):
           continue
         else:
           continue	
-        
+      
+    Check_RBE2(RBE2, nRBE2)    
+    
     return RBE2, nRBE2	
 
 def readProp(Prop_file):	

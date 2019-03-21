@@ -33,8 +33,8 @@ CRBE2::CRBE2(int RBE2_ID) { iRBE2 = RBE2_ID; };
 
 void CRBE2::setGlobalDOFs(){
     
-    int nodeIndexA =  nodeA-> GeID();
-    int nodeIndexB =  nodeB-> GeID();
+    int nodeIndexA =  node_master-> GeID();
+    int nodeIndexB =  node_slave-> GeID();
     int i = 0;
     for (int i=1; i<=6; i++) {
         GlobalDOFs(i-1) = (nodeIndexA-1)*6 + i -1;      
@@ -43,18 +43,18 @@ void CRBE2::setGlobalDOFs(){
     
 }; 
 
-void CElement::setLength() {
+void CRBE2::setLength() {
     addouble a = node_slave->GetCoordinate0(0) - node_master->GetCoordinate0(0);
     addouble b = node_slave->GetCoordinate0(1) - node_master->GetCoordinate0(1);
     addouble c = node_slave->GetCoordinate0(2) - node_master->GetCoordinate0(2);
     addouble intermediate = pow(a ,2) + pow(b,2) + pow( c ,2) ;
     l_rigid =  sqrt(intermediate );
     
-    axisvector = VectorXdDiff::Zero(6);
-    axisvector(0) = a; axisvector(1) = b; axisvector(2) = c;
+    axis_vector = VectorXdDiff::Zero(6);
+    axis_vector(0) = a; axis_vector(1) = b; axis_vector(2) = c;
 };   
 
-void CElement::Initializer(CNode* Node_mast, CNode* Node_slv){
+void CRBE2::Initializer(CNode* Node_mast, CNode* Node_slv){
     
     // Associate the nodes object   
     SetNode_1( Node_mast) ;
@@ -64,6 +64,18 @@ void CElement::Initializer(CNode* Node_mast, CNode* Node_slv){
     // set rigid element length
     setLength();
     
-    Kprim = MatrixXdDiff::Zero(6,6);    
+    Kinem_matrix = MatrixXdDiff::Zero(6,6);  
     
+    
+    
+/*        Kprim = [        0         axis_vector(3)   -axis_vector(2);
+                  -axis_vector(3)        0           axis_vector(1);
+                   axis_vector(2) -axis_vector(1)        0            ];*/
+    
+    Kinem_matrix <<   0,                  axis_vector(3),   -axis_vector(2),
+              -axis_vector(3),        0,              axis_vector(1),
+               axis_vector(2),    -axis_vector(1),        0      ; 
+
 };
+
+CRBE2::~CRBE2(void) {};

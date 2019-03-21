@@ -61,7 +61,10 @@ void CBeamSolver::InitializeInput(CInput* py_input){   // insert node class and 
   nDOF = input->Get_nDOF();
   nFEM = input->Get_nFEM();
   nTotalDOF = input->Get_nNodes() * input->Get_nDOF();
-
+  nRBE2 = input->Get_nRBE2();
+  
+  // to add here reduced versions in case RBE2 are defined
+  
   //==============================================================
   //      Load Vector initialization
   //==============================================================
@@ -83,8 +86,16 @@ void CBeamSolver::InitializeInput(CInput* py_input){   // insert node class and 
   //==============================================================
 
   cout << "=========  Finite Element Initialization  ====" << std::endl;
-  unsigned long nFEM = input->Get_nFEM();   //substitute from mesh file
   element = new CElement*[nFEM];
+  
+  //==============================================================
+  //      RBE2 initialization
+  //==============================================================
+  if (nRBE2 != 0){  
+  cout << "=========  RBE2 initialization  ====" << std::endl;
+  RBE2 = new CRBE2*[nRBE2];}
+  else {RBE2 = NULL; }     
+  
 
   //===============================================
   //  Initialize structural solver
@@ -97,6 +108,8 @@ void CBeamSolver::InitializeInput(CInput* py_input){   // insert node class and 
 void CBeamSolver::InitializeNode(CNode *py_node, unsigned long iNode) {node[iNode] = py_node;}
 
 void CBeamSolver::InitializeElement(CElement* py_element,unsigned long iFEM) {element[iFEM] = py_element;}
+
+void CBeamSolver::InitializeRBE2(CRBE2* py_RBE2,unsigned long iRBE2) {RBE2[iRBE2] = py_RBE2;}
 
 void CBeamSolver::InitializeStructure(void){structure = new CStructure(input, element, node);}
 
