@@ -459,8 +459,8 @@ void CStructure::SolveLinearStaticSystem()
 void CStructure::SolveLinearStaticSystem_RBE2()
 {
     std::cout << "-->  Reducing Linear System (RBE2...), "  << std::endl;
-    Ksys_red = KRBE2.transpose()*Ksys*KRBE2;
-    Residual_red = KRBE2.transpose()* Residual;
+    Ksys_red = KRBE.transpose()*Ksys*KRBE;
+    Residual_red = KRBE.transpose()* Residual;
     std::cout << "-->  Solving Linear System, "  << std::endl;
 
     dU_red = Ksys_red.fullPivHouseholderQr().solve(Residual_red);
@@ -477,7 +477,7 @@ void CStructure::SolveLinearStaticSystem_RBE2()
     
     std::cout << "-->  Expanding Linear System (RBE2...), "  << std::endl;
     //Caution, at this point RBE2 slave displacements are still linear
-    dU = KRBE2*dU_red;
+    dU = KRBE*dU_red;
     
     //	Decomposition  	                   Method     Requirements 	Speed 	Accuracy
     //	PartialPivLU 	             partialPivLu()  Invertible 	   ++ 	+
@@ -551,8 +551,8 @@ void CStructure::UpdateCoord_RBE2()
     VectorXdDiff Slave_up = VectorXdDiff::Zero(3);
     
     for(iRBE2 = 0; iRBE2 < nRBE2; iRBE2++){
-        Master = X.segment(RBE2[iRBE2]->MasterDOFs(0)-1);
-        Slave  = X.segment(RBE2[iRBE2]->SlaveDOFs(0)-1);
+        Master = X.segment(RBE2[iRBE2]->MasterDOFs(0)-1,3);
+        Slave  = X.segment(RBE2[iRBE2]->SlaveDOFs(0)-1,3);
         
         RBE2[iRBE2]->axis_vector_old = RBE2[iRBE2]->axis_vector;
         
@@ -560,7 +560,7 @@ void CStructure::UpdateCoord_RBE2()
         RBE2[iRBE2]->axis_vector = versor*RBE2[iRBE2]->l_rigid;
         
         Slave_up = Master + RBE2[iRBE2]->axis_vector;
-        X.segment(RBE2[iRBE2]->SlaveDOFs(0)-1) = Slave_up;
+        X.segment(RBE2[iRBE2]->SlaveDOFs(0)-1,3) = Slave_up;
         
                 
     }
@@ -575,7 +575,7 @@ void CStructure::UpdateCoord_RBE2()
 void CStructure::UpdateRigidConstr()
 {
     for(int iRBE2 = 0; iRBE2 < nRBE2; iRBE2++){
-        RBE2[iRBE2]->UpdateKinemMatrix();
+        RBE2[iRBE2]->UpdateKinemMatirx();
     }
     AssemblyRigidConstr();
 }

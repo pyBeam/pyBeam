@@ -201,7 +201,7 @@ void CBeamSolver::Solve(void){
             structure->UpdateCoord();
             if (nRBE2 != 0){              
                 structure->UpdateCoord_RBE2();
-                structure->UpdateRigidConstr()  }
+                structure->UpdateRigidConstr();  }
             
             structure->EchoDisp();   structure->EchoCoord();
             

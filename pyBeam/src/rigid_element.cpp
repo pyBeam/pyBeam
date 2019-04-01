@@ -64,7 +64,8 @@ void CRBE2::InitializeAxisVector() {
     
     axis_vector0 = VectorXdDiff::Zero(3);
     axis_vector_old = axis_vector0;
-    axis_vector = axis_vector0;    
+    axis_vector = axis_vector0;   
+}
     
     void CRBE2::InitializeKinemMatrix() { 
         
@@ -85,11 +86,12 @@ void CRBE2::InitializeAxisVector() {
         
     }   
     
-    void CRBE2::UpdateKinemMatrix() {
+    void CRBE2::UpdateKinemMatirx() {
         
         Kinem_matrix_old = Kinem_matrix;        
         
         Kinem_matrix = MatrixXdDiff::Identity(6,6);        
+        MatrixXdDiff MStrans = MatrixXdDiff::Zero(3,3); 
         
         MStrans <<   0,                  axis_vector(3 -1),   -axis_vector(2 -1),
                 -axis_vector(3 -1),        0,              axis_vector(1 -1),
@@ -115,6 +117,6 @@ void CRBE2::InitializeAxisVector() {
         InitializeKinemMatrix();
         
         
-    };
+    }
     
     CRBE2::~CRBE2(void) {};
