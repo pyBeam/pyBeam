@@ -43,9 +43,14 @@ public:
 
     addouble l_rigid;                    // Rigid Length  
     VectorXdDiff axis_vector;             // axis vector master --> slave (non unitary)
+    VectorXdDiff axis_vector0;             // axis vector master --> slave (non unitary)
+    VectorXdDiff axis_vector_old;             // axis vector master --> slave (non unitary)    
     
-    VectorXdDiff GlobalDOFs  =  VectorXdDiff::Zero(12); // Global DOFs 
+    VectorXi MasterDOFs  =  VectorXi::Zero(6); // Master DOFs
+    VectorXi SlaveDOFs  =  VectorXi::Zero(6); // Slave DOFs    
     MatrixXdDiff Kinem_matrix;
+    MatrixXdDiff Kinem_matrix0;
+    MatrixXdDiff Kinem_matrix_old;    
     
     // Menber functions
 private:
@@ -68,5 +73,11 @@ public:
     void setGlobalDOFs();    
     
     void setLength();
+
+    void InitializeAxisVector();
+
+    void InitializeKinemMatrix();
+
+    void UpdateKinemMatirx();    
     
 };    

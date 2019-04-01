@@ -138,6 +138,9 @@ class RBE2_elem:  # for boundary elements
   def GetNodes(self):
     return self.Conn    
 
+  def SetID(self,ID):    
+    self.ID = ID  
+
 class Property:
   """ Description. """
     

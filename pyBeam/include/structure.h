@@ -34,6 +34,7 @@
 #include "../include/types.h"
 
 #include "../include/element.h"
+#include "../include/rigid_element.h"
 #include "../include/rotations.h"
 #include "../include/geometry.h"
 #include "../include/input.h"
@@ -54,25 +55,32 @@ public:
     
     int nNode;               // Number of structural nodes  
     int nfem;                // number of finite elements   // has to be assigned in the constructor
+    int nRBE2;                // number of finite elements
 
 	int DOF;                  // In space, 6
 	int FollFlag;             // Flag for Follower forces (1)
 
+	CRBE2 **RBE2;      // Pointer to the first RBE2 element        
 	CElement **fem;      // Pointer to the first finite element
   CNode **node;        // Pointer to the first finite element
 
 	MatrixXdDiff M;      // Recall in Eigen X stays for dynamic, d for addouble:  (nfem+1)*6  X   (nfem+1)*6
 	MatrixXdDiff Ksys;
+	MatrixXdDiff Ksys_red; // [relative to masters in case of RBE2]       
+        
+	MatrixXdDiff KRBE;  // Kinematic constraint matrix due to the RBE2 elements   [totalDOFs, BossDOFs]      
  
         MatrixXdDiff  Constr_matrix;    // COnstraint matrix [ NODE_ID DOF_ID ]
 
 	VectorXdDiff dU;           // Displacement array (iterative)
+	VectorXdDiff dU_red;           // Displacement array (iterative) [relative to masters in case of RBE2]        
 	VectorXdDiff X;            // Position of the fem nodes in global coordinate system
 	VectorXdDiff X0;            // Position of the fem nodes in global coordinate system
 
 	VectorXdDiff Fint;        // Array of internal forces
 	VectorXdDiff Fext;        // Array of External Forces
 	VectorXdDiff Residual;    // Array of Unbalanced Forces
+	VectorXdDiff Residual_red;    // Array of Unbalanced Forces   [relative to masters in case of RBE2]      
 
 	Vector3dDiff Ftip;      // (vector read from the input file) - needed as basis to update the Fext
 	VectorXdDiff Fnom;        // Array of nominal forces
@@ -94,6 +102,16 @@ public:
 	void EvalResidual();
 
 	//===================================================
+	//      Assembly RBE2 rigid constraint matrix
+	//===================================================        
+        
+        void AddRBE2(CInput *input, CRBE2** container_RBE2) {nRBE2 = input->Get_nRBE2(); RBE2 = container_RBE2;};
+        
+        void AssemblyRigidConstr();
+        
+        void UpdateRigidConstr();        
+        
+	//===================================================
 	//      Assembly System Stiffness Matrix
 	//===================================================
 
@@ -107,6 +125,8 @@ public:
 	// Assembles LHS and RHS and solves the linear static problem
 
 	void SolveLinearStaticSystem();
+        
+	void SolveLinearStaticSystem_RBE2();        
 
 	//===================================================
 	//      Update Coordinates
@@ -116,6 +136,8 @@ public:
 	 */
 
 	void UpdateCoord();
+        
+	void UpdateCoord_RBE2();        
 
 	void InitialCoord();
 

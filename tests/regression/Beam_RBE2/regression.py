@@ -71,7 +71,7 @@ for i in range(nPoint):
       node[i].SetCoordinate(j , float(node_py[i].GetCoord()[j][0]) )
       node[i].SetCoordinate0(j , float(node_py[i].GetCoord0()[j][0]) )
    beam.InitializeNode(node[i], i)
-    
+  
 # Assigning property values to the property objects in C++
 beam_prop = []
 for i in range(nProp):
@@ -99,7 +99,7 @@ if nRBE2 != 0:
   
 beam.InitializeStructure()
 
-iNode = 4   -1
+iNode = 5   -1
 #beam.SetLoads(iNode,1,50000)
 #beam.SetLoads(iNode,2 -1,5000)
 #beam.SetLoads(iNode,4 -1,5000000)

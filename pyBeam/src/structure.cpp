@@ -70,6 +70,103 @@ CStructure::~CStructure(void)
 {
     
 }
+//===================================================
+//      Assembly RBE2 rigid constraint matrix
+//===================================================
+void CStructure::AssemblyRigidConstr() 
+{
+    
+    
+    int i; int j; int iRBE2;
+    // Identification of the master DOFS and SLAVE DOFS
+    std::vector<int> dofs_all(6*nNode) ;
+    for(int i = 0; i < 6*nNode; i++)  { dofs_all[i] = i+1; }   // here dofs go form 1 to 6 differently than for beams (just a convention)
+    
+    
+    std::vector<int> master;
+    std::vector<int> master_all(6*nNode);   // full initialization (this vector is going to be for sure smaller)
+    master.resize(RBE2[0]->MasterDOFs.size());
+    std::vector<int> slave;
+    std::vector<int> slave_all;
+    slave.resize(RBE2[0]->SlaveDOFs.size());
+    // 
+    std::vector<int>::iterator it;
+    
+    //finding master dofs and slave dofs
+    // EYE here: only in this case DOFS start from 1 instead than from 0. Explained below
+    for(iRBE2 = 0; iRBE2 < nRBE2; iRBE2++)
+    {
+        //std::vector<int> master;
+        //master.resize(RBE2[iRBE2]->MasterDOFs.size());
+        //VectorXi::Map(&master[0], RBE2[iRBE2]->MasterDOFs.size()) = RBE2[iRBE2]->MasterDOFs;
+        //vector1.insert( vector1.end(), vector2.begin(), vector2.end() );
+        //master_all.insert( master_all.end(), master.begin(), master.end() );
+        
+
+
+        VectorXi::Map(&slave[0], RBE2[iRBE2]->SlaveDOFs.size()) = RBE2[iRBE2]->SlaveDOFs;    
+        slave_all.insert( slave_all.end(), slave.begin(), slave.end() );        
+        
+        
+    }
+    // all unique slave Dofs for the system (from 1 to 6 for each node )
+    //sort( master_all.begin(), master_all.end() );     //master_all.erase( unique( master_all.begin(), master_all.end() ), master_all.end() );
+    sort( slave_all.begin(), slave_all.end() ); slave_all.erase( unique( slave_all.begin(), slave_all.end() ), slave_all.end() );
+    //Here I do the difference between all the DOFs and the slave DOFS to get only the master Dofs (in the sense all the not slave Dofs) 
+    it= std::set_difference (dofs_all.begin(), dofs_all.end(), slave_all.begin(), slave_all.end(), master_all.begin());
+
+    
+    // all the master DOFs (from 1 to 6 for each node)
+    master_all.resize(it-master_all.begin());
+    
+    
+    // transform the std vector into Eigen matrices occupying the same memory location
+    Eigen::Map< VectorXi > master_all_eig(&master_all[0],master_all.size());
+    Eigen::Map< VectorXi > slave_all_eig(&slave_all[0],slave_all.size());
+
+
+    
+    // Evaluation of the full_to_red and red_to_full
+    // that's the reason i need dofs from 1 to 6 as 0 represents the slave dofs position
+    VectorXi red_to_full = master_all_eig;
+    VectorXi full_to_red = VectorXi::Zero(6*nNode);
+    // Evalutaion of the master_all_eig_red so: the DOF of the master element ordered in the reduced coordinate vector 
+    VectorXi master_all_eig_red = VectorXi::Zero(master_all.size());
+    for (i = 0; i < master_all.size(); i++)
+    {
+        full_to_red(master_all_eig(i) -1) = i+1 ;
+        master_all_eig_red(i) = i+1 ;
+    }    
+
+
+    
+    
+    // Initialization of the KRBE matrix
+    KRBE = MatrixXdDiff::Zero(6*nNode,master_all.size());    
+    
+    
+
+    // KRBE assembly
+    for (i = 0; i < master_all_eig.size(); i++)
+    {
+    for (j = 0; j < master_all_eig_red.size(); j++)
+    {
+        KRBE(master_all_eig(i) -1,master_all_eig_red(i) -1) = 1;
+    }
+    }
+      
+    for(int iRBE2 = 0; iRBE2 < nRBE2; iRBE2++)
+    {
+        for (i = 0; i < DOF ; i++)
+        {
+            for (j = 0; j < DOF ; j++)
+            {
+        KRBE((RBE2[iRBE2]->node_slave-> GeID() -1)*6 +i ,full_to_red((RBE2[iRBE2]->node_master-> GeID()-1)*6+j ) -1 ) = RBE2[iRBE2]->Kinem_matrix(i,j);
+            }
+        }
+        }
+       cout << "KRBE = \n" <<KRBE << endl;  
+}
 
 /***************************************************************
  *
@@ -359,6 +456,41 @@ void CStructure::SolveLinearStaticSystem()
     
 }
 
+void CStructure::SolveLinearStaticSystem_RBE2()
+{
+    std::cout << "-->  Reducing Linear System (RBE2...), "  << std::endl;
+    Ksys_red = KRBE2.transpose()*Ksys*KRBE2;
+    Residual_red = KRBE2.transpose()* Residual;
+    std::cout << "-->  Solving Linear System, "  << std::endl;
+
+    dU_red = Ksys_red.fullPivHouseholderQr().solve(Residual_red);
+    //std::cout << "dU (after) = \n" << dU << std::endl;
+    addouble relative_error = (Ksys_red*dU_red -Residual_red).norm() / Residual_red.norm(); // norm() is L2 norm
+    //std::cout<< "Ksys = \n" << Ksys << std::endl;
+    //std::cout<< "Residual = \n" << Residual.norm() << std::endl;
+    std::cout << "The relative error is:\n" << relative_error << std:: endl;
+    if (relative_error > 1.0e-7)
+    {
+        std::cout << "Solution of Linear System not precise enough!" << std:: endl;
+    	throw std::exception();
+    }
+    
+    std::cout << "-->  Expanding Linear System (RBE2...), "  << std::endl;
+    //Caution, at this point RBE2 slave displacements are still linear
+    dU = KRBE2*dU_red;
+    
+    //	Decomposition  	                   Method     Requirements 	Speed 	Accuracy
+    //	PartialPivLU 	             partialPivLu()  Invertible 	   ++ 	+
+    //	FullPivLU 	                    fullPivLu() 	None 	       - 	+++
+    //	HouseholderQR 	             householderQr() 	None 	        ++ 	+
+    //	ColPivHouseholderQR 	colPivHouseholderQr() 	None 	         + 	++
+    //	FullPivHouseholderQR 	fullPivHouseholderQr() 	None 	         - 	+++
+    //	LLT 	                          llt() 	Positive definite  +++ 	+
+    //	LDLT 	                         ldlt() Positive or negative semidefinite 	+++ 	++
+    
+    
+}
+
 
 /*===================================================
  *            Update Coordinates
@@ -406,6 +538,48 @@ void CStructure::UpdateCoord()
     //myfile3 <<  DX << std::endl;
     
 }
+/*===================================================
+ *            Update Coordinates RBE2
+ * ==================================================
+ */
+void CStructure::UpdateCoord_RBE2()
+{
+    int iRBE2;
+    VectorXdDiff Master = VectorXdDiff::Zero(3);
+    VectorXdDiff Slave = VectorXdDiff::Zero(3);
+    VectorXdDiff versor = VectorXdDiff::Zero(3);
+    VectorXdDiff Slave_up = VectorXdDiff::Zero(3);
+    
+    for(iRBE2 = 0; iRBE2 < nRBE2; iRBE2++){
+        Master = X.segment(RBE2[iRBE2]->MasterDOFs(0)-1);
+        Slave  = X.segment(RBE2[iRBE2]->SlaveDOFs(0)-1);
+        
+        RBE2[iRBE2]->axis_vector_old = RBE2[iRBE2]->axis_vector;
+        
+        versor = (Slave - Master)/ (Slave - Master).norm();
+        RBE2[iRBE2]->axis_vector = versor*RBE2[iRBE2]->l_rigid;
+        
+        Slave_up = Master + RBE2[iRBE2]->axis_vector;
+        X.segment(RBE2[iRBE2]->SlaveDOFs(0)-1) = Slave_up;
+        
+                
+    }
+               
+}
+
+/*===================================================
+ *            Update Rigid Constraints (RBE2)
+ * ==================================================
+ */
+
+void CStructure::UpdateRigidConstr()
+{
+    for(int iRBE2 = 0; iRBE2 < nRBE2; iRBE2++){
+        RBE2[iRBE2]->UpdateKinemMatrix();
+    }
+    AssemblyRigidConstr();
+}
+
 
 //===================================================
 //     Initialize  Coordinates
