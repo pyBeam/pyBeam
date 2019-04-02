@@ -103,7 +103,7 @@ iNode = 5   -1
 #beam.SetLoads(iNode,1,50000)
 #beam.SetLoads(iNode,2 -1,5000)
 #beam.SetLoads(iNode,4 -1,5000000)
-beam.SetLoads(iNode,3 -1,5000000)#100000)
+beam.SetLoads(iNode,2 -1,5000)#100000)
 #beam.SetLoads(iNode-1,3 -1,50000)
 beam.Solve()
 
@@ -126,13 +126,13 @@ for jNode in range(0,nPoint):
   coordinate_Z0.append(beam.ExtractInitialCoordinates(jNode, 2))
   
 #for iNode in range(0,nPoint):  
-for iNode in( 5 -1, 4-1): # te one I'm studying
-   print("Node {} Coord_tip indef= {} {} {}".format(iNode, coordinate_X0[iNode], coordinate_Y0[iNode], coordinate_Z0[iNode]))  
+iNode = 4 -1 # te one I'm studying
+print("Node {} Coord_tip indef= {} {} {}".format(iNode, coordinate_X0[iNode], coordinate_Y0[iNode], coordinate_Z0[iNode]))  
   
   
-   print("Coord_tip= {} {} {}".format(coordinate_X[iNode], coordinate_Y[iNode], coordinate_Z[iNode]))  
+print("Coord_tip= {} {} {}".format(coordinate_X[iNode], coordinate_Y[iNode], coordinate_Z[iNode]))  
   
-   print("Displ_tip= {} {} {}".format(coordinate_X[iNode] - coordinate_X0[iNode], coordinate_Y[iNode] - coordinate_Y0[iNode], coordinate_Z[iNode] - coordinate_Z0[iNode]))  
+print("Displ_tip= {} {} {}".format(coordinate_X[iNode] - coordinate_X0[iNode], coordinate_Y[iNode] - coordinate_Y0[iNode], coordinate_Z[iNode] - coordinate_Z0[iNode]))  
   
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')

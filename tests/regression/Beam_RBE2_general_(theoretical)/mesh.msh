@@ -2,20 +2,20 @@
 
 NDIM = 3
 
-NPOIN=	5
+NPOIN=	6
          0         0         0
     0.3000         0         0
     0.6000         0         0
-    0.9000         0         0
-    0.9000         0.3         0    
+    2.7000         3         0
+    2.7000         4         0
+    2.7000         0         0
 
 
 % Element type: 1 = line, 5 = triangular
 % ELEM_TYPE  ELEM_NODEID_1  ELEM_NODEID_2  ELEM_PROPERTY  AUXILIARY_Vector
-NELEM=	3
-     1     2     1     0     1     0
+NELEM=	2
      2     3     1     0     1     0
-     3     4     1     0     1     0     
+     3     6     1     0     1     0     
 
 
 % NODE_ID DOF_ID  (NOTE: NODE_ID starts from 1 and DOF_ID is 1-6)
@@ -28,8 +28,10 @@ NCONSTR = 6
 1 6
 
 % MASTER_NODE SLAVE_NODE  (
-NRBE2 = 1
-4 5
+NRBE2 = 3
+2 1
+3 4
+3 5
 
 
 

@@ -95,6 +95,7 @@ void CBeamSolver::InitializeInput(CInput* py_input){   // insert node class and 
     //==============================================================
     if (nRBE2 != 0){  
         cout << "=========  RBE2 initialization  ====" << std::endl;
+        std::cout << "Warning: the code works if slave nodes are not connected to beams! "  << std::endl;
         RBE2 = new CRBE2*[nRBE2];
         std::cout << "ok!"  <<std::endl;
     }

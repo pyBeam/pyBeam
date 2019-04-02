@@ -59,10 +59,10 @@ void CRBE2::InitializeAxisVector() {
     addouble b = node_slave->GetCoordinate0(1) - node_master->GetCoordinate0(1);
     addouble c = node_slave->GetCoordinate0(2) - node_master->GetCoordinate0(2);
     
-    axis_vector = VectorXdDiff::Zero(3);
-    axis_vector(0) = a; axis_vector(1) = b; axis_vector(2) = c;
-    
     axis_vector0 = VectorXdDiff::Zero(3);
+    axis_vector0(0) = a; axis_vector0(1) = b; axis_vector0(2) = c;
+    
+
     axis_vector_old = axis_vector0;
     axis_vector = axis_vector0;   
 }
@@ -83,7 +83,7 @@ void CRBE2::InitializeAxisVector() {
         Kinem_matrix.block(1 -1, 4 -1, 3, 3) = MStrans;
         Kinem_matrix0 = Kinem_matrix;
         Kinem_matrix_old = Kinem_matrix;
-        
+        std::cout << "  Kinem_matrix = \n" << Kinem_matrix << std::endl;
     }   
     
     void CRBE2::UpdateKinemMatirx() {
@@ -97,7 +97,8 @@ void CRBE2::InitializeAxisVector() {
                 -axis_vector(3 -1),        0,              axis_vector(1 -1),
                 axis_vector(2 -1),    -axis_vector(1 -1),        0      ; 
         
-        Kinem_matrix.block(1 -1, 4 -1, 3, 3) = MStrans;        
+        Kinem_matrix.block(1 -1, 4 -1, 3, 3) = MStrans; 
+        std::cout << "  Kinem_matrix = \n" << Kinem_matrix << std::endl;
         
     } 
     

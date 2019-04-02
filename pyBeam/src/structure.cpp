@@ -162,6 +162,7 @@ void CStructure::AssemblyRigidConstr()
             for (j = 0; j < DOF ; j++)
             {
         KRBE((RBE2[iRBE2]->node_slave-> GeID() -1)*6 +i ,full_to_red((RBE2[iRBE2]->node_master-> GeID()-1)*6+j ) -1 ) = RBE2[iRBE2]->Kinem_matrix(i,j);
+           
             }
         }
         }
@@ -457,14 +458,14 @@ void CStructure::SolveLinearStaticSystem()
 }
 
 void CStructure::SolveLinearStaticSystem_RBE2()
-{
+{ 
     std::cout << "-->  Reducing Linear System (RBE2...), "  << std::endl;
     Ksys_red = KRBE.transpose()*Ksys*KRBE;
     Residual_red = KRBE.transpose()* Residual;
     std::cout << "-->  Solving Linear System, "  << std::endl;
 
     dU_red = Ksys_red.fullPivHouseholderQr().solve(Residual_red);
-    //std::cout << "dU (after) = \n" << dU << std::endl;
+    std::cout << "dU_red (after) = \n" << dU_red << std::endl;
     addouble relative_error = (Ksys_red*dU_red -Residual_red).norm() / Residual_red.norm(); // norm() is L2 norm
     //std::cout<< "Ksys = \n" << Ksys << std::endl;
     //std::cout<< "Residual = \n" << Residual.norm() << std::endl;
@@ -478,6 +479,9 @@ void CStructure::SolveLinearStaticSystem_RBE2()
     std::cout << "-->  Expanding Linear System (RBE2...), "  << std::endl;
     //Caution, at this point RBE2 slave displacements are still linear
     dU = KRBE*dU_red;
+    
+    VectorXdDiff F_ext_red = KRBE.transpose()*Fext;
+    std::cout << "-->  F_ext "  <<F_ext_red << std::endl;
     
     //	Decomposition  	                   Method     Requirements 	Speed 	Accuracy
     //	PartialPivLU 	             partialPivLu()  Invertible 	   ++ 	+
@@ -532,7 +536,7 @@ void CStructure::UpdateCoord()
         posX += 3;
         posU += 6;
     }
-    //std::cout << "dU = \n" << dU <<std::endl;
+    //std::cout << "X = \n" << X <<std::endl;
     
     ////std::ofstream myfile3 ("./output/echo_dX.out", std::ios_base::out | std::ios_base::app);
     //myfile3 <<  DX << std::endl;
@@ -544,27 +548,31 @@ void CStructure::UpdateCoord()
  */
 void CStructure::UpdateCoord_RBE2()
 {
+
+std::cout << "-->  Update RBE2 Slave coordinates "  << std::endl;    
+    
     int iRBE2;
+    int idMaster, idSlave;
     VectorXdDiff Master = VectorXdDiff::Zero(3);
     VectorXdDiff Slave = VectorXdDiff::Zero(3);
     VectorXdDiff versor = VectorXdDiff::Zero(3);
     VectorXdDiff Slave_up = VectorXdDiff::Zero(3);
     
     for(iRBE2 = 0; iRBE2 < nRBE2; iRBE2++){
-        Master = X.segment(RBE2[iRBE2]->MasterDOFs(0)-1,3);
-        Slave  = X.segment(RBE2[iRBE2]->SlaveDOFs(0)-1,3);
-        
+        idMaster = RBE2[iRBE2]->node_master-> GeID();
+        idSlave = RBE2[iRBE2]->node_slave-> GeID();
+        Master = X.segment((idMaster-1)*3+1 -1,3);
+        Slave  = X.segment((idSlave-1)*3+1 -1,3);
         RBE2[iRBE2]->axis_vector_old = RBE2[iRBE2]->axis_vector;
-        
         versor = (Slave - Master)/ (Slave - Master).norm();
         RBE2[iRBE2]->axis_vector = versor*RBE2[iRBE2]->l_rigid;
-        
+        std::cout << "-->  Axis vector = "  <<  RBE2[iRBE2]->axis_vector << std::endl;        
         Slave_up = Master + RBE2[iRBE2]->axis_vector;
-        X.segment(RBE2[iRBE2]->SlaveDOFs(0)-1,3) = Slave_up;
-        
+        X.segment((idSlave-1)*3+1 -1,3) = Slave_up;
+
                 
     }
-               
+            
 }
 
 /*===================================================
@@ -574,6 +582,9 @@ void CStructure::UpdateCoord_RBE2()
 
 void CStructure::UpdateRigidConstr()
 {
+    
+std::cout << "-->  Update KRBE matrix "  << std::endl; 
+
     for(int iRBE2 = 0; iRBE2 < nRBE2; iRBE2++){
         RBE2[iRBE2]->UpdateKinemMatirx();
     }
