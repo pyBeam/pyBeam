@@ -1,0 +1,10 @@
+4  % NN = number of nodes with initial velocity different than zero 
+
+         0         0         0
+    0.3000         0         0
+    0.6000         0         0
+    0.6000         0.3         0        
+
+
+% Order: XGLOBAL, YGLOBAL, ZGLOBAL (the ID of the node is the ID of the row. So the first will have ID = 1,
+% the second will have ID = 2 and so on). 

@@ -68,7 +68,8 @@ public:
     MatrixXdDiff Ksys;
     MatrixXdDiff Ksys_red; // [relative to masters in case of RBE2]       
     
-    MatrixXdDiff KRBE;  // Kinematic constraint matrix due to the RBE2 elements   [totalDOFs, BossDOFs]      
+    MatrixXdDiff KRBE;  // Kinematic constraint matrix due to the RBE2 elements   [totalDOFs, BossDOFs]   
+    MatrixXdDiff KRBE_ext;  // Kinematic constraint matrix due to the RBE2 elements   [totalDOFs, BossDOFs]  
     
     MatrixXdDiff  Constr_matrix;    // COnstraint matrix [ NODE_ID DOF_ID ]
     
@@ -109,7 +110,7 @@ public:
     
     void AssemblyRigidConstr();
     
-    void UpdateRigidConstr();        
+    void UpdateRigidConstr(int iIter);        
     
     //===================================================
     //      Assembly System Stiffness Matrix
@@ -124,9 +125,9 @@ public:
     //===================================================
     // Assembles LHS and RHS and solves the linear static problem
     
-    void SolveLinearStaticSystem();
+    void SolveLinearStaticSystem(int iIter);
     
-    void SolveLinearStaticSystem_RBE2();        
+    void SolveLinearStaticSystem_RBE2(int iIter);        
     
     //===================================================
     //      Update Coordinates
@@ -137,7 +138,7 @@ public:
     
     void UpdateCoord();
     
-    void UpdateCoord_RBE2();        
+    void UpdateCoord_RBE2(int iIter);        
     
     void InitialCoord();
     

@@ -1,0 +1,15 @@
+0                 !Number of concentrated masses:   IDnode     Value of the Mass                         
+
+5 100 0 0 0
+ 
+% ID node      -   Value   , Ix, Iy, Iz
+
+
+
+1                                            -->    5 
+2                                            -->    7
+3                                            -->    1
+4                                            -->    2
+5                                            -->    3              
+6         massa conc      4.qualcosa         -->    6
+7         massa conc       2                 -->    4

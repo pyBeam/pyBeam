@@ -126,16 +126,15 @@ void CBeamSolver::Solve(void){
     {
         TotalLength += element[iFEM]->l_ini;
     }
+
+    std::cout << "#####    SETTING EXTERNAL FORCES   #####" << std::endl;
+    structure->ReadForces(nTotalDOF, loadVector); // to be interfaced with the aerodynamic part    
     
     if (nRBE2 != 0){ 
         std::cout << "#####    SET RBE2 MATRIX FOR RIGID CONSTRAINTS  #####" << std::endl;  
-        structure->AddRBE2(input, RBE2);
-        structure->AssemblyRigidConstr();
+        structure->AddRBE2(input, RBE2);        
     };
-    
-    std::cout << "#####    SETTING EXTERNAL FORCES   #####" << std::endl;
-    structure->ReadForces(nTotalDOF, loadVector); // to be interfaced with the aerodynamic part
-    
+        
     //===============================================
     // LOAD STEPPING
     //===============================================
@@ -190,8 +189,13 @@ void CBeamSolver::Solve(void){
             structure->AssemblyTang(iIter);
             
             // Solve Linear System   K*dU = Res = Fext - Fin
-            if (nRBE2 != 0){ structure->SolveLinearStaticSystem_RBE2(); }
-            else {structure->SolveLinearStaticSystem();}
+            if (nRBE2 != 0)
+            { 
+            std::cout << "-->  Update KRBE matrix "  << std::endl;
+            structure->AssemblyRigidConstr();
+            structure->SolveLinearStaticSystem_RBE2(iIter); 
+            }
+            else {structure->SolveLinearStaticSystem(iIter);}
             
             
             
@@ -200,9 +204,6 @@ void CBeamSolver::Solve(void){
              *----------------------------------------------------*/
             
             structure->UpdateCoord();
-            if (nRBE2 != 0){              
-                structure->UpdateCoord_RBE2();
-                structure->UpdateRigidConstr();  }
             
             structure->EchoDisp();   structure->EchoCoord();
             
@@ -211,7 +212,10 @@ void CBeamSolver::Solve(void){
             structure->UpdateRotationMatrix();  // based on the rotational displacements
             structure->UpdateLength();          // Updating length, important
             
-            
+            if (nRBE2 != 0){              
+               
+               structure->UpdateRigidConstr(iIter); 
+            }            
             /*--------------------------------------------------
              *   Update Internal Forces
              *----------------------------------------------------*/

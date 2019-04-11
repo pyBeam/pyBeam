@@ -130,7 +130,7 @@ void CStructure::AssemblyRigidConstr()
     // that's the reason i need dofs from 1 to 6 as 0 represents the slave dofs position
     VectorXi red_to_full = master_all_eig;
     VectorXi full_to_red = VectorXi::Zero(6*nNode);
-    // Evalutaion of the master_all_eig_red so: the DOF of the master element ordered in the reduced coordinate vector 
+    // Evaluation of the master_all_eig_red so: the DOF of the master element ordered in the reduced coordinate vector 
     VectorXi master_all_eig_red = VectorXi::Zero(master_all.size());
     for (i = 0; i < master_all.size(); i++)
     {
@@ -141,9 +141,9 @@ void CStructure::AssemblyRigidConstr()
 
     
     
-    // Initialization of the KRBE matrix
+    // Initialization of the KRBE matrix and KRBE_ext
     KRBE = MatrixXdDiff::Zero(6*nNode,master_all.size());    
-    
+    KRBE_ext = MatrixXdDiff::Zero(master_all.size(),master_all.size());
     
 
     // KRBE assembly
@@ -165,8 +165,28 @@ void CStructure::AssemblyRigidConstr()
            
             }
         }
-        }
-       cout << "KRBE = \n" <<KRBE << endl;  
+        
+        /*KRBE_ext = [-Vz*z-Vy*y,       Vy*x,             Vz*x
+         *               Vx*y,      -Vz*z - Vx*x,         Vz*y
+         *              Vx*z,           Vy*z,          -Vy*y -Vx*x]
+         */
+        cout << "Axis vector = " << RBE2[iRBE2]->axis_vector.transpose() << endl;
+        KRBE_ext.block(full_to_red((RBE2[iRBE2]->node_master-> GeID()-1)*6+3 ) -1,full_to_red((RBE2[iRBE2]->node_master-> GeID()-1)*6+3 ) -1,3,3) << 
+                - Fext((RBE2[iRBE2]->node_slave-> GeID()-1)*6+3 -1)*RBE2[iRBE2]->axis_vector(3 -1) - Fext((RBE2[iRBE2]->node_slave-> GeID()-1)*6+2 -1)*RBE2[iRBE2]->axis_vector(2 -1) ,
+                  Fext((RBE2[iRBE2]->node_slave-> GeID()-1)*6+2 -1)*RBE2[iRBE2]->axis_vector(1 -1) , 
+                  Fext((RBE2[iRBE2]->node_slave-> GeID()-1)*6+3 -1)*RBE2[iRBE2]->axis_vector(1 -1) ,
+                  Fext((RBE2[iRBE2]->node_slave-> GeID()-1)*6+1 -1)*RBE2[iRBE2]->axis_vector(2 -1) ,
+                - Fext((RBE2[iRBE2]->node_slave-> GeID()-1)*6+3 -1)*RBE2[iRBE2]->axis_vector(3 -1) - Fext((RBE2[iRBE2]->node_slave-> GeID()-1)*6+1 -1)*RBE2[iRBE2]->axis_vector(1 -1),
+                  Fext((RBE2[iRBE2]->node_slave-> GeID()-1)*6+3 -1)*RBE2[iRBE2]->axis_vector(2 -1),
+                  Fext((RBE2[iRBE2]->node_slave-> GeID()-1)*6+1 -1)*RBE2[iRBE2]->axis_vector(3 -1),
+                  Fext((RBE2[iRBE2]->node_slave-> GeID()-1)*6+2 -1)*RBE2[iRBE2]->axis_vector(3 -1),
+                - Fext((RBE2[iRBE2]->node_slave-> GeID()-1)*6+2 -1)*RBE2[iRBE2]->axis_vector(2 -1) - Fext((RBE2[iRBE2]->node_slave-> GeID()-1)*6+1 -1)*RBE2[iRBE2]->axis_vector(1 -1);
+        
+    //cout << "KRBE_ext = \n" << KRBE_ext.block(full_to_red((RBE2[iRBE2]->node_master-> GeID()-1)*6+3 ) -1,full_to_red((RBE2[iRBE2]->node_master-> GeID()-1)*6+3 ) -1,3,3) << endl;
+  
+      
+    } 
+      // cout << "KRBE = \n" <<KRBE << endl;  
 }
 
 /***************************************************************
@@ -410,6 +430,11 @@ void CStructure::EvalSensRot()
 void CStructure::EvalResidual()
 {
     Residual = Fext - Fint;
+   
+    std::cout<< "Fext = \n" << Fext.transpose() << std::endl;
+    //std::cout<< "Fext_red = \n" << Fext.transpose()*KRBE << std::endl;
+    std::cout<< "Fint = \n" << Fint.transpose() << std::endl;
+    cout << "Residual = \n" <<Residual.transpose()<< endl;
     
     int iii = 0; int constr_dof_id = 0;
     
@@ -429,22 +454,64 @@ void CStructure::EvalResidual()
  Solves the linear static problem.
  It needs Ksys and Residual updated*/
 
-void CStructure::SolveLinearStaticSystem()
+void CStructure::SolveLinearStaticSystem(int iIter)
 {
     std::cout << "-->  Solving Linear System, "  << std::endl;
-
+    cout << "Ksys = \n" <<Ksys << endl;    
     dU = Ksys.fullPivHouseholderQr().solve(Residual);
-    //std::cout << "dU (after) = \n" << dU << std::endl;
+    std::cout << "dU (after) = \n" << dU << std::endl;
     addouble relative_error = (Ksys*dU -Residual).norm() / Residual.norm(); // norm() is L2 norm
     //std::cout<< "Ksys = \n" << Ksys << std::endl;
-    //std::cout<< "Residual = \n" << Residual.norm() << std::endl;
+    std::cout<< "Residual = \n" << Residual << std::endl;
     std::cout << "The relative error is:\n" << relative_error << std:: endl;
     if (relative_error > 1.0e-7)
     {
         std::cout << "Solution of Linear System not precise enough!" << std:: endl;
     	throw std::exception();
     }
+/*
+// Debug
+    if (iIter ==0)
+    {
+    dU =  VectorXdDiff::Zero(18);
+    dU(9-1) = pow(10,-6);
     
+    std::ofstream file("./dU.dat");
+    if (file.is_open())
+    {        
+        file  <<  dU <<  endl;
+    }
+    
+    std::ofstream file1("./Ktang.dat");
+    cout << "Ksys = \n" << Ksys << endl;
+    if (file1.is_open())
+    {        
+
+        file1  <<  Ksys << endl;
+    }    
+      
+    std::ofstream file3("./Residual_red.dat");
+    if (file3.is_open())
+    {        
+
+        file3  <<  Residual << endl;
+    }    
+    
+      
+     
+    }
+    
+    if (iIter ==1)
+    {
+    std::ofstream file5("./Residual_iter1.dat");
+    if (file5.is_open())
+    {        
+
+        file5  <<  Residual << endl;
+    }       
+          
+    }    
+ */
     //	Decomposition  	                   Method     Requirements 	Speed 	Accuracy
     //	PartialPivLU 	             partialPivLu()  Invertible 	   ++ 	+
     //	FullPivLU 	                    fullPivLu() 	None 	       - 	+++
@@ -457,15 +524,24 @@ void CStructure::SolveLinearStaticSystem()
     
 }
 
-void CStructure::SolveLinearStaticSystem_RBE2()
+void CStructure::SolveLinearStaticSystem_RBE2(int iIter)
 { 
+    // Debug
+    cout << "Ksys = \n" <<Ksys << endl; 
+     
+    //
+    
+    
     std::cout << "-->  Reducing Linear System (RBE2...), "  << std::endl;
-    Ksys_red = KRBE.transpose()*Ksys*KRBE;
-    Residual_red = KRBE.transpose()* Residual;
+    Ksys_red = KRBE.transpose()*Ksys*KRBE - KRBE_ext;
+    cout << "Ksys_red = \n" <<Ksys_red << endl;
+    Residual_red = KRBE.transpose()* Residual; 
     std::cout << "-->  Solving Linear System, "  << std::endl;
-
+    
+    std::cout << "Residual red = \n" << Residual_red << endl;
+    
     dU_red = Ksys_red.fullPivHouseholderQr().solve(Residual_red);
-    std::cout << "dU_red (after) = \n" << dU_red << std::endl;
+    //std::cout << "dU_red (after) = \n" << dU_red << std::endl;
     addouble relative_error = (Ksys_red*dU_red -Residual_red).norm() / Residual_red.norm(); // norm() is L2 norm
     //std::cout<< "Ksys = \n" << Ksys << std::endl;
     //std::cout<< "Residual = \n" << Residual.norm() << std::endl;
@@ -479,19 +555,100 @@ void CStructure::SolveLinearStaticSystem_RBE2()
     std::cout << "-->  Expanding Linear System (RBE2...), "  << std::endl;
     //Caution, at this point RBE2 slave displacements are still linear
     dU = KRBE*dU_red;
+    std::cout << "KRBE.transpose() = \n" << KRBE.transpose() << std::endl;
+    std::cout << "KRBE_ext = \n" << KRBE_ext << std::endl;
+    std::cout << "dU (after) = \n" << dU << std::endl;
+    std::cout << "dU_red (after) = \n" << dU_red << std::endl;
+     /*
+    // Debug
+    if (iIter ==0)
+    {
+    dU_red =  VectorXdDiff::Zero(18);
+    dU_red(8 -1) = pow(10,-6);
+    dU = KRBE*dU_red;
     
-    VectorXdDiff F_ext_red = KRBE.transpose()*Fext;
-    std::cout << "-->  F_ext "  <<F_ext_red << std::endl;
+    cout << "dU = \n" << dU << endl;
     
-    //	Decomposition  	                   Method     Requirements 	Speed 	Accuracy
-    //	PartialPivLU 	             partialPivLu()  Invertible 	   ++ 	+
-    //	FullPivLU 	                    fullPivLu() 	None 	       - 	+++
-    //	HouseholderQR 	             householderQr() 	None 	        ++ 	+
-    //	ColPivHouseholderQR 	colPivHouseholderQr() 	None 	         + 	++
-    //	FullPivHouseholderQR 	fullPivHouseholderQr() 	None 	         - 	+++
-    //	LLT 	                          llt() 	Positive definite  +++ 	+
-    //	LDLT 	                         ldlt() Positive or negative semidefinite 	+++ 	++
+    std::ofstream file("./dU_red.dat");
+    if (file.is_open())
+    {        
+
+        file  <<  dU_red  << endl;
+    }
     
+    std::ofstream file1("./Ktang_red.dat");
+    if (file1.is_open())
+    {        
+
+        file1  <<  KRBE.transpose()*Ksys*KRBE  << endl;
+    }    
+    
+    std::ofstream file2("./KRBE_ext.dat");
+    if (file2.is_open())
+    {        
+
+        file2  <<  KRBE_ext  << endl;
+    }  
+    
+    std::ofstream file3("./Residual_red.dat");
+    if (file3.is_open())
+    {        
+
+        file3  <<  Residual_red  << endl;
+    }    
+    
+    std::ofstream file4("./Ksys_red.dat");
+    if (file4.is_open())
+    {        
+
+        file4  <<  Ksys_red  << endl;
+    }   
+    
+    std::ofstream file7("./KRBE.dat");
+    if (file7.is_open())
+    {        
+
+        file7  <<  KRBE  << endl;
+    }     
+    
+    std::ofstream file8("./Ktang.dat");
+    if (file7.is_open())
+    {        
+
+        file8  <<  Ksys << endl;
+    }     
+     
+    }
+    
+    if (iIter ==1)
+    {
+    std::ofstream file5("./Residual_red_iter1.dat");
+    if (file5.is_open())
+    {        
+
+        file5  <<  Residual_red  << endl;
+    }       
+    
+    std::ofstream file6("./Ktang_red_iter1.dat");
+    if (file6.is_open())
+    {        
+
+        file6  <<  KRBE.transpose()*Ksys*KRBE  << endl;
+    }      
+    }
+    */
+    //VectorXdDiff Fext_red = KRBE.transpose()*Fext;
+    //std::cout << "-->  F_ext "  <<Fext << std::endl;
+
+//	Decomposition  	                   Method     Requirements 	Speed 	Accuracy
+//	PartialPivLU 	             partialPivLu()  Invertible 	   ++ 	+
+//	FullPivLU 	                    fullPivLu() 	None 	       - 	+++
+//	HouseholderQR 	             householderQr() 	None 	        ++ 	+
+//	ColPivHouseholderQR 	colPivHouseholderQr() 	None 	         + 	++
+//	FullPivHouseholderQR 	fullPivHouseholderQr() 	None 	         - 	+++
+//	LLT 	                          llt() 	Positive definite  +++ 	+
+//	LDLT 	                         ldlt() Positive or negative semidefinite 	+++ 	++
+
     
 }
 
@@ -546,10 +703,10 @@ void CStructure::UpdateCoord()
  *            Update Coordinates RBE2
  * ==================================================
  */
-void CStructure::UpdateCoord_RBE2()
+void CStructure::UpdateCoord_RBE2(int iIter)
 {
-
-std::cout << "-->  Update RBE2 Slave coordinates "  << std::endl;    
+    
+    std::cout << "-->  Update RBE2 Slave coordinates "  << std::endl;    
     
     int iRBE2;
     int idMaster, idSlave;
@@ -564,15 +721,19 @@ std::cout << "-->  Update RBE2 Slave coordinates "  << std::endl;
         Master = X.segment((idMaster-1)*3+1 -1,3);
         Slave  = X.segment((idSlave-1)*3+1 -1,3);
         RBE2[iRBE2]->axis_vector_old = RBE2[iRBE2]->axis_vector;
-        versor = (Slave - Master)/ (Slave - Master).norm();
+        if (iIter !=0) {
+        versor = (Slave - Master)/ (Slave - Master).norm();        
         RBE2[iRBE2]->axis_vector = versor*RBE2[iRBE2]->l_rigid;
-        std::cout << "-->  Axis vector = "  <<  RBE2[iRBE2]->axis_vector << std::endl;        
         Slave_up = Master + RBE2[iRBE2]->axis_vector;
         X.segment((idSlave-1)*3+1 -1,3) = Slave_up;
-
-                
+        }
+        else
+        {
+            RBE2[iRBE2]->axis_vector = (Slave - Master);
+        }
+        
     }
-            
+    
 }
 
 /*===================================================
@@ -580,15 +741,15 @@ std::cout << "-->  Update RBE2 Slave coordinates "  << std::endl;
  * ==================================================
  */
 
-void CStructure::UpdateRigidConstr()
+void CStructure::UpdateRigidConstr(int iIter)
 {
     
-std::cout << "-->  Update KRBE matrix "  << std::endl; 
-
+    UpdateCoord_RBE2(iIter);    
+        
     for(int iRBE2 = 0; iRBE2 < nRBE2; iRBE2++){
         RBE2[iRBE2]->UpdateKinemMatirx();
     }
-    AssemblyRigidConstr();
+    
 }
 
 

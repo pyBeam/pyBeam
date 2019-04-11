@@ -1,0 +1,9 @@
+ 1.03182873052E+08 
+ 2.06362385426E+08 
+ 1.29471690017E+08 
+ 6.05460075135E+09 
+ 7.54616309983E+08 
+
+
+ The generalized stiffnesses are the ModalMass time the natural frequencies
+(not to be confused with the frequencies you  put to calculate the generalized aerodynamic force matrix!)

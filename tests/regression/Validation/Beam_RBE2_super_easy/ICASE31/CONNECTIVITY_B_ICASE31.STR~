@@ -1,0 +1,9 @@
+1  % NFE_B = number of beam elements (notice that the order will give the element ID) 
+
+     1     2     1     
+ 
+
+
+% Order: NODE I, NODE J, Property ID. 
+% The element Id will be the row ID. So the first row is relative to the first 
+% element, the second row will be relative to the second element and so on. 
