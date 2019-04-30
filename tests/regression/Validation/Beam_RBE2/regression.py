@@ -99,11 +99,11 @@ if nRBE2 != 0:
   
 beam.InitializeStructure()
 
-iNode = 3  -1
+iNode = 4  -1
 #beam.SetLoads(iNode,1,50000)
-beam.SetLoads(iNode,2 -1,5000)
+#beam.SetLoads(iNode,2 -1,5000)
 #beam.SetLoads(iNode,4 -1,5000000)
-#beam.SetLoads(iNode,3 -1,50000000)#100000)
+beam.SetLoads(iNode,3 -1,50000000)#100000)
 #beam.SetLoads(iNode,3 -1, 50000000)#100000)
 #beam.SetLoads(iNode-1,3 -1,50000)
 beam.Solve()

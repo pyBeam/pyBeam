@@ -1,0 +1,17 @@
+6  % NCONS = number of constraints (written in the form Node ID, constrained DOF) 
+
+1  2
+1  1
+1  3
+1  4
+1  5
+1  6
+
+
+1                                            -->    5 
+2                                            -->    7
+3                                            -->    1
+4                                            -->    2
+5                                            -->    3              
+6         massa conc      4.qualcosa         -->    6
+7         massa conc       2                 -->    4

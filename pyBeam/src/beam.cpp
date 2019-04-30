@@ -189,11 +189,17 @@ void CBeamSolver::Solve(void){
             structure->AssemblyTang(iIter);
             
             // Solve Linear System   K*dU = Res = Fext - Fin
-            if (nRBE2 != 0)
-            { 
+            if (nRBE2 != 0 and input->Get_RigidCriteria() == 0)
+            {             
             std::cout << "-->  Update KRBE matrix "  << std::endl;
             structure->AssemblyRigidConstr();
-            structure->SolveLinearStaticSystem_RBE2(iIter); 
+            structure->SolveLinearStaticSystem_RBE2(iIter);
+            }
+            else if (nRBE2 != 0 and input->Get_RigidCriteria() == 1)
+            {
+            std::cout << "-->  Update penalty matrix for RBEs "  << std::endl;    
+            structure->AssemblyRigidPenalty(input->GetPenalty());
+            structure->SolveLinearStaticSystem_RBE2_penalty(iIter);
             }
             else {structure->SolveLinearStaticSystem(iIter);}
             

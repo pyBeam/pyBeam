@@ -67,12 +67,17 @@ public:
     MatrixXdDiff M;      // Recall in Eigen X stays for dynamic, d for addouble:  (nfem+1)*6  X   (nfem+1)*6
     MatrixXdDiff Ksys;
     MatrixXdDiff Ksys_red; // [relative to masters in case of RBE2]       
+    MatrixXdDiff K_penal;  // penalty matrix for rigid elements
+    VectorXdDiff V_penal;  // penalty vector for rigid elements
+    
     
     MatrixXdDiff KRBE;  // Kinematic constraint matrix due to the RBE2 elements   [totalDOFs, BossDOFs]   
     MatrixXdDiff KRBE_ext;  // Kinematic constraint matrix due to the RBE2 elements   [totalDOFs, BossDOFs]  
     
+    
     MatrixXdDiff  Constr_matrix;    // COnstraint matrix [ NODE_ID DOF_ID ]
     
+    VectorXdDiff U;             // Displacement array (cumulative)
     VectorXdDiff dU;           // Displacement array (iterative)
     VectorXdDiff dU_red;           // Displacement array (iterative) [relative to masters in case of RBE2]        
     VectorXdDiff X;            // Position of the fem nodes in global coordinate system
@@ -110,6 +115,8 @@ public:
     
     void AssemblyRigidConstr();
     
+    void AssemblyRigidPenalty(addouble penalty);
+    
     void UpdateRigidConstr(int iIter);        
     
     //===================================================
@@ -128,6 +135,8 @@ public:
     void SolveLinearStaticSystem(int iIter);
     
     void SolveLinearStaticSystem_RBE2(int iIter);        
+    
+    void SolveLinearStaticSystem_RBE2_penalty(int iIter);   
     
     //===================================================
     //      Update Coordinates

@@ -53,6 +53,8 @@ CStructure::CStructure(CInput *input, CElement **element, CNode **container_node
     M.resize(nNode*6,nNode*6);
     M = MatrixXdDiff::Zero(nNode*6,nNode*6);
     
+    
+    U  = VectorXdDiff::Zero(nNode*6);         // Whole system displacements (Cumulative)
     dU  = VectorXdDiff::Zero(nNode*6);         // Whole system displacements
     
     X  = VectorXdDiff::Zero(nNode*3);
@@ -188,6 +190,55 @@ void CStructure::AssemblyRigidConstr()
     } 
       // cout << "KRBE = \n" <<KRBE << endl;  
 }
+
+//===================================================
+//      Assembly penalty matrix and vector for rigid constraints 
+//===================================================
+void CStructure::AssemblyRigidPenalty(addouble penalty)
+{
+    
+    /* System matrix penalty
+    
+    |    0     0 |  {DU_m } = {0}
+    |   D_ms  -I |  {DU_s }   {0}
+      
+    D_ms_rbe =>  DU_s = D_ms * DU_m 
+                
+       D_ms_rbe =     | I   Kinem_matrix_rbe |
+                      | 0         I          |
+         
+    
+    */
+    // Setting to Zero the SYSTEM penalty matrix
+    K_penal = MatrixXdDiff::Zero(nNode*6,nNode*6);
+    
+    for(int iRBE2 = 0; iRBE2 < nRBE2; iRBE2++)
+    {
+        // EYE here: only in this case DOFS start from 1 instead than from 0. Explained in function AssemblyRigidConstraint
+        //K_penal.block(RBE2[iRBE2]->SlaveDOFs(1 -1) -1,RBE2[iRBE2]->MasterDOFs(1 -1) -1, 3 , 3) = MatrixXdDiff::Identity(3,3);
+        //K_penal.block(RBE2[iRBE2]->SlaveDOFs(4 -1) -1,RBE2[iRBE2]->MasterDOFs(1 -1) -1, 3 , 3) = MatrixXdDiff::Identity(3,3);
+        
+        //K_penal.block(RBE2[iRBE2]->SlaveDOFs(1 -1) -1,RBE2[iRBE2]->MasterDOFs(4 -1) -1, 3 , 3) = RBE2[iRBE2]->Kinem_matrix.block(1 -1, 4 -1, 3, 3);
+        //cout << "DEBUG \n" << endl;
+        
+        K_penal.block(RBE2[iRBE2]->MasterDOFs(1 -1) -1,RBE2[iRBE2]->MasterDOFs(1 -1) -1, 6 , 6) = RBE2[iRBE2]->Kinem_matrix * RBE2[iRBE2]->Kinem_matrix;
+        K_penal.block(RBE2[iRBE2]->MasterDOFs(1 -1) -1,RBE2[iRBE2]->SlaveDOFs(1 -1) -1, 6 , 6) = - RBE2[iRBE2]->Kinem_matrix;
+        K_penal.block(RBE2[iRBE2]->SlaveDOFs(1 -1) -1,RBE2[iRBE2]->MasterDOFs(1 -1) -1, 6 , 6) = - RBE2[iRBE2]->Kinem_matrix;
+        K_penal.block(RBE2[iRBE2]->SlaveDOFs(1 -1) -1,RBE2[iRBE2]->SlaveDOFs(1 -1) -1, 6 , 6) =  MatrixXdDiff::Identity(6,6);
+        
+    }
+    
+    // Penalty application
+    K_penal = K_penal*penalty;
+    // Penalty vector for residual
+    V_penal = VectorXdDiff::Zero(nNode*6);
+    V_penal = K_penal*U;
+    
+    cout << "K_penal = \n" <<K_penal << endl;
+    cout << "V_penal = \n" <<V_penal << endl; 
+    
+}
+
 
 /***************************************************************
  *
@@ -652,6 +703,26 @@ void CStructure::SolveLinearStaticSystem_RBE2(int iIter)
     
 }
 
+void CStructure::SolveLinearStaticSystem_RBE2_penalty(int iIter)
+{
+    std::cout << "-->  Solving Linear System with penalty method for rigid constraints, "  << std::endl;
+    //cout << "Ksys = \n" <<Ksys << endl;    
+    Ksys = Ksys + K_penal;
+    Residual = Residual- V_penal;
+    
+    dU = Ksys.fullPivHouseholderQr().solve(Residual);
+    std::cout << "dU (after) = \n" << dU << std::endl;
+    addouble relative_error = (Ksys*dU -Residual).norm() / Residual.norm(); // norm() is L2 norm
+    //std::cout<< "Ksys = \n" << Ksys << std::endl;
+    std::cout<< "Residual = \n" << Residual << std::endl;
+    std::cout << "The relative error is:\n" << relative_error << std:: endl;
+    if (relative_error > 1.0e-7)
+    {
+        std::cout << "Solution of Linear System not precise enough!" << std:: endl;
+    	throw std::exception();
+    }
+
+}
 
 /*===================================================
  *            Update Coordinates
@@ -682,7 +753,11 @@ void CStructure::UpdateCoord()
     DX = VectorXdDiff::Zero(nNode*3);
     /**/
     
-    // Browsing all the fem nodes of the current segment
+    // Cumulative displacement update 
+    U +=dU;
+    
+    
+    // Browsing all the nodes of the current segment
     for (int i_node=1-1; i_node<=nNode-1 ; i_node++)  // Here we need to check through the connectivity (nfem is not related to the number of nodes)
     {
         
@@ -744,7 +819,9 @@ void CStructure::UpdateCoord_RBE2(int iIter)
 void CStructure::UpdateRigidConstr(int iIter)
 {
     
-    UpdateCoord_RBE2(iIter);    
+    //if (iIter!=1){ 
+    UpdateCoord_RBE2(iIter);
+    //}    
         
     for(int iRBE2 = 0; iRBE2 < nRBE2; iRBE2++){
         RBE2[iRBE2]->UpdateKinemMatirx();

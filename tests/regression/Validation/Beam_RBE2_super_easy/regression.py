@@ -103,7 +103,7 @@ iNode = 3  -1
 #beam.SetLoads(iNode,1,50000)
 #beam.SetLoads(iNode,2 -1,50000)
 #beam.SetLoads(iNode,4 -1,5000000)
-beam.SetLoads(iNode,3 -1,50000000)#100000)
+beam.SetLoads(iNode,3 -1,5000000)#100000)
 #beam.SetLoads(iNode,2 -1,50000000)#500000)#100000)
 #beam.SetLoads(iNode-1,3 -1,50000)
 beam.Solve()
@@ -155,9 +155,9 @@ plt.show()
   
   
 
-test_val = np.sqrt((coordinate_X[20]-24.020327385028295)**2+
-                   (coordinate_Y[20]-16.29552732537537)**2+
-                   (coordinate_Z[20]-0.3752371597829022)**2)
+#test_val = np.sqrt((coordinate_X[20]-24.020327385028295)**2+
+#                   (coordinate_Y[20]-16.29552732537537)**2+
+#                   (coordinate_Z[20]-0.3752371597829022)**2)
 
 print("Tolerance: ",test_val)
 
