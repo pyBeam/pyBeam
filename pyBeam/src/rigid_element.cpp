@@ -70,7 +70,7 @@ void CRBE2::InitializeAxisVector() {
     void CRBE2::InitializeKinemMatrix() { 
         
         Kinem_matrix = MatrixXdDiff::Identity(6,6);  
-        MatrixXdDiff MStrans = MatrixXdDiff::Zero(3,3);  
+        MStrans = MatrixXdDiff::Zero(3,3);  
         
         /*        Kprim = [        0         axis_vector(3)   -axis_vector(2);
          -axis_vector(3)        0           axis_vector(1);
@@ -80,13 +80,19 @@ void CRBE2::InitializeAxisVector() {
                 -axis_vector0(3 -1),        0,              axis_vector0(1 -1),
                 axis_vector0(2 -1),    -axis_vector0(1 -1),        0      ; 
         
-        Kinem_matrix.block(1 -1, 4 -1, 3, 3) = MStrans;
+        
+        MStrans0 = MStrans;
+        MStrans_old = MStrans;
+        
+        Kinem_matrix.block(1 -1, 4 -1, 3, 3) =  MStrans;
         Kinem_matrix0 = Kinem_matrix;
         Kinem_matrix_old = Kinem_matrix;
         std::cout << "  Kinem_matrix = \n" << Kinem_matrix << std::endl;
     }   
     
     void CRBE2::UpdateKinemMatirx() {
+        
+        MStrans_old = MStrans;
         
         Kinem_matrix_old = Kinem_matrix;        
         
@@ -119,5 +125,44 @@ void CRBE2::InitializeAxisVector() {
         
         
     }
+    /*
+    void CRBE2::EvaluatePredictedSlaveDisplacement(VectorXdDiff& U_s_pred, VectorXdDiff U_m )  // not used
+    {
+        //ROdriguex formula
+        int theta;
+        for (int i=4; i<=6; i++)
+        {
+            U_s_pred(i-1) = U_m(i-1);
+        }
+        
+        MatrixXdDiff R = MatrixXdDiff::Zero(3,3);
+        MatrixXdDiff K = MatrixXdDiff::Zero(3,3);
+        MatrixXdDiff K_2 = MatrixXdDiff::Zero(3,3);
+        MatrixXdDiff I = MatrixXdDiff::Identity(3,3);
+        
+        theta = sqrt(pow(U_m(4 -1),2.0) + pow(U_m(5 -1),2.0) + pow(U_m(6 -1),2.0));
+                
+        K <<  0      , - U_m(6 -1),  U_m(5 -1), 
+            U_m(6 -1),      0     ,  -U_m(4 -1),
+             -U_m(5 -1), U_m(4 -1),   0           ;
+        
+        K_2 = K*K;
+        
+        R = I  + K * sin(theta)/theta  + K_2*(1-cos(theta))/pow(theta,2.0);  // Double check!!
+        
+        U_s_pred.segment(1 - 1, 3) = U_m.segment(1 - 1, 3) + R*axis_vector_old;
+        
+        
+                
+    }
+    */
+    
+ void CRBE2::EvaluatePenaltyForce()
+ {
+     VectorXdDiff versor = (axis_vector)/ (axis_vector).norm(); 
+     addouble module = axis_vector.norm() - axis_vector_old.norm();
+     f_mfc_m = module*versor;        
+             
+ } 
     
     CRBE2::~CRBE2(void) {};

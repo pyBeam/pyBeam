@@ -176,7 +176,7 @@ void CBeamSolver::Solve(void){
             structure->EchoFext();
                         
             // Evaluate the Residual
-            structure->EvalResidual();
+            structure->EvalResidual(input->Get_RigidCriteria());
             
             std::cout << " Residual = "  <<  structure->Residual.norm() << std::endl;
             structure->EchoRes();
@@ -217,11 +217,7 @@ void CBeamSolver::Solve(void){
             //cout << "Rot matrix prima = \n" << structure->fem[1]->R.block(0,0,3,3) <<endl;
             structure->UpdateRotationMatrix();  // based on the rotational displacements
             structure->UpdateLength();          // Updating length, important
-            
-            if (nRBE2 != 0){              
-               
-               structure->UpdateRigidConstr(iIter); 
-            }            
+                     
             /*--------------------------------------------------
              *   Update Internal Forces
              *----------------------------------------------------*/
@@ -229,6 +225,16 @@ void CBeamSolver::Solve(void){
             
             structure->UpdateInternalForces();
             
+            /*--------------------------------------------------
+             *   Update Penalty Forces
+             *----------------------------------------------------*/
+            
+            if (nRBE2 != 0 and input->Get_RigidCriteria() == 1)
+            {
+            //structure->UpdateAxvector_RBE2();
+            //structure->EvalPenaltyForces(input->GetPenalty());
+            structure->UpdateRigidConstr(iIter); 
+            }
             /*--------------------------------------------------
              *    Check Convergence
              *----------------------------------------------------*/

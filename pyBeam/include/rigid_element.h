@@ -45,12 +45,17 @@ public:
     VectorXdDiff axis_vector;             // axis vector master --> slave (non unitary)
     VectorXdDiff axis_vector0;             // axis vector master --> slave (non unitary)
     VectorXdDiff axis_vector_old;             // axis vector master --> slave (non unitary)    
+    VectorXdDiff f_mfc_m = VectorXdDiff::Zero(3);                // Penalty forces on the translational DOF due to change in the element length for penalty method
     
     VectorXi MasterDOFs  =  VectorXi::Zero(6); // Master DOFs
     VectorXi SlaveDOFs  =  VectorXi::Zero(6); // Slave DOFs    
     MatrixXdDiff Kinem_matrix;
     MatrixXdDiff Kinem_matrix0;
     MatrixXdDiff Kinem_matrix_old;    
+    
+    MatrixXdDiff MStrans;
+    MatrixXdDiff MStrans0;
+    MatrixXdDiff MStrans_old;
     
     // Menber functions
 private:
@@ -79,5 +84,9 @@ public:
     void InitializeKinemMatrix();
 
     void UpdateKinemMatirx();    
+    
+    void EvaluatePenaltyForce();
+    
+    //void EvaluatePredictedSlaveDisplacement(VectorXdDiff& U_s_pred, VectorXdDiff U_m);
     
 };    

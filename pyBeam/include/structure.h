@@ -83,6 +83,7 @@ public:
     VectorXdDiff X;            // Position of the fem nodes in global coordinate system
     VectorXdDiff X0;            // Position of the fem nodes in global coordinate system
     
+    VectorXdDiff Fpenal;        // Array of internal forces
     VectorXdDiff Fint;        // Array of internal forces
     VectorXdDiff Fext;        // Array of External Forces
     VectorXdDiff Residual;    // Array of Unbalanced Forces
@@ -105,7 +106,9 @@ public:
     
     void UpdateExtForces(addouble  );
     
-    void EvalResidual();
+    void EvalResidual(unsigned short rigid);
+
+    void EvalPenaltyForces(addouble penalty);    
     
     //===================================================
     //      Assembly RBE2 rigid constraint matrix
@@ -117,8 +120,8 @@ public:
     
     void AssemblyRigidPenalty(addouble penalty);
     
-    void UpdateRigidConstr(int iIter);        
-    
+    void UpdateRigidConstr(int iIter);    
+       
     //===================================================
     //      Assembly System Stiffness Matrix
     //===================================================
@@ -147,6 +150,8 @@ public:
     
     void UpdateCoord();
     
+    void UpdateAxvector_RBE2(); 
+
     void UpdateCoord_RBE2(int iIter);        
     
     void InitialCoord();
@@ -172,7 +177,7 @@ public:
     //===================================================
     //      INTERNAL FORCES
     //===================================================
-    
+        
     void UpdateInternalForces();
     
     addouble GetDisplacement(int pos, int index) {

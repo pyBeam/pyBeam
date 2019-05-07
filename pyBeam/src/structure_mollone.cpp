@@ -21,11 +21,9 @@
  * You should have received a copy of the GNU Affero
  * General Public License along with pyBeam.
  * If not, see <http://www.gnu.org/licenses/>.
- *  
+ *
  */
 
-
-// TEST
 #include "../include/structure.h"
 
 CStructure::CStructure(CInput *input, CElement **element, CNode **container_node)
@@ -207,30 +205,29 @@ void CStructure::AssemblyRigidPenalty(addouble penalty)
     {
         // EYE here: only in this case DOFS start from 1 instead than from 0. Explained in function AssemblyRigidConstraint
 
-       
-        K_penal.block(RBE2[iRBE2]->MasterDOFs(1 -1) -1,RBE2[iRBE2]->MasterDOFs(1 -1) -1, 3 , 3) =  MatrixXdDiff::Identity(3,3);
-        K_penal.block(RBE2[iRBE2]->MasterDOFs(1 -1) -1,RBE2[iRBE2]->MasterDOFs(4 -1) -1, 3 , 3) =    RBE2[iRBE2]->MStrans;
-        K_penal.block(RBE2[iRBE2]->MasterDOFs(1 -1) -1,RBE2[iRBE2]->SlaveDOFs(1 -1) -1, 3 , 3) =   -MatrixXdDiff::Identity(3,3);
-
+        K_penal.block(RBE2[iRBE2]->MasterDOFs(1 -1) -1,RBE2[iRBE2]->SlaveDOFs(1 -1) -1, 6 , 6) =  penalty*MatrixXdDiff::Identity(6,6);
+        K_penal.block(RBE2[iRBE2]->SlaveDOFs(1 -1) -1,RBE2[iRBE2]->SlaveDOFs(1 -1) -1, 6 , 6) =  -penalty*MatrixXdDiff::Identity(6,6);
         
-        K_penal.block(RBE2[iRBE2]->MasterDOFs(4 -1) -1,RBE2[iRBE2]->MasterDOFs(1 -1) -1, 3 , 3) =  - RBE2[iRBE2]->MStrans;
-        K_penal.block(RBE2[iRBE2]->MasterDOFs(4 -1) -1,RBE2[iRBE2]->MasterDOFs(4 -1) -1, 3 , 3) =  -  RBE2[iRBE2]->MStrans * RBE2[iRBE2]->MStrans - MatrixXdDiff::Identity(3,3);
-        K_penal.block(RBE2[iRBE2]->MasterDOFs(4 -1) -1,RBE2[iRBE2]->SlaveDOFs(1 -1) -1, 3 , 3) =    RBE2[iRBE2]->MStrans;
-        K_penal.block(RBE2[iRBE2]->MasterDOFs(4 -1) -1,RBE2[iRBE2]->SlaveDOFs(4 -1) -1, 3 , 3) =   MatrixXdDiff::Identity(3,3);
-       
-        K_penal.block(RBE2[iRBE2]->SlaveDOFs(1 -1) -1,RBE2[iRBE2]->MasterDOFs(1 -1) -1, 3 , 3) =    - MatrixXdDiff::Identity(3,3);
-        K_penal.block(RBE2[iRBE2]->SlaveDOFs(1 -1) -1,RBE2[iRBE2]->MasterDOFs(4 -1) -1, 3 , 3) =    - RBE2[iRBE2]->MStrans;
-        K_penal.block(RBE2[iRBE2]->SlaveDOFs(1 -1) -1,RBE2[iRBE2]->SlaveDOFs(1 -1) -1, 3 , 3) =     MatrixXdDiff::Identity(3,3);
-          // sig n change
-        K_penal.block(RBE2[iRBE2]->SlaveDOFs(4 -1) -1,RBE2[iRBE2]->MasterDOFs(4 -1) -1, 3 , 3) =  - MatrixXdDiff::Identity(3,3);
-        K_penal.block(RBE2[iRBE2]->SlaveDOFs(4 -1) -1,RBE2[iRBE2]->SlaveDOFs(4 -1) -1, 3 , 3) =    MatrixXdDiff::Identity(3,3);
-           
+        // d(f(Um)/dUm)
+        dfU = MatrixXdDiff::Zero(6,6); 
+        
+        dfU.block(1 -1,1 -1,3,3) = MatrixXdDiff::Identity(3,3);
+        dfU.block(4 -1,4 -1,3,3) = MatrixXdDiff::Identity(3,3);
+        dfU.block(1 -1,4 -1,3,3) =RBE2[iRBE2]->Kinem_matrix.block(1 -1,4 -1,3,3);
+        
+        
+        K_penal.block(RBE2[iRBE2]->MasterDOFs(1 -1) -1,RBE2[iRBE2]->MasterDOFs(1 -1) -1, 6 , 6) =  - penalty*dfU;
+        K_penal.block(RBE2[iRBE2]->SlaveDOFs(1 -1) -1,RBE2[iRBE2]->MasterDOFs(1 -1) -1, 6 , 6) =   penalty*dfU;
+        
+        //K_penal.block(RBE2[iRBE2]->MasterDOFs(1 -1) -1,RBE2[iRBE2]->MasterDOFs(1 -1) -1, 6 , 6) = RBE2[iRBE2]->Kinem_matrix * RBE2[iRBE2]->Kinem_matrix;
+        //K_penal.block(RBE2[iRBE2]->MasterDOFs(1 -1) -1,RBE2[iRBE2]->SlaveDOFs(1 -1) -1, 6 , 6) = - RBE2[iRBE2]->Kinem_matrix;
+        //K_penal.block(RBE2[iRBE2]->SlaveDOFs(1 -1) -1,RBE2[iRBE2]->MasterDOFs(1 -1) -1, 6 , 6) = - RBE2[iRBE2]->Kinem_matrix;
+        //K_penal.block(RBE2[iRBE2]->SlaveDOFs(1 -1) -1,RBE2[iRBE2]->SlaveDOFs(1 -1) -1, 6 , 6) =  MatrixXdDiff::Identity(6,6);
         
     }
-    
-    // Penalty application
-    K_penal =     K_penal*penalty;
     /*
+    // Penalty application
+    K_penal = K_penal*penalty;
     // Penalty vector for residual
     V_penal = VectorXdDiff::Zero(nNode*6);
     V_penal = K_penal*U;
@@ -712,9 +709,8 @@ void CStructure::SolveLinearStaticSystem_RBE2(int iIter)
 void CStructure::SolveLinearStaticSystem_RBE2_penalty(int iIter)
 {
     std::cout << "-->  Solving Linear System with penalty method for rigid constraints, "  << std::endl;
-    cout << "Ksys = \n" <<Ksys << endl;  
-    cout << "K_penal = \n" <<K_penal << endl;      
-    Ksys = Ksys + K_penal;
+    cout << "Ksys = \n" <<Ksys << endl;    
+    Ksys = Ksys - K_penal;
     Residual = Residual;
     cout << "Ktot = \n" <<Ksys << endl; 
     dU = Ksys.fullPivHouseholderQr().solve(Residual);
@@ -803,16 +799,16 @@ void CStructure::UpdateCoord_RBE2(int iIter)
         Master = X.segment((idMaster-1)*3+1 -1,3);
         Slave  = X.segment((idSlave-1)*3+1 -1,3);
         RBE2[iRBE2]->axis_vector_old = RBE2[iRBE2]->axis_vector;
-        //if (iIter !=0) {
+        if (iIter !=0) {
         versor = (Slave - Master)/ (Slave - Master).norm();        
         RBE2[iRBE2]->axis_vector = versor*RBE2[iRBE2]->l_rigid;
         Slave_up = Master + RBE2[iRBE2]->axis_vector;
         X.segment((idSlave-1)*3+1 -1,3) = Slave_up;
-        //}
-        //else
-        //{
-         //   RBE2[iRBE2]->axis_vector = (Slave - Master);
-        //}
+        }
+        else
+        {
+            RBE2[iRBE2]->axis_vector = (Slave - Master);
+        }
         
     }
     
@@ -859,7 +855,7 @@ void CStructure::UpdateRigidConstr(int iIter)
 {
     
     //if (iIter!=1){ 
-    UpdateCoord_RBE2(iIter);
+    //UpdateCoord_RBE2(iIter);
     //}    
     
     for(int iRBE2 = 0; iRBE2 < nRBE2; iRBE2++){

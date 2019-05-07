@@ -48,13 +48,12 @@ nDim = pyInput.readDimension(config['B_MESH'])
 node_py, nPoint = pyInput.readMesh(config['B_MESH'],nDim)
 elem_py, nElem = pyInput.readConnectivity( config['B_MESH'])
 Constr, nConstr = pyInput.readConstr(config['B_MESH'])
-RBE2_py, nRBE2 = pyInput.readRBE2(config['B_MESH']) 
 # Parsing Property file
 Prop, nProp = pyInput.readProp(config['B_PROPERTY'])
 
 # Initializing objects
 beam = pyBeam.CBeamSolver()
-inputs = pyBeam.CInput(nPoint, nElem, nRBE2)
+inputs = pyBeam.CInput(nPoint, nElem)
 
 # Sending to CInput object 
 pyConfig.parseInput(config, inputs, Constr, nConstr)
@@ -71,14 +70,14 @@ for i in range(nPoint):
       node[i].SetCoordinate(j , float(node_py[i].GetCoord()[j][0]) )
       node[i].SetCoordinate0(j , float(node_py[i].GetCoord0()[j][0]) )
    beam.InitializeNode(node[i], i)
-  
+    
 # Assigning property values to the property objects in C++
 beam_prop = []
 for i in range(nProp):
     beam_prop.append(pyBeam.CProperty(i))
     beam_prop[i].SetSectionProperties( Prop[i].GetA(),  Prop[i].GetIyy(),  Prop[i].GetIzz(),  Prop[i].GetJt())
   
-# Assigning element values to the element objects in C++ 
+# Assigning element values to the property objects in C++ 
 element =[]
 for i in range(nElem): 
    element.append(pyBeam.CElement(i))
@@ -86,25 +85,14 @@ for i in range(nElem):
    #NB node starts from index 0 and the same happen in beam_prop. But in element_py (connectivity) indexes start from 1 as it is the physical connectivity read from input file
    element[i].Initializer(node[elem_py[i].GetNodes()[0,0] -1], node[elem_py[i].GetNodes()[1,0] -1], beam_prop[elem_py[i].GetProperty() -1], inputs, elem_py[i].GetAuxVector()[0,0], elem_py[i].GetAuxVector()[1,0], elem_py[i].GetAuxVector()[2,0]  )
    beam.InitializeElement(element[i], i)
-
-# IF ANY, assigning RBE2_element values to the RBE2 objects in C++ 
-if nRBE2 != 0:
-   RBE2 = []
-   for i in range(nRBE2): 
-      RBE2.append(pyBeam.CRBE2(i))
-      RBE2[i].Initializer(node[RBE2_py[i].GetNodes()[0,0] -1], node[RBE2_py[i].GetNodes()[1,0] -1])
-      beam.InitializeRBE2(RBE2[i], i)
- 
-  
   
 beam.InitializeStructure()
 
-iNode = 3  -1
+iNode = 21   -1
 #beam.SetLoads(iNode,1,50000)
-#beam.SetLoads(iNode,2 -1,50000)
+#beam.SetLoads(iNode,2 -1,5000)
 #beam.SetLoads(iNode,4 -1,5000000)
-beam.SetLoads(iNode,3 -1,50000000)#100000)
-#beam.SetLoads(iNode,2 -1,50000000)#500000)#100000)
+beam.SetLoads(iNode,3 -1,50000)#100000)
 #beam.SetLoads(iNode-1,3 -1,50000)
 beam.Solve()
 
@@ -127,13 +115,12 @@ for jNode in range(0,nPoint):
   coordinate_Z0.append(beam.ExtractInitialCoordinates(jNode, 2))
   
 #for iNode in range(0,nPoint):  
-for iNode in( 3-1, 2 -1, 1-1): # the one I'm studying
-   print("Node {} Coord_tip indef= {} {} {}".format(iNode, coordinate_X0[iNode], coordinate_Y0[iNode], coordinate_Z0[iNode]))  
+print("Node {} Coord_tip indef= {} {} {}".format(iNode, coordinate_X0[iNode], coordinate_Y0[iNode], coordinate_Z0[iNode]))  
   
   
-   print("Coord_tip= {} {} {}".format(coordinate_X[iNode], coordinate_Y[iNode], coordinate_Z[iNode]))  
+print("Coord_tip= {} {} {}".format(coordinate_X[iNode], coordinate_Y[iNode], coordinate_Z[iNode]))  
   
-   print("Displ_tip= {} {} {}".format(coordinate_X[iNode] - coordinate_X0[iNode], coordinate_Y[iNode] - coordinate_Y0[iNode], coordinate_Z[iNode] - coordinate_Z0[iNode]))  
+print("Displ_tip= {} {} {}".format(coordinate_X[iNode] - coordinate_X0[iNode], coordinate_Y[iNode] - coordinate_Y0[iNode], coordinate_Z[iNode] - coordinate_Z0[iNode]))  
   
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
@@ -155,9 +142,9 @@ plt.show()
   
   
 
-#test_val = np.sqrt((coordinate_X[20]-24.020327385028295)**2+
-#                   (coordinate_Y[20]-16.29552732537537)**2+
-#                   (coordinate_Z[20]-0.3752371597829022)**2)
+test_val = np.sqrt((coordinate_X[20]-24.020327385028295)**2+
+                   (coordinate_Y[20]-16.29552732537537)**2+
+                   (coordinate_Z[20]-0.3752371597829022)**2)
 
 print("Tolerance: ",test_val)
 
