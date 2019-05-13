@@ -45,10 +45,10 @@ public:
     VectorXdDiff axis_vector;             // axis vector master --> slave (non unitary)
     VectorXdDiff axis_vector0;             // axis vector master --> slave (non unitary)
     VectorXdDiff axis_vector_old;             // axis vector master --> slave (non unitary)    
-    VectorXdDiff f_mfc_m = VectorXdDiff::Zero(3);                // Penalty forces on the translational DOF due to change in the element length for penalty method
     
     VectorXi MasterDOFs  =  VectorXi::Zero(6); // Master DOFs
-    VectorXi SlaveDOFs  =  VectorXi::Zero(6); // Slave DOFs    
+    VectorXi SlaveDOFs  =  VectorXi::Zero(6); // Slave DOFs  
+    
     MatrixXdDiff Kinem_matrix;
     MatrixXdDiff Kinem_matrix0;
     MatrixXdDiff Kinem_matrix_old;    
@@ -56,6 +56,13 @@ public:
     MatrixXdDiff MStrans;
     MatrixXdDiff MStrans0;
     MatrixXdDiff MStrans_old;
+    
+    
+    passivedouble g [6];                  // constraint equations on LHS
+    passivedouble J [6][12];              // Jacobian of the constraint equations on LHS
+    passivedouble H [6][12][12];         // Hessian of the constraint equations on LHS
+    //VectorXdDiff g_constr;     // constraint equations on LHS
+    //VectorXdDiff J_constr;     // Jacobian of the constraint equations on LHS    
     
     // Menber functions
 private:
@@ -86,6 +93,26 @@ public:
     void UpdateKinemMatirx();    
     
     void EvaluatePenaltyForce();
+    
+    void EvalConstraintEquation( VectorXdDiff Um,VectorXdDiff Us);
+    
+    passivedouble GetConstraintEquation(void){ return g;};
+    
+    void EvalJacobian( VectorXdDiff Um,VectorXdDiff Us);
+    
+    passivedouble GetJacobian(void){ return J;};    
+    
+    void EvalHessian( VectorXdDiff Um,VectorXdDiff Us);
+    
+    passivedouble GetHessian(void){ return H;};     
+    
+    void EvalResidual();
+    
+    void EvalStiff();
+    
+    
+    
+    
     
     //void EvaluatePredictedSlaveDisplacement(VectorXdDiff& U_s_pred, VectorXdDiff U_m);
     
