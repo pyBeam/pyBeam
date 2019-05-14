@@ -45,10 +45,10 @@ public:
     VectorXdDiff axis_vector;             // axis vector master --> slave (non unitary)
     VectorXdDiff axis_vector0;             // axis vector master --> slave (non unitary)
     VectorXdDiff axis_vector_old;             // axis vector master --> slave (non unitary)    
-    VectorXdDiff f_mfc_m = VectorXdDiff::Zero(3);                // Penalty forces on the translational DOF due to change in the element length for penalty method
     
     VectorXi MasterDOFs  =  VectorXi::Zero(6); // Master DOFs
-    VectorXi SlaveDOFs  =  VectorXi::Zero(6); // Slave DOFs    
+    VectorXi SlaveDOFs  =  VectorXi::Zero(6); // Slave DOFs  
+    
     MatrixXdDiff Kinem_matrix;
     MatrixXdDiff Kinem_matrix0;
     MatrixXdDiff Kinem_matrix_old;    
@@ -56,6 +56,19 @@ public:
     MatrixXdDiff MStrans;
     MatrixXdDiff MStrans0;
     MatrixXdDiff MStrans_old;
+    
+    
+    //double g ;                  // constraint equations on LHS
+    //double J ;              // Jacobian of the constraint equations on LHS
+    //double H ;         // Hessian of the constraint equations on LHS
+    VectorXdDiff g;     // constraint equations on LHS
+    MatrixXdDiff J;     // Jacobian of the constraint equations on LHS  
+    MatrixXdDiff H_0;     // Jacobian of the constraint equations on LHS
+    MatrixXdDiff H_1;     // Jacobian of the constraint equations on LHS
+    MatrixXdDiff H_2;     // Jacobian of the constraint equations on LHS
+    MatrixXdDiff H_3;     // Jacobian of the constraint equations on LHS
+    MatrixXdDiff H_4;     // Jacobian of the constraint equations on LHS
+    MatrixXdDiff H_5;     // Jacobian of the constraint equations on LHS    
     
     // Menber functions
 private:
@@ -85,7 +98,18 @@ public:
 
     void UpdateKinemMatirx();    
     
-    void EvaluatePenaltyForce();
+    //void EvaluatePenaltyForce();
+    
+    void EvalConstraintEquation( VectorXdDiff Um,VectorXdDiff Us);
+
+    void EvalJacobian( VectorXdDiff Um,VectorXdDiff Us);  
+    
+    void EvalHessian( VectorXdDiff Um,VectorXdDiff Us);
+    
+    
+    
+    
+    
     
     //void EvaluatePredictedSlaveDisplacement(VectorXdDiff& U_s_pred, VectorXdDiff U_m);
     
