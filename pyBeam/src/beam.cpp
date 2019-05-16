@@ -233,7 +233,7 @@ void CBeamSolver::Solve(void){
             {
             //structure->UpdateAxvector_RBE2();
             //structure->EvalPenaltyForces(input->GetPenalty());
-            structure->UpdateRigidConstr(iIter); 
+            //structure->UpdateRigidConstr(iIter); 
             }
             /*--------------------------------------------------
              *    Check Convergence

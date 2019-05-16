@@ -21,11 +21,9 @@
  * You should have received a copy of the GNU Affero
  * General Public License along with pyBeam.
  * If not, see <http://www.gnu.org/licenses/>.
- *  
+ *
  */
 
-
-// TEST
 #include "../include/structure.h"
 
 CStructure::CStructure(CInput *input, CElement **element, CNode **container_node)
@@ -200,92 +198,40 @@ void CStructure::AssemblyRigidConstr()
 void CStructure::AssemblyRigidPenalty(addouble penalty)
 {
     
-    int n_eq = 6;
-    int n_RBEdofs =12;
-    //double n_dof;
-    
-    // Setting to Zero the SYSTEM penalty matrix and residual vector
+    // Setting to Zero the SYSTEM penalty matrix
     K_penal = MatrixXdDiff::Zero(nNode*6,nNode*6);
-    
-    V_penal = VectorXdDiff::Zero(nNode*6);
-
-    
-    MatrixXdDiff Krbe1 =  MatrixXdDiff::Zero(12,12); // first contribution to the tangent matrix: G^T*G  (single element)
-    MatrixXdDiff Krbe2 =  MatrixXdDiff::Zero(12,12); // second contribution to the tangent matrix: sum_i g_i*H_i (single element)
-    VectorXdDiff Vrbe2 =  VectorXdDiff::Zero(12); // contribution to the residual (single element)
-
-
-    for (int iRBE2 = 0; iRBE2 < nRBE2; iRBE2++) {
+    MatrixXdDiff dfU ;
+    for(int iRBE2 = 0; iRBE2 < nRBE2; iRBE2++)
+    {
         // EYE here: only in this case DOFS start from 1 instead than from 0. Explained in function AssemblyRigidConstraint
 
-        //Master and slave cumulative displacements
-        VectorXdDiff Um = U.segment(RBE2[iRBE2]->MasterDOFs(1 - 1) - 1, 6);
-        VectorXdDiff Us = U.segment(RBE2[iRBE2]->SlaveDOFs(1 - 1) - 1, 6);
-
-        /*
-        K_penal.block(RBE2[iRBE2]->MasterDOFs(1 -1) -1,RBE2[iRBE2]->MasterDOFs(1 -1) -1, 3 , 3) =  MatrixXdDiff::Identity(3,3);
-        K_penal.block(RBE2[iRBE2]->MasterDOFs(1 -1) -1,RBE2[iRBE2]->MasterDOFs(4 -1) -1, 3 , 3) =    RBE2[iRBE2]->MStrans;
-        K_penal.block(RBE2[iRBE2]->MasterDOFs(1 -1) -1,RBE2[iRBE2]->SlaveDOFs(1 -1) -1, 3 , 3) =   -MatrixXdDiff::Identity(3,3);
-
+        K_penal.block(RBE2[iRBE2]->MasterDOFs(1 -1) -1,RBE2[iRBE2]->SlaveDOFs(1 -1) -1, 6 , 6) =  penalty*MatrixXdDiff::Identity(6,6);
+        K_penal.block(RBE2[iRBE2]->SlaveDOFs(1 -1) -1,RBE2[iRBE2]->SlaveDOFs(1 -1) -1, 6 , 6) =  -penalty*MatrixXdDiff::Identity(6,6);
         
-        K_penal.block(RBE2[iRBE2]->MasterDOFs(4 -1) -1,RBE2[iRBE2]->MasterDOFs(1 -1) -1, 3 , 3) =   RBE2[iRBE2]->MStrans.transpose();
-        K_penal.block(RBE2[iRBE2]->MasterDOFs(4 -1) -1,RBE2[iRBE2]->MasterDOFs(4 -1) -1, 3 , 3) =    RBE2[iRBE2]->MStrans.transpose() * RBE2[iRBE2]->MStrans + MatrixXdDiff::Identity(3,3);
-        K_penal.block(RBE2[iRBE2]->MasterDOFs(4 -1) -1,RBE2[iRBE2]->SlaveDOFs(1 -1) -1, 3 , 3) =     - RBE2[iRBE2]->MStrans.transpose();
-        K_penal.block(RBE2[iRBE2]->MasterDOFs(4 -1) -1,RBE2[iRBE2]->SlaveDOFs(4 -1) -1, 3 , 3) =   -MatrixXdDiff::Identity(3,3);
-       
-        K_penal.block(RBE2[iRBE2]->SlaveDOFs(1 -1) -1,RBE2[iRBE2]->MasterDOFs(1 -1) -1, 3 , 3) =    - MatrixXdDiff::Identity(3,3);
-        K_penal.block(RBE2[iRBE2]->SlaveDOFs(1 -1) -1,RBE2[iRBE2]->MasterDOFs(4 -1) -1, 3 , 3) =    - RBE2[iRBE2]->MStrans;
-        K_penal.block(RBE2[iRBE2]->SlaveDOFs(1 -1) -1,RBE2[iRBE2]->SlaveDOFs(1 -1) -1, 3 , 3) =     MatrixXdDiff::Identity(3,3);
-          // sig n change
-        K_penal.block(RBE2[iRBE2]->SlaveDOFs(4 -1) -1,RBE2[iRBE2]->MasterDOFs(4 -1) -1, 3 , 3) =  - MatrixXdDiff::Identity(3,3);
-        K_penal.block(RBE2[iRBE2]->SlaveDOFs(4 -1) -1,RBE2[iRBE2]->SlaveDOFs(4 -1) -1, 3 , 3) =    MatrixXdDiff::Identity(3,3);
-        */
+        // d(f(Um)/dUm)
+        dfU = MatrixXdDiff::Zero(6,6); 
+        
+        dfU.block(1 -1,1 -1,3,3) = MatrixXdDiff::Identity(3,3);
+        dfU.block(4 -1,4 -1,3,3) = MatrixXdDiff::Identity(3,3);
+        dfU.block(1 -1,4 -1,3,3) =RBE2[iRBE2]->Kinem_matrix.block(1 -1,4 -1,3,3);
         
         
-        //// Penalty matrix has 2 contributions:
-        
-        // J^T*J (the Jacobian of the constraint set of equations)
-        RBE2[iRBE2]->EvalJacobian( Um, Us);     
-        Krbe1 =  MatrixXdDiff::Zero(12,12);       
-        Krbe1 = RBE2[iRBE2]->J.transpose()*RBE2[iRBE2]->J;
-        // sum_i g_i*H_i (from the Hessian of the constraint set of equations)
-        RBE2[iRBE2]->EvalConstraintEquation( Um, Us); 
-        RBE2[iRBE2]->EvalHessian( Um, Us); 
-
-        Krbe2 = RBE2[iRBE2]->g(0)*RBE2[iRBE2]->H_0.transpose() + RBE2[iRBE2]->g(1)*RBE2[iRBE2]->H_1.transpose() + RBE2[iRBE2]->g(2)*RBE2[iRBE2]->H_2.transpose() + RBE2[iRBE2]->g(3)*RBE2[iRBE2]->H_3.transpose() + RBE2[iRBE2]->g(4)*RBE2[iRBE2]->H_4.transpose() + RBE2[iRBE2]->g(5)*RBE2[iRBE2]->H_5.transpose();
-        
-        // Expansion in to the system's tangent matrix
-        K_penal.block(RBE2[iRBE2]->MasterDOFs(1 -1) -1,RBE2[iRBE2]->MasterDOFs(1 -1) -1, 6 , 6) = Krbe1.block(1 -1, 1 -1, 6, 6) + Krbe2.block(1 -1, 1 -1, 6, 6);
-        K_penal.block(RBE2[iRBE2]->MasterDOFs(1 -1) -1,RBE2[iRBE2]->SlaveDOFs(1 -1) -1, 6 , 6) = Krbe1.block(1 -1, 7 -1, 6, 6) + Krbe2.block(1 -1, 7 -1, 6, 6);
-        K_penal.block(RBE2[iRBE2]->SlaveDOFs(1 -1) -1,RBE2[iRBE2]->MasterDOFs(1 -1) -1, 6 , 6) = Krbe1.block(7 -1, 1 -1, 6, 6) + Krbe2.block(7 -1, 1 -1, 6, 6);
-        K_penal.block(RBE2[iRBE2]->SlaveDOFs(1 -1) -1,RBE2[iRBE2]->SlaveDOFs(1 -1) -1, 6 , 6) = Krbe1.block(7 -1, 7 -1, 6, 6) + Krbe2.block(7 -1, 7 -1, 6, 6);
-        
-        cout << "Krbe1 = \n" <<Krbe1 << endl;
-        cout << "Krbe2 = \n" <<Krbe2 << endl;
-        cout << "g = \n" <<RBE2[iRBE2]->g << endl;
-        // sum_i g_i*H_i (from the Hessian of the constraint set of equations)
-        
-        
-        //// Residual has one contribution
-        // Constraint equation set 
-        RBE2[iRBE2]->EvalConstraintEquation( Um, Us);    
-
-        Vrbe2 = RBE2[iRBE2]->J.transpose()*RBE2[iRBE2]->g;
-        
-        V_penal.segment(RBE2[iRBE2]->MasterDOFs(1 -1) -1, 6) = Vrbe2.segment(1 - 1, 6);
-        V_penal.segment(RBE2[iRBE2]->SlaveDOFs(1 -1) -1, 6) = Vrbe2.segment(7 - 1, 6);
-        
+        K_penal.block(RBE2[iRBE2]->MasterDOFs(1 -1) -1,RBE2[iRBE2]->MasterDOFs(1 -1) -1, 6 , 6) =  - penalty*dfU;
+        K_penal.block(RBE2[iRBE2]->SlaveDOFs(1 -1) -1,RBE2[iRBE2]->MasterDOFs(1 -1) -1, 6 , 6) =   penalty*dfU;
+        //K_penal.block(RBE2[iRBE2]->MasterDOFs(1 -1) -1,RBE2[iRBE2]->MasterDOFs(1 -1) -1, 6 , 6) = RBE2[iRBE2]->Kinem_matrix * RBE2[iRBE2]->Kinem_matrix;
+        //K_penal.block(RBE2[iRBE2]->MasterDOFs(1 -1) -1,RBE2[iRBE2]->SlaveDOFs(1 -1) -1, 6 , 6) = - RBE2[iRBE2]->Kinem_matrix;
+        //K_penal.block(RBE2[iRBE2]->SlaveDOFs(1 -1) -1,RBE2[iRBE2]->MasterDOFs(1 -1) -1, 6 , 6) = - RBE2[iRBE2]->Kinem_matrix;
+        //K_penal.block(RBE2[iRBE2]->SlaveDOFs(1 -1) -1,RBE2[iRBE2]->SlaveDOFs(1 -1) -1, 6 , 6) =  MatrixXdDiff::Identity(6,6);
         
     }
-    
+    /*
     // Penalty application
-    K_penal =     K_penal*penalty;
-    
+    K_penal = K_penal*penalty;
     // Penalty vector for residual
-
-    V_penal = V_penal*penalty;
-    
-    //cout << "K_penal = \n" <<K_penal << endl;
+    V_penal = VectorXdDiff::Zero(nNode*6);
+    V_penal = K_penal*U;
+    */
+    cout << "K_penal = \n" <<K_penal << endl;
     //cout << "V_penal = \n" <<V_penal << endl; 
     
 }
@@ -533,8 +479,13 @@ void CStructure::EvalResidual(unsigned short irigid)
 {
     Residual = Fext - Fint;
    
+    if (nRBE2 !=0 and irigid == 1)
+    {
+       Residual += Fpenal; 
+    }
     
     std::cout<< "Fext = \n" << Fext.transpose() << std::endl;
+    std::cout<< "Fpenal = \n" << Fpenal << std::endl;
     std::cout<< "Fint = \n" << Fint.transpose() << std::endl;
     cout << "Residual = \n" <<Residual.transpose()<< endl;
     
@@ -757,10 +708,9 @@ void CStructure::SolveLinearStaticSystem_RBE2(int iIter)
 void CStructure::SolveLinearStaticSystem_RBE2_penalty(int iIter)
 {
     std::cout << "-->  Solving Linear System with penalty method for rigid constraints, "  << std::endl;
-    cout << "Ksys = \n" <<Ksys << endl;  
-    //cout << "K_penal = \n" <<K_penal << endl;      
-    Ksys = Ksys + K_penal;
-    Residual = Residual - V_penal;
+    cout << "Ksys = \n" <<Ksys << endl;    
+    Ksys = Ksys - K_penal;
+    Residual = Residual;
     cout << "Ktot = \n" <<Ksys << endl; 
     dU = Ksys.fullPivHouseholderQr().solve(Residual);
     std::cout << "dU (after) = \n" << dU << std::endl;
@@ -791,13 +741,8 @@ void CStructure::UpdateCoord()
     /* We have the X array, we need to add the displacements referred to the pre-last displacement local reference system.
      Thus, this operation need to eb done before the rottion matrix is updated. */
     
-    // to correctly update the rotational Dofs of the nodes
-    Vector3dDiff U_rot = Vector3dDiff::Zero();
-    Vector3dDiff U_rot_new = Vector3dDiff::Zero();    
-    Vector3dDiff dU_rot = Vector3dDiff::Zero();
-    Matrix3dDiff R_U = Matrix3dDiff::Zero();
-    Matrix3dDiff R_U_new = Matrix3dDiff::Zero();    
-    Matrix3dDiff R_dU = Matrix3dDiff::Zero();
+    //int n_segdofs;  int n_segXdofs;
+    //int indm;
     
     //
     //int indx = 1;    // position in the Xarray of the first node of current segment
@@ -811,8 +756,8 @@ void CStructure::UpdateCoord()
     /**/
     
     // Cumulative displacement update 
-    //U +=dU;
-    cout << "U before correction = \n" <<U << endl; 
+    U +=dU;
+    
     
     // Browsing all the nodes of the current segment
     for (int i_node=1-1; i_node<=nNode-1 ; i_node++)  // Here we need to check through the connectivity (nfem is not related to the number of nodes)
@@ -821,32 +766,10 @@ void CStructure::UpdateCoord()
         DX.segment(posX-1,3) = dU.segment(posU-1,3);  //  *
         X.segment(posX-1,3) += DX.segment(posX-1,3);
         
-        /////// For the whole cumulative displacement vector
-        //// Proper displacements
-        U.segment(posU-1,3) += dU.segment(posU-1,3);
-        ////Rotations
-        
-        //The rotation matrix is extracted from the rotational degrees of freedom of each node
-        U_rot = U.segment(posU+3 -1,3);
-        R_U = Matrix3dDiff::Zero();
-        PseudoToRot( U_rot ,  R_U);
-        //same things is done for the new rotation
-        dU_rot = dU.segment(posU+3 -1,3);
-        R_dU = Matrix3dDiff::Zero();
-        PseudoToRot( dU_rot , R_dU);  
-        //Rotation is updated
-        R_U_new = Matrix3dDiff::Zero();
-        R_U_new = R_dU*R_U;
-        //and into the vector
-        U_rot_new = Vector3dDiff::Zero(); 
-        RotToPseudo(U_rot_new , R_U_new);
-        U.segment(posU+3 -1,3) = U_rot_new;
-        
         
         posX += 3;
         posU += 6;
     }
-    cout << "U after correction = \n" <<U << endl;
     //std::cout << "X = \n" << X <<std::endl;
     
     ////std::ofstream myfile3 ("./output/echo_dX.out", std::ios_base::out | std::ios_base::app);
@@ -875,16 +798,16 @@ void CStructure::UpdateCoord_RBE2(int iIter)
         Master = X.segment((idMaster-1)*3+1 -1,3);
         Slave  = X.segment((idSlave-1)*3+1 -1,3);
         RBE2[iRBE2]->axis_vector_old = RBE2[iRBE2]->axis_vector;
-        //if (iIter !=0) {
+        if (iIter !=0) {
         versor = (Slave - Master)/ (Slave - Master).norm();        
         RBE2[iRBE2]->axis_vector = versor*RBE2[iRBE2]->l_rigid;
         Slave_up = Master + RBE2[iRBE2]->axis_vector;
         X.segment((idSlave-1)*3+1 -1,3) = Slave_up;
-        //}
-        //else
-        //{
-         //   RBE2[iRBE2]->axis_vector = (Slave - Master);
-        //}
+        }
+        else
+        {
+            RBE2[iRBE2]->axis_vector = (Slave - Master);
+        }
         
     }
     
@@ -944,7 +867,7 @@ void CStructure::UpdateRigidConstr(int iIter)
  *            Update Penalty forces
  * ==================================================
  */
-/*
+
 void CStructure::EvalPenaltyForces(addouble penalty)
 {
     int idMaster, idSlave;
@@ -957,7 +880,7 @@ void CStructure::EvalPenaltyForces(addouble penalty)
         Fpenal.segment((idSlave-1)*3+1 -1,3)  =  -penalty*RBE2[iRBE2]->f_mfc_m;
     }
 }
-*/
+
 //===================================================
 //     Initialize  Coordinates
 //===================================================
