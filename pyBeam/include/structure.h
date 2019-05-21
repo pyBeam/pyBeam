@@ -108,7 +108,7 @@ public:
     
     void EvalResidual(unsigned short rigid);
 
-    void EvalPenaltyForces(addouble penalty);    
+    void EvalPenaltyForces(addouble penalty); 
     
     //===================================================
     //      Assembly RBE2 rigid constraint matrix

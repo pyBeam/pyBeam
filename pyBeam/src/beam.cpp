@@ -118,7 +118,7 @@ void CBeamSolver::InitializeRBE2(CRBE2* py_RBE2,unsigned long iRBE2) {RBE2[iRBE2
 
 void CBeamSolver::InitializeStructure(void){structure = new CStructure(input, element, node);}
 
-void CBeamSolver::Solve(void){
+void CBeamSolver::Solve(int FSIIter = 0){
     
     // Beam total length
     addouble TotalLength = 0;
@@ -147,6 +147,8 @@ void CBeamSolver::Solve(void){
     unsigned long totalIter = 0;
     unsigned long loadStep = 1;
     
+    
+    // This function set the current initial coordinates and memorizes them as the old one before the converging procedure starts
     structure->InitialCoord();
     
     for  ( loadStep = 0; loadStep < input->Get_LoadSteps(); loadStep++)
@@ -233,7 +235,7 @@ void CBeamSolver::Solve(void){
             {
             //structure->UpdateAxvector_RBE2();
             //structure->EvalPenaltyForces(input->GetPenalty());
-            structure->UpdateRigidConstr(iIter); 
+            //structure->UpdateRigidConstr(iIter); 
             }
             /*--------------------------------------------------
              *    Check Convergence

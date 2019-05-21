@@ -60,7 +60,7 @@ private:
   unsigned long nFEM;
   addouble *loadVector;
   addouble thickness;
-
+ 
 protected:
 
 public:
@@ -81,8 +81,8 @@ public:
 
   void RegisterLoads(void);
 
-  void Solve(void);
-
+  void Solve(int FSIIter);
+  
   passivedouble OF_NodeDisplacement(int iNode);
 
   void ComputeAdjoint(void);

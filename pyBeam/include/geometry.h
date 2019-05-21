@@ -45,6 +45,8 @@ protected:
     
   Vector3dDiff coord = VectorXdDiff::Zero(3);
   
+  Vector3dDiff coordOld = VectorXdDiff::Zero(3);  
+  
   Vector3dDiff coord0 = VectorXdDiff::Zero(3); 
   
   Vector3dDiff Vel = VectorXdDiff::Zero(3);
@@ -59,6 +61,8 @@ public:
 
   inline void SetCoordinate(int iDim, passivedouble val_coor) {coord(iDim) = val_coor;}
 
+  inline void SetCoordinateOld(int iDim, passivedouble val_coor) {coordOld(iDim) = val_coor;}  
+  
   inline void SetCoordinate0(int iDim, passivedouble val_coor) {coord0(iDim) = val_coor;}
   
   inline void SetVel(int iDim, passivedouble val_vel) {Vel(iDim) = val_vel;}  
@@ -66,6 +70,8 @@ public:
   inline void SetForce(int iDim, passivedouble val_force) {Vel(iDim) = val_force;}   
   
   inline addouble GetCoordinate(int iDim) {return coord(iDim);}
+
+  inline addouble GetCoordinateOld(int iDim) {return coordOld(iDim);}  
   
   inline addouble GetCoordinate0(int iDim) {return coord0(iDim);}  
   
