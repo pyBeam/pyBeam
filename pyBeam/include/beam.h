@@ -99,6 +99,8 @@ public:
 
   inline passivedouble ExtractInitialCoordinates(int iNode, int iDim) {return AD::GetValue(structure->GetInitialCoordinates(iNode, iDim));}
 
+  inline passivedouble GetInitialCoordinates(int iNode, int iDim) {return AD::GetValue(structure->node[iNode]->GetCoordinate(iDim));}
+
   inline void StartRecording(void) { AD::StartRecording();}
 
   inline void RegisterThickness(void) { AD::RegisterInput(thickness);}
