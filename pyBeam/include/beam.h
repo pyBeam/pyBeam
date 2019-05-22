@@ -95,7 +95,11 @@ public:
 
   inline passivedouble ExtractDisplacements(int iNode, int iDim) {return AD::GetValue(structure->GetDisplacement(iNode, iDim));}
 
-  inline passivedouble ExtractCoordinates(int iNode, int iDim) {return AD::GetValue(structure->GetCoordinates(iNode, iDim));}
+  inline passivedouble ExtractCoordinate(int iNode, int iDim) {return AD::GetValue(node[iNode]->GetCoordinate(iDim));}
+
+  inline passivedouble ExtractCoordinate0(int iNode, int iDim) {return AD::GetValue(node[iNode]->GetCoordinate0(iDim));}
+
+  inline passivedouble ExtractCoordinateOld(int iNode, int iDim) {return AD::GetValue(node[iNode]->GetCoordinateOld(iDim));}
 
   inline passivedouble ExtractInitialCoordinates(int iNode, int iDim) {return AD::GetValue(structure->GetInitialCoordinates(iNode, iDim));}
 

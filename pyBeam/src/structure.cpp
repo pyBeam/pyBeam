@@ -60,6 +60,7 @@ CStructure::CStructure(CInput *input, CElement **element, CNode **container_node
     dU  = VectorXdDiff::Zero(nNode*6);         // Whole system displacements
     
     X  = VectorXdDiff::Zero(nNode*3);
+    X0 = VectorXdDiff::Zero(nNode*3);
     
     // Forces nodal Vector
     Ftip     =  Vector3dDiff::Zero();
