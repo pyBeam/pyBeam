@@ -1,6 +1,0 @@
-0  % NFE = number of triangular shell elements (notice that the order will give the element ID) 
-
- 1  2  3    1
- 2  4  3    1
- 2  6  7    1
- 4  2  7    1

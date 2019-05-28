@@ -1,9 +1,0 @@
- 3.87344952471E+00 
- 3.87344952471E+00 
- 1.54741440000E+00 
- 3.72090600000E+01 
- 1.54741440000E+00 
-
-
- This file reports the terms on the diagonal of the generalized mass matrix. So the total number has to be NSHAPES!
-The modal mass are the values they are and not normalized

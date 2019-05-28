@@ -1,9 +1,0 @@
-1  %  NMATERIALS = number of materials 
-
-7.0E+10     7.0E+10     2.7E+10     0.330000000000000D0   2800.0 
-
-Order: E11,E22,G12,NU12,RHO 
-The material ID will be the row ID. So the material number 1 will be the first and so on.
-Notice that the material properties are given in the material axes (orthotropic material). 
-Notice also that NU21 = NU12 * E22/E11.
-RHO is the density of the material and it is used for the free vibration problem. In the case of ISTDYN= 2 it is not used.
