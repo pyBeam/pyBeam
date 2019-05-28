@@ -94,7 +94,7 @@ iNode = 21   -1
 #beam.SetLoads(iNode,4 -1,5000000)
 beam.SetLoads(iNode,3 -1,50000)#100000)
 #beam.SetLoads(iNode-1,3 -1,50000)
-beam.Solve()
+beam.Solve(0)
 
 coordinate_X = []
 coordinate_Y = []
@@ -106,13 +106,13 @@ coordinate_Z0 = []
 
 for jNode in range(0,nPoint):
     
-  coordinate_X.append(beam.ExtractCoordinates(jNode, 0))
-  coordinate_Y.append(beam.ExtractCoordinates(jNode, 1))
-  coordinate_Z.append(beam.ExtractCoordinates(jNode, 2))  
+  coordinate_X.append(beam.ExtractCoordinate(jNode, 0))
+  coordinate_Y.append(beam.ExtractCoordinate(jNode, 1))
+  coordinate_Z.append(beam.ExtractCoordinate(jNode, 2))  
   
-  coordinate_X0.append(beam.ExtractInitialCoordinates(jNode, 0))
-  coordinate_Y0.append(beam.ExtractInitialCoordinates(jNode, 1))
-  coordinate_Z0.append(beam.ExtractInitialCoordinates(jNode, 2))
+  coordinate_X0.append(beam.ExtractCoordinate0(jNode, 0))
+  coordinate_Y0.append(beam.ExtractCoordinate0(jNode, 1))
+  coordinate_Z0.append(beam.ExtractCoordinate0(jNode, 2))
   
 #for iNode in range(0,nPoint):  
 print("Node {} Coord_tip indef= {} {} {}".format(iNode, coordinate_X0[iNode], coordinate_Y0[iNode], coordinate_Z0[iNode]))  
@@ -133,6 +133,12 @@ Zb = 0.5*max_range*np.mgrid[-1:2:2,-1:2:2,-1:2:2][2].flatten() + 0.5*(np.amax(co
 # Comment or uncomment following both lines to test the fake bounding box:
 for xb, yb, zb in zip(Xb, Yb, Zb):
    plt.plot([xb], [yb], [zb], 'w')  
+   
+test_val = np.sqrt((coordinate_X[20]-19.05326647582835)**2+
+                   (coordinate_Y[20]-12.150042136520977)**2+
+                   (coordinate_Z[20]-16.32312936016357)**2)
+
+print("Tolerance: ",test_val)
   
 plt.plot(coordinate_X, coordinate_Y, coordinate_Z)
 plt.plot(coordinate_X0, coordinate_Y0, coordinate_Z0)
@@ -142,11 +148,6 @@ plt.show()
   
   
 
-test_val = np.sqrt((coordinate_X[20]-24.020327385028295)**2+
-                   (coordinate_Y[20]-16.29552732537537)**2+
-                   (coordinate_Z[20]-0.3752371597829022)**2)
-
-print("Tolerance: ",test_val)
 
 # Tolerance is set to 1E-8
 if (test_val < 1e-8):

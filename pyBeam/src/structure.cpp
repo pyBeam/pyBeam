@@ -297,8 +297,8 @@ void CStructure::AssemblyRigidPenalty(addouble penalty)
 
 void CStructure::AssemblyTang(int iIter)
 {
-    
-    std::cout  << " Assembly Tangent Matrix"  << std::endl;
+
+    //std::cout  << " Assembly Tangent Matrix"  << std::endl;
     
     int iii = 0; int dof = 0;   int dof_jjj = 0;   int dof_kkk = 0;
     int constr_dof_id;
@@ -496,7 +496,7 @@ void CStructure::EvalResidual(unsigned short irigid)
 
 void CStructure::SolveLinearStaticSystem(int iIter)
 {
-    std::cout << "-->  Solving Linear System, "  << std::endl;
+//    std::cout << "-->  Solving Linear System, "  << std::endl;
 //    cout << "Ksys = \n" <<Ksys << endl;
     dU = Ksys.fullPivHouseholderQr().solve(Residual);
 //    std::cout << "dU (after) = \n" << dU << std::endl;
@@ -529,7 +529,7 @@ void CStructure::SolveLinearStaticSystem_RBE2(int iIter)
     //
     
     
-    std::cout << "-->  Reducing Linear System (RBE2...), "  << std::endl;
+    //    std::cout << "-->  Reducing Linear System (RBE2...), "  << std::endl;
     Ksys_red = KRBE.transpose()*Ksys*KRBE - KRBE_ext;
 //    cout << "Ksys_red = \n" <<Ksys_red << endl;
     Residual_red = KRBE.transpose()* Residual; 
@@ -542,14 +542,14 @@ void CStructure::SolveLinearStaticSystem_RBE2(int iIter)
     addouble relative_error = (Ksys_red*dU_red -Residual_red).norm() / Residual_red.norm(); // norm() is L2 norm
     //std::cout<< "Ksys = \n" << Ksys << std::endl;
     //std::cout<< "Residual = \n" << Residual.norm() << std::endl;
-    std::cout << "The relative error is:\n" << relative_error << std:: endl;
+    //    std::cout << "The relative error is:\n" << relative_error << std:: endl;
     if (relative_error > 1.0e-7)
     {
         std::cout << "Solution of Linear System not precise enough!" << std:: endl;
     	throw std::exception();
     }
     
-    std::cout << "-->  Expanding Linear System (RBE2...), "  << std::endl;
+//    std::cout << "-->  Expanding Linear System (RBE2...), "  << std::endl;
     //Caution, at this point RBE2 slave displacements are still linear
     dU = KRBE*dU_red;
 //    std::cout << "KRBE.transpose() = \n" << KRBE.transpose() << std::endl;
@@ -651,7 +651,7 @@ void CStructure::SolveLinearStaticSystem_RBE2(int iIter)
 
 void CStructure::SolveLinearStaticSystem_RBE2_penalty(int iIter)
 {
-    std::cout << "-->  Solving Linear System with penalty method for rigid constraints, "  << std::endl;
+    //std::cout << "-->  Solving Linear System with penalty method for rigid constraints, "  << std::endl;
 //    cout << "Ksys = \n" <<Ksys << endl;
     //cout << "K_penal = \n" <<K_penal << endl;      
     Ksys = Ksys + K_penal;
@@ -681,7 +681,7 @@ void CStructure::SolveLinearStaticSystem_RBE2_penalty(int iIter)
 
 void CStructure::UpdateCoord() {
 
-    std::cout << "-->  Update Global Coordinates "  << std::endl;
+    //std::cout << "-->  Update Global Coordinates "  << std::endl;
     
     /* We have the X array, we need to add the displacements referred to the pre-last displacement local reference system.
      Thus, this operation need to eb done before the rottion matrix is updated. */
@@ -748,7 +748,7 @@ void CStructure::UpdateCoord() {
 void CStructure::UpdateCoord_RBE2(int iIter)
 {
     
-    std::cout << "-->  Update RBE2 Slave coordinates "  << std::endl;    
+    std::cout << "-->  Update RBE2 Slave coordinates "  << std::endl;
     
     int iRBE2;
     int idMaster, idSlave;
@@ -855,7 +855,7 @@ void CStructure::EvalPenaltyForces(addouble penalty)
  */
 void CStructure::InitialCoord()
 {
-    std::cout << "---------  Resetting Initial Coordinate Values "  << std::endl;
+    //std::cout << "---------  Resetting Initial Coordinate Values "  << std::endl;
     // Here we should refer directly to the node objects
     X  = VectorXdDiff::Zero(nNode*3);
     X0 = VectorXdDiff::Zero(nNode*3);
@@ -892,7 +892,7 @@ void CStructure::InitialCoord()
  */
 void CStructure::UpdateLength()
 {
-    std::cout << "-->  Updating Length "  << std::endl;
+    //std::cout << "-->  Updating Length "  << std::endl;
 
     int nodeA_id = 0;
     int nodeB_id = 0;
@@ -929,7 +929,7 @@ void CStructure::UpdateRotationMatrix() {
 
     //=============   Updating Rotation Matrix   ======================
     
-    std::cout << "-->  Updating Rotation Matrix "  << std::endl;
+    //std::cout << "-->  Updating Rotation Matrix "  << std::endl;
 
     VectorXdDiff dU_AB = VectorXdDiff::Zero(12);
     VectorXdDiff  X_AB = VectorXdDiff::Zero(6);
@@ -972,7 +972,7 @@ void CStructure::UpdateRotationMatrix() {
 void CStructure::UpdateInternalForces()
 {
     
-    std::cout << "-->  Updating Internal Forces "   << std::endl;
+    //std::cout << "-->  Updating Internal Forces "   << std::endl;
     
     // dU is the incremental displacement
     // Need to evaluate the displacements in the new reference system.

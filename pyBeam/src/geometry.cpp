@@ -3,8 +3,8 @@
  *
  * Copyright (C) 2018 Tim Albring, Ruben Sanchez, Rocco Bombardieri, Rauno Cavallaro 
  * 
- * Developers: Tim Albring, Ruben Sanchez (SciComp, TU Kaiserslautern)
- *             Rocco Bombardieri, Rauno Cavallaro (Carlos III University Madrid)
+ * File developers: Rocco Bombardieri (Carlos III University Madrid)
+ *                  Ruben Sanchez (SciComp, TU Kaiserslautern)
  *
  * This file is part of pyBeam.
  *
@@ -29,12 +29,3 @@
 CNode::CNode( int id) { ID = id; }
 
 CNode::~CNode(void) {};
-/*
-CConnectivity::CConnectivity(void) {
-
-}
-
-CConnectivity::~CConnectivity(void) {
-
-}
-*/
