@@ -10,6 +10,7 @@
     #include "../include/property.h"
     #include "../include/geometry.h"
     #include "../include/element.h"    
+    #include "../include/rigid_element.h"
 %}
 
 %include "../include/beam.h";
@@ -17,3 +18,4 @@
 %include "../include/property.h";
 %include "../include/geometry.h";
 %include "../include/element.h";
+%include "../include/rigid_element.h";

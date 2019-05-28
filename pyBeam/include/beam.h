@@ -3,8 +3,9 @@
  *
  * Copyright (C) 2018 Tim Albring, Ruben Sanchez, Rocco Bombardieri, Rauno Cavallaro 
  * 
- * Developers: Tim Albring, Ruben Sanchez (SciComp, TU Kaiserslautern)
- *             Rocco Bombardieri, Rauno Cavallaro (Carlos III University Madrid)
+ * File developers: Rocco Bombardieri (Carlos III University Madrid)
+ *                  Rauno Cavallaro (Carlos III University Madrid)
+ *                  Ruben Sanchez (SciComp, TU Kaiserslautern)
  *
  * This file is part of pyBeam.
  *
@@ -31,6 +32,7 @@
 #include "../include/types.h"
 
 #include "../include/element.h"
+#include "../include/rigid_element.h"
 #include "../include/structure.h"
 #include "../include/geometry.h"
 #include "../include/input.h"
@@ -50,14 +52,16 @@ private:
   CInput* input;
 
   CElement** element;  	  /*!< \brief Vector which the define the elements. */
+  
+  CRBE2** RBE2;  	  /*!< \brief Vector which the define the elements. */  
 
   CStructure* structure;  /*!< \brief Pointer which the defines the structure. */
 
-  int nDOF, nTotalDOF, nDim;
+  int nDOF, nTotalDOF, nRBE2, nDim;
   unsigned long nFEM;
   addouble *loadVector;
   addouble thickness;
-
+ 
 protected:
 
 public:
@@ -68,16 +72,18 @@ public:
   
   void InitializeInput(CInput *py_input);
 
-  void InitializeNode(CNode *py_node, unsigned long iNode);
+  inline void InitializeNode(CNode *py_node, unsigned long iNode) {node[iNode] = py_node;}
 
-  void InitializeElement(CElement *py_element, unsigned long iFEM);
+  inline void InitializeElement(CElement *py_element, unsigned long iFEM) {element[iFEM] = py_element;}
+  
+  inline void InitializeRBE2(CRBE2* py_RBE2,unsigned long iRBE2) {RBE2[iRBE2] = py_RBE2;}
 
-  void InitializeStructure(void);
+  inline void InitializeStructure(void) {structure = new CStructure(input, element, node);}
 
   void RegisterLoads(void);
 
-  void Solve(void);
-
+  void Solve(int FSIIter);
+  
   passivedouble OF_NodeDisplacement(int iNode);
 
   void ComputeAdjoint(void);
@@ -90,9 +96,15 @@ public:
 
   inline passivedouble ExtractDisplacements(int iNode, int iDim) {return AD::GetValue(structure->GetDisplacement(iNode, iDim));}
 
-  inline passivedouble ExtractCoordinates(int iNode, int iDim) {return AD::GetValue(structure->GetCoordinates(iNode, iDim));}
+  inline passivedouble ExtractCoordinate(int iNode, int iDim) {return AD::GetValue(node[iNode]->GetCoordinate(iDim));}
+
+  inline passivedouble ExtractCoordinate0(int iNode, int iDim) {return AD::GetValue(node[iNode]->GetCoordinate0(iDim));}
+
+  inline passivedouble ExtractCoordinateOld(int iNode, int iDim) {return AD::GetValue(node[iNode]->GetCoordinateOld(iDim));}
 
   inline passivedouble ExtractInitialCoordinates(int iNode, int iDim) {return AD::GetValue(structure->GetInitialCoordinates(iNode, iDim));}
+
+  inline passivedouble GetInitialCoordinates(int iNode, int iDim) {return AD::GetValue(structure->node[iNode]->GetCoordinate(iDim));}
 
   inline void StartRecording(void) { AD::StartRecording();}
 

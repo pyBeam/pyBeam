@@ -1,3 +1,8 @@
+# To add to your .bashrc
+
+#export PYTHONPATH=$PYTHONPATH:"/YOUR_PYBEAM_LOCATION/pyBeam/pyBeam/lib"
+#export PYTHONPATH=$PYTHONPATH:"/YOUR_PYBEAM_LOCATION/pyBeam/pyBeam/pylib"
+#export PYBEAM_INCLUDEPY="$(python-config --includes)"
 #============================  LIBS & INCLUDES
 
 EIGEN_PATH = ./pyBeam/externals/Eigen
@@ -11,6 +16,7 @@ _SRC = ./pyBeam/src/main.cpp \
        ./pyBeam/src/input.cpp \
        ./pyBeam/src/geometry.cpp \
        ./pyBeam/src/element.cpp \
+       ./pyBeam/src/rigid_element.cpp \
        ./pyBeam/src/structure.cpp \
        ./pyBeam/src/rotations.cpp \
        ./pyBeam/src/beam.cpp \
@@ -21,6 +27,7 @@ _OBJS = ./pyBeam/obj/main.o \
         ./pyBeam/obj/input.o \
         ./pyBeam/obj/geometry.o \
         ./pyBeam/obj/element.o \
+        ./pyBeam/obj/rigid_element.o \
         ./pyBeam/obj/structure.o \
         ./pyBeam/obj/rotations.o \
         ./pyBeam/obj/beam.o \

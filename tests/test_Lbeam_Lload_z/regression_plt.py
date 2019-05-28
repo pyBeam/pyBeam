@@ -24,8 +24,8 @@
 # If not, see <http://www.gnu.org/licenses/>.
 #
 
-#import matplotlib.pyplot as plt
-#from mpl_toolkits.mplot3d import Axes3D
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 import sys, os
 from pyBeamIO import pyBeamConfig as pyConfig
@@ -34,7 +34,7 @@ import pyBeam
 
 # Load running directory
 rundir = os.path.dirname(os.path.realpath(__file__))
-confFile = rundir + '/config.cfg'
+confFile = rundir + '/config_NL.cfg'
 
 # Parsing Conf file
 config = pyConfig.pyBeamConfig(confFile)  # Beam configuration file
@@ -88,9 +88,8 @@ for i in range(nElem):
   
 beam.InitializeStructure()
 
-iNode = 21   -1
-beam.SetLoads(iNode,1,5000)
-beam.SetLoads(iNode,2,1000)
+iNode = 20
+beam.SetLoads(iNode,2,50000)
 beam.Solve(0)
 
 coordinate_X = []
@@ -118,8 +117,7 @@ print("Node {} Coord_tip indef= {} {} {}".format(iNode, coordinate_X0[iNode], co
 print("Coord_tip= {} {} {}".format(coordinate_X[iNode], coordinate_Y[iNode], coordinate_Z[iNode]))  
   
 print("Displ_tip= {} {} {}".format(coordinate_X[iNode] - coordinate_X0[iNode], coordinate_Y[iNode] - coordinate_Y0[iNode], coordinate_Z[iNode] - coordinate_Z0[iNode]))  
-
-'''  
+  
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
   
@@ -131,22 +129,19 @@ Zb = 0.5*max_range*np.mgrid[-1:2:2,-1:2:2,-1:2:2][2].flatten() + 0.5*(np.amax(co
 # Comment or uncomment following both lines to test the fake bounding box:
 for xb, yb, zb in zip(Xb, Yb, Zb):
    plt.plot([xb], [yb], [zb], 'w')  
+   
+test_val = np.sqrt((coordinate_X[20]-19.05326647582835)**2+
+                   (coordinate_Y[20]-12.150042136520977)**2+
+                   (coordinate_Z[20]-16.32312936016357)**2)
+
+print("Tolerance: ",test_val)
   
 plt.plot(coordinate_X, coordinate_Y, coordinate_Z)
 plt.plot(coordinate_X0, coordinate_Y0, coordinate_Z0)
 plt.xlabel('X')
 plt.ylabel('Y')
 plt.show()
-'''  
   
-
-test_val = np.sqrt((coordinate_X[20]-24.0199395394)**2+
-                   (coordinate_Y[20]-16.2954533731)**2+
-                   (coordinate_Z[20]-0.389860802844)**2)
-
-
-print("Tolerance: ",test_val)
-
 # Tolerance is set to 1E-8
 if (test_val < 1e-8):
   exit(0)

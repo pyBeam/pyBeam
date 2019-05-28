@@ -73,7 +73,6 @@ class pyBeamConfig:
 
             for case in switch(this_param):
                 #integer values
-                if case("N_DOF")		      : pass  
                 if case("FOLLOWER_FLAG")		      : pass        
                 if case("LOAD_STEPS")	      : pass     
                 if case("N_STRUCT_ITER")	                      : 
@@ -86,7 +85,6 @@ class pyBeamConfig:
                 if case("Y_MODULUS")                      : pass
                 if case("POISSON")                      : pass
                 if case("RHO")                      : pass
-                if case("B_LENGTH")                 : pass
                 if case("LOAD")		      : pass
                 if case("CONV_CRITERIUM")          : 
                     self._ConfigContent[this_param] = float(this_value)
@@ -99,3 +97,18 @@ class pyBeamConfig:
                 if case():
                     print(this_param + " is an invalid option !")
                     break
+
+def parseInput(BEAM_config, inputs,Constr, nConstr):
+    
+    inputs.SetYoungModulus(BEAM_config['Y_MODULUS'])
+    inputs.SetPoisson(BEAM_config['POISSON'])
+    inputs.SetDensity(BEAM_config['RHO'])
+    inputs.SetFollowerFlag(BEAM_config['FOLLOWER_FLAG'])
+    inputs.SetLoadSteps(BEAM_config['LOAD_STEPS'])
+    inputs.SetNStructIter(BEAM_config['N_STRUCT_ITER'])
+    inputs.SetConvCriterium(BEAM_config['CONV_CRITERIUM'])
+    
+    #Now setting the constraints
+    inputs.SetnConstr(nConstr)
+    for iConstr in range(nConstr): 
+        inputs.SetSingleConstr( iConstr, int(Constr[iConstr,0]), int(Constr[iConstr,1]) )

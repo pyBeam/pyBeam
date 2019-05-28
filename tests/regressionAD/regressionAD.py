@@ -58,7 +58,7 @@ inputs = pyBeamAD.CInput(nPoint, nElem)
 beam.StartRecording()
     
 # Sending to CInput object 
-pyInput.parseInput(config, inputs, Constr, nConstr)
+pyConfig.parseInput(config, inputs, Constr, nConstr)
 # Assigning input values to the input object in C++
 inputs.SetParameters()
 # Initialize the input in the beam solver
@@ -94,7 +94,7 @@ iNode = 20
 beam.SetLoads(iNode,1,5000)
 beam.SetLoads(iNode,2,1000)
 beam.RegisterLoads()
-beam.Solve()
+beam.Solve(0)
 displacement = beam.OF_NodeDisplacement(iNode)
 beam.StopRecording()
 
@@ -114,13 +114,13 @@ for iNode in range(0,21):
   
   print("F'(",iNode,") = (", beam.ExtractLoadGradient(iNode,0), beam.ExtractLoadGradient(iNode,1), beam.ExtractLoadGradient(iNode,2), ")")
   
-  coordinate_X.append(beam.ExtractCoordinates(iNode, 0))
-  coordinate_Y.append(beam.ExtractCoordinates(iNode, 1))
-  coordinate_Z.append(beam.ExtractCoordinates(iNode, 2))  
+#  coordinate_X.append(beam.ExtractCoordinates(iNode, 0))
+#  coordinate_Y.append(beam.ExtractCoordinates(iNode, 1))
+#  coordinate_Z.append(beam.ExtractCoordinates(iNode, 2))  
   
-  coordinate_X0.append(beam.ExtractInitialCoordinates(iNode, 0))
-  coordinate_Y0.append(beam.ExtractInitialCoordinates(iNode, 1))
-  coordinate_Z0.append(beam.ExtractInitialCoordinates(iNode, 2))    
+#  coordinate_X0.append(beam.ExtractInitialCoordinates(iNode, 0))
+#  coordinate_Y0.append(beam.ExtractInitialCoordinates(iNode, 1))
+#  coordinate_Z0.append(beam.ExtractInitialCoordinates(iNode, 2))    
 
 delta_gradient_x = beam.ExtractLoadGradient(iNode,0) + 0.0017035445423928379
 delta_gradient_y = beam.ExtractLoadGradient(iNode,1) - 0.0020190915772016127

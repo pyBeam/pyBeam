@@ -1,12 +1,10 @@
 /*
  * pyBeam, a Beam Solver
  *
- * Copyright (C) 2018 Tim Albring, Ruben Sanchez, Rauno Cavallaro
- *
  * Copyright (C) 2018 Tim Albring, Ruben Sanchez, Rocco Bombardieri, Rauno Cavallaro 
  * 
- * Developers: Tim Albring, Ruben Sanchez (SciComp, TU Kaiserslautern)
- *             Rocco Bombardieri, Rauno Cavallaro (Carlos III University Madrid)
+ * File developers: Rocco Bombardieri (Carlos III University Madrid)
+ *                  Ruben Sanchez (SciComp, TU Kaiserslautern)
  *
  * This file is part of pyBeam.
  *
@@ -45,6 +43,8 @@ protected:
     
   Vector3dDiff coord = VectorXdDiff::Zero(3);
   
+  Vector3dDiff coordOld = VectorXdDiff::Zero(3);  
+  
   Vector3dDiff coord0 = VectorXdDiff::Zero(3); 
   
   Vector3dDiff Vel = VectorXdDiff::Zero(3);
@@ -57,15 +57,27 @@ public:
 
   ~CNode(void);
 
-  inline void SetCoordinate(int iDim, passivedouble val_coor) {coord(iDim) = val_coor;}
+  inline void SetCoordinate(int iDim, passivedouble val_coor) {AD::SetValue(coord(iDim), val_coor);}
 
-  inline void SetCoordinate0(int iDim, passivedouble val_coor) {coord0(iDim) = val_coor;}
+  inline void SetCoordinateOld(int iDim, passivedouble val_coor) {AD::SetValue(coordOld(iDim), val_coor);}
   
-  inline void SetVel(int iDim, passivedouble val_vel) {Vel(iDim) = val_vel;}  
+  inline void SetCoordinate0(int iDim, passivedouble val_coor) {AD::SetValue(coord0(iDim), val_coor);}
   
-  inline void SetForce(int iDim, passivedouble val_force) {Vel(iDim) = val_force;}   
+  inline void SetVel(int iDim, passivedouble val_vel) {AD::SetValue(Vel(iDim), val_vel);}
+  
+  inline void SetForce(int iDim, passivedouble val_force) {AD::SetValue(Force(iDim), val_force);}
+
+#ifdef CODI_REVERSE_TYPE
+  inline void SetCoordinate(int iDim, addouble val_coor) {coord(iDim) = val_coor;}
+
+  inline void SetCoordinateOld(int iDim, addouble val_coor) {coordOld(iDim) = val_coor;}
+
+  inline void SetCoordinate0(int iDim, addouble val_coor) {coord0(iDim) = val_coor;}
+#endif
   
   inline addouble GetCoordinate(int iDim) {return coord(iDim);}
+
+  inline addouble GetCoordinateOld(int iDim) {return coordOld(iDim);}  
   
   inline addouble GetCoordinate0(int iDim) {return coord0(iDim);}  
   
@@ -76,32 +88,3 @@ public:
   inline int GeID() {return ID;}    
 
 };
-/*
-
-class CConnectivity {
-private:
-
-protected:
-
-public:
-
-  unsigned long nodeA;
-  
-  unsigned long nodeB;
-  
-  unsigned long property;
-  
-  VectorXdDiff aux_vector;
-
-  CConnectivity(void);
-
-  virtual ~CConnectivity(void);
-
-  inline void SetNode_i(unsigned long node_i) {nodeA = node_i;};
-
-  void SetNode_j(unsigned long node_j) {nodeB = node_j;};
-  
-  void SetProperty(unsigned long Prop) {property= Prop;} ; 
-
-};
-*/
