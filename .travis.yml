@@ -17,7 +17,7 @@ notifications:
   
 branches:
     only:
-        - feature_RBE2_penalty2
+        - develop
 
 python:
     - 2.7
