@@ -3,8 +3,8 @@
  *
  * Copyright (C) 2018 Tim Albring, Ruben Sanchez, Rocco Bombardieri, Rauno Cavallaro 
  * 
- * Developers: Tim Albring, Ruben Sanchez (SciComp, TU Kaiserslautern)
- *             Rocco Bombardieri, Rauno Cavallaro (Carlos III University Madrid)
+ * File developers: Ruben Sanchez (SciComp, TU Kaiserslautern)
+ *                  Tim Albring (SciComp, TU Kaiserslautern)
  *
  * This file is part of pyBeam.
  *
@@ -39,9 +39,7 @@
 
 #include "../externals/CoDiPack/include/codi.hpp"
 
-
 using namespace std;
-
 
 #ifdef CODI_REVERSE_TYPE
 #include "./datatypes/ad_reverse.hpp"
