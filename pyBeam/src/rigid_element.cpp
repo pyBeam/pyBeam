@@ -90,7 +90,7 @@ void CRBE2::InitializeKinemMatrix() {
     Kinem_matrix.block(1 - 1, 4 - 1, 3, 3) = MStrans;
     Kinem_matrix0 = Kinem_matrix;
     Kinem_matrix_old = Kinem_matrix;
-    std::cout << "  Kinem_matrix = \n" << Kinem_matrix << std::endl;
+    //std::cout << "  Kinem_matrix = \n" << Kinem_matrix << std::endl;
 }
 
 void CRBE2::UpdateKinemMatirx() {
@@ -107,7 +107,7 @@ void CRBE2::UpdateKinemMatirx() {
             axis_vector(2 - 1), -axis_vector(1 - 1), 0;
 
     Kinem_matrix.block(1 - 1, 4 - 1, 3, 3) = MStrans;
-    std::cout << "  Kinem_matrix = \n" << Kinem_matrix << std::endl;
+    //std::cout << "  Kinem_matrix = \n" << Kinem_matrix << std::endl;
 
 }
 
@@ -209,7 +209,7 @@ void CRBE2::EvalConstraintEquation(VectorXdDiff Um, VectorXdDiff Us)
     J(5,5) = -1.0;
     J(5,11) = 1.0;
 
-    cout << "Constraint Jacobian leads = \n" <<J << endl;
+//    cout << "Constraint Jacobian leads = \n" <<J << endl;
 
 }
 
