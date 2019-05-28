@@ -3,8 +3,8 @@
  *
  * Copyright (C) 2018 Tim Albring, Ruben Sanchez, Rocco Bombardieri, Rauno Cavallaro 
  * 
- * Developers: Tim Albring, Ruben Sanchez (SciComp, TU Kaiserslautern)
- *             Rocco Bombardieri, Rauno Cavallaro (Carlos III University Madrid)
+ * File developers: Rocco Bombardieri (Carlos III University Madrid)
+ *                  Rauno Cavallaro (Carlos III University Madrid)
  *
  * This file is part of pyBeam.
  *
@@ -32,7 +32,6 @@
 #include <Eigen/LU>
 
 #include "../include/types.h"
-
 #include "../include/element.h"
 #include "../include/rigid_element.h"
 #include "../include/rotations.h"
@@ -40,10 +39,6 @@
 #include "../include/input.h"
 
 #include <iostream>
-
-#ifdef DEBG
-#include <fstream>
-#endif
 
 class CStructure
 {
@@ -58,10 +53,9 @@ public:
     int nRBE2;                // number of finite elements
     
     int DOF;                  // In space, 6
-    int FollFlag;             // Flag for Follower forces (1)
     
-    CRBE2 **RBE2;      // Pointer to the first RBE2 element        
-    CElement **fem;      // Pointer to the first finite element
+    CRBE2 **RBE2;        // Pointer to the first RBE2 element
+    CElement **element;  // Pointer to the first finite element
     CNode **node;        // Pointer to the first finite element
     
     MatrixXdDiff M;      // Recall in Eigen X stays for dynamic, d for addouble:  (nfem+1)*6  X   (nfem+1)*6
@@ -70,10 +64,8 @@ public:
     MatrixXdDiff K_penal;  // penalty matrix for rigid elements
     VectorXdDiff V_penal;  // penalty vector for rigid elements
     
-    
     MatrixXdDiff KRBE;  // Kinematic constraint matrix due to the RBE2 elements   [totalDOFs, BossDOFs]   
-    MatrixXdDiff KRBE_ext;  // Kinematic constraint matrix due to the RBE2 elements   [totalDOFs, BossDOFs]  
-    
+    MatrixXdDiff KRBE_ext;  // Kinematic constraint matrix due to the RBE2 elements   [totalDOFs, BossDOFs]
     
     MatrixXdDiff  Constr_matrix;    // COnstraint matrix [ NODE_ID DOF_ID ]
     
@@ -89,10 +81,9 @@ public:
     VectorXdDiff Residual;    // Array of Unbalanced Forces
     VectorXdDiff Residual_red;    // Array of Unbalanced Forces   [relative to masters in case of RBE2]      
     
-    Vector3dDiff Ftip;      // (vector read from the input file) - needed as basis to update the Fext
     VectorXdDiff Fnom;        // Array of nominal forces
     
-    CStructure(CInput *input, CElement **element, CNode **container_node);
+    CStructure(CInput *input, CElement **container_element, CNode **container_node);
     
     ~CStructure();
     
@@ -102,10 +93,12 @@ public:
      *
      *###############################################################*/
     
-    void ReadForces(int nTotalDOF, addouble *loadVector);
+    inline void ReadForces(int nTotalDOF, addouble *loadVector) {
+      for (int iLoad = 0; iLoad < nTotalDOF; iLoad++){Fnom(iLoad) = loadVector[iLoad];}
+    }
     
-    void UpdateExtForces(addouble  );
-    
+    inline void UpdateExtForces(addouble lambda){ Fext = lambda* Fnom; }
+
     void EvalResidual(unsigned short rigid);
 
     void EvalPenaltyForces(addouble penalty); 
@@ -159,20 +152,6 @@ public:
     void UpdateLength();
     
     void UpdateRotationMatrix();
-    
-    //===================================================
-    //     TOOLS: WRITING COORDINATES
-    //===================================================
-    
-    void EchoCoord();
-    
-    void EchoDisp();
-    
-    void EchoRes();
-    
-    void EchoFext();
-    
-    void EchoMatrixK();
     
     //===================================================
     //      INTERNAL FORCES
