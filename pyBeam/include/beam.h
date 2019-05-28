@@ -3,8 +3,9 @@
  *
  * Copyright (C) 2018 Tim Albring, Ruben Sanchez, Rocco Bombardieri, Rauno Cavallaro 
  * 
- * Developers: Tim Albring, Ruben Sanchez (SciComp, TU Kaiserslautern)
- *             Rocco Bombardieri, Rauno Cavallaro (Carlos III University Madrid)
+ * File developers: Rocco Bombardieri (Carlos III University Madrid)
+ *                  Rauno Cavallaro (Carlos III University Madrid)
+ *                  Ruben Sanchez (SciComp, TU Kaiserslautern)
  *
  * This file is part of pyBeam.
  *
@@ -71,13 +72,13 @@ public:
   
   void InitializeInput(CInput *py_input);
 
-  void InitializeNode(CNode *py_node, unsigned long iNode);
+  inline void InitializeNode(CNode *py_node, unsigned long iNode) {node[iNode] = py_node;}
 
-  void InitializeElement(CElement *py_element, unsigned long iFEM);
+  inline void InitializeElement(CElement *py_element, unsigned long iFEM) {element[iFEM] = py_element;}
   
-  void InitializeRBE2(CRBE2* py_RBE2,unsigned long iRBE2);  
+  inline void InitializeRBE2(CRBE2* py_RBE2,unsigned long iRBE2) {RBE2[iRBE2] = py_RBE2;}
 
-  void InitializeStructure(void);
+  inline void InitializeStructure(void) {structure = new CStructure(input, element, node);}
 
   void RegisterLoads(void);
 

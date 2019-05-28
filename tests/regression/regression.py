@@ -91,7 +91,7 @@ beam.InitializeStructure()
 iNode = 21   -1
 beam.SetLoads(iNode,1,5000)
 beam.SetLoads(iNode,2,1000)
-beam.Solve()
+beam.Solve(0)
 
 coordinate_X = []
 coordinate_Y = []
@@ -103,13 +103,13 @@ coordinate_Z0 = []
 
 for jNode in range(0,nPoint):
     
-  coordinate_X.append(beam.ExtractCoordinates(jNode, 0))
-  coordinate_Y.append(beam.ExtractCoordinates(jNode, 1))
-  coordinate_Z.append(beam.ExtractCoordinates(jNode, 2))  
+  coordinate_X.append(beam.ExtractCoordinate(jNode, 0))
+  coordinate_Y.append(beam.ExtractCoordinate(jNode, 1))
+  coordinate_Z.append(beam.ExtractCoordinate(jNode, 2))  
   
-  coordinate_X0.append(beam.ExtractInitialCoordinates(jNode, 0))
-  coordinate_Y0.append(beam.ExtractInitialCoordinates(jNode, 1))
-  coordinate_Z0.append(beam.ExtractInitialCoordinates(jNode, 2))
+  coordinate_X0.append(beam.ExtractCoordinate0(jNode, 0))
+  coordinate_Y0.append(beam.ExtractCoordinate0(jNode, 1))
+  coordinate_Z0.append(beam.ExtractCoordinate0(jNode, 2))
   
 #for iNode in range(0,nPoint):  
 print("Node {} Coord_tip indef= {} {} {}".format(iNode, coordinate_X0[iNode], coordinate_Y0[iNode], coordinate_Z0[iNode]))  

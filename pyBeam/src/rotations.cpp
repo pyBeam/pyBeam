@@ -3,8 +3,7 @@
  *
  * Copyright (C) 2018 Tim Albring, Ruben Sanchez, Rocco Bombardieri, Rauno Cavallaro 
  * 
- * Developers: Tim Albring, Ruben Sanchez (SciComp, TU Kaiserslautern)
- *             Rocco Bombardieri, Rauno Cavallaro (Carlos III University Madrid)
+ * File developers: Rauno Cavallaro (Carlos III University Madrid)
  *
  * This file is part of pyBeam.
  *
@@ -84,12 +83,11 @@ void RotToPseudo(Vector3dDiff& pseudo , Matrix3dDiff R)
  *
  **********************************  */
 /* This routine, given a pseudo-vector,
-transforms it in its  rotation matrix form */
+transforms it in its rotation matrix form */
 
 void PseudoToRot(Vector3dDiff pseudo , Matrix3dDiff& R)
 {
 	//const addouble pi = 2*acos(0.0);
-
 
 	Vector3dDiff rot(0.0,0.0,0.0);
 

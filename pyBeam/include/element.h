@@ -3,8 +3,8 @@
  *
  * Copyright (C) 2018 Tim Albring, Ruben Sanchez, Rocco Bombardieri, Rauno Cavallaro 
  * 
- * Developers: Tim Albring, Ruben Sanchez (SciComp, TU Kaiserslautern)
- *             Rocco Bombardieri, Rauno Cavallaro (Carlos III University Madrid)
+ * File developers: Rocco Bombardieri (Carlos III University Madrid)
+ *                  Rauno Cavallaro (Carlos III University Madrid)
  *
  * This file is part of pyBeam.
  *
@@ -35,52 +35,48 @@
 class CElement
 {
 private:
-public:
-    
+
     int iElement;
+
+    // Added for Battini's CS
+    addouble l_ini;              // Initial Length
+    addouble l_curr;             // Current Length
+    addouble l_prev;             // Previous length
+
+    addouble m_e;                // Element mass
+    addouble A;                  // Element area
+
+    addouble Iyy;                // Beam inertia over y axis
+    addouble Izz;                // Beam inertia over y axis
+
+    addouble GJ;                 // Torsional stiffness
+    addouble J0;                 // Polar inertia
+
+    addouble AE;
+    addouble EIz;
+    addouble EIy;
+
+public:
+
     CNode* nodeA;
     CNode* nodeB;
     CProperty* property;
     CInput* input;
-    
-    int elemdofs = 12;   // Beam element DOFs
-    VectorXdDiff GlobalDOFs  =  VectorXdDiff::Zero(12); // Global DOFs 
-    
-    addouble J0;
-    addouble m_e;
-    addouble A;
-    
-    addouble EIz;
-    addouble EIy;
-    addouble GJ;
-    addouble AE;
-    
-    addouble m;
-    addouble Iyy;
-    addouble Izz;
-    
-    
-    MatrixXdDiff  Rrig;         // Rodriguez Rotation Matrix (local reference system in GCS)
-    MatrixXdDiff  R;             // Local reference system in GCS
-    MatrixXdDiff  Rprev;         // m_R previous value
-    
-    // Added for Battini's CS
-    addouble l_ini;                    // Initial Length
-    addouble l_act;                    // Actual Length
-    addouble l_prev;                   // Previous length
-    Vector3dDiff aux_vector  =  Vector3dDiff::Zero(3);                // Versor directed from nodeA to nodeB
-    
-    
-public:
+
+    VectorXdDiff GlobalDOFs; // Global DOFs
+
+    MatrixXdDiff Rrig;          // Rodriguez Rotation Matrix (local reference system in GCS)
+    MatrixXdDiff R;             // Local reference system in GCS
+    MatrixXdDiff Rprev;         // m_R previous value
+
+    Vector3dDiff aux_vector;   // Versor directed from nodeA to nodeB
+
     MatrixXdDiff Mfem;
     VectorXdDiff fint;  // This is the elemen't Internal Forces
     
     VectorXdDiff eps ;  // Elastic Deformational Status
     VectorXdDiff phi ;  // Elastic Cumulative Tension
     MatrixXdDiff Kprim;
-    
-    
-    // member functions
     
 private:
     
@@ -91,43 +87,50 @@ public:
     CElement(int element_ID) ; 
     
     ~CElement(void);
-    
-    inline void SetNode_1( CNode* Node1) { nodeA = Node1; };
-    
-    inline void SetNode_2( CNode* Node2) { nodeB = Node2;};    
-    
-    inline void SetProperty(CProperty* Property) {property = Property;};
-    
-    inline void SetInput(CInput* Input) {input = Input;};
+
+    // Methods to access initial element length
+    inline addouble GetInitial_Length(void) { return l_ini; }
+
+    // Methods to access current element length
+    inline void SetCurrent_Length( addouble val_length) { l_curr = val_length; }
+    inline addouble GetCurrent_Length(void) { return l_curr; }
+
+    // Methods to access/set the previous element length
+    inline void SetPrevious_Length(void) { l_prev = l_curr; }
+    inline addouble GetPrevious_Length(void) { return l_prev; }
+
+    // Methods to set initial properties to the element
+    inline void SetNode_1( CNode* Node1) { nodeA = Node1; }
+    inline void SetNode_2( CNode* Node2) { nodeB = Node2;}
+    inline void SetProperty(CProperty* Property) {property = Property;}
+    inline void SetInput(CInput* Input) {input = Input;}
     
     inline void SetAuxVector(addouble x, addouble y, addouble z) {aux_vector(0) = x; aux_vector(1) = y; aux_vector(2) = z;}
+
+    inline void setElementMass() {m_e = property->GetA()*l_ini* input->GetDensity();}
     
     void setGlobalDOFs();    
     
     void setLength();
     
-    //addouble getLength() {return l_ini;}
-    
-    void setElementMass();        
-    
     void Initializer(CNode* Node1, CNode* Node2, CProperty* Property, CInput* Input, passivedouble AuxVector_x, passivedouble AuxVector_y, passivedouble AuxVector_z);
     
-    
-    // Evaluates FEM element matrix
+    // Evaluates FEM element mass matrix
     void ElementMass_Rao();
-    
+
+    // Evaluates FEM kinematic matrix
     void EvalNaNb(MatrixXdDiff &Na,  MatrixXdDiff  &Nb);
     
-    // Evaluates FEM element matrix
+    // Evaluates FEM element elastic matrix
     void ElementElastic_Rao(MatrixXdDiff &Kel);
     
-    // Evaluates FEM element matrix
+    // Evaluates FEM element stiffness matrix
     void ElementTang_Rao(int iIter, MatrixXdDiff &Ktang);
-    
+
+    // Evaluates FEM element rotation matrix
     void EvalRotMat(VectorXdDiff &dU_AB , VectorXdDiff &X_AB );
-    
-    void EvalRotMatDEBUG(VectorXdDiff &dU_AB , VectorXdDiff &X_AB , MatrixXdDiff &Rtest);
-    
+
+    // Initially rotates the elements
     void InitializeRotMats();
 };
 

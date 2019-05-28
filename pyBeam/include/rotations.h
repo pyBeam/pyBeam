@@ -3,8 +3,7 @@
  *
  * Copyright (C) 2018 Tim Albring, Ruben Sanchez, Rocco Bombardieri, Rauno Cavallaro 
  * 
- * Developers: Tim Albring, Ruben Sanchez (SciComp, TU Kaiserslautern)
- *             Rocco Bombardieri, Rauno Cavallaro (Carlos III University Madrid)
+ * File developers: Rauno Cavallaro (Carlos III University Madrid)
  *
  * This file is part of pyBeam.
  *
@@ -32,10 +31,6 @@
 #include <Eigen/Dense>
 
 #include <iostream>
-
-#ifdef DEBG
-#include <fstream>
-#endif
 
 void RotToPseudo(Vector3dDiff& pseudo , Matrix3dDiff R);
 
