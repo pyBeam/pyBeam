@@ -140,9 +140,9 @@ plt.show()
 '''  
   
 
-test_val = np.sqrt((coordinate_X[20]-24.0199380449)**2+
-                   (coordinate_Y[20]-16.2954561231)**2+
-                   (coordinate_Z[20]-0.38986115235)**2)
+test_val = np.sqrt((coordinate_X[20]-24.0199395394)**2+
+                   (coordinate_Y[20]-16.2954533731)**2+
+                   (coordinate_Z[20]-0.389860802844)**2)
 
 
 print("Tolerance: ",test_val)
