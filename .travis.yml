@@ -12,6 +12,7 @@ compiler:
 notifications:
     email:
         recipients:
+            - bombardierirocco@gmail.com
             - ruben.sanchez@scicomp.uni-kl.de
   
 branches:
@@ -28,8 +29,8 @@ env:
         # Primal and adjoint builds and tests
         - MAKE_COMMAND="make primal reverse"
           TEST_PRIMAL=$TRAVIS_BUILD_DIR/tests/regression/regression.py
+          TEST_LBEAM_LLOAD_Z=$TRAVIS_BUILD_DIR/tests/test_Lbeam_Lload_z/regression.py          
           TEST_ADJOINT=$TRAVIS_BUILD_DIR/tests/regressionAD/regressionAD.py
-
 
 before_install:
     # Temporarily fixes Travis CI issue with paths for Python packages
@@ -72,4 +73,5 @@ install:
 script: 
     # Run the tests via the Python scripts
     - python $TEST_PRIMAL
+    - python $TEST_LBEAM_LLOAD_Z    
     - python $TEST_ADJOINT    
