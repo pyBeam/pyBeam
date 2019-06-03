@@ -41,10 +41,11 @@ import pyBeam
 class pyBeamSolver:
   """Description"""
 
-  def __init__(self, config_fileName):
+  def __init__(self, file_dir, config_fileName):
     """ Description. """
 
-    self.Config_file = config_fileName
+    self.file_dir = file_dir
+    self.Config_file = self.file_dir + '/' + config_fileName
     self.Config = {}
     
     print("\n---------------------------------------------------------------------------")
@@ -78,17 +79,17 @@ class pyBeamSolver:
     # Parsing config file
     self.Config = pyConfig.pyBeamConfig(config_fileName)  # Beam configuration file
 
-    self.Mesh_file = self.Config['B_MESH']
-    self.Property = self.Config['B_PROPERTY']
+    self.Mesh_file = self.file_dir + '/' + self.Config['B_MESH']
+    self.Property = self.file_dir + '/' + self.Config['B_PROPERTY']
 
     # Parsing mesh file
-    self.nDim= pyInput.readDimension(self.Config['B_MESH'])
-    self.node_py, self.nPoint = pyInput.readMesh(self.Config['B_MESH'], self.nDim)
-    self.elem_py, self.nElem = pyInput.readConnectivity(self.Config['B_MESH'])
-    self.Constr, self.nConstr = pyInput.readConstr(self.Config['B_MESH'])
-    self.RBE2_py, self.nRBE2 = pyInput.readRBE2(self.Config['B_MESH'])
+    self.nDim= pyInput.readDimension(self.Mesh_file)
+    self.node_py, self.nPoint = pyInput.readMesh(self.Mesh_file, self.nDim)
+    self.elem_py, self.nElem = pyInput.readConnectivity(self.Mesh_file)
+    self.Constr, self.nConstr = pyInput.readConstr(self.Mesh_file)
+    self.RBE2_py, self.nRBE2 = pyInput.readRBE2(self.Mesh_file)
     # Parsing Property file
-    self.Prop, self.nProp = pyInput.readProp(self.Config['B_PROPERTY'])
+    self.Prop, self.nProp = pyInput.readProp(self.Property)
 
     # Initializing objects
     self.beam = pyBeam.CBeamSolver()

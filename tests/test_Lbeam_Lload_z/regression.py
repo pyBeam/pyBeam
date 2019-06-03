@@ -24,9 +24,13 @@
 # If not, see <http://www.gnu.org/licenses/>.
 #
 
+import sys, os
 from pyBeamLib import pyBeamSolver
 
-beam = pyBeamSolver('./config_NL.cfg')
+# Load running directory
+file_dir = os.path.dirname(os.path.realpath(__file__))
+
+beam = pyBeamSolver(file_dir ,'config_NL.cfg')
 
 beam.SetLoads(20,0,0,50000)
 
