@@ -77,7 +77,7 @@ class pyBeamSolver:
     print("---------------------------------------------------------------------------\n")
     
     # Parsing config file
-    self.Config = pyConfig.pyBeamConfig(config_fileName)  # Beam configuration file
+    self.Config = pyConfig.pyBeamConfig(self.Config_file)  # Beam configuration file
 
     self.Mesh_file = self.file_dir + '/' + self.Config['B_MESH']
     self.Property = self.file_dir + '/' + self.Config['B_PROPERTY']
