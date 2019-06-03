@@ -74,4 +74,4 @@ script:
     # Run the tests via the Python scripts
     - python $TEST_PRIMAL
     - python $TEST_LBEAM_LLOAD_Z    
-    - python $TEST_ADJOINT    
+    #- python $TEST_ADJOINT    

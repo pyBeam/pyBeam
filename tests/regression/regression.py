@@ -26,7 +26,7 @@
 
 from pyBeamLib import pyBeamSolver
 
-beam = pyBeamSolver('config.cfg')
+beam = pyBeamSolver('./config.cfg')
 
 beam.SetLoads(20,0,5000,1000)
 
