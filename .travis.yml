@@ -13,12 +13,12 @@ notifications:
     email:
         recipients:
             - bombardierirocco@gmail.com
-            - ruben.sanchez@scicomp.uni-kl.de
+            #- ruben.sanchez@scicomp.uni-kl.de
   
 branches:
     only:
-        - develop
-
+        #- feature_interface
+        - develop  
 python:
     - 2.7
 

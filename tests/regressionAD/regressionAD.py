@@ -2,7 +2,7 @@
 #
 # pyBeam, a Beam Solver
 #
-# Copyright (C) 2018 Ruben Sanchez, Rocco Bombardieri, Rauno Cavallaro
+# Copyright (C) 2019 Rocco Bombardieri, Ruben Sanchez , Rauno Cavallaro
 # 
 # Developers: Ruben Sanchez (SciComp, TU Kaiserslautern)
 #             Rocco Bombardieri, Rauno Cavallaro (Carlos III University Madrid)
@@ -25,10 +25,8 @@
 #
 
 
-import numpy as np
 import sys, os
-from pyBeamIO import pyBeamConfig as pyConfig
-from pyBeamIO import pyBeamInput as pyInput
+from pyBeamLib import pyBeamSolver
 import pyBeamAD
 
 # Load running directory
