@@ -17,8 +17,8 @@ notifications:
   
 branches:
     only:
-        #- feature_interface
-        - develop  
+        - feature_interface
+ 
 python:
     - 2.7
 
@@ -74,4 +74,4 @@ script:
     # Run the tests via the Python scripts
     - python $TEST_PRIMAL
     - python $TEST_LBEAM_LLOAD_Z    
-    #- python $TEST_ADJOINT    
+    - python $TEST_ADJOINT    
