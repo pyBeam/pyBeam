@@ -44,6 +44,19 @@ class CStructure
 {
     
 private:
+
+    addouble tol_LinSol;
+    unsigned short kind_linSol;
+
+    enum KIND_LINEARSOLVER {
+        FullPivHouseholderQr = 0,
+        PartialPivLu = 1,
+        FullPivLu = 2,
+        HouseholderQr = 3,
+        ColPivHouseholderQr = 4,
+        LLT = 5,
+        LDLT = 6
+    };
     
 public:
     

@@ -180,7 +180,7 @@ def readDimension(Mesh_file):
     nDim = 0
 
     with open(Mesh_file, 'r') as meshfile:
-      print('Opened Structural mesh file ' + Mesh_file + '.')
+      print('--> Reading mesh file: ' + Mesh_file + '.')
       while 1:
         line = meshfile.readline()
         if not line:
@@ -346,6 +346,7 @@ def readRBE2(Mesh_file):
 
           continue
         else:
+          nRBE2 = 0
           continue	
       
     Check_RBE2(RBE2, nRBE2)    
@@ -357,7 +358,7 @@ def readProp(Prop_file):
     Prop = []    
     
     with open(Prop_file, 'r') as propfile:
-      print('Opened property file ' + Prop_file + '.')
+      print('--> Reading property file: ' + Prop_file + '.')
       while 1:
         line = propfile.readline()
         if not line:

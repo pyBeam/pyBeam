@@ -30,6 +30,9 @@
 CStructure::CStructure(CInput *input, CElement **container_element, CNode **container_node)
 {
 
+    tol_LinSol = input->GetTolerance_LinSol();
+    kind_linSol = input->GetKind_LinSol();
+
     DOF = input->Get_nDOF();
 
     // Links to the finite-element object
@@ -496,17 +499,37 @@ void CStructure::EvalResidual(unsigned short irigid)
 
 void CStructure::SolveLinearStaticSystem(int iIter)
 {
-//    std::cout << "-->  Solving Linear System, "  << std::endl;
-//    cout << "Ksys = \n" <<Ksys << endl;
-    dU = Ksys.fullPivHouseholderQr().solve(Residual);
-//    std::cout << "dU (after) = \n" << dU << std::endl;
+
+    switch(kind_linSol){
+    case PartialPivLu:
+        dU = Ksys.partialPivLu().solve(Residual); break;
+    case FullPivLu:
+        dU = Ksys.fullPivLu().solve(Residual); break;
+    case HouseholderQr:
+        dU = Ksys.householderQr().solve(Residual); break;
+    case ColPivHouseholderQr:
+        dU = Ksys.colPivHouseholderQr().solve(Residual); break;
+    case FullPivHouseholderQr:
+        dU = Ksys.fullPivHouseholderQr().solve(Residual); break;
+    case LLT:
+        dU = Ksys.llt().solve(Residual); break;
+    case LDLT:
+        dU = Ksys.ldlt().solve(Residual); break;
+    default:
+        dU = Ksys.fullPivHouseholderQr().solve(Residual); break;
+    }
+
     addouble relative_error = (Ksys*dU -Residual).norm() / Residual.norm(); // norm() is L2 norm
+
+    std::cout.width(17); std::cout << log10(relative_error);
+
     //std::cout<< "Ksys = \n" << Ksys << std::endl;
 //    std::cout<< "Residual = \n" << Residual << std::endl;
-//    std::cout << "The relative error is:\n" << relative_error << std:: endl;
-    if (relative_error > 1.0e-7)
+
+    if (relative_error > tol_LinSol)
     {
-        std::cout << "Solution of Linear System not precise enough!" << std:: endl;
+        std::cout << std:: endl << "Solution of Linear System not precise enough!" << std:: endl;
+        std::cout << "Use Keyword TOLERANCE_LINSOL" << std:: endl;
     	throw std::exception();
     }
 

@@ -68,6 +68,10 @@ protected:
 	addouble end_time;		// [sec] for SS calculation                    // To be removed
 	addouble dt;   			// [sec] time increment for SS calculation     // To be removed
 
+	addouble tol_LinSol;	// Tolerance of the linear solver
+	unsigned short kind_LinSol;	// Tolerance of the linear solver
+
+
 	//##############    Material inputs (only ONE homogeneous material is allowed by now)  ###########################
 	// Units Sys: SI
 	addouble E; 				// Elastic modulus [GPa]  
@@ -98,11 +102,15 @@ public:
   
   void SetDensity(passivedouble Density) {ro = Density; }
     
-  void SetFollowerFlag(int FollowerFlag) {follower_flag = FollowerFlag; cout << "Warning! Follower loads are not implemented yet!! FOLLOWER_FLAG =0" << endl; }  
+  void SetFollowerFlag(int FollowerFlag) {follower_flag = 0; /*Forced to be nonfollower*/ }
   
   void SetLoadSteps(unsigned long LoadSteps) { loadSteps = LoadSteps; }   
   
-  void SetNStructIter(unsigned long NStructIter) {nIter = NStructIter; }   
+  void SetNStructIter(unsigned long NStructIter) {nIter = NStructIter; }
+
+  void SetTolerance_LinSol(passivedouble tolerance) {tol_LinSol = tolerance; }
+
+  void SetKind_LinSol(unsigned short kind_solver) {kind_LinSol = kind_solver; }
   
   void SetConvCriterium(passivedouble ConvCriterium) {convCriteria = ConvCriterium; }   
 
@@ -119,6 +127,10 @@ public:
   passivedouble GetShear() {return AD::GetValue(G); }
   
   passivedouble GetDensity() {return AD::GetValue(ro); }
+
+  addouble GetTolerance_LinSol(void) {return tol_LinSol; }
+
+  unsigned short GetKind_LinSol(void) {return kind_LinSol; }
   
   unsigned long Get_nNodes(void) { return nNodes; } 
     

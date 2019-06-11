@@ -74,7 +74,7 @@ void CBeamSolver::InitializeInput(CInput* py_input){   // insert node class and 
     //      Node vector initialization
     //==============================================================
     
-    cout << "=========  Node Structure Initialization  ====" << std::endl;
+    cout << "--> Node Structure Initialization... ";
     unsigned long nNodes = input->Get_nNodes();   //substitute from mesh file
     node = new CNode*[nNodes];
     std::cout << "ok!"  <<std::endl;
@@ -83,7 +83,7 @@ void CBeamSolver::InitializeInput(CInput* py_input){   // insert node class and 
     //      Finite Element vector initialization
     //==============================================================
     
-    cout << "=========  Finite Element Initialization  ====" << std::endl;
+    cout << "--> Finite Element Initialization... ";
     element = new CElement*[nFEM];
     std::cout << "ok!"  <<std::endl;
     
@@ -91,10 +91,10 @@ void CBeamSolver::InitializeInput(CInput* py_input){   // insert node class and 
     //      RBE2 initialization
     //==============================================================
     if (nRBE2 != 0){  
-        cout << "=========  RBE2 initialization  ====" << std::endl;
-        std::cout << "Warning: the code works if slave nodes are not connected to beams! "  << std::endl;
+        cout << "--> RBE2 initialization... ";
         RBE2 = new CRBE2*[nRBE2];
         std::cout << "ok!"  <<std::endl;
+        std::cout << "--> Warning: the code works if slave nodes are not connected to beams! "  << std::endl;
     }
     else {RBE2 = NULL; }     
     
@@ -114,11 +114,11 @@ void CBeamSolver::Solve(int FSIIter = 0){
         TotalLength += element[iFEM]->GetInitial_Length();
     }
 
-    std::cout << "#####    SETTING EXTERNAL FORCES   #####" << std::endl;
+    std::cout << "--> Setting External Forces" << std::endl;
     structure->ReadForces(nTotalDOF, loadVector);
     
     if (nRBE2 != 0){ 
-        std::cout << "#####    SET RBE2 MATRIX FOR RIGID CONSTRAINTS  #####" << std::endl;  
+        std::cout << "--> Setting RBE2 Matrix for Rigid Constraints" << std::endl;
         structure->AddRBE2(input, RBE2);        
     };
         
@@ -126,8 +126,8 @@ void CBeamSolver::Solve(int FSIIter = 0){
     // LOAD STEPPING
     //===============================================
     
-    std::cout << "#####    STARTING LOAD STEPPING   #####" << std::endl;
-    
+    std::cout << "--> Starting Load Stepping" << std::endl << std::endl;
+
     addouble  lambda = 1.0;
     addouble dlambda =  1.0/input->Get_LoadSteps() ;
     addouble initResNorm   =  1.0;
@@ -143,16 +143,17 @@ void CBeamSolver::Solve(int FSIIter = 0){
     for  ( loadStep = 0; loadStep < input->Get_LoadSteps(); loadStep++) {
 
         lambda = dlambda*(loadStep+1);
-        std::cout << "==============================" << std::endl;
+        std::cout << "===========================================================================" << std::endl;
         std::cout << "==       LOAD STEP     " << loadStep << std::endl;
         std::cout.precision(8);
         std::cout << "==       Lambda        " << lambda << std::endl;
-        std::cout << "==============================" << std::endl;
+        std::cout << "===========================================================================" << std::endl;
 
-        std::cout.width(8); std::cout << "Iter";
-        std::cout.width(18); std::cout << "Log10(Norm_Res)";
-        std::cout.width(18); std::cout << "Log10(Norm_Disp)";
-        std::cout.width(18); std::cout << "Log10(Disp_Fact) " << std::endl;
+        std::cout.width(6); std::cout << "Iter";
+        std::cout.width(17); std::cout << "Log10(Norm_Res)";
+        std::cout.width(17); std::cout << "Log10(Lin_Sol)";
+        std::cout.width(17); std::cout << "Log10(Norm_Disp)";
+        std::cout.width(17); std::cout << "Log10(Disp_Fact)" << std::endl;
         
         //===============================================
         //               ITERATIVE SEQUENCE
@@ -161,7 +162,7 @@ void CBeamSolver::Solve(int FSIIter = 0){
         
         for (iIter = 0; iIter < input->Get_nIter(); iIter++) {
 
-            std::cout.width(8); std::cout << iIter;
+            std::cout.width(6); std::cout << iIter;
 
             //std::cout << "   ----- ITERATION  -----" << iIter << std::endl;
             
@@ -176,7 +177,7 @@ void CBeamSolver::Solve(int FSIIter = 0){
             structure->EvalResidual(input->Get_RigidCriteria());
 
             if(iIter == 0){initResNorm = structure->Residual.norm();}
-            std::cout.width(18); std::cout << log10(structure->Residual.norm() / initResNorm);
+            std::cout.width(17); std::cout << log10(structure->Residual.norm() / initResNorm);
 
             /*--------------------------------------------------
              *   Assembly Ktang, Solve System
@@ -201,7 +202,7 @@ void CBeamSolver::Solve(int FSIIter = 0){
              }
 
             if(iIter == 0){initDispNorm = structure->dU.norm();}
-            std::cout.width(18); std::cout << log10(structure->dU.norm() / initDispNorm);
+            std::cout.width(17); std::cout << log10(structure->dU.norm() / initDispNorm);
 
             /*--------------------------------------------------
              *   Updates Coordinates, Updates Rotation Matrices
@@ -235,7 +236,7 @@ void CBeamSolver::Solve(int FSIIter = 0){
             
             addouble disp_factor =   structure->dU.norm()/TotalLength;
 
-            std::cout.width(18); std::cout << log10(disp_factor);
+            std::cout.width(17); std::cout << log10(disp_factor);
             std::cout << std::endl;
             
             if (disp_factor <= input->Get_ConvCriteria()) {
@@ -246,7 +247,11 @@ void CBeamSolver::Solve(int FSIIter = 0){
         }
 
     }
-    std::cout << "#####    EXITING ITERATIVE SEQUENCE   #####" << std::endl;
+
+    std::cout << "===========================================================================" << std::endl;
+    std::cout << std::endl << "--> Exiting Iterative Sequence." << std::endl;
+
+
 }
 
 passivedouble CBeamSolver::OF_NodeDisplacement(int iNode){

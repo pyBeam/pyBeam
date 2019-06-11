@@ -73,7 +73,6 @@ class pyBeamConfig:
 
             for case in switch(this_param):
                 #integer values
-                if case("FOLLOWER_FLAG")		      : pass        
                 if case("LOAD_STEPS")	      : pass     
                 if case("N_STRUCT_ITER")	                      : 
                     self._ConfigContent[this_param] = int(this_value)
@@ -90,7 +89,36 @@ class pyBeamConfig:
                     self._ConfigContent[this_param] = float(this_value)
                     break
                 #string values  MEMO_GEN_FORCE_OUTPUT
-                if case("B_MESH")          :       pass           
+                if case("TOLERANCE_LINSOL"):
+                    self._ConfigContent[this_param] = float(this_value)
+                    break
+                if case("KIND_LINSOL"):
+                    print(this_value)
+                    if this_value == "PartialPivLu":
+                        self._ConfigContent[this_param] = 1
+                        break
+                    elif this_value == "FullPivLu":
+                        self._ConfigContent[this_param] = 2
+                        break
+                    elif this_value == "HouseholderQr":
+                        self._ConfigContent[this_param] = 3
+                        break
+                    elif this_value == "ColPivHouseholderQr":
+                        self._ConfigContent[this_param] = 4
+                        break
+                    elif this_value == "LLT":
+                        self._ConfigContent[this_param] = 5
+                        break
+                    elif this_value == "LDLT":
+                        self._ConfigContent[this_param] = 6
+                        break
+                    elif this_value == "FullPivHouseholderQr":
+                        self._ConfigContent[this_param] = 0
+                        break
+                    else:
+                        self._ConfigContent[this_param] = 0
+                        break
+                if case("B_MESH")          :       pass
                 if case("B_PROPERTY")                 :               
                     self._ConfigContent[this_param] = this_value
                     break
@@ -103,10 +131,11 @@ def parseInput(BEAM_config, inputs,Constr, nConstr):
     inputs.SetYoungModulus(BEAM_config['Y_MODULUS'])
     inputs.SetPoisson(BEAM_config['POISSON'])
     inputs.SetDensity(BEAM_config['RHO'])
-    inputs.SetFollowerFlag(BEAM_config['FOLLOWER_FLAG'])
     inputs.SetLoadSteps(BEAM_config['LOAD_STEPS'])
     inputs.SetNStructIter(BEAM_config['N_STRUCT_ITER'])
     inputs.SetConvCriterium(BEAM_config['CONV_CRITERIUM'])
+    inputs.SetTolerance_LinSol(BEAM_config['TOLERANCE_LINSOL'])
+    inputs.SetKind_LinSol(BEAM_config['KIND_LINSOL'])
     
     #Now setting the constraints
     inputs.SetnConstr(nConstr)
