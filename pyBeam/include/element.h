@@ -131,6 +131,6 @@ public:
     void EvalRotMat(VectorXdDiff &dU_AB , VectorXdDiff &X_AB );
 
     // Initially rotates the elements
-    void InitializeRotMats();
+    void InitializeRotMats();    
 };
 

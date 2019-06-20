@@ -211,6 +211,8 @@ void CBeamSolver::Solve(int FSIIter = 0){
             structure->UpdateCoord();
             
             // Now only X is updated
+     //std::cout << "===========================================================================" << std::endl;
+     //std::cout << "=====  WARNING REMEMBER TO UNCOMMENT UPDATE ROTATION MATRIX===============" << std::endl;
             structure->UpdateRotationMatrix();  // based on the rotational displacements
             structure->UpdateLength();          // Updating length, important
                      
@@ -300,4 +302,20 @@ void CBeamSolver::ComputeAdjoint(void){
 }
 
 
+void CBeamSolver::Debug_Print(int iElement){
 
+    std::cout << "For element " <<  iElement  << ":" << std::endl;
+    std::cout << "Auxiliary vector    = \n" <<  element[iElement]->aux_vector  << std::endl;        
+    std::cout << "Kprim    = \n" <<  element[iElement]->Kprim  << std::endl;    
+    std::cout << "Length   = " <<  element[iElement]->GetInitial_Length()  << std::endl;
+    std::cout << "Rotation matrix = " <<  element[iElement]->R  << std::endl;    
+    std::cout << "Property: A   = " <<  element[iElement]->property->GetA()  << std::endl;
+    std::cout << "Property: Iyy = " <<  element[iElement]->property->GetIyy()  << std::endl;
+    std::cout << "Property: Izz = " <<  element[iElement]->property->GetIzz()  << std::endl;
+    std::cout << "Property: Jt  = " <<  element[iElement]->property->GetJt()  << std::endl;  
+    std::cout << "Input: E      = " <<  input->GetYoungModulus()  << std::endl;      
+    std::cout << "Input: ni     = " <<  input->GetPoisson()  << std::endl;    
+    std::cout << "Input: G      = " <<  input->GetShear()  << std::endl;  
+    //std::cout << "Stiffness matrix:       = \n" <<  structure->Ksys  << std::endl;     
+
+}

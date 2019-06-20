@@ -342,8 +342,16 @@ void CStructure::AssemblyTang(int iIter)
                 if (kkk==1) {dof_kkk  =  (nodeA_id-1)*6 +1;} else {dof_kkk  =  (nodeB_id-1)*6 +1;}          
                 
                 // Rotates the element's SUBMATRIX tangent
-                Krotated = (element[id_el-1]->R * Ktang.block((jjj-1)*6+1 -1,(kkk-1)*6+1 -1,6,6)  ) * element[id_el-1]->R.transpose() ;
-
+                Krotated = (element[id_el-1]->R.transpose()  * Ktang.block((jjj-1)*6+1 -1,(kkk-1)*6+1 -1,6,6)  ) * element[id_el-1]->R;
+/*
+               if (id_el == 1) {
+                    std::cout << "Length    = \n" << element[id_el-1]->GetCurrent_Length() << std::endl;
+                    std::cout << "Kprim    = \n" << element[id_el-1]->Kprim << std::endl;
+                    std::cout << "Krotated    = \n" << Krotated << std::endl;  
+                    std::cout << "R    = \n" << element[id_el-1]->R << std::endl;
+                    std::cout << "Ktang_block    = \n" << Ktang.block((jjj-1)*6+1 -1,(kkk-1)*6+1 -1,6,6)   << std::endl;
+               }*/
+                
                 // Contribution to the appropriate location of the global matrix
                 Ksys.block(dof_jjj-1,dof_kkk-1,6,6) += Krotated;
                 
@@ -477,6 +485,10 @@ void CStructure::EvalSensRot(){
 
 void CStructure::EvalResidual(unsigned short irigid)
 {
+    
+    
+    //std::cout << "Fint = " << Fint.transpose() << std::endl;
+    //std::cout << "dU = " << dU.transpose() << std::endl;
     Residual = Fext - Fint;
 
     int iii = 0; int constr_dof_id = 0;
@@ -499,7 +511,10 @@ void CStructure::EvalResidual(unsigned short irigid)
 
 void CStructure::SolveLinearStaticSystem(int iIter)
 {
-
+    //std::ofstream file("./Kel.txt");
+    std::cout.precision(17);
+    //file  <<  Ksys << '\n';
+    
     switch(kind_linSol){
     case PartialPivLu:
         dU = Ksys.partialPivLu().solve(Residual); break;
@@ -523,8 +538,8 @@ void CStructure::SolveLinearStaticSystem(int iIter)
 
     std::cout.width(17); std::cout << log10(relative_error);
 
-    //std::cout<< "Ksys = \n" << Ksys << std::endl;
-//    std::cout<< "Residual = \n" << Residual << std::endl;
+    std::cout<< "dU = \n" << dU << std::endl;
+    //    std::cout<< "Residual = \n" << Residual << std::endl;
 
     if (relative_error > tol_LinSol)
     {
@@ -1035,7 +1050,7 @@ void CStructure::UpdateInternalForces()
     /*-------------------------------
      //     LOOPING FINITE ELEMENTS
      * -------------------------------*/
-    
+    //std::cout.precision(17);
     for (int id_fe=1;     id_fe <= nfem ; id_fe++) {
 
         nodeA_id = element[id_fe-1]->nodeA->GeID();
@@ -1098,6 +1113,12 @@ void CStructure::UpdateInternalForces()
         // phi = tensional state = { N ,  Mt , MBy , MBz , MAy , M_Az }
         
         element[id_fe-1]->phi =  element[id_fe-1]->Kprim*element[id_fe-1]->eps;
+        
+        //std::cout << "Element: = " <<  id_fe  <<"  phi = \n"<< element[id_fe-1]->phi << std::endl; 
+        
+        //element[id_fe-1]->phi(1) = element[id_fe-1]->phi(1)*0;
+
+        //std::cout << "Post correction Element: = " <<  id_fe  <<"  phi = \n"<< element[id_fe-1]->phi << std::endl; 
         
         Na = MatrixXdDiff::Zero(6,6);
         Nb = MatrixXdDiff::Zero(6,6);

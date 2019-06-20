@@ -1,0 +1,5 @@
+% Respect the format, properties have to start in line following NPROP
+% Format: AREA Iyy Izz Jt
+NPROP = 1
+0.0003757   1.058387e-07       4.278185e-06       3.71478e-07
+0.0003757   1.09114891083e-07  4.31007952708e-06  1.81690009074e-08

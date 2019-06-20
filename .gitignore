@@ -2,6 +2,7 @@
 .project
 .settings/
 
+**/.DS_Store
 **/*.pyc
 output.dat
 pyBeam/*.so

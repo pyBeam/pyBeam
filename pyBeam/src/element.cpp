@@ -99,7 +99,7 @@ void CElement::Initializer(CNode* Node1, CNode* Node2, CProperty* Property, CInp
 
     //Mass matrix initialization (element level)
     Mfem  = MatrixXdDiff::Zero(elemdofs, elemdofs);
-
+    
     //Internal forces vector initialization (element level)
     fint = VectorXdDiff::Zero(elemdofs);
 
@@ -113,7 +113,7 @@ void CElement::Initializer(CNode* Node1, CNode* Node2, CProperty* Property, CInp
     // Initialize cumulative strain vector
     eps = VectorXdDiff::Zero(6);
 
-    // Initialize tension vector
+    // Initialize stress vector
     phi = VectorXdDiff::Zero(6);
         
     // INITIALIZATION of KPRIM  (linear)
@@ -284,6 +284,11 @@ void CElement::ElementTang_Rao(int iIter, MatrixXdDiff & Ktang)
     // Still needs to be rotated and also added the rigid contribution
     Ktang = Kstretch + Kel;
 
+/*    if (iElement == 19) {
+    std::cout << "Element    = " << iElement << std::endl;
+    std::cout << "Kstretch matrix    = \n" << Kstretch << std::endl;    
+    std::cout << "Kel matrix    = \n" << Kel << std::endl;    
+    }    */
 }
 
 
@@ -368,7 +373,7 @@ void CElement::EvalRotMat(VectorXdDiff &dU_AB,  VectorXdDiff  &X_AB)
     R.block(4-1,4-1,3,3) = R.block(1-1,1-1,3,3);
     
     Rrig = Rprev.transpose() * R;
-        
+           
 }
 
 /***************************************************************
@@ -422,16 +427,29 @@ void CElement::InitializeRotMats()
     e2 = e3.cross(e1);   
 
     // Update
+
+    R.block(1 - 1, 1 - 1, 3, 1) = e1.segment(1 - 1, 3);
+    R.block(1 - 1, 2 - 1, 3, 1) = e2.segment(1 - 1, 3);
+    R.block(1 - 1, 3 - 1, 3, 1) = e3.segment(1 - 1, 3);
+
+    R.block(4 - 1, 4 - 1, 3, 3) = R.block(1 - 1, 1 - 1, 3, 3);
+
+    Rprev = R;
+
+    Rrig = Rprev.transpose() * R;
+    /*
+    if (iElement == 19) {
+    std::cout << "Element    = " << iElement << std::endl;
+    std::cout << "Rotation matrix    = \n" << R << std::endl;
+    std::cout << "Node B coordinates:   = \n" << nodeB->GetCoordinate0(1 - 1) << " " << nodeB->GetCoordinate0(2 - 1) << " " << nodeB->GetCoordinate0(3- 1) << std::endl;
+    std::cout << "Node A coordinates:   = \n" << nodeA->GetCoordinate0(1 - 1) << " " << nodeA->GetCoordinate0(2 - 1) << " " << nodeA->GetCoordinate0(3- 1) << std::endl;
+    std::cout << "aux_vector    = \n" << aux_vector << std::endl;
+    std::cout << "e3    = \n" << e3 << std::endl;
+    std::cout << "e2    = \n" << e2 << std::endl;    
     
-    R.block(1-1,1-1,3,1) = e1.segment(1-1,3);
-    R.block(1-1,2-1,3,1) = e2.segment(1-1,3);
-    R.block(1-1,3-1,3,1) = e3.segment(1-1,3);
-    
-    R.block(4-1,4-1,3,3) = R.block(1-1,1-1,3,3);
-    
-    Rprev = R;    
-    
-    Rrig = Rprev.transpose()*R;
+    }
+    */
+
 
 }
 

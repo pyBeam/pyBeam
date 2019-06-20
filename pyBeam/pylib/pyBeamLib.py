@@ -231,7 +231,12 @@ class pyBeamSolver:
                                       self.displacement_X[iVertex], 
                                       self.displacement_Y[iVertex], 
                                       self.displacement_Z[iVertex]))
-                                      
+
+  def Debug_Print(self, iElement):
+      """ This function prints some input information for debugging purposes """
+      self.beam.Debug_Print(iElement)
+
+
   def TestNodePosition(self, iVertex, tol, coorX, coorY, coorZ):
     
     test_val = np.sqrt((self.coordinate_X[20]-coorX)**2+
