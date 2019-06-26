@@ -1,0 +1,73 @@
+100      NSPRINGSMAX is the maximum number of springs 
+500     NMULTIFREEDOMAX is the maximum number of multifreedom constraints
+2      NDOFMULTIMAX is the maximum number of degrees of freedom involved in the multifreedom constraint (<= NN*6). 
+3      NDOFSPRINGMAX is the maximum number of degrees of freedom that are used in the definition of the nonlinear stiffness.
+2      NPOLYMAX is the maximum degree allowed in the definition of the nonlinear springs
+2      NINTERVALMAX is the maximum number of intervals that can be used in the piecewise description of each spring.
+3      IPENALTY         is the exponent used to calculate the penalty factor (see more details below)
+0      NMULTIFREEDOM    is the number of multifreedom constraints 
+0      NSPRINGS         is the number of linear or nonlinear springs used internally or externally to link some degrees of freedom
+
+
+
+Remark # 1
+NMULTIFREEDOM can hanle ONLY linear constrains of the type Ai*Ui + Bj*Uj +...=assigned value   (no sum on repeated indices)
+For example, a multifreedom constraint could be 3*U1 + 4*U21 + 7*U215 + ... = 34 
+where U1 could be for example the U component of the displacement of node 1, U21 could be the W component of the 
+displacement of node 4, U212 could be the V component of the displacement of node 36 and so on. 
+
+Remark # 2
+The multifreedom constraint can be reduced to a constraint of the type Uj=0 which means that the displacement Uj cannot 
+take place. For example, if a node cannot move in the z direction then it is stated 
+U3 = 0 
+
+Remark # 3
+The multifreedom constraint is enforced by using the penalty method (see discussion taken from Felippa and reported 
+in my notes on the nonlinear springs at page 3). 
+
+Remark # 4
+The multifreedom constraint requires the use of a penalty number which should be used according to Felippa suggestions
+(see page 3 of my notes). The formula that will be adopted is the following: the highest term on the diagonal of the tangent 
+stiffness matrix will be multiplied by PENALTY = STIFFNESS * 10^IPENALTY. By default it is used IPENALTY = 8 so the penalty term will be 10^8 times 
+the highest term of the tangent stiffness matrix. The user can change this number at will. Please make sure that the number is not 
+too small or not too large. If too small the boundary condition is not well imposed. If it is too large ill conditioning may appear. 
+See Felippa's recommendations. 
+
+Remark # 5
+Linear and nonlinear springs are assigned with the same input files. It is responsibility of the user to make sure the correct 
+representation of the springs is given.
+
+Remark # 6 
+A multifreedom constraint of the type Uj = 0 could also be imposed with a spring with very high stiffness. This can be done 
+because at the end both methods are equivalent to a penalty approach! This is true if the very high stiffness is ways higher than the 
+highest stiffness in the tangent matrix. Please note that this value cannot be too high to avoid ill conditioning.     
+
+Remark # 7
+In this code the law used for the definitions of all the spring is polynomial. It is decided that each spring can depend on 
+all possible degrees of freedom as follows: 
+K = K0 + A1*U1^1 + A2*U1^2 + A3*U1^3+...+ B1*U2^1 + B2*U2^2 + B3*U2^3+...+ C1*U3^1 + C2*U3^2 + C3*U3^2 and so on. 
+Other laws could be easily implemented (please see the theory on the document "nonlinearsprings" at page 6).
+
+Remark # 8
+The law used to define the spring can change and have a piecewise description (example: free play case in which the stiffness 
+is defined in 3 different intervals for the displacement variable). 
+In the file SPRINGS_ISTDYN21.STR the law used for the different intervals of the displacement variables will be defined. 
+The specification of the intervals may involve only one of the degrees of freedom 
+(i.e., the law describing how the spring stiffness changes is different if for example 
+U1 is negative or positive).  The piecewise description can be assigned 
+only by considering a single variable (see the theory) which is a priori selected by the user.
+
+Remark # 9
+The spring parameters are defined in the file SPRINGS_ISTDYN21.STR. 
+
+Remark # 10
+The number of springs could be selected to be zero. In that case no file will be read. 
+
+Remark # 11
+The code first changes the tangent stiffness matrix and unbalanced load because of the presence of the springs.
+Second the code imposes all the multifreedom constraints. 
+
+Remark # 12
+The multifreedom constraints are read from the file MULTIFREEDOM_ISTDYN21.STR
+The number of multifreedom constraints could be selected to be zero. In that case no file will be read. 
+     

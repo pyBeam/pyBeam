@@ -1,0 +1,6 @@
+R = zeros(126);
+F = 5000;
+DOF = 19*6+3;
+R(DOF) = F;
+
+dU_py = K_py

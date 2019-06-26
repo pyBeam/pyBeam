@@ -342,7 +342,7 @@ void CStructure::AssemblyTang(int iIter)
                 if (kkk==1) {dof_kkk  =  (nodeA_id-1)*6 +1;} else {dof_kkk  =  (nodeB_id-1)*6 +1;}          
                 
                 // Rotates the element's SUBMATRIX tangent
-                Krotated = (element[id_el-1]->R.transpose()  * Ktang.block((jjj-1)*6+1 -1,(kkk-1)*6+1 -1,6,6)  ) * element[id_el-1]->R;
+                Krotated = (element[id_el-1]->R * Ktang.block((jjj-1)*6+1 -1,(kkk-1)*6+1 -1,6,6)  ) * element[id_el-1]->R.transpose() ;
 /*
                if (id_el == 1) {
                     std::cout << "Length    = \n" << element[id_el-1]->GetCurrent_Length() << std::endl;
@@ -511,9 +511,9 @@ void CStructure::EvalResidual(unsigned short irigid)
 
 void CStructure::SolveLinearStaticSystem(int iIter)
 {
-    //std::ofstream file("./Kel.txt");
+    std::ofstream file("./Kel.txt");
     std::cout.precision(17);
-    //file  <<  Ksys << '\n';
+    file  <<  Ksys << '\n';
     
     switch(kind_linSol){
     case PartialPivLu:
@@ -538,7 +538,17 @@ void CStructure::SolveLinearStaticSystem(int iIter)
 
     std::cout.width(17); std::cout << log10(relative_error);
 
-    std::cout<< "dU = \n" << dU << std::endl;
+    /*
+    int posU = 1;
+    
+    for (int id_node=1-1; id_node<=nNode-1 ; id_node++) {
+        
+        dU(posU-1)   = 0;  //  *
+        dU(posU-1+1) = 0; 
+            posU += 6;}
+    */
+    
+    //std::cout<< "dU = \n" << dU << std::endl;
     //    std::cout<< "Residual = \n" << Residual << std::endl;
 
     if (relative_error > tol_LinSol)
