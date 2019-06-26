@@ -53,6 +53,6 @@ pyBeam/swig/pyBeam_wrap.cxx
 pyBeam/swig/Input_parsing.pyc
 pyBeam/swig/*.so
 
-
+tests/Bug_pyBeam130690
 tests/regression/config.cfg~
 tests/regression/mesh2.msh~
