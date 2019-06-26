@@ -86,14 +86,14 @@ void CElement::Initializer(CNode* Node1, CNode* Node2, CProperty* Property, CInp
     setElementMass();
 
     // Store element properties from the input property object
-    J0 = property->GetJ0();
-    A = property->GetA();
-    EIz = input->GetYoungModulus()*property->GetIzz();
-    EIy = input->GetYoungModulus()*property->GetIyy();
-    GJ = input->GetShear()*property->GetJt();
-    AE = input->GetYoungModulus()*property->GetA();
-    Iyy = property->GetIyy();
-    Izz = property->GetIzz();
+    J0 = elprop->GetJ0();
+    A = elprop->GetA();
+    EIz = input->GetYoungModulus()*elprop->GetIzz();
+    EIy = input->GetYoungModulus()*elprop->GetIyy();
+    GJ = input->GetShear()*elprop->GetJt();
+    AE = input->GetYoungModulus()*elprop->GetA();
+    Iyy = elprop->GetIyy();
+    Izz = elprop->GetIzz();
 
     int elemdofs = 12;
 
