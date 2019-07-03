@@ -68,7 +68,7 @@ for xb, yb, zb in zip(Xb, Yb, Zb):
 
 plt.plot(beam.coordinate_X[0:20], beam.coordinate_Y[0:20], beam.coordinate_Z[0:20],'b')
 plt.plot(beam.coordinate_X0[0:20], beam.coordinate_Y0[0:20], beam.coordinate_Z0[0:20],'g')
-rigid = 1
+rigid = 80
 
 for i in range(19,19+rigid):
     node_i = int(beam.elem_py[i].GetNodes()[0, 0] - 1)
