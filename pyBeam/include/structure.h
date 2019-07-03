@@ -134,7 +134,9 @@ public:
     
     void AssemblyTang(int iIter);
     
-    void EvalSensRot();  // Evaluate the sensitivity of Rotation Matrix - need for Jacobian
+    void EvalSensRot(int iIter);  // Evaluate the sensitivity of Rotation Matrix - need for Jacobian
+    
+    void EvalSensRotFiniteDifferences();    
     
     //===================================================
     //      Solve linear static system

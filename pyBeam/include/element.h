@@ -132,5 +132,10 @@ public:
 
     // Initially rotates the elements
     void InitializeRotMats();    
+
+    // Evaluates the rotation matrix for a value of a small dU_AB_eps around a given position of the reference system evaluated with current positions X_AB and rotations dU_AB X_AB
+    void EvalRotMatFiniteDifferences(VectorXdDiff dU_AB_eps, VectorXdDiff dU_AB,  VectorXdDiff  X_AB, Matrix3dDiff &R_eps);
+    
+    
 };
 
