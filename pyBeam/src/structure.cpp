@@ -392,7 +392,7 @@ void CStructure::AssemblyTang(int iIter)
  * */
 
 void CStructure::EvalSensRot(int iIter){
-
+    
     VectorXdDiff dl_dU =  VectorXdDiff::Zero(12);
     MatrixXdDiff de1 = MatrixXdDiff::Zero(3,12);
     MatrixXdDiff de2 = MatrixXdDiff::Zero(3,12);
@@ -515,15 +515,22 @@ void CStructure::EvalSensRotFiniteDifferences(){
     
     int dof_jjj = 0; int dof_kkk = 0;
     
-    addouble fd = 1.0e-9;
+    // Finite difference for translation DOFs
+    addouble fd_t = 1.0e-12;
+    // Finite difference for rotational DOFs
+    //addouble fd_r = 7.9e-1;
+    addouble fd_r = 7.0e-1;    
+    addouble fd;  
     
     int ii;
     
     
     for (int id_el=1; id_el<= nfem; id_el++) {
         
-        std::cout << "Element    = " << id_el << std::endl;     
-        
+        if (id_el==19 or id_el==96)
+        { 
+            std::cout << "Element    = " << id_el << std::endl;     
+        }  
         nodeA_id = element[id_el-1]->nodeA->GeID();
         nodeB_id = element[id_el-1]->nodeB->GeID();
         
@@ -541,22 +548,34 @@ void CStructure::EvalSensRotFiniteDifferences(){
         
         for (ii=1; ii <=12; ii++)
         {
-            VectorXdDiff dU_AB_eps = VectorXdDiff::Zero(12); 
-            dU_AB_eps(ii -1) = fd;
+            VectorXdDiff dU_AB_eps = VectorXdDiff::Zero(12);
+            if ( ii <4 or ( ii>6 and ii<10) ) { 
+            fd = fd_t;
+            }
+            else {
+            fd = fd_r; 
+            }
             
-            std::cout << "dU_AB_eps    = \n" << dU_AB_eps << std::endl;
+            dU_AB_eps(ii -1) = fd; 
             
-            element[id_el-1]->EvalRotMatFiniteDifferences(dU_AB_eps, dU_AB, X_AB, R_eps);
+            if (id_el==19 or id_el==96)
+            { 
+                std::cout.precision(17);
+                std::cout << "dU_AB_eps    = \n" << dU_AB_eps << std::endl;
+            }      
+            element[id_el-1]->EvalRotMatFiniteDifferences( dU_AB_eps, dU_AB, X_AB, R_eps);
             
             de1.block(1-1,ii-1,3,1) =  ( R_eps.block(1-1,1-1,3,1) - element[id_el-1]->R.block(1-1,1-1,3,1) ) / fd;
             de2.block(1-1,ii-1,3,1) =  ( R_eps.block(1-1,2-1,3,1) - element[id_el-1]->R.block(1-1,2-1,3,1) ) / fd;
             de3.block(1-1,ii-1,3,1) =  ( R_eps.block(1-1,3-1,3,1) - element[id_el-1]->R.block(1-1,3-1,3,1) ) / fd;
             
             
-            
-            std::cout << "Rotation matrix    = \n" << element[id_el-1]->R.block(1-1,1-1,3,3) << std::endl;
-            std::cout << "Rotation matrix  eps  = \n" << R_eps << std::endl;
-            
+            if (id_el==19 or id_el==96)
+            { 
+                std::cout << "Rotation matrix old   = \n" << element[id_el-1]->Rprev.block(1-1,1-1,3,3) << std::endl;                
+                std::cout << "Rotation matrix    = \n" << element[id_el-1]->R.block(1-1,1-1,3,3) << std::endl;
+                std::cout << "Rotation matrix  eps  = \n" << R_eps << std::endl;
+            }
         }    
         
         // ====== Krot

@@ -350,8 +350,8 @@ void CElement::EvalRotMat(VectorXdDiff &dU_AB,  VectorXdDiff  &X_AB)
         std::cout << "Pseudo A: " << pseudoA << std::endl;        
         std::cout << "pa: " << pa << std::endl; 
     }
-    
-     */
+    */
+     
     
     //===> Node B
     
@@ -424,6 +424,17 @@ void CElement::EvalRotMat(VectorXdDiff &dU_AB,  VectorXdDiff  &X_AB)
     R.block(4-1,4-1,3,3) = R.block(1-1,1-1,3,3);
     
     Rrig = Rprev.transpose() * R;
+    
+    /*
+    if (iElement==19 or iElement==18)
+    {        
+        std::cout << "Rprev: \n" << Rprev << std::endl;
+        std::cout << "R: \n" << R << std::endl;        
+        std::cout << "e1: " << e1 << std::endl;
+        std::cout << "e2: " << e2 << std::endl;  
+        std::cout << "e3: " << e3 << std::endl;         
+    }
+    */
            
 }
 
@@ -537,9 +548,11 @@ void CElement::EvalRotMatFiniteDifferences( VectorXdDiff dU_AB_eps, VectorXdDiff
     e1 = X_AB_eps.tail(3) - X_AB_eps.head(3);
     e1 = e1/e1.norm();
     
+        if (iElement==18 or iElement==95)
+    { 
     std::cout << "X_AB   = \n" << X_AB << std::endl;
     std::cout << "X_AB_eps   = \n" << X_AB_eps << std::endl;
-    
+        }
     /*---------------------
      *      p
      *---------------------*/
@@ -572,12 +585,14 @@ void CElement::EvalRotMatFiniteDifferences( VectorXdDiff dU_AB_eps, VectorXdDiff
     p = 0.5*(pa + pb);
     p= p/p.norm();
 
+        if (iElement==18 or iElement==95)
+    { 
     std::cout << "pseudoA_eps   = \n" << pseudoA_eps << std::endl;
     std::cout << "pseudoB_eps   = \n" << pseudoB_eps << std::endl; 
 
     std::cout << "RnodeA_eps   = \n" << RnodeA_eps << std::endl;
     std::cout << "RnodeB_eps   = \n" << RnodeB_eps << std::endl; 
-    
+        }
     /*---------------------
      *       e3
      *---------------------*/
