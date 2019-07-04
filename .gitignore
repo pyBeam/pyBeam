@@ -54,6 +54,8 @@ pyBeam/swig/pyBeam_wrap.cxx
 pyBeam/swig/Input_parsing.pyc
 pyBeam/swig/*.so
 
+tests/ONERAM6
+tests/ONERAM6_new
 tests/Bug_pybeam010719_straight
 tests/Bug_pyBeam130690
 tests/Bug_pyBeam130690_local_system_updated
