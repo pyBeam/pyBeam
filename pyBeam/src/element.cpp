@@ -131,6 +131,8 @@ void CElement::Initializer(CNode* Node1, CNode* Node2, CProperty* Property, CInp
     Kprim(3-1,5-1) = 2*EIy/l_ini;  Kprim(5-1,3-1) = Kprim(3-1,5-1);
     Kprim(4-1,6-1) = 2*EIz/l_ini;  Kprim(6-1,4-1) = Kprim(4-1,6-1);
 
+    
+    p = Vector3dDiff::Zero();
 }
 
 //-----------------------------------------------
@@ -310,7 +312,6 @@ void CElement::EvalRotMat(VectorXdDiff &dU_AB,  VectorXdDiff  &X_AB)
 
     Vector3dDiff pa = Vector3dDiff::Zero();
     Vector3dDiff pb = Vector3dDiff::Zero();
-    Vector3dDiff p= Vector3dDiff::Zero();
     Vector3dDiff pseudo= Vector3dDiff::Zero();    
     Vector3dDiff pseudoA= Vector3dDiff::Zero();
     Vector3dDiff pseudoB= Vector3dDiff::Zero();    
@@ -361,7 +362,7 @@ void CElement::EvalRotMat(VectorXdDiff &dU_AB,  VectorXdDiff  &X_AB)
         
     // Auxiliary Vector for building the new e3
     p = 0.5*(pa + pb);
-    p= p/p.norm();
+    //p_norm= p/p.norm();
     
     /*
     if (iElement==19 or iElement==18)
@@ -515,24 +516,30 @@ void CElement::InitializeRotMats()
 
 }
 
-void CElement::EvalRotMatFiniteDifferences( VectorXdDiff dU_AB_eps, VectorXdDiff dU_AB,  VectorXdDiff  X_AB, Matrix3dDiff &R_eps)
+   /***************************************************************
+ *
+ *         Ktang sensitivity to rotations (analytics)
+ *
+ ************************************************************/
+/*
+ * This routine, given the incremental displacement vector  of the current finite element
+ * (a) calculates the new Rotation matrix R
+ * (b) Find the Rrig (incremental)
+ *
+ * IMPORTANT: X need to be the last values,
+ */
+/*
+void CElement::EvalP(VectorXdDiff dU_AB,  VectorXdDiff  X_AB, Vector3dDiff  &p )
 {
-
-    VectorXdDiff X_AB_eps = VectorXdDiff::Zero(6);    
+    
     Vector3dDiff pa = Vector3dDiff::Zero();
     Vector3dDiff pb = Vector3dDiff::Zero();
-    Vector3dDiff p= Vector3dDiff::Zero();
+    p= Vector3dDiff::Zero();
+    Vector3dDiff p_norm= Vector3dDiff::Zero();    
     Vector3dDiff pseudo= Vector3dDiff::Zero();    
     Vector3dDiff pseudoA= Vector3dDiff::Zero();
-    Vector3dDiff pseudoA_eps= Vector3dDiff::Zero();    
-    Vector3dDiff pseudoB= Vector3dDiff::Zero();
-    Vector3dDiff pseudoB_eps= Vector3dDiff::Zero();    
-    Matrix3dDiff RnodeA= Matrix3dDiff::Zero();
-    Matrix3dDiff RnodeB= Matrix3dDiff::Zero();
-    Matrix3dDiff RnodeA_eps= Matrix3dDiff::Zero();
-    Matrix3dDiff RnodeB_eps= Matrix3dDiff::Zero();  
-    
-    R_eps = Matrix3dDiff::Zero();
+    Vector3dDiff pseudoB= Vector3dDiff::Zero();    
+    Matrix3dDiff Rnode= Matrix3dDiff::Zero();
     
     // New versor in old local coord system
     Vector3dDiff e1 = Vector3dDiff::Zero();
@@ -541,83 +548,84 @@ void CElement::EvalRotMatFiniteDifferences( VectorXdDiff dU_AB_eps, VectorXdDiff
     
     /*---------------------
      *       e1
-     *---------------------*/
-    // here I can just sum the infinitesimal displacement
-    X_AB_eps.head(3) = X_AB.head(3) + dU_AB_eps.head(3);
-    X_AB_eps.tail(3) = X_AB.tail(3) + dU_AB_eps.segment(7-1,3); ;    
-    e1 = X_AB_eps.tail(3) - X_AB_eps.head(3);
+     *---------------------
+    
+    e1 = X_AB.tail(3) - X_AB.head(3);
     e1 = e1/e1.norm();
     
-        if (iElement==18 or iElement==95)
-    { 
-    std::cout << "X_AB   = \n" << X_AB << std::endl;
-    std::cout << "X_AB_eps   = \n" << X_AB_eps << std::endl;
-        }
+    
     /*---------------------
      *      p
-     *---------------------*/
+     *---------------------
+    
+    //===> Node A
     
     Vector3dDiff e2_old = Vector3dDiff::Zero();
     e2_old = Rprev.block(1-1,2-1,3,1);      // This is the old y in global ref
-    
-    // In this case the infinitesimal rotation has to be added with a rotation matrix
-    //===> Node A
-
-    
     pseudoA = dU_AB.segment(4-1,3);      // Rotation at triad A  
-    PseudoToRot(pseudoA, RnodeA);
-    pseudoA_eps = dU_AB_eps.segment(4-1,3);      // Rotation at triad A  
-    PseudoToRot(pseudoA_eps, RnodeA_eps);    
+    PseudoToRot(pseudoA, Rnode);
+    pa = Rnode*e2_old;
     
-    pa = RnodeA_eps*RnodeA*e2_old;
-
-   
+    /*
+    if (iElement==19  or iElement==18)
+    {
+        //PseudoToRot(pseudoA, Rnode,1);
+        std::cout << "E2 old: " << e2_old << std::endl;        
+        std::cout << "\nFor triad in A:\n" << std::endl;
+        std::cout << "Pseudo A: " << pseudoA << std::endl;        
+        std::cout << "pa: " << pa << std::endl; 
+    }
+    
+     
+    
     //===> Node B
     
     pseudoB = dU_AB.segment(10-1,3);     // Rotation at triad B   
-    PseudoToRot(pseudoB ,  RnodeB);   
-    pseudoB_eps = dU_AB_eps.segment(10-1,3);     // Rotation at triad B   
-    PseudoToRot(pseudoB_eps ,  RnodeB_eps);   
-    
-    pb = RnodeB_eps*RnodeB*e2_old;
+    PseudoToRot(pseudoB ,  Rnode);
+    pb = Rnode*e2_old;
         
     // Auxiliary Vector for building the new e3
-    p = 0.5*(pa + pb);
-    p= p/p.norm();
-
-        if (iElement==18 or iElement==95)
-    { 
-    std::cout << "pseudoA_eps   = \n" << pseudoA_eps << std::endl;
-    std::cout << "pseudoB_eps   = \n" << pseudoB_eps << std::endl; 
-
-    std::cout << "RnodeA_eps   = \n" << RnodeA_eps << std::endl;
-    std::cout << "RnodeB_eps   = \n" << RnodeB_eps << std::endl; 
-        }
-    /*---------------------
-     *       e3
-     *---------------------*/
-    
-    // Find the new e3 versor (in old local CS)
-    e3 = e1.cross(p);
-    e3 = e3/e3.norm();
-    
-    /*---------------------
-     *       e2
-     *---------------------*/
-    
-    // Find the new e2 versor (in old local CS)
-    e2 = e3.cross(e1);
-    e2 = e2/e2.norm();
-       
-
-    // Evaluate the updated matrix
-    
-    R_eps.block(1-1,1-1,3,1) = e1.segment(1-1,3);
-    R_eps.block(1-1,2-1,3,1) = e2.segment(1-1,3);
-    R_eps.block(1-1,3-1,3,1) = e3.segment(1-1,3);    
+    p = 0.5*(pa + pb);    
            
 }
+   */
 
+void CElement::PaPbDer(VectorXdDiff dU_AB, Vector3dDiff e2_old, MatrixXdDiff  &dpa, MatrixXdDiff  &dpb ){
+    
+    dpa = MatrixXdDiff::Zero(3,12);
+    dpb = MatrixXdDiff::Zero(3,12);
+    addouble n_psA = dU_AB(4-1)*dU_AB(4-1)+dU_AB(5-1)*dU_AB(5-1)+dU_AB(6-1)*dU_AB(6-1);
+    addouble s = sqrt(n_psA);
+    addouble c =  cos(s);
+    addouble sn =   sin(s)  ;
+    addouble p3_2 = pow(n_psA,3.0/2.0) ;
+    
+    addouble n_psB = dU_AB(10-1)*dU_AB(10-1)+dU_AB(11-1)*dU_AB(11-1)+dU_AB(12-1)*dU_AB(12-1);
+    addouble sB = sqrt(n_psB);
+    addouble cB =  cos(sB) ;
+    addouble snB =   sin(sB)  ;  
+    addouble p3_2B = pow(n_psB,3.0/2.0) ;
 
+    dpa(0,3) = e2_old(2-1)*(-(dU_AB(5-1)*(c-1.0))/(n_psA)-(dU_AB(4-1)*dU_AB(6-1)*c)/(n_psA)+dU_AB(4-1)*dU_AB(6-1)*sn*1.0/p3_2+(dU_AB(4-1)*dU_AB(4-1))*dU_AB(5-1)*sn*1.0/p3_2+(dU_AB(4-1)*dU_AB(4-1))*dU_AB(5-1)*(c-1.0)*1.0/pow(n_psA,2.0)*2.0)+e2_old(3-1)*(-(dU_AB(6-1)*(c-1.0))/(n_psA)+(dU_AB(4-1)*dU_AB(5-1)*c)/(n_psA)-dU_AB(4-1)*dU_AB(5-1)*sn*1.0/p3_2+(dU_AB(4-1)*dU_AB(4-1))*dU_AB(6-1)*sn*1.0/p3_2+(dU_AB(4-1)*dU_AB(4-1))*dU_AB(6-1)*(c-1.0)*1.0/pow(n_psA,2.0)*2.0)-e2_old(1-1)*(dU_AB(4-1)*sn*(dU_AB(5-1)*dU_AB(5-1)+dU_AB(6-1)*dU_AB(6-1))*1.0/p3_2+dU_AB(4-1)*(c-1.0)*(dU_AB(5-1)*dU_AB(5-1)+dU_AB(6-1)*dU_AB(6-1))*1.0/pow(n_psA,2.0)*2.0);
+    dpa(0,4) = e2_old(2-1)*(-(dU_AB(4-1)*(c-1.0))/(n_psA)-(dU_AB(5-1)*dU_AB(6-1)*c)/(n_psA)+dU_AB(5-1)*dU_AB(6-1)*sn*1.0/p3_2+dU_AB(4-1)*(dU_AB(5-1)*dU_AB(5-1))*sn*1.0/p3_2+dU_AB(4-1)*(dU_AB(5-1)*dU_AB(5-1))*(c-1.0)*1.0/pow(n_psA,2.0)*2.0)+e2_old(3-1)*(sn*1.0/s+((dU_AB(5-1)*dU_AB(5-1))*c)/(n_psA)-(dU_AB(5-1)*dU_AB(5-1))*sn*1.0/p3_2+dU_AB(4-1)*dU_AB(5-1)*dU_AB(6-1)*sn*1.0/p3_2+dU_AB(4-1)*dU_AB(5-1)*dU_AB(6-1)*(c-1.0)*1.0/pow(n_psA,2.0)*2.0)-e2_old(1-1)*((dU_AB(5-1)*(c-1.0)*-2.0)/(n_psA)+dU_AB(5-1)*sn*(dU_AB(5-1)*dU_AB(5-1)+dU_AB(6-1)*dU_AB(6-1))*1.0/p3_2+dU_AB(5-1)*(c-1.0)*(dU_AB(5-1)*dU_AB(5-1)+dU_AB(6-1)*dU_AB(6-1))*1.0/pow(n_psA,2.0)*2.0);
+    dpa(0,5) = e2_old(3-1)*(-(dU_AB(4-1)*(c-1.0))/(n_psA)+(dU_AB(5-1)*dU_AB(6-1)*c)/(n_psA)-dU_AB(5-1)*dU_AB(6-1)*sn*1.0/p3_2+dU_AB(4-1)*(dU_AB(6-1)*dU_AB(6-1))*sn*1.0/p3_2+dU_AB(4-1)*(dU_AB(6-1)*dU_AB(6-1))*(c-1.0)*1.0/pow(n_psA,2.0)*2.0)+e2_old(2-1)*(-sn*1.0/s-((dU_AB(6-1)*dU_AB(6-1))*c)/(n_psA)+(dU_AB(6-1)*dU_AB(6-1))*sn*1.0/p3_2+dU_AB(4-1)*dU_AB(5-1)*dU_AB(6-1)*sn*1.0/p3_2+dU_AB(4-1)*dU_AB(5-1)*dU_AB(6-1)*(c-1.0)*1.0/pow(n_psA,2.0)*2.0)-e2_old(1-1)*((dU_AB(6-1)*(c-1.0)*-2.0)/(n_psA)+dU_AB(6-1)*sn*(dU_AB(5-1)*dU_AB(5-1)+dU_AB(6-1)*dU_AB(6-1))*1.0/p3_2+dU_AB(6-1)*(c-1.0)*(dU_AB(5-1)*dU_AB(5-1)+dU_AB(6-1)*dU_AB(6-1))*1.0/pow(n_psA,2.0)*2.0);
+    dpa(1,3) = e2_old(1-1)*(-(dU_AB(5-1)*(c-1.0))/(n_psA)+(dU_AB(4-1)*dU_AB(6-1)*c)/(n_psA)-dU_AB(4-1)*dU_AB(6-1)*sn*1.0/p3_2+(dU_AB(4-1)*dU_AB(4-1))*dU_AB(5-1)*sn*1.0/p3_2+(dU_AB(4-1)*dU_AB(4-1))*dU_AB(5-1)*(c-1.0)*1.0/pow(n_psA,2.0)*2.0)+e2_old(3-1)*(-sn*1.0/s-((dU_AB(4-1)*dU_AB(4-1))*c)/(n_psA)+(dU_AB(4-1)*dU_AB(4-1))*sn*1.0/p3_2+dU_AB(4-1)*dU_AB(5-1)*dU_AB(6-1)*sn*1.0/p3_2+dU_AB(4-1)*dU_AB(5-1)*dU_AB(6-1)*(c-1.0)*1.0/pow(n_psA,2.0)*2.0)-e2_old(2-1)*((dU_AB(4-1)*(c-1.0)*-2.0)/(n_psA)+dU_AB(4-1)*sn*(dU_AB(4-1)*dU_AB(4-1)+dU_AB(6-1)*dU_AB(6-1))*1.0/p3_2+dU_AB(4-1)*(c-1.0)*(dU_AB(4-1)*dU_AB(4-1)+dU_AB(6-1)*dU_AB(6-1))*1.0/pow(n_psA,2.0)*2.0);
+    dpa(1,4) = e2_old(1-1)*(-(dU_AB(4-1)*(c-1.0))/(n_psA)+(dU_AB(5-1)*dU_AB(6-1)*c)/(n_psA)-dU_AB(5-1)*dU_AB(6-1)*sn*1.0/p3_2+dU_AB(4-1)*(dU_AB(5-1)*dU_AB(5-1))*sn*1.0/p3_2+dU_AB(4-1)*(dU_AB(5-1)*dU_AB(5-1))*(c-1.0)*1.0/pow(n_psA,2.0)*2.0)+e2_old(3-1)*(-(dU_AB(6-1)*(c-1.0))/(n_psA)-(dU_AB(4-1)*dU_AB(5-1)*c)/(n_psA)+dU_AB(4-1)*dU_AB(5-1)*sn*1.0/p3_2+(dU_AB(5-1)*dU_AB(5-1))*dU_AB(6-1)*sn*1.0/p3_2+(dU_AB(5-1)*dU_AB(5-1))*dU_AB(6-1)*(c-1.0)*1.0/pow(n_psA,2.0)*2.0)-e2_old(2-1)*(dU_AB(5-1)*sn*(dU_AB(4-1)*dU_AB(4-1)+dU_AB(6-1)*dU_AB(6-1))*1.0/p3_2+dU_AB(5-1)*(c-1.0)*(dU_AB(4-1)*dU_AB(4-1)+dU_AB(6-1)*dU_AB(6-1))*1.0/pow(n_psA,2.0)*2.0);
+    dpa(1,5) = e2_old(3-1)*(-(dU_AB(5-1)*(c-1.0))/(n_psA)-(dU_AB(4-1)*dU_AB(6-1)*c)/(n_psA)+dU_AB(4-1)*dU_AB(6-1)*sn*1.0/p3_2+dU_AB(5-1)*(dU_AB(6-1)*dU_AB(6-1))*sn*1.0/p3_2+dU_AB(5-1)*(dU_AB(6-1)*dU_AB(6-1))*(c-1.0)*1.0/pow(n_psA,2.0)*2.0)+e2_old(1-1)*(sn*1.0/s+((dU_AB(6-1)*dU_AB(6-1))*c)/(n_psA)-(dU_AB(6-1)*dU_AB(6-1))*sn*1.0/p3_2+dU_AB(4-1)*dU_AB(5-1)*dU_AB(6-1)*sn*1.0/p3_2+dU_AB(4-1)*dU_AB(5-1)*dU_AB(6-1)*(c-1.0)*1.0/pow(n_psA,2.0)*2.0)-e2_old(2-1)*((dU_AB(6-1)*(c-1.0)*-2.0)/(n_psA)+dU_AB(6-1)*sn*(dU_AB(4-1)*dU_AB(4-1)+dU_AB(6-1)*dU_AB(6-1))*1.0/p3_2+dU_AB(6-1)*(c-1.0)*(dU_AB(4-1)*dU_AB(4-1)+dU_AB(6-1)*dU_AB(6-1))*1.0/pow(n_psA,2.0)*2.0);
+    dpa(2,3) = e2_old(1-1)*(-(dU_AB(6-1)*(c-1.0))/(n_psA)-(dU_AB(4-1)*dU_AB(5-1)*c)/(n_psA)+dU_AB(4-1)*dU_AB(5-1)*sn*1.0/p3_2+(dU_AB(4-1)*dU_AB(4-1))*dU_AB(6-1)*sn*1.0/p3_2+(dU_AB(4-1)*dU_AB(4-1))*dU_AB(6-1)*(c-1.0)*1.0/pow(n_psA,2.0)*2.0)+e2_old(2-1)*(sn*1.0/s+((dU_AB(4-1)*dU_AB(4-1))*c)/(n_psA)-(dU_AB(4-1)*dU_AB(4-1))*sn*1.0/p3_2+dU_AB(4-1)*dU_AB(5-1)*dU_AB(6-1)*sn*1.0/p3_2+dU_AB(4-1)*dU_AB(5-1)*dU_AB(6-1)*(c-1.0)*1.0/pow(n_psA,2.0)*2.0)-e2_old(3-1)*((dU_AB(4-1)*(c-1.0)*-2.0)/(n_psA)+dU_AB(4-1)*sn*(dU_AB(4-1)*dU_AB(4-1)+dU_AB(5-1)*dU_AB(5-1))*1.0/p3_2+dU_AB(4-1)*(c-1.0)*(dU_AB(4-1)*dU_AB(4-1)+dU_AB(5-1)*dU_AB(5-1))*1.0/pow(n_psA,2.0)*2.0);
+    dpa(2,4) = e2_old(2-1)*(-(dU_AB(6-1)*(c-1.0))/(n_psA)+(dU_AB(4-1)*dU_AB(5-1)*c)/(n_psA)-dU_AB(4-1)*dU_AB(5-1)*sn*1.0/p3_2+(dU_AB(5-1)*dU_AB(5-1))*dU_AB(6-1)*sn*1.0/p3_2+(dU_AB(5-1)*dU_AB(5-1))*dU_AB(6-1)*(c-1.0)*1.0/pow(n_psA,2.0)*2.0)+e2_old(1-1)*(-sn*1.0/s-((dU_AB(5-1)*dU_AB(5-1))*c)/(n_psA)+(dU_AB(5-1)*dU_AB(5-1))*sn*1.0/p3_2+dU_AB(4-1)*dU_AB(5-1)*dU_AB(6-1)*sn*1.0/p3_2+dU_AB(4-1)*dU_AB(5-1)*dU_AB(6-1)*(c-1.0)*1.0/pow(n_psA,2.0)*2.0)-e2_old(3-1)*((dU_AB(5-1)*(c-1.0)*-2.0)/(n_psA)+dU_AB(5-1)*sn*(dU_AB(4-1)*dU_AB(4-1)+dU_AB(5-1)*dU_AB(5-1))*1.0/p3_2+dU_AB(5-1)*(c-1.0)*(dU_AB(4-1)*dU_AB(4-1)+dU_AB(5-1)*dU_AB(5-1))*1.0/pow(n_psA,2.0)*2.0);
+    dpa(2,5) = e2_old(1-1)*(-(dU_AB(4-1)*(c-1.0))/(n_psA)-(dU_AB(5-1)*dU_AB(6-1)*c)/(n_psA)+dU_AB(5-1)*dU_AB(6-1)*sn*1.0/p3_2+dU_AB(4-1)*(dU_AB(6-1)*dU_AB(6-1))*sn*1.0/p3_2+dU_AB(4-1)*(dU_AB(6-1)*dU_AB(6-1))*(c-1.0)*1.0/pow(n_psA,2.0)*2.0)+e2_old(2-1)*(-(dU_AB(5-1)*(c-1.0))/(n_psA)+(dU_AB(4-1)*dU_AB(6-1)*c)/(n_psA)-dU_AB(4-1)*dU_AB(6-1)*sn*1.0/p3_2+dU_AB(5-1)*(dU_AB(6-1)*dU_AB(6-1))*sn*1.0/p3_2+dU_AB(5-1)*(dU_AB(6-1)*dU_AB(6-1))*(c-1.0)*1.0/pow(n_psA,2.0)*2.0)-e2_old(3-1)*(dU_AB(6-1)*sn*(dU_AB(4-1)*dU_AB(4-1)+dU_AB(5-1)*dU_AB(5-1))*1.0/p3_2+dU_AB(6-1)*(c-1.0)*(dU_AB(4-1)*dU_AB(4-1)+dU_AB(5-1)*dU_AB(5-1))*1.0/pow(n_psA,2.0)*2.0);  
+    
+    dpb(0,9) = e2_old(2-1)*(-(dU_AB(11-1)*(cB-1.0))/(n_psB)-(dU_AB(10-1)*dU_AB(12-1)*cB)/(n_psB)+dU_AB(10-1)*dU_AB(12-1)*snB*1.0/p3_2B+(dU_AB(10-1)*dU_AB(10-1))*dU_AB(11-1)*snB*1.0/p3_2B+(dU_AB(10-1)*dU_AB(10-1))*dU_AB(11-1)*(cB-1.0)*1.0/pow(n_psB,2.0)*2.0)+e2_old(3-1)*(-(dU_AB(12-1)*(cB-1.0))/(n_psB)+(dU_AB(10-1)*dU_AB(11-1)*cB)/(n_psB)-dU_AB(10-1)*dU_AB(11-1)*snB*1.0/p3_2B+(dU_AB(10-1)*dU_AB(10-1))*dU_AB(12-1)*snB*1.0/p3_2B+(dU_AB(10-1)*dU_AB(10-1))*dU_AB(12-1)*(cB-1.0)*1.0/pow(n_psB,2.0)*2.0)-e2_old(1-1)*(dU_AB(10-1)*snB*(dU_AB(11-1)*dU_AB(11-1)+dU_AB(12-1)*dU_AB(12-1))*1.0/p3_2B+dU_AB(10-1)*(cB-1.0)*(dU_AB(11-1)*dU_AB(11-1)+dU_AB(12-1)*dU_AB(12-1))*1.0/pow(n_psB,2.0)*2.0);
+    dpb(0,10) = e2_old(2-1)*(-(dU_AB(10-1)*(cB-1.0))/(n_psB)-(dU_AB(11-1)*dU_AB(12-1)*cB)/(n_psB)+dU_AB(11-1)*dU_AB(12-1)*snB*1.0/p3_2B+dU_AB(10-1)*(dU_AB(11-1)*dU_AB(11-1))*snB*1.0/p3_2B+dU_AB(10-1)*(dU_AB(11-1)*dU_AB(11-1))*(cB-1.0)*1.0/pow(n_psB,2.0)*2.0)+e2_old(3-1)*(snB*1.0/sB+((dU_AB(11-1)*dU_AB(11-1))*cB)/(n_psB)-(dU_AB(11-1)*dU_AB(11-1))*snB*1.0/p3_2B+dU_AB(10-1)*dU_AB(11-1)*dU_AB(12-1)*snB*1.0/p3_2B+dU_AB(10-1)*dU_AB(11-1)*dU_AB(12-1)*(cB-1.0)*1.0/pow(n_psB,2.0)*2.0)-e2_old(1-1)*((dU_AB(11-1)*(cB-1.0)*-2.0)/(n_psB)+dU_AB(11-1)*snB*(dU_AB(11-1)*dU_AB(11-1)+dU_AB(12-1)*dU_AB(12-1))*1.0/p3_2B+dU_AB(11-1)*(cB-1.0)*(dU_AB(11-1)*dU_AB(11-1)+dU_AB(12-1)*dU_AB(12-1))*1.0/pow(n_psB,2.0)*2.0);
+    dpb(0,11) = e2_old(3-1)*(-(dU_AB(10-1)*(cB-1.0))/(n_psB)+(dU_AB(11-1)*dU_AB(12-1)*cB)/(n_psB)-dU_AB(11-1)*dU_AB(12-1)*snB*1.0/p3_2B+dU_AB(10-1)*(dU_AB(12-1)*dU_AB(12-1))*snB*1.0/p3_2B+dU_AB(10-1)*(dU_AB(12-1)*dU_AB(12-1))*(cB-1.0)*1.0/pow(n_psB,2.0)*2.0)+e2_old(2-1)*(-snB*1.0/sB-((dU_AB(12-1)*dU_AB(12-1))*cB)/(n_psB)+(dU_AB(12-1)*dU_AB(12-1))*snB*1.0/p3_2B+dU_AB(10-1)*dU_AB(11-1)*dU_AB(12-1)*snB*1.0/p3_2B+dU_AB(10-1)*dU_AB(11-1)*dU_AB(12-1)*(cB-1.0)*1.0/pow(n_psB,2.0)*2.0)-e2_old(1-1)*((dU_AB(12-1)*(cB-1.0)*-2.0)/(n_psB)+dU_AB(12-1)*snB*(dU_AB(11-1)*dU_AB(11-1)+dU_AB(12-1)*dU_AB(12-1))*1.0/p3_2B+dU_AB(12-1)*(cB-1.0)*(dU_AB(11-1)*dU_AB(11-1)+dU_AB(12-1)*dU_AB(12-1))*1.0/pow(n_psB,2.0)*2.0);
+    dpb(1,9) = e2_old(1-1)*(-(dU_AB(11-1)*(cB-1.0))/(n_psB)+(dU_AB(10-1)*dU_AB(12-1)*cB)/(n_psB)-dU_AB(10-1)*dU_AB(12-1)*snB*1.0/p3_2B+(dU_AB(10-1)*dU_AB(10-1))*dU_AB(11-1)*snB*1.0/p3_2B+(dU_AB(10-1)*dU_AB(10-1))*dU_AB(11-1)*(cB-1.0)*1.0/pow(n_psB,2.0)*2.0)+e2_old(3-1)*(-snB*1.0/sB-((dU_AB(10-1)*dU_AB(10-1))*cB)/(n_psB)+(dU_AB(10-1)*dU_AB(10-1))*snB*1.0/p3_2B+dU_AB(10-1)*dU_AB(11-1)*dU_AB(12-1)*snB*1.0/p3_2B+dU_AB(10-1)*dU_AB(11-1)*dU_AB(12-1)*(cB-1.0)*1.0/pow(n_psB,2.0)*2.0)-e2_old(2-1)*((dU_AB(10-1)*(cB-1.0)*-2.0)/(n_psB)+dU_AB(10-1)*snB*(dU_AB(10-1)*dU_AB(10-1)+dU_AB(12-1)*dU_AB(12-1))*1.0/p3_2B+dU_AB(10-1)*(cB-1.0)*(dU_AB(10-1)*dU_AB(10-1)+dU_AB(12-1)*dU_AB(12-1))*1.0/pow(n_psB,2.0)*2.0);
+    dpb(1,10) = e2_old(1-1)*(-(dU_AB(10-1)*(cB-1.0))/(n_psB)+(dU_AB(11-1)*dU_AB(12-1)*cB)/(n_psB)-dU_AB(11-1)*dU_AB(12-1)*snB*1.0/p3_2B+dU_AB(10-1)*(dU_AB(11-1)*dU_AB(11-1))*snB*1.0/p3_2B+dU_AB(10-1)*(dU_AB(11-1)*dU_AB(11-1))*(cB-1.0)*1.0/pow(n_psB,2.0)*2.0)+e2_old(3-1)*(-(dU_AB(12-1)*(cB-1.0))/(n_psB)-(dU_AB(10-1)*dU_AB(11-1)*cB)/(n_psB)+dU_AB(10-1)*dU_AB(11-1)*snB*1.0/p3_2B+(dU_AB(11-1)*dU_AB(11-1))*dU_AB(12-1)*snB*1.0/p3_2B+(dU_AB(11-1)*dU_AB(11-1))*dU_AB(12-1)*(cB-1.0)*1.0/pow(n_psB,2.0)*2.0)-e2_old(2-1)*(dU_AB(11-1)*snB*(dU_AB(10-1)*dU_AB(10-1)+dU_AB(12-1)*dU_AB(12-1))*1.0/p3_2B+dU_AB(11-1)*(cB-1.0)*(dU_AB(10-1)*dU_AB(10-1)+dU_AB(12-1)*dU_AB(12-1))*1.0/pow(n_psB,2.0)*2.0);
+    dpb(1,11) = e2_old(3-1)*(-(dU_AB(11-1)*(cB-1.0))/(n_psB)-(dU_AB(10-1)*dU_AB(12-1)*cB)/(n_psB)+dU_AB(10-1)*dU_AB(12-1)*snB*1.0/p3_2B+dU_AB(11-1)*(dU_AB(12-1)*dU_AB(12-1))*snB*1.0/p3_2B+dU_AB(11-1)*(dU_AB(12-1)*dU_AB(12-1))*(cB-1.0)*1.0/pow(n_psB,2.0)*2.0)+e2_old(1-1)*(snB*1.0/sB+((dU_AB(12-1)*dU_AB(12-1))*cB)/(n_psB)-(dU_AB(12-1)*dU_AB(12-1))*snB*1.0/p3_2B+dU_AB(10-1)*dU_AB(11-1)*dU_AB(12-1)*snB*1.0/p3_2B+dU_AB(10-1)*dU_AB(11-1)*dU_AB(12-1)*(cB-1.0)*1.0/pow(n_psB,2.0)*2.0)-e2_old(2-1)*((dU_AB(12-1)*(cB-1.0)*-2.0)/(n_psB)+dU_AB(12-1)*snB*(dU_AB(10-1)*dU_AB(10-1)+dU_AB(12-1)*dU_AB(12-1))*1.0/p3_2B+dU_AB(12-1)*(cB-1.0)*(dU_AB(10-1)*dU_AB(10-1)+dU_AB(12-1)*dU_AB(12-1))*1.0/pow(n_psB,2.0)*2.0);
+    dpb(2,9) = e2_old(1-1)*(-(dU_AB(12-1)*(cB-1.0))/(n_psB)-(dU_AB(10-1)*dU_AB(11-1)*cB)/(n_psB)+dU_AB(10-1)*dU_AB(11-1)*snB*1.0/p3_2B+(dU_AB(10-1)*dU_AB(10-1))*dU_AB(12-1)*snB*1.0/p3_2B+(dU_AB(10-1)*dU_AB(10-1))*dU_AB(12-1)*(cB-1.0)*1.0/pow(n_psB,2.0)*2.0)+e2_old(2-1)*(snB*1.0/sB+((dU_AB(10-1)*dU_AB(10-1))*cB)/(n_psB)-(dU_AB(10-1)*dU_AB(10-1))*snB*1.0/p3_2B+dU_AB(10-1)*dU_AB(11-1)*dU_AB(12-1)*snB*1.0/p3_2B+dU_AB(10-1)*dU_AB(11-1)*dU_AB(12-1)*(cB-1.0)*1.0/pow(n_psB,2.0)*2.0)-e2_old(3-1)*((dU_AB(10-1)*(cB-1.0)*-2.0)/(n_psB)+dU_AB(10-1)*snB*(dU_AB(10-1)*dU_AB(10-1)+dU_AB(11-1)*dU_AB(11-1))*1.0/p3_2B+dU_AB(10-1)*(cB-1.0)*(dU_AB(10-1)*dU_AB(10-1)+dU_AB(11-1)*dU_AB(11-1))*1.0/pow(n_psB,2.0)*2.0);
+    dpb(2,10) = e2_old(2-1)*(-(dU_AB(12-1)*(cB-1.0))/(n_psB)+(dU_AB(10-1)*dU_AB(11-1)*cB)/(n_psB)-dU_AB(10-1)*dU_AB(11-1)*snB*1.0/p3_2B+(dU_AB(11-1)*dU_AB(11-1))*dU_AB(12-1)*snB*1.0/p3_2B+(dU_AB(11-1)*dU_AB(11-1))*dU_AB(12-1)*(cB-1.0)*1.0/pow(n_psB,2.0)*2.0)+e2_old(1-1)*(-snB*1.0/sB-((dU_AB(11-1)*dU_AB(11-1))*cB)/(n_psB)+(dU_AB(11-1)*dU_AB(11-1))*snB*1.0/p3_2B+dU_AB(10-1)*dU_AB(11-1)*dU_AB(12-1)*snB*1.0/p3_2B+dU_AB(10-1)*dU_AB(11-1)*dU_AB(12-1)*(cB-1.0)*1.0/pow(n_psB,2.0)*2.0)-e2_old(3-1)*((dU_AB(11-1)*(cB-1.0)*-2.0)/(n_psB)+dU_AB(11-1)*snB*(dU_AB(10-1)*dU_AB(10-1)+dU_AB(11-1)*dU_AB(11-1))*1.0/p3_2B+dU_AB(11-1)*(cB-1.0)*(dU_AB(10-1)*dU_AB(10-1)+dU_AB(11-1)*dU_AB(11-1))*1.0/pow(n_psB,2.0)*2.0);
+    dpb(2,11) = e2_old(1-1)*(-(dU_AB(10-1)*(cB-1.0))/(n_psB)-(dU_AB(11-1)*dU_AB(12-1)*cB)/(n_psB)+dU_AB(11-1)*dU_AB(12-1)*snB*1.0/p3_2B+dU_AB(10-1)*(dU_AB(12-1)*dU_AB(12-1))*snB*1.0/p3_2B+dU_AB(10-1)*(dU_AB(12-1)*dU_AB(12-1))*(cB-1.0)*1.0/pow(n_psB,2.0)*2.0)+e2_old(2-1)*(-(dU_AB(11-1)*(cB-1.0))/(n_psB)+(dU_AB(10-1)*dU_AB(12-1)*cB)/(n_psB)-dU_AB(10-1)*dU_AB(12-1)*snB*1.0/p3_2B+dU_AB(11-1)*(dU_AB(12-1)*dU_AB(12-1))*snB*1.0/p3_2B+dU_AB(11-1)*(dU_AB(12-1)*dU_AB(12-1))*(cB-1.0)*1.0/pow(n_psB,2.0)*2.0)-e2_old(3-1)*(dU_AB(12-1)*snB*(dU_AB(10-1)*dU_AB(10-1)+dU_AB(11-1)*dU_AB(11-1))*1.0/p3_2B+dU_AB(12-1)*(cB-1.0)*(dU_AB(10-1)*dU_AB(10-1)+dU_AB(11-1)*dU_AB(11-1))*1.0/pow(n_psB,2.0)*2.0); 
+    
+}
 
 

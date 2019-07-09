@@ -136,7 +136,7 @@ public:
     
     void EvalSensRot(int iIter);  // Evaluate the sensitivity of Rotation Matrix - need for Jacobian
     
-    void EvalSensRotFiniteDifferences();    
+    void EvalSensRot_old(int iIter);    
     
     //===================================================
     //      Solve linear static system

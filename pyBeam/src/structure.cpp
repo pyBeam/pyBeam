@@ -363,9 +363,10 @@ void CStructure::AssemblyTang(int iIter)
     /*--------------------------------------------------------
      *    Rigid rotation contribution to the Stiffness Matrix
      * -------------------------------------------------------*/
-
-    //EvalSensRot(iIter);
-    EvalSensRotFiniteDifferences();
+     
+    if (iIter !=0) {
+    EvalSensRot(iIter);
+    }
 
     /*------------------------------------
      *    Imposing  B.C.
@@ -391,7 +392,7 @@ void CStructure::AssemblyTang(int iIter)
  * contribution to the tangent matrix dF/dU = dR/dU*f
  * */
 
-void CStructure::EvalSensRot(int iIter){
+void CStructure::EvalSensRot_old(int iIter){
     
     VectorXdDiff dl_dU =  VectorXdDiff::Zero(12);
     MatrixXdDiff de1 = MatrixXdDiff::Zero(3,12);
@@ -475,21 +476,19 @@ void CStructure::EvalSensRot(int iIter){
     
 }
 
-
 /*===================================================
- *        Evaluate the Sensitivty of Rotation Matrix with finite differences
+ *        Evaluate the Sensitivty of Rotation Matrix
  *===================================================*/
 /* Given the element's internal forces and the R, evaluates the
  * contribution to the tangent matrix dF/dU = dR/dU*f
  * */
 
-void CStructure::EvalSensRotFiniteDifferences(){
-    
-    VectorXdDiff dU_AB = VectorXdDiff::Zero(12);
-    VectorXdDiff  X_AB = VectorXdDiff::Zero(6); 
-    Matrix3dDiff R_eps = Matrix3dDiff::Zero();
+void CStructure::EvalSensRot(int iIter){
     
     VectorXdDiff dl_dU =  VectorXdDiff::Zero(12);
+    Vector3dDiff e1    = Vector3dDiff::Zero();
+    Vector3dDiff e3    = Vector3dDiff::Zero();
+    Vector3dDiff e2_old    = Vector3dDiff::Zero();
     MatrixXdDiff de1 = MatrixXdDiff::Zero(3,12);
     MatrixXdDiff de2 = MatrixXdDiff::Zero(3,12);
     MatrixXdDiff de3 = MatrixXdDiff::Zero(3,12);
@@ -505,8 +504,35 @@ void CStructure::EvalSensRotFiniteDifferences(){
     de1_part1.block(1-1,7-1,3,3) =   MatrixXdDiff::Identity(3,3);
     
     Vector3dDiff de1_i = Vector3dDiff::Zero();
-    Vector3dDiff e3    = Vector3dDiff::Zero();
     
+
+    // For derivative of e3 I need:
+    VectorXdDiff dU_AB = VectorXdDiff::Zero(12);
+    VectorXdDiff  X_AB = VectorXdDiff::Zero(6);
+    
+    Vector3dDiff pa = Vector3dDiff::Zero();
+    Vector3dDiff pb = Vector3dDiff::Zero();
+    Vector3dDiff p= Vector3dDiff::Zero();
+    Vector3dDiff e1_cross_p= Vector3dDiff::Zero();
+    addouble e1_cross_p_norm;
+    
+    Matrix3dDiff e1_star = Matrix3dDiff::Zero(); // rearrangement of e1 in matrix form
+    Matrix3dDiff p_star = Matrix3dDiff::Zero();  // rearrangement of p in matrix form
+    
+    MatrixXdDiff dpa = MatrixXdDiff::Zero(3,12);  // d(pa)/d(U)
+    Vector3dDiff alpha = Vector3dDiff::Zero();   // (e1 X p) /( (e1 X p)'*(e1 X p) ) 
+    MatrixXdDiff beta = MatrixXdDiff::Zero(3,12);   // d(e1 X p)/dU
+    VectorXdDiff gamma = VectorXdDiff::Zero(12);   // d(norm(e1 X p))/dU
+    MatrixXdDiff dpb = MatrixXdDiff::Zero(3,12); // d(pb)/d(U)
+  
+    // For derivative of e2 I need:
+    
+    Vector3dDiff e3_cross_e1= Vector3dDiff::Zero();
+    addouble e3_cross_e1_norm;
+    Vector3dDiff delta = Vector3dDiff::Zero();   // (e3 X e1) /( (e3 X e1)'*(e3 X e1) )   
+    MatrixXdDiff zeta = MatrixXdDiff::Zero(3,12);   // d(e3 X e1)/dU
+    VectorXdDiff epsilon = VectorXdDiff::Zero(12);   // d(norm(e3 X e1))/dU
+    Matrix3dDiff e3_star = Matrix3dDiff::Zero(); // rearrangement of e3 in matrix form    
     //-------------------------------
     
     VectorXdDiff XbmXa = Vector3dDiff::Zero(3);
@@ -515,26 +541,11 @@ void CStructure::EvalSensRotFiniteDifferences(){
     
     int dof_jjj = 0; int dof_kkk = 0;
     
-    // Finite difference for translation DOFs
-    addouble fd_t = 1.0e-12;
-    // Finite difference for rotational DOFs
-    //addouble fd_r = 7.9e-1;
-    addouble fd_r = 7.0e-1;    
-    addouble fd;  
-    
-    int ii;
-    
     
     for (int id_el=1; id_el<= nfem; id_el++) {
         
-        if (id_el==19 or id_el==96)
-        { 
-            std::cout << "Element    = " << id_el << std::endl;     
-        }  
         nodeA_id = element[id_el-1]->nodeA->GeID();
         nodeB_id = element[id_el-1]->nodeB->GeID();
-        
-        fint = element[id_el-1]->fint;        
         
         // Position of the A and B (initial and final) nodes of the element
         // They are already in the global CS (but not the updated final one).
@@ -546,38 +557,87 @@ void CStructure::EvalSensRotFiniteDifferences(){
         dU_AB.head(6) = dU.segment((nodeA_id-1)*6+1 -1,6);
         dU_AB.tail(6) = dU.segment((nodeB_id-1)*6+1 -1,6);        
         
-        for (ii=1; ii <=12; ii++)
-        {
-            VectorXdDiff dU_AB_eps = VectorXdDiff::Zero(12);
-            if ( ii <4 or ( ii>6 and ii<10) ) { 
-            fd = fd_t;
-            }
-            else {
-            fd = fd_r; 
-            }
-            
-            dU_AB_eps(ii -1) = fd; 
-            
-            if (id_el==19 or id_el==96)
-            { 
-                std::cout.precision(17);
-                std::cout << "dU_AB_eps    = \n" << dU_AB_eps << std::endl;
-            }      
-            element[id_el-1]->EvalRotMatFiniteDifferences( dU_AB_eps, dU_AB, X_AB, R_eps);
-            
-            de1.block(1-1,ii-1,3,1) =  ( R_eps.block(1-1,1-1,3,1) - element[id_el-1]->R.block(1-1,1-1,3,1) ) / fd;
-            de2.block(1-1,ii-1,3,1) =  ( R_eps.block(1-1,2-1,3,1) - element[id_el-1]->R.block(1-1,2-1,3,1) ) / fd;
-            de3.block(1-1,ii-1,3,1) =  ( R_eps.block(1-1,3-1,3,1) - element[id_el-1]->R.block(1-1,3-1,3,1) ) / fd;
-            
-            
-            if (id_el==19 or id_el==96)
-            { 
-                std::cout << "Rotation matrix old   = \n" << element[id_el-1]->Rprev.block(1-1,1-1,3,3) << std::endl;                
-                std::cout << "Rotation matrix    = \n" << element[id_el-1]->R.block(1-1,1-1,3,3) << std::endl;
-                std::cout << "Rotation matrix  eps  = \n" << R_eps << std::endl;
-            }
-        }    
+        fint = element[id_el-1]->fint;
         
+        e1 = element[id_el-1]->R.block(1-1,1-1,3,1);
+        e2_old = element[id_el-1]->Rprev.block(1-1,2-1,3,1);
+        
+        //===   de1_du ===
+        XbmXa = X.segment((nodeB_id-1)*3+1 -1,3) - X.segment((nodeA_id-1)*3+1 -1,3);
+        onetol = 1.0/element[id_el-1]->GetCurrent_Length(); //  1/l
+        
+        dl_dU.head(3)        = -element[id_el-1]->R.block(1-1,1-1,3,1);
+        dl_dU.segment(7-1,3) =  element[id_el-1]->R.block(1-1,1-1,3,1);
+        
+        de1 = (-onetol*onetol)*( XbmXa * dl_dU.transpose());    //
+        de1 += onetol*de1_part1;
+        
+        //===   de3_du === 0    
+        de3 = MatrixXdDiff::Zero(3,12);
+        p = Vector3dDiff::Zero();
+        p = element[id_el-1]->p;  // At this point P is not normalized  
+        
+        e1_cross_p = e1.cross(p);
+        e1_cross_p_norm = e1_cross_p.norm();
+        //Ingredients
+        alpha = Vector3dDiff::Zero();
+        alpha = e1_cross_p / (e1_cross_p_norm*e1_cross_p_norm);
+        
+        /* e1_star = [ 0      -e_1(3)  e_1(2)
+         *             e_1(3)    0    -e_1(1)
+         *            -e_1(2)  e_1(1)   0     ]*/
+        e1_star = Matrix3dDiff::Zero();
+        e1_star(2-1,1-1) =  e1(3-1);      e1_star(1-1,2-1) =  -e1(3-1);    e1_star(1-1,3-1) =  e1(2-1);
+        e1_star(3-1,1-1) =  -e1(2-1);   e1_star(3-1,2-1) =  e1(1-1);      e1_star(2-1,3-1) =  -e1(1-1);
+        
+        /* p_star  = [ 0      -p(3)   p(2)
+         *             p(3)     0    -p(1)
+         *            -p(2)    p(1)    0     ]*/  
+        p_star = Matrix3dDiff::Zero();
+        p_star(2-1,1-1) =  p(3-1);
+        p_star(3-1,1-1) =  -p(2-1); //
+        p_star(1-1,2-1) =  -p(3-1);                
+        p_star(3-1,2-1) =  p(1-1); //
+        p_star(1-1,3-1) =  p(2-1);
+        p_star(2-1,3-1) =  -p(1-1);        
+        
+        
+        element[id_el-1]->PaPbDer(dU_AB, e2_old,  dpa, dpb );  // evaluation of dpa and dpb
+        
+        beta = MatrixXdDiff::Zero(3,12);        
+        beta = 1/2*(e1_star*dpa + e1_star*dpb) - p_star*de1;
+          
+        gamma = VectorXdDiff::Zero(12); 
+        gamma = e1_cross_p.transpose()*beta / e1_cross_p_norm;
+
+        
+        de3 = beta / e1_cross_p_norm - alpha*gamma.transpose();
+
+        //===   de2_du === 0   
+        
+        e3 = element[id_el-1]->R.block(1-1,3-1,3,1);
+        
+        e3_cross_e1 = e3.cross(e1);
+        e3_cross_e1_norm = e3_cross_e1.norm();
+        
+        delta = Vector3dDiff::Zero();
+        delta = e3_cross_e1 / (e3_cross_e1_norm*e3_cross_e1_norm);
+        
+        /* e3_star = [ 0      -e_3(3)  e_3(2)
+         *             e_3(3)    0    -e_3(1)
+         *            -e_3(2)  e_3(1)   0     ]*/
+        e1_star = Matrix3dDiff::Zero(); // rearrangement of e3 in matrix form
+        e3_star(2-1,1-1) =  e3(3-1);      e3_star(1-1,2-1) =  -e3(3-1);    e3_star(1-1,3-1) =  e3(2-1);
+        e3_star(3-1,1-1) =  -e3(2-1);   e3_star(3-1,2-1) =  e3(1-1);      e3_star(2-1,3-1) =  -e3(1-1); 
+        
+        zeta = MatrixXdDiff::Zero(3,12);
+        zeta = e3_star*de1 - e1_star*de3;
+        
+        epsilon = VectorXdDiff::Zero(12);
+        epsilon = e3_cross_e1.transpose()*zeta / e3_cross_e1_norm;
+        
+        de2 = zeta/ e3_cross_e1_norm - delta*epsilon.transpose();
+
         // ====== Krot
         
         Krot.block(1-1,1-1,3,12)  =  de1*fint(1-1)  + de2*fint(2-1)  + de3*fint(3-1) ;
@@ -585,6 +645,12 @@ void CStructure::EvalSensRotFiniteDifferences(){
         Krot.block(7-1,1-1,3,12)  =  de1*fint(7-1)  + de2*fint(8-1)  + de3*fint(9-1) ;
         Krot.block(10-1,1-1,3,12) =  de1*fint(10-1) + de2*fint(11-1) + de3*fint(12-1) ;
         
+        std::ofstream file("./Analytic_de1_de2_de3.txt");
+        std::cout.precision(17);
+        file  <<  "Element: " << id_el << '\n';
+        file  <<  Krot << '\n';
+        file.close();
+
         // ================= > insert in the right position
         
         
@@ -598,12 +664,12 @@ void CStructure::EvalSensRotFiniteDifferences(){
                 Ksys.block(dof_jjj-1,dof_kkk-1,6,6) += Krot.block((jjj-1)*6+1 -1,(kkk-1)*6+1 -1,6,6);
                 
             }
+            
         }
         
     }
-    
 }
-
+    
 
 /*===================================================
  //      Evaluate the residual
@@ -617,7 +683,7 @@ void CStructure::EvalResidual(unsigned short irigid)
 {
     
     
-    std::cout << "\nFint = \n" << Fint.transpose() <<"\n" << std::endl;
+    //std::cout << "\nFint = \n" << Fint.transpose() <<"\n" << std::endl;
     //std::cout << "dU = " << dU.transpose() << std::endl;
     Residual = Fext - Fint;
 
@@ -644,6 +710,7 @@ void CStructure::SolveLinearStaticSystem(int iIter)
     std::ofstream file("./Kel.txt");
     std::cout.precision(17);
     file  <<  Ksys << '\n';
+    file.close();
     
     switch(kind_linSol){
     case PartialPivLu:
@@ -666,7 +733,7 @@ void CStructure::SolveLinearStaticSystem(int iIter)
 
     addouble relative_error = (Ksys*dU -Residual).norm() / Residual.norm(); // norm() is L2 norm
 
-    std::cout.width(17); std::cout << log10(relative_error);
+    std::cout.width(19); std::cout << log10(relative_error);
 
     /*
     int posU = 1;

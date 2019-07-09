@@ -68,7 +68,8 @@ public:
     MatrixXdDiff Rrig;          // Rodriguez Rotation Matrix (local reference system in GCS)
     MatrixXdDiff R;             // Local reference system in GCS
     MatrixXdDiff Rprev;         // m_R previous value
-
+    Vector3dDiff p;             // Non normalized auxiliary vector!!!
+   
     Vector3dDiff aux_vector;   // Versor directed from nodeA to nodeB
 
     MatrixXdDiff Mfem;
@@ -129,13 +130,15 @@ public:
 
     // Evaluates FEM element rotation matrix
     void EvalRotMat(VectorXdDiff &dU_AB , VectorXdDiff &X_AB );
+    
+    // Calculates p as the non-normalized average between pA and pB as contribution to the tangent matrix
+    //void EvalP(VectorXdDiff dU_AB,  VectorXdDiff  X_AB, Vector3dDiff  &p );
 
     // Initially rotates the elements
     void InitializeRotMats();    
 
-    // Evaluates the rotation matrix for a value of a small dU_AB_eps around a given position of the reference system evaluated with current positions X_AB and rotations dU_AB X_AB
-    void EvalRotMatFiniteDifferences(VectorXdDiff dU_AB_eps, VectorXdDiff dU_AB,  VectorXdDiff  X_AB, Matrix3dDiff &R_eps);
-    
+    // Evaluates the derivative of pA and pB as a contribution to the tangent matrix (derivatives are calculated with Matlab symb)
+    void PaPbDer(VectorXdDiff dU_AB, Vector3dDiff e2_old, MatrixXdDiff  &dpa, MatrixXdDiff  &dpb );
     
 };
 

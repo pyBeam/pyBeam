@@ -162,7 +162,7 @@ void CBeamSolver::Solve(int FSIIter = 0){
         
         for (iIter = 0; iIter < input->Get_nIter(); iIter++) {
 
-            std::cout.width(6); std::cout << iIter;
+            std::cout.width(8); std::cout << iIter;
 
             //std::cout << "   ----- ITERATION  -----" << iIter << std::endl;
             
@@ -177,7 +177,7 @@ void CBeamSolver::Solve(int FSIIter = 0){
             structure->EvalResidual(input->Get_RigidCriteria());
 
             if(iIter == 0){initResNorm = structure->Residual.norm();}
-            std::cout.width(17); std::cout << log10(structure->Residual.norm() / initResNorm);
+            std::cout.width(19); std::cout << log10(structure->Residual.norm() / initResNorm);
 
             /*--------------------------------------------------
              *   Assembly Ktang, Solve System
@@ -202,7 +202,7 @@ void CBeamSolver::Solve(int FSIIter = 0){
              }
 
             if(iIter == 0){initDispNorm = structure->dU.norm();}
-            std::cout.width(17); std::cout << log10(structure->dU.norm() / initDispNorm);
+            std::cout.width(19); std::cout << log10(structure->dU.norm() / initDispNorm);
 
             /*--------------------------------------------------
              *   Updates Coordinates, Updates Rotation Matrices
@@ -238,7 +238,7 @@ void CBeamSolver::Solve(int FSIIter = 0){
             
             addouble disp_factor =   structure->dU.norm()/TotalLength;
 
-            std::cout.width(17); std::cout << log10(disp_factor);
+            std::cout.width(19); std::cout << log10(disp_factor);
             std::cout << std::endl;
             
             if (disp_factor <= input->Get_ConvCriteria()) {

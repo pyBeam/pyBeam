@@ -56,6 +56,7 @@ pyBeam/swig/*.so
 
 tests/ONERAM6
 tests/ONERAM6_new
+tests/ONERAM6_new_tipcross
 tests/Bug_pybeam010719_straight
 tests/Bug_pyBeam130690
 tests/Bug_pyBeam130690_local_system_updated
