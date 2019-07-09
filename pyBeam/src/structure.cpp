@@ -547,6 +547,20 @@ void CStructure::EvalSensRot(int iIter){
     
     for (int id_el=1; id_el<= nfem; id_el++) {
         
+        // Setting to zero the various coefficients
+        alpha = Vector3dDiff::Zero();  
+        de1 = MatrixXdDiff::Zero(3,12);
+        de3 = MatrixXdDiff::Zero(3,12);        
+        p = Vector3dDiff::Zero();  
+        p_star = Matrix3dDiff::Zero(); 
+        e1_star = Matrix3dDiff::Zero(); 
+        beta = MatrixXdDiff::Zero(3,12);         
+        gamma = VectorXdDiff::Zero(12); 
+        delta = Vector3dDiff::Zero();
+        e3_star = Matrix3dDiff::Zero(); 
+        zeta = MatrixXdDiff::Zero(3,12);        
+        epsilon = VectorXdDiff::Zero(12);        
+        
         nodeA_id = element[id_el-1]->nodeA->GeID();
         nodeB_id = element[id_el-1]->nodeB->GeID();
         
@@ -576,27 +590,24 @@ void CStructure::EvalSensRot(int iIter){
         de1 += onetol*de1_part1;
         
         //===   de3_du === 0    
-        de3 = MatrixXdDiff::Zero(3,12);
-        p = Vector3dDiff::Zero();
         p = element[id_el-1]->p;  // At this point P is not normalized  
         
         e1_cross_p = e1.cross(p);
         e1_cross_p_norm = e1_cross_p.norm();
         //Ingredients
-        alpha = Vector3dDiff::Zero();
+
         alpha = e1_cross_p / (e1_cross_p_norm*e1_cross_p_norm);
         
         /* e1_star = [ 0      -e_1(3)  e_1(2)
          *             e_1(3)    0    -e_1(1)
          *            -e_1(2)  e_1(1)   0     ]*/
-        e1_star = Matrix3dDiff::Zero();
         e1_star(2-1,1-1) =  e1(3-1);      e1_star(1-1,2-1) =  -e1(3-1);    e1_star(1-1,3-1) =  e1(2-1);
         e1_star(3-1,1-1) =  -e1(2-1);   e1_star(3-1,2-1) =  e1(1-1);      e1_star(2-1,3-1) =  -e1(1-1);
         
         /* p_star  = [ 0      -p(3)   p(2)
          *             p(3)     0    -p(1)
          *            -p(2)    p(1)    0     ]*/  
-        p_star = Matrix3dDiff::Zero();
+
         p_star(2-1,1-1) =  p(3-1);
         p_star(3-1,1-1) =  -p(2-1); //
         p_star(1-1,2-1) =  -p(3-1);                
@@ -607,10 +618,10 @@ void CStructure::EvalSensRot(int iIter){
         
         element[id_el-1]->PaPbDer(dU_AB, e2_old,  dpa, dpb );  // evaluation of dpa and dpb
         
-        beta = MatrixXdDiff::Zero(3,12);        
-        beta = 1/2*(e1_star*dpa + e1_star*dpb) - p_star*de1;
+       
+        beta = 0.5*(e1_star*dpa + e1_star*dpb) - p_star*de1;
         
-        gamma = VectorXdDiff::Zero(12); 
+
         gamma = e1_cross_p.transpose()*beta / e1_cross_p_norm;
         
         
@@ -623,20 +634,20 @@ void CStructure::EvalSensRot(int iIter){
         e3_cross_e1 = e3.cross(e1);
         e3_cross_e1_norm = e3_cross_e1.norm();
         
-        delta = Vector3dDiff::Zero();
+
         delta = e3_cross_e1 / (e3_cross_e1_norm*e3_cross_e1_norm);
         
         /* e3_star = [ 0      -e_3(3)  e_3(2)
          *             e_3(3)    0    -e_3(1)
          *            -e_3(2)  e_3(1)   0     ]*/
-        e1_star = Matrix3dDiff::Zero(); // rearrangement of e3 in matrix form
+         // rearrangement of e3 in matrix form
         e3_star(2-1,1-1) =  e3(3-1);      e3_star(1-1,2-1) =  -e3(3-1);    e3_star(1-1,3-1) =  e3(2-1);
         e3_star(3-1,1-1) =  -e3(2-1);   e3_star(3-1,2-1) =  e3(1-1);      e3_star(2-1,3-1) =  -e3(1-1); 
         
-        zeta = MatrixXdDiff::Zero(3,12);
+        
         zeta = e3_star*de1 - e1_star*de3;
         
-        epsilon = VectorXdDiff::Zero(12);
+        
         epsilon = e3_cross_e1.transpose()*zeta / e3_cross_e1_norm;
         
         de2 = zeta/ e3_cross_e1_norm - delta*epsilon.transpose();
@@ -648,22 +659,32 @@ void CStructure::EvalSensRot(int iIter){
         Krot.block(7-1,1-1,3,12)  =  de1*fint(7-1)  + de2*fint(8-1)  + de3*fint(9-1) ;
         Krot.block(10-1,1-1,3,12) =  de1*fint(10-1) + de2*fint(11-1) + de3*fint(12-1) ;
         
-        
-        file  <<  "Element: " << id_el << '\n';
-        file  <<  Krot << '\n';
-        /*
-        file  <<  de1 << '\n';        
+        file.precision(25);	
+        file.setf(ios::fixed);
+        file.setf(ios::showpoint);
+        file  <<  "Element: " << id_el << '\n';       
+        file  << '\n';         
+        file  <<  "de1 = \n "<< de1 << '\n';        
         file  << '\n';
-        file  <<  de2 << '\n';
+        file  <<  "e1 = \n "<< e1 << '\n';              
+        file  << '\n';  
+        file  <<  "e3 = \n "<< e3 << '\n';              
+        file  << '\n';   
+        file  << "e3_cross_e1_norm = \n "<<  e3_cross_e1_norm << '\n';        
+        file  << '\n';         
+        file  << "e3_cross_e1 = \n "<<  e3_cross_e1 << '\n';        
+        file  << '\n';         
+        file  << "delta = \n "<<  delta << '\n';        
+        file  << '\n';        
+        file  << "zeta = \n "<<  zeta << '\n';
+        file  << '\n';        
+        file  <<  "epsilon  = \n "<< epsilon << '\n';        
         file  << '\n';
-        file  <<  de3 << '\n';
+        file  <<   "de2 = \n "<< de2 << '\n';
         file  << '\n';
-        file  <<  Krot << '\n';
-        *//*
-        file  <<  dpa << '\n';
+        file  <<   "de3 = \n "<< de3 << '\n';
         file  << '\n';
-        file  <<  dpb << '\n';
-         */
+
         // ================= > insert in the right position
         
         
@@ -759,7 +780,7 @@ void CStructure::SolveLinearStaticSystem(int iIter)
             posU += 6;}
     */
     
-    std::cout<< "\n dU = \n" << dU << std::endl;
+    //std::cout<< "\n dU = \n" << dU << std::endl;
     //std::cout<< "Residual = \n" << Residual << std::endl;
 
     if (relative_error > tol_LinSol)
