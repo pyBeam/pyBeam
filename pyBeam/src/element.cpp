@@ -361,7 +361,7 @@ void CElement::EvalRotMat(VectorXdDiff &dU_AB,  VectorXdDiff  &X_AB)
         
     // Auxiliary Vector for building the new e3
     p = 0.5*(pa + pb);
-    p= p/p.norm();
+    //p= p/p.norm();
     
     /*
     if (iElement==19 or iElement==18)
@@ -583,7 +583,7 @@ void CElement::EvalRotMatFiniteDifferences( VectorXdDiff dU_AB_eps, VectorXdDiff
         
     // Auxiliary Vector for building the new e3
     p = 0.5*(pa + pb);
-    p= p/p.norm();
+    //p= p/p.norm();
 
         if (iElement==18 or iElement==95)
     { 

@@ -516,10 +516,10 @@ void CStructure::EvalSensRotFiniteDifferences(){
     int dof_jjj = 0; int dof_kkk = 0;
     
     // Finite difference for translation DOFs
-    addouble fd_t = 1.0e-12;
+    addouble fd_t = 1.0e-13;
     // Finite difference for rotational DOFs
     //addouble fd_r = 7.9e-1;
-    addouble fd_r = 1.0e-12;    
+    addouble fd_r = 1.0e-13;    
     addouble fd;  
     
     int ii;
