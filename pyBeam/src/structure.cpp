@@ -519,11 +519,13 @@ void CStructure::EvalSensRotFiniteDifferences(){
     addouble fd_t = 1.0e-12;
     // Finite difference for rotational DOFs
     //addouble fd_r = 7.9e-1;
-    addouble fd_r = 7.0e-1;    
+    addouble fd_r = 1.0e-12;    
     addouble fd;  
     
     int ii;
     
+        std::ofstream file("./FiniteDifferences_de1_de2_de3.txt");
+    std::cout.precision(17);
     
     for (int id_el=1; id_el<= nfem; id_el++) {
         
@@ -586,7 +588,15 @@ void CStructure::EvalSensRotFiniteDifferences(){
         Krot.block(10-1,1-1,3,12) =  de1*fint(10-1) + de2*fint(11-1) + de3*fint(12-1) ;
         
         // ================= > insert in the right position
-        
+
+        file << "Element =  " << id_el;
+        file << "\n ";        
+        file << "de1 = \n " << de1;
+        file << "\n ";
+        file << "de2 = \n " << de2;
+        file << "\n ";        
+        file << "de3 = \n " << de3;
+        file << "\n ";        
         
         for (int jjj=1; jjj<= 2; jjj++) {
             
