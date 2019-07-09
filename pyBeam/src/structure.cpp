@@ -659,9 +659,9 @@ void CStructure::EvalSensRot(int iIter){
         Krot.block(7-1,1-1,3,12)  =  de1*fint(7-1)  + de2*fint(8-1)  + de3*fint(9-1) ;
         Krot.block(10-1,1-1,3,12) =  de1*fint(10-1) + de2*fint(11-1) + de3*fint(12-1) ;
         
-        file.precision(25);	
-        file.setf(ios::fixed);
-        file.setf(ios::showpoint);
+        //file.precision(25);	
+        //file.setf(ios::fixed);
+        //file.setf(ios::showpoint);
         file  <<  "Element: " << id_el << '\n';       
         file  << '\n';         
         file  <<  "de1 = \n "<< de1 << '\n';        
