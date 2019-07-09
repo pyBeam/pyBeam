@@ -541,6 +541,9 @@ void CStructure::EvalSensRot(int iIter){
     
     int dof_jjj = 0; int dof_kkk = 0;
     
+    std::ofstream file("./Analytic_de1_de2_de3.txt");
+    std::cout.precision(17);
+    
     
     for (int id_el=1; id_el<= nfem; id_el++) {
         
@@ -606,13 +609,13 @@ void CStructure::EvalSensRot(int iIter){
         
         beta = MatrixXdDiff::Zero(3,12);        
         beta = 1/2*(e1_star*dpa + e1_star*dpb) - p_star*de1;
-          
+        
         gamma = VectorXdDiff::Zero(12); 
         gamma = e1_cross_p.transpose()*beta / e1_cross_p_norm;
-
+        
         
         de3 = beta / e1_cross_p_norm - alpha*gamma.transpose();
-
+        
         //===   de2_du === 0   
         
         e3 = element[id_el-1]->R.block(1-1,3-1,3,1);
@@ -637,7 +640,7 @@ void CStructure::EvalSensRot(int iIter){
         epsilon = e3_cross_e1.transpose()*zeta / e3_cross_e1_norm;
         
         de2 = zeta/ e3_cross_e1_norm - delta*epsilon.transpose();
-
+        
         // ====== Krot
         
         Krot.block(1-1,1-1,3,12)  =  de1*fint(1-1)  + de2*fint(2-1)  + de3*fint(3-1) ;
@@ -645,12 +648,22 @@ void CStructure::EvalSensRot(int iIter){
         Krot.block(7-1,1-1,3,12)  =  de1*fint(7-1)  + de2*fint(8-1)  + de3*fint(9-1) ;
         Krot.block(10-1,1-1,3,12) =  de1*fint(10-1) + de2*fint(11-1) + de3*fint(12-1) ;
         
-        std::ofstream file("./Analytic_de1_de2_de3.txt");
-        std::cout.precision(17);
+        
         file  <<  "Element: " << id_el << '\n';
         file  <<  Krot << '\n';
-        file.close();
-
+        /*
+        file  <<  de1 << '\n';        
+        file  << '\n';
+        file  <<  de2 << '\n';
+        file  << '\n';
+        file  <<  de3 << '\n';
+        file  << '\n';
+        file  <<  Krot << '\n';
+        *//*
+        file  <<  dpa << '\n';
+        file  << '\n';
+        file  <<  dpb << '\n';
+         */
         // ================= > insert in the right position
         
         
@@ -668,8 +681,9 @@ void CStructure::EvalSensRot(int iIter){
         }
         
     }
+    file.close();
 }
-    
+
 
 /*===================================================
  //      Evaluate the residual
