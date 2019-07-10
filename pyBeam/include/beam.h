@@ -115,5 +115,7 @@ public:
   inline passivedouble ExtractLoadGradient(int iNode, int iDOF) {return loadGradient[iNode*nDOF + iDOF];}
 
   inline unsigned long Get_nNodes(void) {return input->Get_nNodes();}
+  
+  void WriteRestart();
 
 };

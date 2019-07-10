@@ -251,6 +251,11 @@ void CBeamSolver::Solve(int FSIIter = 0){
     std::cout << "===========================================================================" << std::endl;
     std::cout << std::endl << "--> Exiting Iterative Sequence." << std::endl;
 
+    if (input->Get_WriteRestartFlag() ==1)
+    {
+        WriteRestart();
+    }
+    
 
 }
 
@@ -299,5 +304,26 @@ void CBeamSolver::ComputeAdjoint(void){
     }
 }
 
+
+
+void CBeamSolver::WriteRestart(){
+    std::ofstream myfile;
+    myfile.open ("restart_structure.dat");
+    myfile << "Node ID          ";
+    myfile << "Coord. X         ";
+    myfile << "Coord. Y         ";
+    myfile << "Coord. Z        \n";            
+    myfile << setprecision(17);
+    myfile <<  std::scientific; 
+    int posX = 1;    // current  position in the X array
+    for (int id_node=1-1; id_node<= input->Get_nNodes() -1; id_node++)   {
+        for (int iDim=0; iDim < 3; iDim++) {
+            myfile << structure->X(posX+iDim-1) << "           ";
+        }
+        posX += 3;
+    }    
+    
+    myfile.close();
+}
 
 

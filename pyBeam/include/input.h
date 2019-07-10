@@ -70,7 +70,8 @@ protected:
 
 	addouble tol_LinSol;	// Tolerance of the linear solver
 	unsigned short kind_LinSol;	// Tolerance of the linear solver
-	unsigned short Restart; 	// Number of degrees of freedom 
+	unsigned short WriteRestart; 	// Write restart option
+        unsigned short Restart; 	// Restart option
 
 	//##############    Material inputs (only ONE homogeneous material is allowed by now)  ###########################
 	// Units Sys: SI
@@ -110,7 +111,9 @@ public:
 
   void SetTolerance_LinSol(passivedouble tolerance) {tol_LinSol = tolerance; }
 
-  void Set_RestartFlag(unsigned short RestartFlag) {Restart = RestartFlag; }
+  void Set_WriteRestartFlag(unsigned short WriteRestartFlag) {WriteRestart = WriteRestartFlag; }
+  
+  void Set_RestartFlag(unsigned short RestartFlag) {Restart = RestartFlag; }  
   
   void SetConvCriterium(passivedouble ConvCriterium) {convCriteria = ConvCriterium; }   
 
@@ -130,7 +133,9 @@ public:
 
   addouble GetTolerance_LinSol(void) {return tol_LinSol; }
   
-  unsigned short Get_RestartFlag(void) {return Restart; }  
+  unsigned short Get_WriteRestartFlag(void) {return WriteRestart; }  
+  
+  unsigned short Get_RestartFlag(void) {return Restart; }    
 
   unsigned short GetKind_LinSol(void) {return kind_LinSol; }
   
