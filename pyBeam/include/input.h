@@ -111,6 +111,8 @@ public:
 
   void SetTolerance_LinSol(passivedouble tolerance) {tol_LinSol = tolerance; }
 
+  void SetKind_LinSol(unsigned short kind_solver) {kind_LinSol = kind_solver; }
+  
   void Set_WriteRestartFlag(unsigned short WriteRestartFlag) {WriteRestart = WriteRestartFlag; }
   
   void Set_RestartFlag(unsigned short RestartFlag) {Restart = RestartFlag; }  

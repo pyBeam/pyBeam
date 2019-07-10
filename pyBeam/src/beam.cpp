@@ -309,19 +309,58 @@ void CBeamSolver::ComputeAdjoint(void){
 void CBeamSolver::WriteRestart(){
     std::ofstream myfile;
     myfile.open ("restart_structure.dat");
+        //==== Writing Nodes info
     myfile << "Node ID          ";
     myfile << "Coord. X         ";
     myfile << "Coord. Y         ";
-    myfile << "Coord. Z        \n";            
-    myfile << setprecision(17);
-    myfile <<  std::scientific; 
+    myfile << "Coord. Z        \n";     
     int posX = 1;    // current  position in the X array
-    for (int id_node=1-1; id_node<= input->Get_nNodes() -1; id_node++)   {
+    for (int id_node=1; id_node<= input->Get_nNodes() ; id_node++)   {
+        myfile << id_node  << "           ";
         for (int iDim=0; iDim < 3; iDim++) {
-            myfile << structure->X(posX+iDim-1) << "           ";
+            myfile << std::scientific << setprecision(17) << structure->X(posX+iDim-1) << "           " ;
         }
+        myfile << "\n";
         posX += 3;
     }    
+    //==== Writing Elements info   
+    myfile << "Element ID          ";
+    myfile << "Strain 1         ";
+    myfile << "Strain 2         ";
+    myfile << "Strain 3         ";
+    myfile << "Strain 4         ";
+    myfile << "Strain 5         ";
+    myfile << "Strain 6         ";    
+    myfile << " Reference e1(1) ";
+    myfile << " Reference e1(2) ";
+    myfile << " Reference e1(3) ";
+    myfile << " Reference e2(1) ";
+    myfile << " Reference e2(2) ";
+    myfile << " Reference e2(3) ";
+    myfile << " Reference e3(1) ";
+    myfile << " Reference e3(2) ";
+    myfile << " Reference e3(3) \n";   
+    for (int id_fe=1;     id_fe <= input->Get_nFEM() ; id_fe++){
+        myfile << id_fe  << "           ";   
+        //strains
+        for (int i=1;     i <= 6 ; i++){
+            myfile << std::scientific << setprecision(17) << element[id_fe-1]->eps(1-1) << "           " ;            
+        }
+        //e1
+        for (int j=1;  j <= 3 ; j++){
+            myfile << std::scientific << setprecision(17) << element[id_fe-1]->R(j-1,1-1) << "           " ;                        
+        }
+        //e2
+        for (int j=1;  j <= 3 ; j++){
+            myfile << std::scientific << setprecision(17) << element[id_fe-1]->R(j-1,2-1) << "           " ;                        
+        }
+        //e3
+        for (int j=1;  j <= 3 ; j++){
+            myfile << std::scientific << setprecision(17) << element[id_fe-1]->R(j-1,3-1) << "           " ;                        
+        }        
+        myfile << "\n";
+    }
+    
     
     myfile.close();
 }
