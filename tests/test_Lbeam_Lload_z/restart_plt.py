@@ -37,15 +37,12 @@ beam = pyBeamSolver(file_dir ,'config_NL.cfg')
 
 beam.SetLoads(20,0,0,50000)
 
-beam.Run()
+if beam.Config['RESTART'] == 1:
+   beam.Restart()
 
 beam.PrintDisplacements(20)
 
-beam.Restart()
-
-beam.PrintDisplacements(20)
-
-success = beam.TestNodePosition(20,1e-8,19.05326647582835,12.150042136520977,16.32312936016357)
+success = beam.TestNodePosition(20,1e-8,19.052214437260,12.150786650634,16.323237985295)
 
 
 

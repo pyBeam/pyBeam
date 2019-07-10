@@ -156,6 +156,8 @@ public:
     
     void UpdateCoord();
     
+    void RestartCoord();
+    
     void UpdateAxvector_RBE2(); 
 
     void UpdateCoord_RBE2(int iIter);        
@@ -171,6 +173,8 @@ public:
     //===================================================
         
     void UpdateInternalForces();
+    
+    void InitializeInternalForces();
     
     addouble GetDisplacement(int pos, int index) {
         addouble disp;
