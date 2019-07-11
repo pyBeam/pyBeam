@@ -506,10 +506,16 @@ void CStructure::EvalSensRot(int iIter){
     Vector3dDiff de1_i = Vector3dDiff::Zero();
     
 
-    // For derivative of e3 I need:
+   
     VectorXdDiff dU_AB = VectorXdDiff::Zero(12);
     VectorXdDiff  X_AB = VectorXdDiff::Zero(6);
+     // For derivative of e3 I need:
     
+    addouble ii = 0.0;
+    MatrixXdDiff iii = MatrixXdDiff::Zero(3,12);
+    addouble iv = 0.0;
+    MatrixXdDiff alpha = MatrixXdDiff::Zero(3,12);
+    MatrixXdDiff beta = MatrixXdDiff::Zero(3,12);
     //Vector3dDiff pa = Vector3dDiff::Zero();
     //Vector3dDiff pb = Vector3dDiff::Zero();
     Vector3dDiff p= Vector3dDiff::Zero();
@@ -520,18 +526,18 @@ void CStructure::EvalSensRot(int iIter){
     Matrix3dDiff p_star = Matrix3dDiff::Zero();  // rearrangement of p in matrix form
     
     MatrixXdDiff dp = MatrixXdDiff::Zero(3,12);  // d(pa)/d(U)
-    Vector3dDiff alpha = Vector3dDiff::Zero();   // (e1 X p) /( (e1 X p)'*(e1 X p) ) 
-    MatrixXdDiff beta = MatrixXdDiff::Zero(3,12);   // d(e1 X p)/dU
-    VectorXdDiff gamma = VectorXdDiff::Zero(12);   // d(norm(e1 X p))/dU
+    //Vector3dDiff alpha = Vector3dDiff::Zero();   // (e1 X p) /( (e1 X p)'*(e1 X p) ) 
+    //MatrixXdDiff beta = MatrixXdDiff::Zero(3,12);   // d(e1 X p)/dU
+    Matrix3dDiff gamma = Matrix3dDiff::Zero(12);   // d(norm(e1 X p))/dU
     Matrix3dDiff dp_block = Matrix3dDiff::Zero(); // d(pb)/d(U)
   
     // For derivative of e2 I need:
     
     Vector3dDiff e3_cross_e1= Vector3dDiff::Zero();
     addouble e3_cross_e1_norm;
-    Vector3dDiff delta = Vector3dDiff::Zero();   // (e3 X e1) /( (e3 X e1)'*(e3 X e1) )   
-    MatrixXdDiff zeta = MatrixXdDiff::Zero(3,12);   // d(e3 X e1)/dU
-    VectorXdDiff epsilon = VectorXdDiff::Zero(12);   // d(norm(e3 X e1))/dU
+    //Vector3dDiff delta = Vector3dDiff::Zero();   // (e3 X e1) /( (e3 X e1)'*(e3 X e1) )   
+    //MatrixXdDiff zeta = MatrixXdDiff::Zero(3,12);   // d(e3 X e1)/dU
+    //VectorXdDiff epsilon = VectorXdDiff::Zero(12);   // d(norm(e3 X e1))/dU
     Matrix3dDiff e3_star = Matrix3dDiff::Zero(); // rearrangement of e3 in matrix form    
     //-------------------------------
     
@@ -548,7 +554,8 @@ void CStructure::EvalSensRot(int iIter){
     for (int id_el=1; id_el<= nfem; id_el++) {
         
         // Setting to zero the various coefficients
-        alpha = Vector3dDiff::Zero();  
+        //alpha = Vector3dDiff::Zero(); 
+        alpha = MatrixXdDiff::Zero(3,12);
         de1 = MatrixXdDiff::Zero(3,12);
         de3 = MatrixXdDiff::Zero(3,12); 
         dp = MatrixXdDiff::Zero(3,12);
@@ -557,11 +564,11 @@ void CStructure::EvalSensRot(int iIter){
         p_star = Matrix3dDiff::Zero(); 
         e1_star = Matrix3dDiff::Zero(); 
         beta = MatrixXdDiff::Zero(3,12);         
-        gamma = VectorXdDiff::Zero(12); 
-        delta = Vector3dDiff::Zero();
+        gamma = Matrix3dDiff::Zero(12);  
+        //delta = Vector3dDiff::Zero();
         e3_star = Matrix3dDiff::Zero(); 
-        zeta = MatrixXdDiff::Zero(3,12);        
-        epsilon = VectorXdDiff::Zero(12);        
+        //zeta = MatrixXdDiff::Zero(3,12);        
+        //epsilon = VectorXdDiff::Zero(12);        
         
         nodeA_id = element[id_el-1]->nodeA->GeID();
         nodeB_id = element[id_el-1]->nodeB->GeID();
@@ -598,7 +605,7 @@ void CStructure::EvalSensRot(int iIter){
         e1_cross_p_norm = e1_cross_p.norm();
         //Ingredients
 
-        alpha = e1_cross_p / (e1_cross_p_norm*e1_cross_p_norm);
+        ii = 1/e1_cross_p_norm -  e1_cross_p*e1_cross_p.transpose() / (e1_cross_p_norm*e1_cross_p_norm*e1_cross_p_norm);
         
         /* e1_star = [ 0      -e_1(3)  e_1(2)
          *             e_1(3)    0    -e_1(1)
@@ -617,7 +624,15 @@ void CStructure::EvalSensRot(int iIter){
         p_star(1-1,3-1) =  p(2-1);
         p_star(2-1,3-1) =  -p(1-1);        
         
-
+        e3 = element[id_el-1]->R.block(1-1,3-1,3,1);
+        
+        /* e3_star = [ 0      -e_3(3)  e_3(2)
+         *             e_3(3)    0    -e_3(1)
+         *            -e_3(2)  e_3(1)   0     ]*/
+        // rearrangement of e3 in matrix form
+        e3_star(2-1,1-1) =  e3(3-1);      e3_star(1-1,2-1) =  -e3(3-1);    e3_star(1-1,3-1) =  e3(2-1);
+        e3_star(3-1,1-1) =  -e3(2-1);   e3_star(3-1,2-1) =  e3(1-1);      e3_star(2-1,3-1) =  -e3(1-1);         
+        
         /* dp_block  = [ 0      e2(3)   -e2(2)
          *             -e2(3)     0    -e2(1)
          *             e2(2)    -e2(1)    0     ]*/ 
@@ -626,41 +641,26 @@ void CStructure::EvalSensRot(int iIter){
         
         dp.block(1-1,3-1,3,3) = dp_block;
         dp.block(1-1,10-1,3,3) =   dp_block;    
-       
-        dp = dp*0.5;
         
-        beta = e1_star*dp  - p_star*de1;
+        iii = dp*0.5;
         
-
-        gamma = e1_cross_p.transpose()*beta / e1_cross_p_norm;
-        
-        
-        de3 = beta / e1_cross_p_norm - alpha*gamma.transpose();
-        
-        //===   de2_du === 0   
-        
-        e3 = element[id_el-1]->R.block(1-1,3-1,3,1);
+        beta = ii*(e1_star*iii  - p_star*de1);
         
         e3_cross_e1 = e3.cross(e1);
         e3_cross_e1_norm = e3_cross_e1.norm();
         
-
-        delta = e3_cross_e1 / (e3_cross_e1_norm*e3_cross_e1_norm);
+        iv = 1/e3_cross_e1_norm - e3_cross_e1*e3_cross_e1.transpose() / (e3_cross_e1_norm*e3_cross_e1_norm*e3_cross_e1_norm);
         
-        /* e3_star = [ 0      -e_3(3)  e_3(2)
-         *             e_3(3)    0    -e_3(1)
-         *            -e_3(2)  e_3(1)   0     ]*/
-         // rearrangement of e3 in matrix form
-        e3_star(2-1,1-1) =  e3(3-1);      e3_star(1-1,2-1) =  -e3(3-1);    e3_star(1-1,3-1) =  e3(2-1);
-        e3_star(3-1,1-1) =  -e3(2-1);   e3_star(3-1,2-1) =  e3(1-1);      e3_star(2-1,3-1) =  -e3(1-1); 
+        alpha = iv*(e3_star*de1);
         
+        gamma = MatrixXdDiff::Identity(3,3); 
+        gamma = gamma -ii*iv*e1_star*e1_star;         
         
-        zeta = e3_star*de1 - e1_star*de3;
+        de3 = gamma.inverse()*(ii*e1_star*alpha + beta);
         
+        //===   de2_du === 0   
         
-        epsilon = e3_cross_e1.transpose()*zeta / e3_cross_e1_norm;
-        
-        de2 = zeta/ e3_cross_e1_norm - delta*epsilon.transpose();
+        de2 = alpha + iv*e1_star*de3;
         
         // ====== Krot
         
