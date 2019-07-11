@@ -477,7 +477,7 @@ void CStructure::EvalSensRot_old(int iIter){
 }
 
 /*===================================================
- *        Evaluate the Sensitivty of Rotation Matrix
+ *        Evaluate the Sensitivity of Rotation Matrix
  *===================================================*/
 /* Given the element's internal forces and the R, evaluates the
  * contribution to the tangent matrix dF/dU = dR/dU*f
@@ -488,7 +488,7 @@ void CStructure::EvalSensRot(int iIter){
     VectorXdDiff dl_dU =  VectorXdDiff::Zero(12);
     Vector3dDiff e1    = Vector3dDiff::Zero();
     Vector3dDiff e3    = Vector3dDiff::Zero();
-    Vector3dDiff e2_old    = Vector3dDiff::Zero();
+    Vector3dDiff e2    = Vector3dDiff::Zero();
     MatrixXdDiff de1 = MatrixXdDiff::Zero(3,12);
     MatrixXdDiff de2 = MatrixXdDiff::Zero(3,12);
     MatrixXdDiff de3 = MatrixXdDiff::Zero(3,12);
@@ -510,8 +510,8 @@ void CStructure::EvalSensRot(int iIter){
     VectorXdDiff dU_AB = VectorXdDiff::Zero(12);
     VectorXdDiff  X_AB = VectorXdDiff::Zero(6);
     
-    Vector3dDiff pa = Vector3dDiff::Zero();
-    Vector3dDiff pb = Vector3dDiff::Zero();
+    //Vector3dDiff pa = Vector3dDiff::Zero();
+    //Vector3dDiff pb = Vector3dDiff::Zero();
     Vector3dDiff p= Vector3dDiff::Zero();
     Vector3dDiff e1_cross_p= Vector3dDiff::Zero();
     addouble e1_cross_p_norm;
@@ -519,11 +519,11 @@ void CStructure::EvalSensRot(int iIter){
     Matrix3dDiff e1_star = Matrix3dDiff::Zero(); // rearrangement of e1 in matrix form
     Matrix3dDiff p_star = Matrix3dDiff::Zero();  // rearrangement of p in matrix form
     
-    MatrixXdDiff dpa = MatrixXdDiff::Zero(3,12);  // d(pa)/d(U)
+    MatrixXdDiff dp = MatrixXdDiff::Zero(3,12);  // d(pa)/d(U)
     Vector3dDiff alpha = Vector3dDiff::Zero();   // (e1 X p) /( (e1 X p)'*(e1 X p) ) 
     MatrixXdDiff beta = MatrixXdDiff::Zero(3,12);   // d(e1 X p)/dU
     VectorXdDiff gamma = VectorXdDiff::Zero(12);   // d(norm(e1 X p))/dU
-    MatrixXdDiff dpb = MatrixXdDiff::Zero(3,12); // d(pb)/d(U)
+    Matrix3dDiff dp_block = Matrix3dDiff::Zero(); // d(pb)/d(U)
   
     // For derivative of e2 I need:
     
@@ -550,7 +550,9 @@ void CStructure::EvalSensRot(int iIter){
         // Setting to zero the various coefficients
         alpha = Vector3dDiff::Zero();  
         de1 = MatrixXdDiff::Zero(3,12);
-        de3 = MatrixXdDiff::Zero(3,12);        
+        de3 = MatrixXdDiff::Zero(3,12); 
+        dp = MatrixXdDiff::Zero(3,12);
+        dp_block = Matrix3dDiff::Zero();
         p = Vector3dDiff::Zero();  
         p_star = Matrix3dDiff::Zero(); 
         e1_star = Matrix3dDiff::Zero(); 
@@ -577,7 +579,7 @@ void CStructure::EvalSensRot(int iIter){
         fint = element[id_el-1]->fint;
         
         e1 = element[id_el-1]->R.block(1-1,1-1,3,1);
-        e2_old = element[id_el-1]->Rprev.block(1-1,2-1,3,1);
+        e2 = element[id_el-1]->R.block(1-1,2-1,3,1);
         
         //===   de1_du ===
         XbmXa = X.segment((nodeB_id-1)*3+1 -1,3) - X.segment((nodeA_id-1)*3+1 -1,3);
@@ -590,7 +592,7 @@ void CStructure::EvalSensRot(int iIter){
         de1 += onetol*de1_part1;
         
         //===   de3_du === 0    
-        p = element[id_el-1]->p;  // At this point P is not normalized  
+        p = e2;
         
         e1_cross_p = e1.cross(p);
         e1_cross_p_norm = e1_cross_p.norm();
@@ -615,11 +617,19 @@ void CStructure::EvalSensRot(int iIter){
         p_star(1-1,3-1) =  p(2-1);
         p_star(2-1,3-1) =  -p(1-1);        
         
+
+        /* dp_block  = [ 0      e2(3)   -e2(2)
+         *             -e2(3)     0    -e2(1)
+         *             e2(2)    -e2(1)    0     ]*/ 
+        dp_block(2-1,1-1) =  -e2(3-1);      dp_block(1-1,2-1) =  e2(3-1);    dp_block(1-1,3-1) =  -e2(2-1);
+        dp_block(3-1,1-1) =  e2(2-1);   dp_block(3-1,2-1) =  -e2(1-1);      dp_block(2-1,3-1) =  e2(1-1);
         
-        element[id_el-1]->PaPbDer(dU_AB, e2_old,  dpa, dpb );  // evaluation of dpa and dpb
-        
+        dp.block(1-1,3-1,3,3) = dp_block;
+        dp.block(1-1,10-1,3,3) =   dp_block;    
        
-        beta = 0.5*(e1_star*dpa + e1_star*dpb) - p_star*de1;
+        dp = dp*0.5;
+        
+        beta = e1_star*dp  - p_star*de1;
         
 
         gamma = e1_cross_p.transpose()*beta / e1_cross_p_norm;
