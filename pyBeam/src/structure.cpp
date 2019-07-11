@@ -385,98 +385,6 @@ void CStructure::AssemblyTang(int iIter)
 
 
 /*===================================================
- *        Evaluate the Sensitivty of Rotation Matrix
- *===================================================*/
-/* Given the element's internal forces and the R, evaluates the
- * contribution to the tangent matrix dF/dU = dR/dU*f
- * */
-
-void CStructure::EvalSensRot(int iIter){
-    
-    VectorXdDiff dl_dU =  VectorXdDiff::Zero(12);
-    MatrixXdDiff de1 = MatrixXdDiff::Zero(3,12);
-    MatrixXdDiff de2 = MatrixXdDiff::Zero(3,12);
-    MatrixXdDiff de3 = MatrixXdDiff::Zero(3,12);
-    
-    MatrixXdDiff Krot = MatrixXdDiff::Zero(12,12);
-    VectorXdDiff fint =  VectorXdDiff::Zero(12);
-    
-    addouble onetol = 0.0;
-    
-    MatrixXdDiff de1_part1 = MatrixXdDiff::Zero(3,12);
-    
-    de1_part1.block(1-1,1-1,3,3) = - MatrixXdDiff::Identity(3,3);
-    de1_part1.block(1-1,7-1,3,3) =   MatrixXdDiff::Identity(3,3);
-    
-    Vector3dDiff de1_i = Vector3dDiff::Zero();
-    Vector3dDiff e3    = Vector3dDiff::Zero();
-    
-    //-------------------------------
-    
-    VectorXdDiff XbmXa = Vector3dDiff::Zero(3);
-    
-    int nodeA_id = 0; int nodeB_id = 0;    
-    
-    int dof_jjj = 0; int dof_kkk = 0;
-    
-    
-    for (int id_el=1; id_el<= nfem; id_el++) {
-        
-        nodeA_id = element[id_el-1]->nodeA->GeID();
-        nodeB_id = element[id_el-1]->nodeB->GeID();
-        
-        XbmXa = X.segment((nodeB_id-1)*3+1 -1,3) - X.segment((nodeA_id-1)*3+1 -1,3);
-        
-        fint = element[id_el-1]->fint;
-        
-        onetol = 1.0/element[id_el-1]->GetCurrent_Length(); //  1/l
-        
-        dl_dU.head(3)        = -element[id_el-1]->R.block(1-1,1-1,3,1);
-        dl_dU.segment(7-1,3) =  element[id_el-1]->R.block(1-1,1-1,3,1);
-        
-        de1 = (-onetol*onetol)*( XbmXa * dl_dU.transpose());    //
-        de1 += onetol*de1_part1;
-        
-        //===   de3_du === 0    TEMPORARY HAS TO BE FIXED!!!!
-        de3 = MatrixXdDiff::Zero(3,12);
-        
-        // de2_du =    de3_du X e1 + e3 X de1_du
-        // HNOT EFFICIENT IN THIS WAY!
-        for (int i=1; i<= 12; i++)
-        {
-            de1_i = de1.block(1-1,i-1,3,1);
-            e3 = element[id_el-1]->R.block(1-1,3-1,3,1);
-            de2.block(1-1,i-1,3,1) = e3.cross(de1_i);
-        }
-        
-        // ====== Krot
-        
-        Krot.block(1-1,1-1,3,12)  =  de1*fint(1-1)  + de2*fint(2-1)  + de3*fint(3-1) ;
-        Krot.block(4-1,1-1,3,12)  =  de1*fint(4-1)  + de2*fint(5-1)  + de3*fint(6-1) ;
-        Krot.block(7-1,1-1,3,12)  =  de1*fint(7-1)  + de2*fint(8-1)  + de3*fint(9-1) ;
-        Krot.block(10-1,1-1,3,12) =  de1*fint(10-1) + de2*fint(11-1) + de3*fint(12-1) ;
-        
-        // ================= > insert in the right position
-        
-        
-        for (int jjj=1; jjj<= 2; jjj++) {
-            
-            if (jjj==1) {dof_jjj  =  (nodeA_id-1)*6 +1;} else {dof_jjj  =  (nodeB_id-1)*6 +1;}
-            
-            for (int kkk=1; kkk<= 2; kkk++) {
-                if (kkk==1) {dof_kkk  =  (nodeA_id-1)*6 +1;} else {dof_kkk  =  (nodeB_id-1)*6 +1;} 
-                
-                Ksys.block(dof_jjj-1,dof_kkk-1,6,6) += Krot.block((jjj-1)*6+1 -1,(kkk-1)*6+1 -1,6,6);
-                
-            }
-        }
-        
-    }
-    
-}
-
-
-/*===================================================
  *        Evaluate the Sensitivty of Rotation Matrix with finite differences
  *===================================================*/
 /* Given the element's internal forces and the R, evaluates the
@@ -489,7 +397,6 @@ void CStructure::EvalSensRotFiniteDifferences(){
     VectorXdDiff  X_AB = VectorXdDiff::Zero(6); 
     Matrix3dDiff R_eps = Matrix3dDiff::Zero();
     
-    VectorXdDiff dl_dU =  VectorXdDiff::Zero(12);
     MatrixXdDiff de1 = MatrixXdDiff::Zero(3,12);
     MatrixXdDiff de2 = MatrixXdDiff::Zero(3,12);
     MatrixXdDiff de3 = MatrixXdDiff::Zero(3,12);
@@ -497,19 +404,15 @@ void CStructure::EvalSensRotFiniteDifferences(){
     MatrixXdDiff Krot = MatrixXdDiff::Zero(12,12);
     VectorXdDiff fint =  VectorXdDiff::Zero(12);
     
-    addouble onetol = 0.0;
     
     MatrixXdDiff de1_part1 = MatrixXdDiff::Zero(3,12);
     
     de1_part1.block(1-1,1-1,3,3) = - MatrixXdDiff::Identity(3,3);
     de1_part1.block(1-1,7-1,3,3) =   MatrixXdDiff::Identity(3,3);
     
-    Vector3dDiff de1_i = Vector3dDiff::Zero();
-    Vector3dDiff e3    = Vector3dDiff::Zero();
     
     //-------------------------------
     
-    VectorXdDiff XbmXa = Vector3dDiff::Zero(3);
     
     int nodeA_id = 0; int nodeB_id = 0;    
     
@@ -518,15 +421,11 @@ void CStructure::EvalSensRotFiniteDifferences(){
     // Finite difference for translation DOFs
     addouble fd_t = 1.0e-10;
     // Finite difference for rotational DOFs
-    //addouble fd_r = 7.9e-1;
     addouble fd_r = 1.0e-10;    
     addouble fd;  
     
     int ii;
-    
-        std::ofstream file("./FiniteDifferences_de1_de2_de3.txt");
-    std::cout.precision(17);
-    
+       
     for (int id_el=1; id_el<= nfem; id_el++) {
         /*
         if (id_el==19 or id_el==96)
@@ -559,25 +458,13 @@ void CStructure::EvalSensRotFiniteDifferences(){
             }
             
             dU_AB_eps(ii -1) = fd; 
-            /*
-            if (id_el==19 or id_el==96)
-            { 
-                std::cout.precision(17);
-                std::cout << "dU_AB_eps    = \n" << dU_AB_eps << std::endl;
-            }    
-             * */  
+
             element[id_el-1]->EvalRotMatFiniteDifferences( dU_AB_eps, X_AB, R_eps);
             
             de1.block(1-1,ii-1,3,1) =  ( R_eps.block(1-1,1-1,3,1) - element[id_el-1]->R.block(1-1,1-1,3,1) ) / fd;
             de2.block(1-1,ii-1,3,1) =  ( R_eps.block(1-1,2-1,3,1) - element[id_el-1]->R.block(1-1,2-1,3,1) ) / fd;
             de3.block(1-1,ii-1,3,1) =  ( R_eps.block(1-1,3-1,3,1) - element[id_el-1]->R.block(1-1,3-1,3,1) ) / fd;
             
-            /*
-            if (id_el==19 or id_el==96)
-            {                 
-                std::cout << "Rotation matrix    = \n" << element[id_el-1]->R.block(1-1,1-1,3,3) << std::endl;
-                std::cout << "Rotation matrix  eps  = \n" << R_eps << std::endl;
-            }*/
         }    
         
         // ====== Krot
@@ -588,15 +475,7 @@ void CStructure::EvalSensRotFiniteDifferences(){
         Krot.block(10-1,1-1,3,12) =  de1*fint(10-1) + de2*fint(11-1) + de3*fint(12-1) ;
         
         // ================= > insert in the right position
-         
-        file << "Element =  " << id_el;
-        file << "\n ";        
-        file << "de1 = \n " << de1;
-        file << "\n ";
-        file << "de2 = \n " << de2;
-        file << "\n ";        
-        file << "de3 = \n " << de3;
-        file << "\n ";        
+                
         
         for (int jjj=1; jjj<= 2; jjj++) {
             
@@ -627,8 +506,6 @@ void CStructure::EvalResidual(unsigned short irigid)
 {
     
     
-    //std::cout << "\nFint = \n" << Fint.transpose() <<"\n" << std::endl;
-    //std::cout << "dU = " << dU.transpose() << std::endl;
     Residual = Fext - Fint;
 
     int iii = 0; int constr_dof_id = 0;
@@ -651,9 +528,6 @@ void CStructure::EvalResidual(unsigned short irigid)
 
 void CStructure::SolveLinearStaticSystem(int iIter)
 {
-    std::ofstream file("./Kel.txt");
-    std::cout.precision(17);
-    file  <<  Ksys << '\n';
     
     switch(kind_linSol){
     case PartialPivLu:
@@ -677,19 +551,6 @@ void CStructure::SolveLinearStaticSystem(int iIter)
     addouble relative_error = (Ksys*dU -Residual).norm() / Residual.norm(); // norm() is L2 norm
 
     std::cout.width(17); std::cout << log10(relative_error);
-
-    /*
-    int posU = 1;
-    
-    for (int id_node=1-1; id_node<=nNode-1 ; id_node++) {
-        
-        //dU(posU-1)   = 0;  //  *
-        //dU(posU-1+1) = 0; 
-            posU += 6;}
-    */
-    
-    //std::cout<< "\n dU = \n" << dU << std::endl;
-    //std::cout<< "Residual = \n" << Residual << std::endl;
 
     if (relative_error > tol_LinSol)
     {
@@ -1271,22 +1132,6 @@ void CStructure::UpdateInternalForces()
         
         element[id_fe-1]->phi =  element[id_fe-1]->Kprim*element[id_fe-1]->eps;
         
-        
-        /*
-            if ((id_fe-1)==19 or (id_fe-1)==18)
-    {
-        std::cout << "\nElement: = " <<  id_fe  << "\n" << std::endl;
-        std::cout << "R_0 = \n"<< element[id_fe-1]->Rprev.block(0,0,3,3) << "\n" << std::endl;
-        std::cout << "R_1 = \n"<< element[id_fe-1]->R.block(0,0,3,3) << "\n" << std::endl; 
-        std::cout << "R_A = \n"<< Rnode_A << "\n" << std::endl;
-        std::cout << "pseudo_A = \n"<< pseudo_A << "\n" << std::endl;
-        std::cout << "pseudo_B = \n"<< pseudo_B << "\n" << std::endl;        
-        std::cout << "pseudo_A_el = \n"<< pseudo_A_el << "\n" << std::endl;
-        std::cout << "pseudo_B_el = \n"<< pseudo_B_el << "\n" << std::endl;          
-        std::cout << "phi = \n"<< element[id_fe-1]->phi << "\n" << std::endl; 
-        std::cout << "eps = \n"<< element[id_fe-1]->eps << "\n" << std::endl;
-            }
-        */
         Na = MatrixXdDiff::Zero(6,6);
         Nb = MatrixXdDiff::Zero(6,6);
         

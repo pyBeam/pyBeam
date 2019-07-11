@@ -284,11 +284,6 @@ void CElement::ElementTang_Rao(int iIter, MatrixXdDiff & Ktang)
     // Still needs to be rotated and also added the rigid contribution
     Ktang = Kstretch + Kel;
 
-/*    if (iElement == 19) {
-    std::cout << "Element    = " << iElement << std::endl;
-    std::cout << "Kstretch matrix    = \n" << Kstretch << std::endl;    
-    std::cout << "Kel matrix    = \n" << Kel << std::endl;    
-    }    */
 }
 
 
@@ -341,18 +336,7 @@ void CElement::EvalRotMat(VectorXdDiff &dU_AB,  VectorXdDiff  &X_AB)
     PseudoToRot(pseudoA, Rnode);
     pa = Rnode*e2_old;
     
-    /*
-    if (iElement==19  or iElement==18)
-    {
-        //PseudoToRot(pseudoA, Rnode,1);
-        std::cout << "E2 old: " << e2_old << std::endl;        
-        std::cout << "\nFor triad in A:\n" << std::endl;
-        std::cout << "Pseudo A: " << pseudoA << std::endl;        
-        std::cout << "pa: " << pa << std::endl; 
-    }
-    */
-     
-    
+        
     //===> Node B
     
     pseudoB = dU_AB.segment(10-1,3);     // Rotation at triad B   
@@ -363,16 +347,7 @@ void CElement::EvalRotMat(VectorXdDiff &dU_AB,  VectorXdDiff  &X_AB)
     p = 0.5*(pa + pb);
     //p= p/p.norm();
     
-    /*
-    if (iElement==19 or iElement==18)
-    {        
-        std::cout << "\nFor triad in B:\n" << std::endl;
-        std::cout << "Pseudo B: " << pseudoB << std::endl;        
-        std::cout << "pb: " << pb << std::endl;
-        std::cout << "p: " << p << std::endl;        
-    }
-    */
-    
+   
     /*---------------------
      *       e3
      *---------------------*/
@@ -389,30 +364,6 @@ void CElement::EvalRotMat(VectorXdDiff &dU_AB,  VectorXdDiff  &X_AB)
     e2 = e3.cross(e1);
     e2 = e2/e2.norm();
     
-    // Maybe it's usefull to do a second round of cross product vector
-    //e1 = e2.cross(e3);
-    //e1 = e1/e1.norm();
-    //e2 = e3.cross(e1);
-    //e2 = e2/e2.norm();
-    //e3 = e1.cross(e2);
-    //e3 = e3/e3.norm();    
-
-    
-    /*
-    if (iElement==19 or iElement==18)
-    {     
-    std::cout << "e1*e2: " << e1.dot(e2) << std::endl;  
-    std::cout << "e2*e3: " << e2.dot(e3) << std::endl;    
-    std::cout << "e3*e1: " << e3.dot(e1) << std::endl;   
-    
-    }
-     */
-    //if (iElement==19)
-    //{
-    //std::cout << "DEBUG TO BE REMOVED(AND POSSIBLY CORRECTED)"<< std::endl;    
-    //        e3 = e2;
-    //e3(2-1) = - e2(2-1);
-    //}
     
     Rprev = R;
     // Update
@@ -425,16 +376,7 @@ void CElement::EvalRotMat(VectorXdDiff &dU_AB,  VectorXdDiff  &X_AB)
     
     Rrig = Rprev.transpose() * R;
     
-    /*
-    if (iElement==19 or iElement==18)
-    {        
-        std::cout << "Rprev: \n" << Rprev << std::endl;
-        std::cout << "R: \n" << R << std::endl;        
-        std::cout << "e1: " << e1 << std::endl;
-        std::cout << "e2: " << e2 << std::endl;  
-        std::cout << "e3: " << e3 << std::endl;         
-    }
-    */
+
            
 }
 
@@ -499,18 +441,7 @@ void CElement::InitializeRotMats()
     Rprev = R;
 
     Rrig = Rprev.transpose() * R;
-    /*
-    if (iElement == 19) {
-    std::cout << "Element    = " << iElement << std::endl;
-    std::cout << "Rotation matrix    = \n" << R << std::endl;
-    std::cout << "Node B coordinates:   = \n" << nodeB->GetCoordinate0(1 - 1) << " " << nodeB->GetCoordinate0(2 - 1) << " " << nodeB->GetCoordinate0(3- 1) << std::endl;
-    std::cout << "Node A coordinates:   = \n" << nodeA->GetCoordinate0(1 - 1) << " " << nodeA->GetCoordinate0(2 - 1) << " " << nodeA->GetCoordinate0(3- 1) << std::endl;
-    std::cout << "aux_vector    = \n" << aux_vector << std::endl;
-    std::cout << "e3    = \n" << e3 << std::endl;
-    std::cout << "e2    = \n" << e2 << std::endl;    
-    
-    }
-    */
+
 
 
 }
@@ -548,11 +479,6 @@ void CElement::EvalRotMatFiniteDifferences( VectorXdDiff dU_AB_eps,  VectorXdDif
     e1 = X_AB_eps.tail(3) - X_AB_eps.head(3);
     e1 = e1/e1.norm();
     
-    /*    if (iElement==18 or iElement==95)
-    { 
-    std::cout << "X_AB   = \n" << X_AB << std::endl;
-    std::cout << "X_AB_eps   = \n" << X_AB_eps << std::endl;
-        } */
     /*---------------------
      *      p
      *---------------------*/
@@ -580,14 +506,6 @@ void CElement::EvalRotMatFiniteDifferences( VectorXdDiff dU_AB_eps,  VectorXdDif
     p = 0.5*(pa + pb);
     //p= p/p.norm();
 
-    /*    if (iElement==18 or iElement==95)
-    { 
-    std::cout << "pseudoA_eps   = \n" << pseudoA_eps << std::endl;
-    std::cout << "pseudoB_eps   = \n" << pseudoB_eps << std::endl; 
-
-    std::cout << "RnodeA_eps   = \n" << RnodeA_eps << std::endl;
-    std::cout << "RnodeB_eps   = \n" << RnodeB_eps << std::endl; 
-        } */
     /*---------------------
      *       e3
      *---------------------*/
