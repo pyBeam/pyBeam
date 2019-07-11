@@ -515,7 +515,7 @@ void CElement::InitializeRotMats()
 
 }
 
-void CElement::EvalRotMatFiniteDifferences( VectorXdDiff dU_AB_eps, VectorXdDiff dU_AB,  VectorXdDiff  X_AB, Matrix3dDiff &R_eps)
+void CElement::EvalRotMatFiniteDifferences( VectorXdDiff dU_AB_eps,  VectorXdDiff  X_AB, Matrix3dDiff &R_eps)
 {
 
     VectorXdDiff X_AB_eps = VectorXdDiff::Zero(6);    
@@ -548,51 +548,46 @@ void CElement::EvalRotMatFiniteDifferences( VectorXdDiff dU_AB_eps, VectorXdDiff
     e1 = X_AB_eps.tail(3) - X_AB_eps.head(3);
     e1 = e1/e1.norm();
     
-        if (iElement==18 or iElement==95)
+    /*    if (iElement==18 or iElement==95)
     { 
     std::cout << "X_AB   = \n" << X_AB << std::endl;
     std::cout << "X_AB_eps   = \n" << X_AB_eps << std::endl;
-        }
+        } */
     /*---------------------
      *      p
      *---------------------*/
     
-    Vector3dDiff e2_old = Vector3dDiff::Zero();
-    e2_old = Rprev.block(1-1,2-1,3,1);      // This is the old y in global ref
+    e2 = R.block(1-1,2-1,3,1);      // This is the old y in global ref
     
     // In this case the infinitesimal rotation has to be added with a rotation matrix
     //===> Node A
 
     
-    pseudoA = dU_AB.segment(4-1,3);      // Rotation at triad A  
-    PseudoToRot(pseudoA, RnodeA);
     pseudoA_eps = dU_AB_eps.segment(4-1,3);      // Rotation at triad A  
     PseudoToRot(pseudoA_eps, RnodeA_eps);    
     
-    pa = RnodeA_eps*RnodeA*e2_old;
+    pa = RnodeA_eps*e2;
 
    
     //===> Node B
-    
-    pseudoB = dU_AB.segment(10-1,3);     // Rotation at triad B   
-    PseudoToRot(pseudoB ,  RnodeB);   
+     
     pseudoB_eps = dU_AB_eps.segment(10-1,3);     // Rotation at triad B   
     PseudoToRot(pseudoB_eps ,  RnodeB_eps);   
     
-    pb = RnodeB_eps*RnodeB*e2_old;
+    pb = RnodeB_eps*e2;
         
     // Auxiliary Vector for building the new e3
     p = 0.5*(pa + pb);
     //p= p/p.norm();
 
-        if (iElement==18 or iElement==95)
+    /*    if (iElement==18 or iElement==95)
     { 
     std::cout << "pseudoA_eps   = \n" << pseudoA_eps << std::endl;
     std::cout << "pseudoB_eps   = \n" << pseudoB_eps << std::endl; 
 
     std::cout << "RnodeA_eps   = \n" << RnodeA_eps << std::endl;
     std::cout << "RnodeB_eps   = \n" << RnodeB_eps << std::endl; 
-        }
+        } */
     /*---------------------
      *       e3
      *---------------------*/

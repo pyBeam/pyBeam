@@ -516,10 +516,10 @@ void CStructure::EvalSensRotFiniteDifferences(){
     int dof_jjj = 0; int dof_kkk = 0;
     
     // Finite difference for translation DOFs
-    addouble fd_t = 1.0e-13;
+    addouble fd_t = 1.0e-10;
     // Finite difference for rotational DOFs
     //addouble fd_r = 7.9e-1;
-    addouble fd_r = 1.0e-13;    
+    addouble fd_r = 1.0e-10;    
     addouble fd;  
     
     int ii;
@@ -528,11 +528,11 @@ void CStructure::EvalSensRotFiniteDifferences(){
     std::cout.precision(17);
     
     for (int id_el=1; id_el<= nfem; id_el++) {
-        
+        /*
         if (id_el==19 or id_el==96)
         { 
             std::cout << "Element    = " << id_el << std::endl;     
-        }  
+        } */ 
         nodeA_id = element[id_el-1]->nodeA->GeID();
         nodeB_id = element[id_el-1]->nodeB->GeID();
         
@@ -559,25 +559,25 @@ void CStructure::EvalSensRotFiniteDifferences(){
             }
             
             dU_AB_eps(ii -1) = fd; 
-            
+            /*
             if (id_el==19 or id_el==96)
             { 
                 std::cout.precision(17);
                 std::cout << "dU_AB_eps    = \n" << dU_AB_eps << std::endl;
-            }      
-            element[id_el-1]->EvalRotMatFiniteDifferences( dU_AB_eps, dU_AB, X_AB, R_eps);
+            }    
+             * */  
+            element[id_el-1]->EvalRotMatFiniteDifferences( dU_AB_eps, X_AB, R_eps);
             
             de1.block(1-1,ii-1,3,1) =  ( R_eps.block(1-1,1-1,3,1) - element[id_el-1]->R.block(1-1,1-1,3,1) ) / fd;
             de2.block(1-1,ii-1,3,1) =  ( R_eps.block(1-1,2-1,3,1) - element[id_el-1]->R.block(1-1,2-1,3,1) ) / fd;
             de3.block(1-1,ii-1,3,1) =  ( R_eps.block(1-1,3-1,3,1) - element[id_el-1]->R.block(1-1,3-1,3,1) ) / fd;
             
-            
+            /*
             if (id_el==19 or id_el==96)
-            { 
-                std::cout << "Rotation matrix old   = \n" << element[id_el-1]->Rprev.block(1-1,1-1,3,3) << std::endl;                
+            {                 
                 std::cout << "Rotation matrix    = \n" << element[id_el-1]->R.block(1-1,1-1,3,3) << std::endl;
                 std::cout << "Rotation matrix  eps  = \n" << R_eps << std::endl;
-            }
+            }*/
         }    
         
         // ====== Krot
@@ -588,7 +588,7 @@ void CStructure::EvalSensRotFiniteDifferences(){
         Krot.block(10-1,1-1,3,12) =  de1*fint(10-1) + de2*fint(11-1) + de3*fint(12-1) ;
         
         // ================= > insert in the right position
-
+         
         file << "Element =  " << id_el;
         file << "\n ";        
         file << "de1 = \n " << de1;
@@ -627,7 +627,7 @@ void CStructure::EvalResidual(unsigned short irigid)
 {
     
     
-    std::cout << "\nFint = \n" << Fint.transpose() <<"\n" << std::endl;
+    //std::cout << "\nFint = \n" << Fint.transpose() <<"\n" << std::endl;
     //std::cout << "dU = " << dU.transpose() << std::endl;
     Residual = Fext - Fint;
 
@@ -688,7 +688,7 @@ void CStructure::SolveLinearStaticSystem(int iIter)
             posU += 6;}
     */
     
-    std::cout<< "\n dU = \n" << dU << std::endl;
+    //std::cout<< "\n dU = \n" << dU << std::endl;
     //std::cout<< "Residual = \n" << Residual << std::endl;
 
     if (relative_error > tol_LinSol)

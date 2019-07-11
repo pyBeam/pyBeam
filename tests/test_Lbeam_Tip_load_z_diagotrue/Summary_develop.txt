@@ -1,0 +1,79 @@
+
+---------------------------------------------------------------------------
+|                                                                         |
+| pyBeam, a Beam Solver - Release 0.1 (beta)                              |
+|                       - https://github.com/rsanfer/pyBeam               |
+|                                                                         |
+---------------------------------------------------------------------------
+|                                                                         |
+| Copyright 2018-2019 Rocco Bombardieri (Carlos III University Madrid)    |
+|                     Rauno Cavallaro (Carlos III University Madrid)      |
+|                     Tim Albring (SciComp, TU Kaiserslautern)            |
+|                     Ruben Sanchez (SciComp, TU Kaiserslautern)          |
+|                                                                         |
+| pyBeam is free software: you can redistribute it and/or                 |
+| modify it under the terms of the GNU Affero General Public License      |
+| as published by the Free Software Foundation, either version 3 of the   |
+| License, or (at your option) any later version.                         |
+|                                                                         |
+| pyBeam is distributed in the hope that it will be useful,               |
+| but WITHOUT ANY WARRANTY; without even the implied warranty             |
+| of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                 |
+| See the GNU Affero General Public License for more details.             |
+|                                                                         |
+| You should have received a copy of the GNU Affero                       |
+| General Public License along with pyBeam.                               |
+| If not, see <http://www.gnu.org/licenses/>.                             |
+|                                                                         |
+---------------------------------------------------------------------------
+
+FullPivHouseholderQr
+--> Reading mesh file: /media/rocco/290CF0EB732D1122/Adjoint_project/pyBeam/tests/Bug_pyBeam130690/test_Lbeam_Lload_z_diagotrue/mesh.msh.
+--> Reading property file: /media/rocco/290CF0EB732D1122/Adjoint_project/pyBeam/tests/Bug_pyBeam130690/test_Lbeam_Lload_z_diagotrue/property.prt.
+--> Node Structure Initialization... ok!
+--> Finite Element Initialization... ok!
+--> Initialization successful
+
+---------------------------------------------------------------------------
+
+--> Setting External Forces
+--> Starting Load Stepping
+
+===========================================================================
+==       LOAD STEP     0
+==       Lambda        1.00000000
+===========================================================================
+  Iter  Log10(Norm_Res)   Log10(Lin_Sol) Log10(Norm_Disp) Log10(Disp_Fact)
+     0       0.00000000     -10.34208172       0.00000000       0.08865896
+     1       3.84077337     -14.14291877      -0.56754001      -0.47888105
+     2       1.43366523     -12.46024734      -1.28177589      -1.19311693
+     3       0.92021860     -13.31015106      -2.56767685      -2.47901789
+     4      -0.89001011     -11.15699230      -2.18120265      -2.09254369
+     5      -0.56641427     -12.81557142      -3.71829673      -3.62963777
+     6      -3.24976476     -11.20561275      -4.64918066      -4.56052170
+     7      -4.13827340     -13.76524112      -8.14127510      -8.05261614
+     8      -4.15801752     -14.04852034      -8.31725925      -8.22860028
+     9      -4.15798341     -14.33506490      -8.49707049      -8.40841153
+    10      -4.15795325     -14.69717774      -8.67436889      -8.58570993
+    11      -4.15792603     -14.60049783      -8.81587683      -8.72721787
+    12      -4.15790102     -14.91055551      -8.87684711      -8.78818814
+    13      -4.15787768     -14.77550507      -8.86860225      -8.77994329
+    14      -4.15785562     -14.59167363      -8.83605728      -8.74739832
+    15      -4.15783455     -14.47956523      -8.79447961      -8.70582065
+    16      -4.15781425     -14.54371997      -8.71914815      -8.63048919
+    17      -4.15779457     -14.37291829      -8.55220017      -8.46354120
+    18      -4.15777537     -13.96742570      -8.28188340      -8.19322444
+    19      -4.15775640     -13.57522592      -7.96209465      -7.87343568
+    20      -4.15773689     -13.19065224      -7.62868840      -7.54002944
+    21      -4.15771344     -12.73889632      -7.29241546      -7.20375650
+    22      -4.15767019     -12.66096036      -6.95571912      -6.86706016
+    23      -4.15753254     -12.37321474      -6.61908609      -6.53042713
+    24      -4.15695008     -11.65482917      -6.28258798      -6.19392902
+===========================================================================
+
+--> Exiting Iterative Sequence.
+
+--> Coord0(19):  20.152543263817  20.152543263817   0.000000000000
+--> Coord(19) :  17.673523864866  17.673503934773  12.452397321925
+--> Displ(19) :  -2.479019398951  -2.479039329044  12.452397321925
+
