@@ -243,6 +243,8 @@ void CBeamSolver::Solve(int FSIIter = 0){
             
             addouble disp_factor =   structure->dU.norm()/TotalLength;
 
+            UpdateDisplacements();
+
             std::cout.width(17); std::cout << log10(disp_factor);
             std::cout << std::endl;
             
@@ -454,7 +456,17 @@ void CBeamSolver::ComputeAdjoint(void){
     }
 }
 
+void CBeamSolver::UpdateDisplacements(void){
 
+    unsigned long iNode;
+    unsigned short iDim;
+    for (iNode = 0; iNode <  input->Get_nNodes(); iNode++){
+      for (iDim =0; iDim < 3; iDim++){
+         structure->SetDisplacement(iNode, iDim);
+      }
+    }
+
+}
 
 void CBeamSolver::WriteRestart(){
     std::ofstream myfile;

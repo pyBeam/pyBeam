@@ -58,6 +58,11 @@ CStructure::CStructure(CInput *input, CElement **container_element, CNode **cont
     
     X  = VectorXdDiff::Zero(nNode*3);          // Current coordinates of the system
     X0 = VectorXdDiff::Zero(nNode*3);          // Initial coordinates of the system
+
+    disp = new addouble* [nNode];                // Displacement storage
+    for (unsigned long iNode; iNode < nNode; iNode++){
+        disp[iNode] = new addouble[3];
+    }
     
     // Forces nodal Vector
     Fnom     =  VectorXdDiff::Zero(nNode*6);

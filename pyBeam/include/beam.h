@@ -122,6 +122,8 @@ public:
   inline passivedouble ExtractGradient_Nu(void) {return Nu_grad;}
 
   inline unsigned long Get_nNodes(void) {return input->Get_nNodes();}
+
+  void UpdateDisplacements(void);
   
   void WriteRestart();
   
