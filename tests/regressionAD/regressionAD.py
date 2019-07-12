@@ -38,6 +38,8 @@ iNode = 20
 beam.SetLoads(iNode, 0, 5000, 1000)
 beam.RegisterLoads();
 
+beam.SetDisplacementAdjoint(iNode, 0.0, 0.0, 0.0)
+
 beam.Run() 
 
 beam.ComputeObjectiveFunction(iNode)

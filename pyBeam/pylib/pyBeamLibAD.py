@@ -180,6 +180,12 @@ class pyBeamSolverAD:
     self.beam.SetLoads(iVertex, 1, loadY)
     self.beam.SetLoads(iVertex, 2, loadZ)
 
+  def SetDisplacementAdjoint(self, iVertex, adjX, adjY, adjZ):
+    """ This function sets the load  """
+    self.beam.StoreDisplacementAdjoint(iVertex, 0, adjX)
+    self.beam.StoreDisplacementAdjoint(iVertex, 1, adjY)
+    self.beam.StoreDisplacementAdjoint(iVertex, 2, adjZ)
+
   def ComputeObjectiveFunction(self, iNode):
       
     """ This function computes the objective function (Important to be recorded) """

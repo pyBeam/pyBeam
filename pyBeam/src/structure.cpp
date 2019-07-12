@@ -62,6 +62,15 @@ CStructure::CStructure(CInput *input, CElement **container_element, CNode **cont
     disp = new addouble* [nNode];                // Displacement storage
     for (unsigned long iNode; iNode < nNode; iNode++){
         disp[iNode] = new addouble[3];
+        for (unsigned short iDim; iDim < 3; iDim++)
+          disp[iNode][iDim] = 0.0;
+    }
+
+    disp_adj = new passivedouble* [nNode];            // Displacement adjoint storage
+    for (unsigned long iNode; iNode < nNode; iNode++){
+        disp_adj[iNode] = new passivedouble[3];
+        for (unsigned short iDim; iDim < 3; iDim++)
+          disp_adj[iNode][iDim] = 0.0;
     }
     
     // Forces nodal Vector

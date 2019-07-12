@@ -113,7 +113,7 @@ public:
 
   inline void RegisterThickness(void) { AD::RegisterInput(thickness);}
 
-  inline void StopRecording(void) { AD::RegisterOutput(objective_function); AD::StopRecording(); }
+  void StopRecording(void);
 
   inline passivedouble ExtractLoadGradient(int iNode, int iDOF) {return loadGradient[iNode*nDOF + iDOF];}
 
@@ -124,6 +124,8 @@ public:
   inline unsigned long Get_nNodes(void) {return input->Get_nNodes();}
 
   void UpdateDisplacements(void);
+
+  void StoreDisplacementAdjoint(int iNode, int iDim, passivedouble val_adj);
   
   void WriteRestart();
   

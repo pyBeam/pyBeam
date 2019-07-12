@@ -72,6 +72,7 @@ public:
     CNode **node;        // Pointer to the first finite element
 
     addouble **disp;     // Store the displacement vector
+    passivedouble **disp_adj;     // Store the displacement vector
     
     MatrixXdDiff M;      // Recall in Eigen X stays for dynamic, d for addouble:  (nfem+1)*6  X   (nfem+1)*6
     MatrixXdDiff Ksys;
@@ -182,8 +183,20 @@ public:
         return disp[pos][index];
     };
 
-    void SetDisplacement(int iNode, int iDim) {
+    inline void SetDisplacement(int iNode, int iDim) {
         disp[iNode][iDim] = X(3*iNode+iDim) - X0(3*iNode+iDim);
+    };
+
+    inline void RegisterDisplacement(int iNode, int iDim) {
+        AD::RegisterOutput(disp[iNode][iDim]);
+    };
+
+    inline void StoreDisplacementAdjoint(int iNode, int iDim, passivedouble val_adj) {
+        disp_adj[iNode][iDim] = val_adj;
+    };
+
+    inline void SetDisplacementAdjoint(int iNode, int iDim) {
+        AD::SetDerivative(disp[iNode][iDim], AD::GetValue(disp_adj[iNode][iDim]));
     };
     
     addouble GetCoordinates(int pos, int index) {return X(3*pos+index);};

@@ -392,6 +392,8 @@ void CBeamSolver::Restart(int FSIIter = 0){
          *----------------------------------------------------*/
         
         addouble disp_factor =   structure->dU.norm()/TotalLength;
+
+        UpdateDisplacements();
         
         std::cout.width(17); std::cout << log10(disp_factor);
         std::cout << std::endl;
@@ -443,7 +445,15 @@ void CBeamSolver::RegisterLoads(void){
 void CBeamSolver::ComputeAdjoint(void){
     
     AD::SetDerivative(objective_function, 1.0);
-    
+
+    unsigned long iNode;
+    unsigned short iDim;
+    for (iNode = 0; iNode <  input->Get_nNodes(); iNode++){
+      for (iDim =0; iDim < 3; iDim++){
+       structure->SetDisplacementAdjoint(iNode, iDim);
+      }
+    }
+
     AD::ComputeAdjoint();
 
     E_grad = input->GetGradient_E();
@@ -466,6 +476,27 @@ void CBeamSolver::UpdateDisplacements(void){
       }
     }
 
+}
+
+
+void CBeamSolver::StopRecording(void) {
+
+ AD::RegisterOutput(objective_function);
+
+  unsigned long iNode;
+  unsigned short iDim;
+  for (iNode = 0; iNode <  input->Get_nNodes(); iNode++){
+    for (iDim =0; iDim < 3; iDim++){
+       structure->RegisterDisplacement(iNode, iDim);
+    }
+  }
+
+ AD::StopRecording();
+
+}
+
+void CBeamSolver::StoreDisplacementAdjoint(int iNode, int iDim, passivedouble val_adj){
+   structure->StoreDisplacementAdjoint(iNode, iDim, val_adj);
 }
 
 void CBeamSolver::WriteRestart(){
