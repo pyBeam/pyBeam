@@ -56,7 +56,14 @@ void CBeamSolver::InitializeInput(CInput* py_input){   // insert node class and 
     
     // I'm memorizing as a member variable the object input passed from outside
     input = py_input;
-    
+
+    if (input->GetDiscreteAdjoint()){
+        input->RegisterInput_E();
+        input->RegisterInput_Nu();
+    }
+
+    input->SetParameters();
+
     nDOF = input->Get_nDOF();
     nFEM = input->Get_nFEM();
     nTotalDOF = input->Get_nNodes() * input->Get_nDOF();
@@ -308,7 +315,7 @@ void CBeamSolver::Restart(int FSIIter = 0){
     //===============================================
     bool converged = false;
     
-    for (iIter = 0; iIter < 1; iIter++) {
+    for (iIter = 0; iIter < input->Get_nIter(); iIter++) {
         
         std::cout.width(6); std::cout << iIter;
         
@@ -436,6 +443,9 @@ void CBeamSolver::ComputeAdjoint(void){
     AD::SetDerivative(objective_function, 1.0);
     
     AD::ComputeAdjoint();
+
+    E_grad = input->GetGradient_E();
+    Nu_grad = input->GetGradient_Nu();
     
     if (register_loads){
         for (int iLoad = 0; iLoad < nTotalDOF; iLoad++){

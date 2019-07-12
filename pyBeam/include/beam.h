@@ -45,6 +45,7 @@ private:
   addouble objective_function;
   bool register_loads;
   passivedouble *loadGradient;
+  passivedouble E_grad, Nu_grad;
 
   CNode **node;                     /*!< \brief Vector which stores the node initial coordinates. */
   //CConnectivity **connectivity;      /*!< \brief Vector which stores the connectivity. */
@@ -115,6 +116,10 @@ public:
   inline void StopRecording(void) { AD::RegisterOutput(objective_function); AD::StopRecording(); }
 
   inline passivedouble ExtractLoadGradient(int iNode, int iDOF) {return loadGradient[iNode*nDOF + iDOF];}
+
+  inline passivedouble ExtractGradient_E(void) {return E_grad;}
+
+  inline passivedouble ExtractGradient_Nu(void) {return Nu_grad;}
 
   inline unsigned long Get_nNodes(void) {return input->Get_nNodes();}
   

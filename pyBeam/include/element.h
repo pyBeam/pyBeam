@@ -132,5 +132,6 @@ public:
 
     // Initially rotates the elements
     void InitializeRotMats();
+
 };
 

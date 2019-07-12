@@ -101,8 +101,8 @@ class pyBeamSolverAD:
 
     # Sending to CInput object
     pyConfig.parseInput(self.Config, self.inputs, self.Constr, self.nConstr)
-    # Assigning input values to the input object in C++
-    self.inputs.SetParameters()
+    # Set the discrete adjoint flag to true
+    self.inputs.SetDiscreteAdjoint()
     # Initialize the input in the beam solver
     self.beam.InitializeInput(self.inputs)
 
@@ -239,6 +239,7 @@ class pyBeamSolverAD:
   def PrintSensitivitiesAllLoads(self):
       
     """ This function prints the sensitivities of the objective functions for all the loads"""
+    print("E', Nu' = (", self.beam.ExtractGradient_E(), self.beam.ExtractGradient_Nu(), ")")
     for iNode in range(0,self.nPoint):
        print("F'(",iNode,") = (", self.beam.ExtractLoadGradient(iNode,0), self.beam.ExtractLoadGradient(iNode,1), self.beam.ExtractLoadGradient(iNode,2), ")")
  
