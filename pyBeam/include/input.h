@@ -142,6 +142,8 @@ public:
   addouble GetYoungModulus() {return E; }
 
   addouble GetPoisson() {return Poiss; }
+
+  void SetShear(addouble val_shear) {G = val_shear;}
   
   addouble GetShear() {return G; }
   

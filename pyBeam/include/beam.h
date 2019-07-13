@@ -81,8 +81,6 @@ public:
 
   inline void InitializeStructure(void) {structure = new CStructure(input, element, node);}
 
-  void RegisterLoads(void);
-
   void Solve(int FSIIter);
   
   void Restart(int FSIIter);
@@ -109,9 +107,11 @@ public:
 
   inline passivedouble GetInitialCoordinates(int iNode, int iDim) {return AD::GetValue(structure->node[iNode]->GetCoordinate(iDim));}
 
-  inline void StartRecording(void) { AD::StartRecording();}
+  inline void StartRecording(void) { AD:: Reset(); AD::StartRecording();}
 
   inline void RegisterThickness(void) { AD::RegisterInput(thickness);}
+
+  void SetDependencies(void);
 
   void StopRecording(void);
 

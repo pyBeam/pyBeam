@@ -97,7 +97,6 @@ class pyBeamSolverAD:
 
     # Start recording
     print("--> Initialization successful")    
-    self.beam.StartRecording()
 
     # Sending to CInput object
     pyConfig.parseInput(self.Config, self.inputs, self.Constr, self.nConstr)
@@ -164,6 +163,14 @@ class pyBeamSolverAD:
   def RegisterLoads(self):
     """ This function starts load registration for AD  """      
     self.beam.RegisterLoads()
+
+  def StartRecording(self):
+    """ This function stops registration for AD  """
+    self.beam.StartRecording()
+
+  def SetDependencies(self):
+    """ This function stops registration for AD  """
+    self.beam.SetDependencies()
     
   def StopRecording(self):
     """ This function stops registration for AD  """      
@@ -179,6 +186,15 @@ class pyBeamSolverAD:
     self.beam.SetLoads(iVertex, 0, loadX)
     self.beam.SetLoads(iVertex, 1, loadY)
     self.beam.SetLoads(iVertex, 2, loadZ)
+
+  def GetLoadSensitivity(self, iVertex):
+
+    """ This function returns the load sensitivity  """
+    sensX = self.beam.ExtractLoadGradient(iVertex, 0)
+    sensY = self.beam.ExtractLoadGradient(iVertex, 1)
+    sensZ = self.beam.ExtractLoadGradient(iVertex, 2)
+
+    return sensX, sensY, sensZ
 
   def SetDisplacementAdjoint(self, iVertex, adjX, adjY, adjZ):
     """ This function sets the load  """

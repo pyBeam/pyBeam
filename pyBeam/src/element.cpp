@@ -134,6 +134,38 @@ void CElement::Initializer(CNode* Node1, CNode* Node2, CProperty* Property, CInp
 }
 
 
+void CElement::SetDependencies(void){
+
+    // Store element properties from the input property object
+    J0 = elprop->GetJ0();
+    A = elprop->GetA();
+    EIz = input->GetYoungModulus()*elprop->GetIzz();
+    EIy = input->GetYoungModulus()*elprop->GetIyy();
+    GJ = input->GetShear()*elprop->GetJt();
+    AE = input->GetYoungModulus()*elprop->GetA();
+    Iyy = elprop->GetIyy();
+    Izz = elprop->GetIzz();
+
+    // INITIALIZATION of KPRIM  (linear)
+    Kprim = MatrixXdDiff::Zero(6,6);
+
+    VectorXdDiff diagonal = VectorXdDiff::Zero(6);
+    diagonal << AE/l_ini  , GJ/l_ini  ,  4*EIy/l_ini  ,   4*EIz/l_ini , 4*EIy/l_ini , 4*EIz/l_ini ;
+
+    // Writing the diagonal
+    for (unsigned short index = 0; index < 6; index++)
+    {
+        Kprim(index,index) = diagonal(index);
+    }
+
+    Kprim(3-1,5-1) = 2*EIy/l_ini;  Kprim(5-1,3-1) = Kprim(3-1,5-1);
+    Kprim(4-1,6-1) = 2*EIz/l_ini;  Kprim(6-1,4-1) = Kprim(4-1,6-1);
+
+}
+
+
+
+
 //-----------------------------------------------
 // Evaluates FEM element matrix according to Rao
 //-----------------------------------------------

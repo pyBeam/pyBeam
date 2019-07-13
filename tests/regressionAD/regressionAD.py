@@ -36,7 +36,10 @@ beam = pyBeamSolverAD(file_dir, 'config.cfg')
 iNode = 20
 
 beam.SetLoads(iNode, 0, 5000, 1000)
-beam.RegisterLoads();
+
+beam.StartRecording()
+
+beam.SetDependencies()
 
 beam.SetDisplacementAdjoint(iNode, 0.0, 0.0, 0.0)
 

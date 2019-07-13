@@ -424,29 +424,43 @@ passivedouble CBeamSolver::OF_NodeDisplacement(int iNode){
     
 }
 
-void CBeamSolver::RegisterLoads(void){
-    
-    register_loads = true;
-    
+void CBeamSolver::SetDependencies(void){
+
+    addouble E, Nu, G;
+    unsigned long iFEM, iLoad;
+
+    input->RegisterInput_E();
+    input->RegisterInput_Nu();
+
+    E = input->GetYoungModulus();
+    Nu = input->GetPoisson();
+    G = E/(2*(1+Nu));
+
+    input->SetShear(G);
+
+    for (iFEM = 0; iFEM < nFEM; iFEM++) {
+        element[iFEM]->SetDependencies();
+    }
+
     /*--- Initialize vector to store the gradient ---*/
     loadGradient = new passivedouble[nTotalDOF];
-    
-    for (int iLoad = 0; iLoad < nTotalDOF; iLoad++){
-        
+
+    for (iLoad = 0; iLoad < nTotalDOF; iLoad++){
+
         /*--- Register the load vector ---*/
         AD::RegisterInput(loadVector[iLoad]);
-        
+
         /*--- Initialize the load gradient to 0 ---*/
         loadGradient[iLoad] = 0.0;
     }
-    
+
 }
 
 void CBeamSolver::ComputeAdjoint(void){
     
     AD::SetDerivative(objective_function, 1.0);
 
-    unsigned long iNode;
+    unsigned long iNode, iLoad;
     unsigned short iDim;
     for (iNode = 0; iNode <  input->Get_nNodes(); iNode++){
       for (iDim =0; iDim < 3; iDim++){
@@ -458,12 +472,11 @@ void CBeamSolver::ComputeAdjoint(void){
 
     E_grad = input->GetGradient_E();
     Nu_grad = input->GetGradient_Nu();
-    
-    if (register_loads){
-        for (int iLoad = 0; iLoad < nTotalDOF; iLoad++){
-            loadGradient[iLoad] = AD::GetValue(AD::GetDerivative(loadVector[iLoad]));
-        }
+
+    for (iLoad = 0; iLoad < nTotalDOF; iLoad++){
+        loadGradient[iLoad] = AD::GetValue(AD::GetDerivative(loadVector[iLoad]));
     }
+
 }
 
 void CBeamSolver::UpdateDisplacements(void){
