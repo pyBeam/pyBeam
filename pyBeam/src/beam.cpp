@@ -312,12 +312,14 @@ void CBeamSolver::Restart(int FSIIter = 0){
     std::cout.width(17); std::cout << "Log10(Norm_Disp)";
     std::cout.width(17); std::cout << "Log10(Disp_Fact)" << std::endl;
     
+    int nIter = 1; //  input->Get_nIter()
+    
     //===============================================
     //               ITERATIVE SEQUENCE
     //===============================================
     bool converged = false;
     
-    for (iIter = 0; iIter < input->Get_nIter(); iIter++) {
+    for (iIter = 0; iIter < nIter; iIter++) {
         
         std::cout.width(6); std::cout << iIter;
         
@@ -419,6 +421,8 @@ passivedouble CBeamSolver::OF_NodeDisplacement(int iNode){
     pos3 = structure->GetDisplacement(iNode, 2);
     
     objective_function = sqrt(pow(pos1, 2.0) + pow(pos2, 2.0) + pow(pos3, 2.0));
+    
+    std::cout.width(20); std::cout << "objective_function = " << objective_function << std::endl;
     
     return AD::GetValue(objective_function);
     

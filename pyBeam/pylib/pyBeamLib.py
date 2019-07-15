@@ -182,6 +182,13 @@ class pyBeamSolver:
 
     return dispX, dispY, dispZ
 
+  def ComputeObjectiveFunction(self, iNode):
+
+      """ This function computes the objective function (Important to be recorded) """
+      displacement = self.beam.OF_NodeDisplacement(iNode)
+      print("Objective Function - Displacement(", iNode, ") = ", displacement)
+
+
   def Run(self):
     """ This function runs the solver and stores the results.
         Needs to be run after __SetLoads """
