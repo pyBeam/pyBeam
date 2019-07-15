@@ -73,6 +73,8 @@ class pyBeamConfig:
 
             for case in switch(this_param):
                 #integer values
+                if case("RESTART")     :       pass
+                if case("WRITE_RESTART")     :       pass
                 if case("LOAD_STEPS")	      : pass     
                 if case("N_STRUCT_ITER")	                      : 
                     self._ConfigContent[this_param] = int(this_value)
@@ -118,6 +120,7 @@ class pyBeamConfig:
                     else:
                         self._ConfigContent[this_param] = 0
                         break
+
                 if case("B_MESH")          :       pass
                 if case("B_PROPERTY")                 :               
                     self._ConfigContent[this_param] = this_value
@@ -136,6 +139,7 @@ def parseInput(BEAM_config, inputs,Constr, nConstr):
     inputs.SetConvCriterium(BEAM_config['CONV_CRITERIUM'])
     inputs.SetTolerance_LinSol(BEAM_config['TOLERANCE_LINSOL'])
     inputs.SetKind_LinSol(BEAM_config['KIND_LINSOL'])
+    inputs.Set_WriteRestartFlag(BEAM_config['WRITE_RESTART'])
     
     #Now setting the constraints
     inputs.SetnConstr(nConstr)

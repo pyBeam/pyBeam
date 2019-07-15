@@ -70,6 +70,9 @@ public:
     CRBE2 **RBE2;        // Pointer to the first RBE2 element
     CElement **element;  // Pointer to the first finite element
     CNode **node;        // Pointer to the first finite element
+
+    addouble **disp;     // Store the displacement vector
+    passivedouble **disp_adj;     // Store the displacement vector
     
     MatrixXdDiff M;      // Recall in Eigen X stays for dynamic, d for addouble:  (nfem+1)*6  X   (nfem+1)*6
     MatrixXdDiff Ksys;
@@ -156,6 +159,8 @@ public:
     
     void UpdateCoord();
     
+    void RestartCoord();
+    
     void UpdateAxvector_RBE2(); 
 
     void UpdateCoord_RBE2(int iIter);        
@@ -172,10 +177,26 @@ public:
         
     void UpdateInternalForces();
     
+    void InitializeInternalForces();
+    
     addouble GetDisplacement(int pos, int index) {
-        addouble disp;
-        disp = X(3*pos+index) - X0(3*pos+index);
-        return disp;
+        return disp[pos][index];
+    };
+
+    inline void SetDisplacement(int iNode, int iDim) {
+        disp[iNode][iDim] = X(3*iNode+iDim) - X0(3*iNode+iDim);
+    };
+
+    inline void RegisterDisplacement(int iNode, int iDim) {
+        AD::RegisterOutput(disp[iNode][iDim]);
+    };
+
+    inline void StoreDisplacementAdjoint(int iNode, int iDim, passivedouble val_adj) {
+        disp_adj[iNode][iDim] = val_adj;
+    };
+
+    inline void SetDisplacementAdjoint(int iNode, int iDim) {
+        AD::SetDerivative(disp[iNode][iDim], AD::GetValue(disp_adj[iNode][iDim]));
     };
     
     addouble GetCoordinates(int pos, int index) {return X(3*pos+index);};

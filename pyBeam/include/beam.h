@@ -45,6 +45,7 @@ private:
   addouble objective_function;
   bool register_loads;
   passivedouble *loadGradient;
+  passivedouble E_grad, Nu_grad;
 
   CNode **node;                     /*!< \brief Vector which stores the node initial coordinates. */
   //CConnectivity **connectivity;      /*!< \brief Vector which stores the connectivity. */
@@ -80,12 +81,11 @@ public:
 
   inline void InitializeStructure(void) {structure = new CStructure(input, element, node);}
 
-  void RegisterLoads(void);
-
   void Solve(int FSIIter);
   
   void Debug_Print(int iElement);  
     
+  void Restart(int FSIIter);
   passivedouble OF_NodeDisplacement(int iNode);
 
   void ComputeAdjoint(void);
@@ -108,14 +108,34 @@ public:
 
   inline passivedouble GetInitialCoordinates(int iNode, int iDim) {return AD::GetValue(structure->node[iNode]->GetCoordinate(iDim));}
 
-  inline void StartRecording(void) { AD::StartRecording();}
+  inline void StartRecording(void) { AD:: Reset(); AD::StartRecording();}
 
   inline void RegisterThickness(void) { AD::RegisterInput(thickness);}
 
-  inline void StopRecording(void) { AD::RegisterOutput(objective_function); AD::StopRecording(); }
+  void SetDependencies(void);
+
+  void StopRecording(void);
 
   inline passivedouble ExtractLoadGradient(int iNode, int iDOF) {return loadGradient[iNode*nDOF + iDOF];}
 
+  inline passivedouble ExtractGradient_E(void) {return E_grad;}
+
+  inline passivedouble ExtractGradient_Nu(void) {return Nu_grad;}
+
   inline unsigned long Get_nNodes(void) {return input->Get_nNodes();}
+
+  void UpdateDisplacements(void);
+
+  void StoreDisplacementAdjoint(int iNode, int iDim, passivedouble val_adj);
+  
+  void WriteRestart();
+  
+  void ReadRestart();
+  
+  void CoordExtract(std::string line , int &nNode, double &x,double &y,double &z);
+
+  void ElemStrainExtract(std::string line , int &nElem, double &eps1, double &eps2, double &eps3, double &eps4, double &eps5, double &eps6);
+
+  void ElemRefExtract(std::string line , int &nElem, double &e11, double &e12, double &e13, double &e21, double &e22, double &e23, double &e31, double &e32, double &e33);
 
 };

@@ -2,7 +2,7 @@
 #
 # pyBeam, a Beam Solver
 #
-# Copyright (C) 2019 Rocco Bombardieri, Ruben Sanchez , Rauno Cavallaro
+# Copyright (C) 2018 Ruben Sanchez, Rocco Bombardieri, Rauno Cavallaro
 # 
 # Developers: Ruben Sanchez (SciComp, TU Kaiserslautern)
 #             Rocco Bombardieri, Rauno Cavallaro (Carlos III University Madrid)
@@ -24,35 +24,21 @@
 # If not, see <http://www.gnu.org/licenses/>.
 #
 
-
 import sys, os
-from pyBeamLibAD import pyBeamSolverAD
+from pyBeamLib import pyBeamSolver
 
 # Load running directory
 file_dir = os.path.dirname(os.path.realpath(__file__))
 
-beam = pyBeamSolverAD(file_dir, 'config.cfg')
+beam = pyBeamSolver(file_dir ,'config_NL.cfg')
 
-iNode = 20
+beam.SetLoads(20,0,0,50000)
 
-beam.SetLoads(iNode, 0, 5000, 1000)
+if beam.Config['RESTART'] == 1:
+   beam.Restart()
 
-beam.StartRecording()
+beam.PrintDisplacements(20)
 
-beam.SetDependencies()
-
-beam.SetDisplacementAdjoint(iNode, 0.0, 0.0, 0.0)
-
-beam.Run() 
-
-beam.ComputeObjectiveFunction(iNode)
-
-beam.StopRecording()
-
-beam.ComputeAdjoint()
-
-beam.PrintSensitivitiesAllLoads()
-
-success = beam.TestSensitivities( iNode, 1e-8, 0.0017035445423928379, - 0.0020190915772016127, - 1.4059868175534144e-05)
+success = beam.TestNodePosition(20,1e-8,19.052214437260,12.150786650634,16.323237985295)
 
 exit(success)

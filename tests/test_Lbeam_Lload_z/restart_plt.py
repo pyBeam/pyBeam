@@ -2,8 +2,8 @@
 #
 # pyBeam, a Beam Solver
 #
-# Copyright (C) 2018 Rocco Bombardieri, Ruben Sanchez, Rauno Cavallaro
-#
+# Copyright (C) 2018 Ruben Sanchez, Rocco Bombardieri, Rauno Cavallaro
+# 
 # Developers: Ruben Sanchez (SciComp, TU Kaiserslautern)
 #             Rocco Bombardieri, Rauno Cavallaro (Carlos III University Madrid)
 #
@@ -37,15 +37,12 @@ beam = pyBeamSolver(file_dir ,'config_NL.cfg')
 
 beam.SetLoads(20,0,0,50000)
 
-beam.Run()
+if beam.Config['RESTART'] == 1:
+   beam.Restart()
 
 beam.PrintDisplacements(20)
 
-beam.Restart()
-
-beam.PrintDisplacements(20)
-
-success = beam.TestNodePosition(20,1e-8,19.05326647582835,12.150042136520977,16.32312936016357)
+success = beam.TestNodePosition(20,1e-8,19.052214437260,12.150786650634,16.323237985295)
 
 
 
@@ -76,14 +73,10 @@ fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
   
 # Create cubic bounding box to simulate equal aspect ratio
-max_range = np.array([np.amax(beam.coordinate_X0) - np.amin(beam.coordinate_X0), np.amax(beam.coordinate_Y0) - np.amin(beam.coordinate_Y0),
-                      np.amax(beam.coordinate_Z0) - np.amin(beam.coordinate_Z0)]).max()
-Xb = 0.5 * max_range * np.mgrid[-1:2:2, -1:2:2, -1:2:2][0].flatten() + 0.5 * (
-            np.amax(beam.coordinate_X0) + np.amin(beam.coordinate_X0))
-Yb = 0.5 * max_range * np.mgrid[-1:2:2, -1:2:2, -1:2:2][1].flatten() + 0.5 * (
-            np.amax(beam.coordinate_Y0) + np.amin(beam.coordinate_Y0))
-Zb = 0.5 * max_range * np.mgrid[-1:2:2, -1:2:2, -1:2:2][2].flatten() + 0.5 * (
-            np.amax(beam.coordinate_Z0) + np.amin(beam.coordinate_Z0))
+max_range = np.array([np.amax(coordinate_X0)-np.amin(coordinate_X0), np.amax(coordinate_Y0)-np.amin(coordinate_Y0), np.amax(coordinate_Z0)-np.amin(coordinate_Z0)]).max()
+Xb = 0.5*max_range*np.mgrid[-1:2:2,-1:2:2,-1:2:2][0].flatten() + 0.5*(np.amax(coordinate_X0)+np.amin(coordinate_X0))
+Yb = 0.5*max_range*np.mgrid[-1:2:2,-1:2:2,-1:2:2][1].flatten() + 0.5*(np.amax(coordinate_Y0)+np.amin(coordinate_Y0))
+Zb = 0.5*max_range*np.mgrid[-1:2:2,-1:2:2,-1:2:2][2].flatten() + 0.5*(np.amax(coordinate_Z0)+np.amin(coordinate_Z0))
 # Comment or uncomment following both lines to test the fake bounding box:
 for xb, yb, zb in zip(Xb, Yb, Zb):
    plt.plot([xb], [yb], [zb], 'w')  

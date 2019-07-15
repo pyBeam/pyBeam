@@ -29,7 +29,8 @@ env:
         # Primal and adjoint builds and tests
         - MAKE_COMMAND="make primal reverse"
           TEST_PRIMAL=$TRAVIS_BUILD_DIR/tests/regression/regression.py
-          TEST_LBEAM_LLOAD_Z=$TRAVIS_BUILD_DIR/tests/test_Lbeam_Lload_z/regression.py          
+          TEST_LBEAM_LLOAD_Z=$TRAVIS_BUILD_DIR/tests/test_Lbeam_Lload_z/regression.py   
+          TEST_LBEAM_LLOAD_Z_RESTART=$TRAVIS_BUILD_DIR/tests/test_Lbeam_Lload_z/restart.py           
           TEST_ADJOINT=$TRAVIS_BUILD_DIR/tests/regressionAD/regressionAD.py
 
 before_install:
@@ -73,5 +74,6 @@ install:
 script: 
     # Run the tests via the Python scripts
     - python $TEST_PRIMAL
-    - python $TEST_LBEAM_LLOAD_Z    
+    - python $TEST_LBEAM_LLOAD_Z  
+    - python $TEST_LBEAM_LLOAD_Z_RESTART
     - python $TEST_ADJOINT    

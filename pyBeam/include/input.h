@@ -70,7 +70,10 @@ protected:
 
 	addouble tol_LinSol;	// Tolerance of the linear solver
 	unsigned short kind_LinSol;	// Tolerance of the linear solver
+	unsigned short WriteRestart; 	// Write restart option
+        unsigned short Restart; 	// Restart option
 
+    bool discrete_adjoint;
 
 	//##############    Material inputs (only ONE homogeneous material is allowed by now)  ###########################
 	// Units Sys: SI
@@ -95,10 +98,22 @@ public:
   virtual ~CInput(void);
   
   void SetParameters();
-  
-  void SetYoungModulus(passivedouble YoungModulus) {E = YoungModulus; } 
 
-  void SetPoisson(passivedouble Poisson) {Poiss = Poisson; }  
+  void SetDiscreteAdjoint(void) {discrete_adjoint = true; }
+
+  bool GetDiscreteAdjoint(void) {return discrete_adjoint; }
+  
+  void SetYoungModulus(passivedouble YoungModulus) {E = YoungModulus;}
+
+  void SetPoisson(passivedouble Poisson) {Poiss = Poisson;}
+
+  void RegisterInput_E(void) {AD::RegisterInput(E);}
+
+  void RegisterInput_Nu(void) {AD::RegisterInput(Poiss);}
+
+  passivedouble GetGradient_E(void) {return AD::GetValue(AD::GetDerivative(E));}
+
+  passivedouble GetGradient_Nu(void) {return AD::GetValue(AD::GetDerivative(Poiss));}
   
   void SetDensity(passivedouble Density) {ro = Density; }
     
@@ -112,6 +127,10 @@ public:
 
   void SetKind_LinSol(unsigned short kind_solver) {kind_LinSol = kind_solver; }
   
+  void Set_WriteRestartFlag(unsigned short WriteRestartFlag) {WriteRestart = WriteRestartFlag; }
+  
+  void Set_RestartFlag(unsigned short RestartFlag) {Restart = RestartFlag; }  
+  
   void SetConvCriterium(passivedouble ConvCriterium) {convCriteria = ConvCriterium; }   
 
   void SetnConstr(int nconstr) {nConstr = nconstr; Constr_matrix = MatrixXdDiff::Zero(nconstr,2);};
@@ -120,15 +139,21 @@ public:
   
   MatrixXdDiff  GetConstrMatrix() {return Constr_matrix;};
   
-  passivedouble GetYoungModulus() {return AD::GetValue(E); }
+  addouble GetYoungModulus() {return E; }
 
-  passivedouble GetPoisson() {return AD::GetValue(Poiss); }
+  addouble GetPoisson() {return Poiss; }
+
+  void SetShear(addouble val_shear) {G = val_shear;}
   
-  passivedouble GetShear() {return AD::GetValue(G); }
+  addouble GetShear() {return G; }
   
-  passivedouble GetDensity() {return AD::GetValue(ro); }
+  addouble GetDensity() {return ro; }
 
   addouble GetTolerance_LinSol(void) {return tol_LinSol; }
+  
+  unsigned short Get_WriteRestartFlag(void) {return WriteRestart; }  
+  
+  unsigned short Get_RestartFlag(void) {return Restart; }    
 
   unsigned short GetKind_LinSol(void) {return kind_LinSol; }
   

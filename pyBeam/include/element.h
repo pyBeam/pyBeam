@@ -60,7 +60,7 @@ public:
 
     CNode* nodeA;
     CNode* nodeB;
-    CProperty* property;
+    CProperty* elprop;
     CInput* input;
 
     VectorXdDiff GlobalDOFs; // Global DOFs
@@ -102,12 +102,12 @@ public:
     // Methods to set initial properties to the element
     inline void SetNode_1( CNode* Node1) { nodeA = Node1; }
     inline void SetNode_2( CNode* Node2) { nodeB = Node2;}
-    inline void SetProperty(CProperty* Property) {property = Property;}
+    inline void SetProperty(CProperty* Property) {elprop = Property;}
     inline void SetInput(CInput* Input) {input = Input;}
     
     inline void SetAuxVector(addouble x, addouble y, addouble z) {aux_vector(0) = x; aux_vector(1) = y; aux_vector(2) = z;}
 
-    inline void setElementMass() {m_e = property->GetA()*l_ini* input->GetDensity();}
+    inline void setElementMass() {m_e = elprop->GetA()*l_ini* input->GetDensity();}
     
     void setGlobalDOFs();    
     
@@ -136,6 +136,9 @@ public:
     // Evaluates the rotation matrix for a value of a small dU_AB_eps around a given position of the reference system evaluated with current positions X_AB and rotations dU_AB X_AB
     void EvalRotMatFiniteDifferences(VectorXdDiff dU_AB_eps, VectorXdDiff  X_AB, Matrix3dDiff &R_eps);
     
-    
+
+    // Set the element dependencies
+    void SetDependencies(void);
+
 };
 

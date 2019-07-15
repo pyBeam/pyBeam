@@ -58,6 +58,20 @@ CStructure::CStructure(CInput *input, CElement **container_element, CNode **cont
     
     X  = VectorXdDiff::Zero(nNode*3);          // Current coordinates of the system
     X0 = VectorXdDiff::Zero(nNode*3);          // Initial coordinates of the system
+
+    disp = new addouble* [nNode];                // Displacement storage
+    for (unsigned long iNode; iNode < nNode; iNode++){
+        disp[iNode] = new addouble[3];
+        for (unsigned short iDim; iDim < 3; iDim++)
+          disp[iNode][iDim] = 0.0;
+    }
+
+    disp_adj = new passivedouble* [nNode];            // Displacement adjoint storage
+    for (unsigned long iNode; iNode < nNode; iNode++){
+        disp_adj[iNode] = new passivedouble[3];
+        for (unsigned short iDim; iDim < 3; iDim++)
+          disp_adj[iNode][iDim] = 0.0;
+    }
     
     // Forces nodal Vector
     Fnom     =  VectorXdDiff::Zero(nNode*6);
@@ -792,6 +806,39 @@ void CStructure::UpdateCoord() {
     }
     
 }
+
+/*===================================================
+ *            Restart Coordinates
+ * ==================================================
+ This member function upates the coordinates XYZ
+ (expressed in global reference system) of the finite element nodes.
+ 
+ */
+
+void CStructure::RestartCoord() {
+
+    //std::cout << "-->  Update Global Coordinates "  << std::endl;
+    
+    /* We have the X array, we need to add the displacements referred to the pre-last displacement local reference system.
+     Thus, this operation need to eb done before the rottion matrix is updated. */
+    
+
+    int posX = 1;    // current  position in the X array
+    int posU = 1;    // current position in the U array
+   
+    // Browsing all the nodes of the current segment
+    for (int id_node=1-1; id_node<=nNode-1 ; id_node++) {
+          
+        // Updating the node's coordinates
+        for (int iDim=0; iDim < 3; iDim++) {
+         node[id_node]->SetCoordinate(iDim, X(posX+iDim-1)) ;
+        }    
+
+        posX += 3;
+        posU += 6;
+    }
+    
+}
 /*===================================================
  *            Update Coordinates RBE2
  * ==================================================
@@ -1128,9 +1175,62 @@ void CStructure::UpdateInternalForces()
         element[id_fe-1]->eps(4-1) += du_el( 12-1);
         element[id_fe-1]->eps(5-1) += du_el( 5-1);
         element[id_fe-1]->eps(6-1) += du_el( 6-1);
+              
+        // Constitutive relation between deformational and tensional state
+        // phi = tensional state = { N ,  Mt , MBy , MBz , MAy , M_Az }
+        
+        element[id_fe-1]->phi =  element[id_fe-1]->Kprim*element[id_fe-1]->eps;
+        
+        Na = MatrixXdDiff::Zero(6,6);
+        Nb = MatrixXdDiff::Zero(6,6);
+        
+        element[id_fe-1]->EvalNaNb(Na , Nb);
+        
+        // Updating cumulative internal forces
+        element[id_fe-1]->fint.segment(1-1,6) =  Na.transpose()*element[id_fe-1]->phi;
+        element[id_fe-1]->fint.segment(7-1,6) =  Nb.transpose()*element[id_fe-1]->phi;
+
+        // Contribution to the NODAL Internal Forces ARRAY
+        Fint.segment((nodeA_id-1)*6+1 -1,6) +=  element[id_fe-1]->R * element[id_fe-1]->fint.segment(1-1,6);
+        Fint.segment((nodeB_id-1)*6+1 -1,6) +=  element[id_fe-1]->R * element[id_fe-1]->fint.segment(7-1,6);
+
+    }
+
+}
+
+void CStructure::InitializeInternalForces()
+{
+    
+    //std::cout << "-->  Updating Internal Forces "   << std::endl;
+    
+    // dU is the incremental displacement
+    // Need to evaluate the displacements in the new reference system.
+    // Re is the matrix which rotates from one to the other one.
+    
+    int nodeA_id = 0;
+    int nodeB_id = 0;  
+    
+    // Auxiliary matrices for the elastic component
+    MatrixXdDiff Na = MatrixXdDiff::Zero(6,6);
+    MatrixXdDiff Nb = MatrixXdDiff::Zero(6,6);
+        
+    // Nodal vector of internal forces
+    // VERY IMPORTANT to reset it to 0 every time
+    Fint = VectorXdDiff::Zero(nNode*6);
+    
+    /*-------------------------------
+     //     LOOPING FINITE ELEMENTS
+     * -------------------------------*/
+    
+    for (int id_fe=1;     id_fe <= nfem ; id_fe++) {
+
+        nodeA_id = element[id_fe-1]->nodeA->GeID();
+        nodeB_id = element[id_fe-1]->nodeB->GeID();
+
         
         // Constitutive relation between deformational and tensional state
         // phi = tensional state = { N ,  Mt , MBy , MBz , MAy , M_Az }
+        
         
         element[id_fe-1]->phi =  element[id_fe-1]->Kprim*element[id_fe-1]->eps;
         

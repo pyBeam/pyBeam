@@ -97,12 +97,11 @@ class pyBeamSolverAD:
 
     # Start recording
     print("--> Initialization successful")    
-    self.beam.StartRecording()
 
     # Sending to CInput object
     pyConfig.parseInput(self.Config, self.inputs, self.Constr, self.nConstr)
-    # Assigning input values to the input object in C++
-    self.inputs.SetParameters()
+    # Set the discrete adjoint flag to true
+    self.inputs.SetDiscreteAdjoint()
     # Initialize the input in the beam solver
     self.beam.InitializeInput(self.inputs)
 
@@ -164,6 +163,14 @@ class pyBeamSolverAD:
   def RegisterLoads(self):
     """ This function starts load registration for AD  """      
     self.beam.RegisterLoads()
+
+  def StartRecording(self):
+    """ This function stops registration for AD  """
+    self.beam.StartRecording()
+
+  def SetDependencies(self):
+    """ This function stops registration for AD  """
+    self.beam.SetDependencies()
     
   def StopRecording(self):
     """ This function stops registration for AD  """      
@@ -179,6 +186,21 @@ class pyBeamSolverAD:
     self.beam.SetLoads(iVertex, 0, loadX)
     self.beam.SetLoads(iVertex, 1, loadY)
     self.beam.SetLoads(iVertex, 2, loadZ)
+
+  def GetLoadSensitivity(self, iVertex):
+
+    """ This function returns the load sensitivity  """
+    sensX = self.beam.ExtractLoadGradient(iVertex, 0)
+    sensY = self.beam.ExtractLoadGradient(iVertex, 1)
+    sensZ = self.beam.ExtractLoadGradient(iVertex, 2)
+
+    return sensX, sensY, sensZ
+
+  def SetDisplacementAdjoint(self, iVertex, adjX, adjY, adjZ):
+    """ This function sets the load  """
+    self.beam.StoreDisplacementAdjoint(iVertex, 0, adjX)
+    self.beam.StoreDisplacementAdjoint(iVertex, 1, adjY)
+    self.beam.StoreDisplacementAdjoint(iVertex, 2, adjZ)
 
   def ComputeObjectiveFunction(self, iNode):
       
@@ -239,6 +261,7 @@ class pyBeamSolverAD:
   def PrintSensitivitiesAllLoads(self):
       
     """ This function prints the sensitivities of the objective functions for all the loads"""
+    print("E', Nu' = (", self.beam.ExtractGradient_E(), self.beam.ExtractGradient_Nu(), ")")
     for iNode in range(0,self.nPoint):
        print("F'(",iNode,") = (", self.beam.ExtractLoadGradient(iNode,0), self.beam.ExtractLoadGradient(iNode,1), self.beam.ExtractLoadGradient(iNode,2), ")")
  
