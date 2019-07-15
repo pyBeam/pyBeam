@@ -365,8 +365,10 @@ void CStructure::AssemblyTang(int iIter)
      * -------------------------------------------------------*/
 
     //EvalSensRot(iIter);
+    if (iIter !=0)
+    {
     EvalSensRotFiniteDifferences();
-
+    }
     /*------------------------------------
      *    Imposing  B.C.
      *------------------------------------*/

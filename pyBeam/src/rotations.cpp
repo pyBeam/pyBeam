@@ -131,9 +131,9 @@ void PseudoToRot(Vector3dDiff pseudo , Matrix3dDiff& R, int print)
 
         if (print ==1)
         {
-        std::cout << "\nTheta: " << theta << std::endl;      
-        std::cout << "\nSkewRot: " << SkewRot << std::endl;      
-        std::cout << "\nRot_Rodr: " << R << std::endl; 
+        //std::cout << "\nTheta: " << theta << std::endl;      
+        //std::cout << "\nSkewRot: " << SkewRot << std::endl;      
+        //std::cout << "\nRot_Rodr: " << R << std::endl; 
            
         }
         
