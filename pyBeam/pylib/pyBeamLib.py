@@ -187,6 +187,7 @@ class pyBeamSolver:
       """ This function computes the objective function (Important to be recorded) """
       displacement = self.beam.OF_NodeDisplacement(iNode)
       print("Objective Function - Displacement(", iNode, ") = ", displacement)
+      print(str.format('{0:.20f}', displacement))
 
 
   def Run(self):

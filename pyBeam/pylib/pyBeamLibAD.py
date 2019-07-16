@@ -206,8 +206,9 @@ class pyBeamSolverAD:
       
     """ This function computes the objective function (Important to be recorded) """
     displacement = self.beam.OF_NodeDisplacement(iNode)
-    print("Objective Function - Displacement(",{},") = {0:.19f}".format(iNode, displacement))
-
+    print("Objective Function - Displacement(", iNode, ") = ", displacement)
+    print(str.format('{0:.20f}', displacement))
+    
   def Run(self):
     """ This function runs the solver and stores the results.
         Needs to be run after __SetLoads """
