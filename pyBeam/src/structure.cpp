@@ -532,10 +532,10 @@ void CStructure::EvalSensRot(int iIter){
     int nodeA_id = 0; int nodeB_id = 0;    
     
     int dof_jjj = 0; int dof_kkk = 0;
-    
+    /*
     std::ofstream file("./Analytic_de1_de2_de3.txt");
     std::cout.precision(17);
-    
+    */
     
     for (int id_el=1; id_el<= nfem; id_el++) {
         
@@ -646,7 +646,7 @@ void CStructure::EvalSensRot(int iIter){
         Krot.block(4-1,1-1,3,12)  =  de1*fint(4-1)  + de2*fint(5-1)  + de3*fint(6-1) ;
         Krot.block(7-1,1-1,3,12)  =  de1*fint(7-1)  + de2*fint(8-1)  + de3*fint(9-1) ;
         Krot.block(10-1,1-1,3,12) =  de1*fint(10-1) + de2*fint(11-1) + de3*fint(12-1) ;
-        
+        /*
         //file.precision(25);	
         //file.setf(ios::fixed);
         //file.setf(ios::showpoint);
@@ -668,7 +668,7 @@ void CStructure::EvalSensRot(int iIter){
         file  << '\n';
         file  <<   "de3 = \n "<< de3 << '\n';
         file  << '\n';
-
+        */
         // ================= > insert in the right position
         
         
@@ -686,7 +686,7 @@ void CStructure::EvalSensRot(int iIter){
         }
         
     }
-    file.close();
+    //file.close();
 }
 
 
@@ -726,11 +726,12 @@ void CStructure::EvalResidual(unsigned short irigid)
 
 void CStructure::SolveLinearStaticSystem(int iIter)
 {
+    /*
     std::ofstream file("./Kel.txt");
     std::cout.precision(17);
     file  <<  Ksys << '\n';
     file.close();
-    
+    */
     switch(kind_linSol){
     case PartialPivLu:
         dU = Ksys.partialPivLu().solve(Residual); break;
