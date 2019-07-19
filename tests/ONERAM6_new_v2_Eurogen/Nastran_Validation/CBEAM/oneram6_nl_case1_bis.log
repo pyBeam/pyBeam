@@ -1,0 +1,172 @@
+MSC Nastran V2018.1 (Intel Windows 10 Education 6.2 9200) Control File: 
+----------------------------------------------------------------- 
+$ sysfield=SCR*(RAW=YES,BUFFIO=YES,wnum=16,wsize=16mb) $(c:/msc.software/msc_nastran/20181/conf/nast20181.rcf[2])
+$ sysfield=DBALL(RAW=YES,BUFFIO=YES,wnum=16,wsize=16mb) $(c:/msc.software/msc_nastran/20181/conf/nast20181.rcf[3])
+Nastran BUFFSIZE=8193 $(c:/msc.software/msc_nastran/20181/conf/nast20181.rcf[6])
+JID='c:/users/aulavirtual/downloads/oneram6_nl_case1_bis.bdf'
+OUT='./oneram6_nl_case1_bis'
+MEM=3071MB      $ 
+MACH='Intel'
+OPER='Windows 10 Education'
+OSV='6.2 9200'
+MODEL='Xeon/2350 (MAirFrame22_015)'
+NPROC='4'
+CONFIG=6
+NPROC=4
+symbol=DELDIR='c:/msc.software/msc_nastran/20181/msc20181/nast/del' $(program default)
+symbol=DEMODIR='c:/msc.software/msc_nastran/20181/msc20181/nast/demo' $(program default)
+symbol=LM_NO_SNMP=1 $(c:/msc.software/msc_nastran/20181/conf/nast20181.rcf[10])
+symbol=MKL_INTERFACE_LAYER=ILP64 $(c:/msc.software/msc_nastran/20181/conf/nast20181.rcf[1])
+symbol=SSSALTERDIR='c:/msc.software/msc_nastran/20181/msc20181/nast/sssalter' $(program default)
+symbol=TPLDIR='c:/msc.software/msc_nastran/20181/msc20181/nast/tpl' $(program default)
+SDIR='c:/scratch/oneram6_nl_case1_bis.T3920_28'
+DBS='c:/scratch/oneram6_nl_case1_bis.T3920_28'
+SCR='yes'
+SMEM=100
+BPOOL=767.9MB
+DMPMEM=estimate
+NEWDEL='c:/msc.software/msc_nastran/20181/msc20181/win64i8/sss'
+DEL='MSCDEF'
+DML=MSCDEF
+SDL=MSCDEF
+AUTH='27500@licenciasl2.aig.uc3m.es'
+AUTHQUE=20
+MSGCAT='c:/msc.software/msc_nastran/20181/msc20181/win64i8/analysis.msg'
+MSGDEST='f06'
+NEWS='c:/msc.software/msc_nastran/20181/msc20181/nast/news.txt'
+----------------------------------------------------------------- 
+MSC_ISHELLPATH=C:\MSC.Software\MSC_Nastran\20181\msc20181\actran\win64\Actran_18.0.b.107480\bin;C:\MSC.Software\MSC_Nastran\20181\msc20181\nast; 
+MSC_JIDPATH= 
+PATH=c:\msc.software\msc_nastran\20181\msc20181\win64i8;c:\msc.software\msc_nastran\20181\msc20181\win64i8\nCode\bin;c:\msc.software\msc_nastran\20181\msc20181\win64i8\nvidia;c:\msc.software\msc_nastran\20181\msc20181\win64i8\lib;c:\msc.software\msc_nastran\20181\msc20181\win64i8;C:\MSC.Software\Patran_x64_Classic\20180\bin;C:\SIMULIA\Commands;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\Program Files\MATLAB\R2018a\runtime\win64;C:\Program Files\MATLAB\R2018a\bin;C:\Users\aulavirtual\AppData\Local\Microsoft\WindowsApps; 
+SCA_SERVICE_CATALOG=c:\msc.software\msc_nastran\20181\msc20181\res\SCAServiceCatalog.xml 
+SCA_RESOURCE_DIR=c:\msc.software\msc_nastran\20181\msc20181\res 
+Cmd Line:    C:\MSC.Software\MSC_Nastran\20181\msc20181\win64i8\nastran.exe JID=C:\Users\aulavirtual\Downloads\ONERAM6_NL_CASE1_bis.bdf 
+Current Dir: C:\Users\aulavirtual\Downloads 
+Time Cmd:    c:\msc.software\msc_nastran\20181\msc20181\win64i8\msctime 
+Executable:  c:\msc.software\msc_nastran\20181\msc20181\win64i8\analysis.exe 
+Arch= Kywd:  [Not specified]  
+MSC_MSG:     stderr  
+FPE:         yes  
+----------------------------------------------------------------- 
+Current resource limits:
+ Physical memory:                     6143 MB
+ Physical memory available:           3828 MB
+ Paging file size:                    7807 MB
+ Paging file size available:          2006 MB
+ Virtual memory:                 134217727 MB
+ Virtual memory available:       134213510 MB
+----------------------------------------------------------------- 
+System configuration:
+ Hostname:         MAirFrame22_015
+ Architecture:     win64i8
+ Platform:         Intel Windows 10 Education 6.2 9200 (Windows Compute Cluster)
+ Model:            Xeon/2350
+ Clock freq.:      2350 MHz
+ Number of CPUs:   4
+ Executable:       standard
+ Raw model ID:     6
+ Config number:    6
+ Physical memory:  6143 MB
+ Virtual memory:   7807 MB
+ Numeric format:   64-bit little-endian IEEE.
+ Bytes per word:   8
+ Disk block size:  512 bytes (64 words)
+ Remote shell cmd: "c:/msc.software/msc_nastran/20181/msc20181/win64i8/mscrmtcmd.exe" (Windows non-CCS nodes, UNIX)
+                   <ccs_cmd> (Windows CCS nodes)
+----------------------------------------------------------------- 
+MSC Nastran started  Mon Jul 15 17:12:28 Hdvr 2019 
+ 17:12:29  Beginning Analysis
+SCA Kernel 20.0.520419 successfully initialized
+BLAS/LAPACK .dll "c:\msc.software\msc_nastran\20181\msc20181\win64i8\libimalloc.dll" has been loaded.
+BLAS/LAPACK .dll "c:\msc.software\msc_nastran\20181\msc20181\win64i8\mkl_core.dll" has been loaded.
+BLAS/LAPACK .dll "c:\msc.software\msc_nastran\20181\msc20181\win64i8\mkl_intel_thread.dll" has been loaded.
+BLAS/LAPACK .dll "c:\msc.software\msc_nastran\20181\msc20181\win64i8\mkl_rt.dll" has been loaded.
+BLAS/LAPACK .dll "c:\msc.software\msc_nastran\20181\msc20181\win64i8\MSCblas.dll" has been loaded.
+
+ 17:12:36  MSC Authorization Information - System Attributes (1004, 0)
+ 17:12:36  -----------------------------------------------------------
+  Date:          Mon Jul 15 17:12:36 2019
+  MSC Id:        005059100081 (ethernet) (Intel)
+  Hostname:      MAirFrame22_015 (user aulavirtual, display Guacamole RDP)
+  License files: 27500@licenciasl2.aig.uc3m.es
+  CEID:          56936616-367357CF
+  User:          aulavirtual
+  Display:       Guacamole RDP
+  LAPI Version:  LAPI 10.2.4 win64 :: Build 3774 20170919223700Z (FLEXlm 11.13.1.0)
+
+  * * * * * * * * * * * * * * * * * * * *
+  * * * * * * * * * * * * * * * * * * * *
+  * *                                 * *
+  * *   MSC Customer Entitlement ID   * *
+  * *        56936616-367357CF        * *
+  * *                                 * *
+  * * * * * * * * * * * * * * * * * * * *
+  * * * * * * * * * * * * * * * * * * * *
+
+ 17:12:43  MSC Authorization Information - Checkout Successful (1016, 0)
+ 17:12:43  -------------------------------------------------------------
+ 17:12:43  Acquired 1 license for MSC Nastran from license server on host licenciasl2.aig.uc3m.es
+
+
+Beginning bulk data processing using the IFPStar component.
+For more information on IFPStar, please see KB article KB8019200
+on our support pages, at http://simcompanion.mscsoftware.com.
+
+ 17:12:43  Reading INCLUDE file "c:\Users\aulavirtual\Downloads\CBEAM_STIFF_PLUS.bdf"
+ 17:12:43  126 records read from INCLUDE file "c:\Users\aulavirtual\Downloads\CBEAM_STIFF_PLUS.bdf"
+ 17:12:43  185 records read from JID file "c:/users/aulavirtual/downloads/oneram6_nl_case1_bis.bdf"
+ 17:12:43  A total of 311 records were read from 2 files.
+
+Processing of bulk data entries is complete.
+
+ 17:12:44  Analysis started.
+ 17:12:44  Geometry access/verification to CAD part initiated (if needed).
+ 17:12:44  Geometry access/verification to CAD part successfully completed (if needed).
+
+ 17:12:47  MSC Authorization Information - Checkout Successful (1016, 0)
+ 17:12:47  -------------------------------------------------------------
+ 17:12:47  Acquired 1 license for MSC Nastran Nonlinear from license server on host licenciasl2.aig.uc3m.es
+
+ 17:12:47  Finite element model generation started.
+ 17:12:50  Finite element model generated 600 degrees of freedom.
+ 17:12:50  Finite element model generation successfully completed.
+ 17:12:50  Application of Loads and Boundary Conditions to the finite element model started.
+ 17:12:50  Application of Loads and Boundary Conditions to the finite element model successfully completed.
+ ================================================== 
+ Warning/Fatal Message Summary           Occurrence
+       USER WARNING MESSAGE    22713.0          1 
+       USER WARNING MESSAGE    22713.0        179 
+       USER WARNING MESSAGE     4698.0         64 
+ ================================================== 
+ 17:12:57  17 records read from JID file "c:/users/aulavirtual/downloads/oneram6_nl_case1_bis.bdf"
+ 17:12:57  NSEXIT: EXIT(0)
+ 17:12:57  Analysis complete  0
+Real:       28.558 seconds ( 0:00:28.558)
+User:        5.875 seconds ( 0:00:05.875)
+Sys:         2.015 seconds ( 0:00:02.015)
+ ==================================================
+ OS:              6.2
+ OEM ID:         9
+ Number of processors:         4
+ Page size:         4096
+ Processor type:         8664
+ Minimum application address:         10000
+ Maximum application address:         fffeffff
+ Active processor mask:         15
+ Nsocket:         2
+ Ncore:           2  ( 2 X 1 )
+ HyperThreading:  Off
+ Ram:          6143 Mb
+ ==================================================
+ Time Summary                 CPU       Wall   ( Time in Seconds )
+ Stiffness Generation         1.8          0 
+ Miscellaneous                5.6         14 
+ -------------------------------------------
+ Total:                       7.4         14 
+ ==================================================
+ Consider using SOLVE=AUTO if you have not.
+ =====================================================
+ Detailed performance information can be found in the 
+ "MSC Nastran High Performance Computing User's Guide"
+ =====================================================
+MSC Nastran finished Mon Jul 15 17:12:58 Hdvr 2019 
