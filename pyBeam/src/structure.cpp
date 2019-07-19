@@ -496,49 +496,35 @@ void CStructure::EvalSensRot(int iIter){
     MatrixXdDiff Krot = MatrixXdDiff::Zero(12,12);
     VectorXdDiff fint =  VectorXdDiff::Zero(12);
     
+    MatrixXdDiff I = MatrixXdDiff::Identity(3,3);
+    
     addouble onetol = 0.0;
     
     MatrixXdDiff de1_part1 = MatrixXdDiff::Zero(3,12);
     
-    de1_part1.block(1-1,1-1,3,3) = - MatrixXdDiff::Identity(3,3);
-    de1_part1.block(1-1,7-1,3,3) =   MatrixXdDiff::Identity(3,3);
-    
-    Vector3dDiff de1_i = Vector3dDiff::Zero();
-    
+    de1_part1.block(1-1,1-1,3,3) = - I;
+    de1_part1.block(1-1,7-1,3,3) =   I;
+        
 
-   
     VectorXdDiff dU_AB = VectorXdDiff::Zero(12);
     VectorXdDiff  X_AB = VectorXdDiff::Zero(6);
-     // For derivative of e3 I need:
-    
-    addouble ii = 0.0;
-    MatrixXdDiff iii = MatrixXdDiff::Zero(3,12);
-    addouble iv = 0.0;
+
     MatrixXdDiff alpha = MatrixXdDiff::Zero(3,12);
     MatrixXdDiff beta = MatrixXdDiff::Zero(3,12);
-    //Vector3dDiff pa = Vector3dDiff::Zero();
-    //Vector3dDiff pb = Vector3dDiff::Zero();
+
     Vector3dDiff p= Vector3dDiff::Zero();
-    Vector3dDiff e1_cross_p= Vector3dDiff::Zero();
-    addouble e1_cross_p_norm;
+
     
     Matrix3dDiff e1_star = Matrix3dDiff::Zero(); // rearrangement of e1 in matrix form
     Matrix3dDiff p_star = Matrix3dDiff::Zero();  // rearrangement of p in matrix form
     
-    MatrixXdDiff dp = MatrixXdDiff::Zero(3,12);  // d(pa)/d(U)
-    //Vector3dDiff alpha = Vector3dDiff::Zero();   // (e1 X p) /( (e1 X p)'*(e1 X p) ) 
-    //MatrixXdDiff beta = MatrixXdDiff::Zero(3,12);   // d(e1 X p)/dU
-    Matrix3dDiff gamma = Matrix3dDiff::Zero(12);   // d(norm(e1 X p))/dU
-    Matrix3dDiff dp_block = Matrix3dDiff::Zero(); // d(pb)/d(U)
-  
-    // For derivative of e2 I need:
-    
-    Vector3dDiff e3_cross_e1= Vector3dDiff::Zero();
-    addouble e3_cross_e1_norm;
-    //Vector3dDiff delta = Vector3dDiff::Zero();   // (e3 X e1) /( (e3 X e1)'*(e3 X e1) )   
-    //MatrixXdDiff zeta = MatrixXdDiff::Zero(3,12);   // d(e3 X e1)/dU
-    //VectorXdDiff epsilon = VectorXdDiff::Zero(12);   // d(norm(e3 X e1))/dU
+    MatrixXdDiff dp_1 = MatrixXdDiff::Zero(3,12);  
+    Matrix3dDiff gamma = Matrix3dDiff::Zero();   
+    Matrix3dDiff dp_block = Matrix3dDiff::Zero();   
     Matrix3dDiff e3_star = Matrix3dDiff::Zero(); // rearrangement of e3 in matrix form    
+    Matrix3dDiff E2 = Matrix3dDiff::Zero(); 
+    Matrix3dDiff E3 = Matrix3dDiff::Zero();     
+    
     //-------------------------------
     
     VectorXdDiff XbmXa = Vector3dDiff::Zero(3);
@@ -558,17 +544,17 @@ void CStructure::EvalSensRot(int iIter){
         alpha = MatrixXdDiff::Zero(3,12);
         de1 = MatrixXdDiff::Zero(3,12);
         de3 = MatrixXdDiff::Zero(3,12); 
-        dp = MatrixXdDiff::Zero(3,12);
+        dp_1 = MatrixXdDiff::Zero(3,12);
         dp_block = Matrix3dDiff::Zero();
         p = Vector3dDiff::Zero();  
         p_star = Matrix3dDiff::Zero(); 
         e1_star = Matrix3dDiff::Zero(); 
+        E2 = Matrix3dDiff::Zero(); 
+        E3 = Matrix3dDiff::Zero(); 
         beta = MatrixXdDiff::Zero(3,12);         
-        gamma = Matrix3dDiff::Zero(12);  
-        //delta = Vector3dDiff::Zero();
+        gamma = Matrix3dDiff::Zero();  
         e3_star = Matrix3dDiff::Zero(); 
-        //zeta = MatrixXdDiff::Zero(3,12);        
-        //epsilon = VectorXdDiff::Zero(12);        
+      
         
         nodeA_id = element[id_el-1]->nodeA->GeID();
         nodeB_id = element[id_el-1]->nodeB->GeID();
@@ -587,6 +573,7 @@ void CStructure::EvalSensRot(int iIter){
         
         e1 = element[id_el-1]->R.block(1-1,1-1,3,1);
         e2 = element[id_el-1]->R.block(1-1,2-1,3,1);
+        e3 = element[id_el-1]->R.block(1-1,3-1,3,1);
         
         //===   de1_du ===
         XbmXa = X.segment((nodeB_id-1)*3+1 -1,3) - X.segment((nodeA_id-1)*3+1 -1,3);
@@ -600,68 +587,59 @@ void CStructure::EvalSensRot(int iIter){
         
         //===   de3_du === 0    
         p = e2;
-        
-        e1_cross_p = e1.cross(p);
-        e1_cross_p_norm = e1_cross_p.norm();
-        //Ingredients
 
-        ii = 1/e1_cross_p_norm -  e1_cross_p*e1_cross_p.transpose() / (e1_cross_p_norm*e1_cross_p_norm*e1_cross_p_norm);
         
         /* e1_star = [ 0      -e_1(3)  e_1(2)
          *             e_1(3)    0    -e_1(1)
          *            -e_1(2)  e_1(1)   0     ]*/
         e1_star(2-1,1-1) =  e1(3-1);      e1_star(1-1,2-1) =  -e1(3-1);    e1_star(1-1,3-1) =  e1(2-1);
         e1_star(3-1,1-1) =  -e1(2-1);   e1_star(3-1,2-1) =  e1(1-1);      e1_star(2-1,3-1) =  -e1(1-1);
-        
+
         /* p_star  = [ 0      -p(3)   p(2)
          *             p(3)     0    -p(1)
-         *            -p(2)    p(1)    0     ]*/  
+         *            -p(2)    p(1)    0     ]    alias: e2_star*/   
 
         p_star(2-1,1-1) =  p(3-1);
         p_star(3-1,1-1) =  -p(2-1); //
         p_star(1-1,2-1) =  -p(3-1);                
         p_star(3-1,2-1) =  p(1-1); //
         p_star(1-1,3-1) =  p(2-1);
-        p_star(2-1,3-1) =  -p(1-1);        
-        
-        e3 = element[id_el-1]->R.block(1-1,3-1,3,1);
-        
+        p_star(2-1,3-1) =  -p(1-1); 
+
         /* e3_star = [ 0      -e_3(3)  e_3(2)
          *             e_3(3)    0    -e_3(1)
          *            -e_3(2)  e_3(1)   0     ]*/
         // rearrangement of e3 in matrix form
         e3_star(2-1,1-1) =  e3(3-1);      e3_star(1-1,2-1) =  -e3(3-1);    e3_star(1-1,3-1) =  e3(2-1);
-        e3_star(3-1,1-1) =  -e3(2-1);   e3_star(3-1,2-1) =  e3(1-1);      e3_star(2-1,3-1) =  -e3(1-1);         
+        e3_star(3-1,1-1) =  -e3(2-1);   e3_star(3-1,2-1) =  e3(1-1);      e3_star(2-1,3-1) =  -e3(1-1);  
         
-        /* dp_block  = [ 0      e2(3)   -e2(2)
+        E2 = e2*e2.transpose();
+        
+        E3 = e3*e3.transpose();
+        
+         /* dp_block  = [ 0      e2(3)   -e2(2)
          *             -e2(3)     0    -e2(1)
          *             e2(2)    -e2(1)    0     ]*/ 
         dp_block(2-1,1-1) =  -e2(3-1);      dp_block(1-1,2-1) =  e2(3-1);    dp_block(1-1,3-1) =  -e2(2-1);
         dp_block(3-1,1-1) =  e2(2-1);   dp_block(3-1,2-1) =  -e2(1-1);      dp_block(2-1,3-1) =  e2(1-1);
         
-        dp.block(1-1,3-1,3,3) = dp_block;
-        dp.block(1-1,10-1,3,3) =   dp_block;    
+        dp_1.block(1-1,4-1,3,3) = dp_block;
+        dp_1.block(1-1,10-1,3,3) =   dp_block;    
         
-        iii = dp*0.5;
+        dp_1 = dp_1*0.5;
         
-        beta = ii*(e1_star*iii  - p_star*de1);
+        alpha = dp_1 - p_star*de1 - E3*(dp_1 - p_star*de1);
         
-        e3_cross_e1 = e3.cross(e1);
-        e3_cross_e1_norm = e3_cross_e1.norm();
+        beta = e3_star*de1 - E2*e3_star*de1;
         
-        iv = 1/e3_cross_e1_norm - e3_cross_e1*e3_cross_e1.transpose() / (e3_cross_e1_norm*e3_cross_e1_norm*e3_cross_e1_norm);
+        gamma = I + (e1_star- E3*e1_star)*(- e1_star + E2*e1_star);
         
-        alpha = iv*(e3_star*de1);
+        // dU = Ksys.fullPivHouseholderQr().solve(Residual);
+        de3 = gamma.fullPivHouseholderQr().solve( (e1_star - E3*e1_star)*beta + alpha );
         
-        gamma = MatrixXdDiff::Identity(3,3); 
-        gamma = gamma -ii*iv*e1_star*e1_star;         
+        de2 = (- e1_star + E2*e1_star)* de3 + beta;
         
-        de3 = gamma.inverse()*(ii*e1_star*alpha + beta);
-        
-        //===   de2_du === 0   
-        
-        de2 = alpha + iv*e1_star*de3;
-        
+
         // ====== Krot
         
         Krot.block(1-1,1-1,3,12)  =  de1*fint(1-1)  + de2*fint(2-1)  + de3*fint(3-1) ;
@@ -680,15 +658,11 @@ void CStructure::EvalSensRot(int iIter){
         file  << '\n';  
         file  <<  "e3 = \n "<< e3 << '\n';              
         file  << '\n';   
-        file  << "e3_cross_e1_norm = \n "<<  e3_cross_e1_norm << '\n';        
+        file  << "alpha = \n "<<  alpha << '\n';        
         file  << '\n';         
-        file  << "e3_cross_e1 = \n "<<  e3_cross_e1 << '\n';        
+        file  << "beta = \n "<<  beta << '\n';        
         file  << '\n';         
-        file  << "delta = \n "<<  delta << '\n';        
-        file  << '\n';        
-        file  << "zeta = \n "<<  zeta << '\n';
-        file  << '\n';        
-        file  <<  "epsilon  = \n "<< epsilon << '\n';        
+        file  << "gamma = \n "<<  gamma << '\n';            
         file  << '\n';
         file  <<   "de2 = \n "<< de2 << '\n';
         file  << '\n';
