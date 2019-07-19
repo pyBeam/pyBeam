@@ -346,25 +346,25 @@ void CStructure::AssemblyTang(int iIter)
 
         // Reorganize the element tangent matrix into the global matrix according to the element DOFs
         for (int jjj=1; jjj<= 2; jjj++){
-
+            
             // Determine the global element node id "j"
             if (jjj==1) {dof_jjj = (nodeA_id-1)*6 +1;} else {dof_jjj = (nodeB_id-1)*6 +1;}
-
+            
             for (int kkk=1; kkk<= 2; kkk++){
-
+                
                 // Determine the global element node id "k"
                 if (kkk==1) {dof_kkk  =  (nodeA_id-1)*6 +1;} else {dof_kkk  =  (nodeB_id-1)*6 +1;}          
                 
                 // Rotates the element's SUBMATRIX tangent
                 Krotated = (element[id_el-1]->R * Ktang.block((jjj-1)*6+1 -1,(kkk-1)*6+1 -1,6,6)  ) * element[id_el-1]->R.transpose() ;
-/*
-               if (id_el == 1) {
-                    std::cout << "Length    = \n" << element[id_el-1]->GetCurrent_Length() << std::endl;
-                    std::cout << "Kprim    = \n" << element[id_el-1]->Kprim << std::endl;
-                    std::cout << "Krotated    = \n" << Krotated << std::endl;  
-                    std::cout << "R    = \n" << element[id_el-1]->R << std::endl;
-                    std::cout << "Ktang_block    = \n" << Ktang.block((jjj-1)*6+1 -1,(kkk-1)*6+1 -1,6,6)   << std::endl;
-               }*/
+                /*
+                 if (id_el == 1) {
+                 std::cout << "Length    = \n" << element[id_el-1]->GetCurrent_Length() << std::endl;
+                 std::cout << "Kprim    = \n" << element[id_el-1]->Kprim << std::endl;
+                 std::cout << "Krotated    = \n" << Krotated << std::endl;  
+                 std::cout << "R    = \n" << element[id_el-1]->R << std::endl;
+                 std::cout << "Ktang_block    = \n" << Ktang.block((jjj-1)*6+1 -1,(kkk-1)*6+1 -1,6,6)   << std::endl;
+                 }*/
                 
                 // Contribution to the appropriate location of the global matrix
                 Ksys.block(dof_jjj-1,dof_kkk-1,6,6) += Krotated;
@@ -373,15 +373,15 @@ void CStructure::AssemblyTang(int iIter)
         }
         
     }
-
+    
     /*--------------------------------------------------------
      *    Rigid rotation contribution to the Stiffness Matrix
      * -------------------------------------------------------*/
-
+    
     //EvalSensRot(iIter);
     if (iIter !=0)
     {
-    EvalSensRotFiniteDifferences();
+        EvalSensRotFiniteDifferences();
     }
     /*------------------------------------
      *    Imposing  B.C.
@@ -441,13 +441,16 @@ void CStructure::EvalSensRotFiniteDifferences(){
     addouble fd;  
     
     int ii;
-       
+    
+    std::ofstream file("./FD_de1_de2_de3.txt");
+    std::cout.precision(17); 
+    
     for (int id_el=1; id_el<= nfem; id_el++) {
         /*
-        if (id_el==19 or id_el==96)
-        { 
-            std::cout << "Element    = " << id_el << std::endl;     
-        } */ 
+         if (id_el==19 or id_el==96)
+         { 
+         std::cout << "Element    = " << id_el << std::endl;     
+         } */ 
         nodeA_id = element[id_el-1]->nodeA->GeID();
         nodeB_id = element[id_el-1]->nodeB->GeID();
         
@@ -467,14 +470,14 @@ void CStructure::EvalSensRotFiniteDifferences(){
         {
             VectorXdDiff dU_AB_eps = VectorXdDiff::Zero(12);
             if ( ii <4 or ( ii>6 and ii<10) ) { 
-            fd = fd_t;
+                fd = fd_t;
             }
             else {
-            fd = fd_r; 
+                fd = fd_r; 
             }
             
             dU_AB_eps(ii -1) = fd; 
-
+            
             element[id_el-1]->EvalRotMatFiniteDifferences( dU_AB_eps, X_AB, R_eps);
             
             de1.block(1-1,ii-1,3,1) =  ( R_eps.block(1-1,1-1,3,1) - element[id_el-1]->R.block(1-1,1-1,3,1) ) / fd;
@@ -491,7 +494,7 @@ void CStructure::EvalSensRotFiniteDifferences(){
         Krot.block(10-1,1-1,3,12) =  de1*fint(10-1) + de2*fint(11-1) + de3*fint(12-1) ;
         
         // ================= > insert in the right position
-                
+        
         
         for (int jjj=1; jjj<= 2; jjj++) {
             
@@ -504,9 +507,16 @@ void CStructure::EvalSensRotFiniteDifferences(){
                 
             }
         }
-        
+        file  <<  "Element: " << id_el << '\n';       
+        file  << '\n';         
+        file  <<  "de1 = \n "<< de1 << '\n';                       
+        file  << '\n';
+        file  <<   "de2 = \n "<< de2 << '\n';
+        file  << '\n';
+        file  <<   "de3 = \n "<< de3 << '\n';
+        file  << '\n';        
     }
-    
+    file.close();
 }
 
 
