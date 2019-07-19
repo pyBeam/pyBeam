@@ -628,11 +628,11 @@ void CStructure::EvalSensRot(int iIter){
         
         dp_1 = dp_1*0.5;
         
-        alpha = dp_1 - p_star*de1 - E3*(dp_1 - p_star*de1);
+        alpha = e1_star*dp_1 - p_star*de1 - E3*(e1_star*dp_1 - p_star*de1);
         
         beta = e3_star*de1 - E2*e3_star*de1;
         
-        gamma = I + (e1_star- E3*e1_star)*(- e1_star + E2*e1_star);
+        gamma = I - (e1_star- E3*e1_star)*(- e1_star + E2*e1_star);
         
         // dU = Ksys.fullPivHouseholderQr().solve(Residual);
         de3 = gamma.fullPivHouseholderQr().solve( (e1_star - E3*e1_star)*beta + alpha );
