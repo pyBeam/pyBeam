@@ -492,7 +492,7 @@ void CStructure::EvalSensRot(int iIter){
     MatrixXdDiff de1 = MatrixXdDiff::Zero(3,12);
     MatrixXdDiff de2 = MatrixXdDiff::Zero(3,12);
     MatrixXdDiff de3 = MatrixXdDiff::Zero(3,12);
-    
+       
     MatrixXdDiff Krot = MatrixXdDiff::Zero(12,12);
     VectorXdDiff fint =  VectorXdDiff::Zero(12);
     
@@ -554,7 +554,6 @@ void CStructure::EvalSensRot(int iIter){
         beta = MatrixXdDiff::Zero(3,12);         
         gamma = Matrix3dDiff::Zero();  
         e3_star = Matrix3dDiff::Zero(); 
-      
         
         nodeA_id = element[id_el-1]->nodeA->GeID();
         nodeB_id = element[id_el-1]->nodeB->GeID();
@@ -635,11 +634,12 @@ void CStructure::EvalSensRot(int iIter){
         gamma = I - (e1_star- E3*e1_star)*(- e1_star + E2*e1_star);
         
         // dU = Ksys.fullPivHouseholderQr().solve(Residual);
-        de3 = gamma.fullPivHouseholderQr().solve( (e1_star - E3*e1_star)*beta + alpha );
+        //de3 = gamma.fullPivHouseholderQr().solve( (e1_star - E3*e1_star)*beta + alpha );
+        
+        de3 = alpha;
         
         de2 = (- e1_star + E2*e1_star)* de3 + beta;
         
-
         // ====== Krot
         
         Krot.block(1-1,1-1,3,12)  =  de1*fint(1-1)  + de2*fint(2-1)  + de3*fint(3-1) ;
@@ -657,7 +657,7 @@ void CStructure::EvalSensRot(int iIter){
         file  <<   "de2 = \n "<< de2 << '\n';
         file  << '\n';
         file  <<   "de3 = \n "<< de3 << '\n';
-        file  << '\n';
+        file  << '\n';                 
         
         // ================= > insert in the right position
         
