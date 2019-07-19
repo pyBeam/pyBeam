@@ -134,9 +134,8 @@ public:
     void InitializeRotMats();    
 
     // Evaluates the rotation matrix for a value of a small dU_AB_eps around a given position of the reference system evaluated with current positions X_AB and rotations dU_AB X_AB
-    void EvalRotMatFiniteDifferences(VectorXdDiff dU_AB_eps, VectorXdDiff  X_AB, Matrix3dDiff &R_eps);
+    //void EvalRotMatFiniteDifferences(VectorXdDiff dU_AB_eps, VectorXdDiff  X_AB, Matrix3dDiff &R_eps);
     
-
     // Set the element dependencies
     void SetDependencies(void);
 
