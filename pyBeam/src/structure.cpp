@@ -544,6 +544,22 @@ void CStructure::EvalResidual(unsigned short irigid)
 
 void CStructure::SolveLinearStaticSystem(int iIter)
 {
+
+    bool TapeActive = false;
+
+#ifdef CODI_REVERSE_TYPE
+
+    TapeActive = AD::globalTape.isActive();
+
+    AD::StartExtFunc(false, false);
+
+    for (unsigned long iRes; iRes < Residual.size(); iRes++)
+      AD::SetExtFuncIn(&Residual[iRes]);
+
+    /*--- Stop the recording for the linear solver ---*/
+
+    AD::StopRecording();
+#endif
     
     switch(kind_linSol){
     case PartialPivLu:
@@ -562,6 +578,22 @@ void CStructure::SolveLinearStaticSystem(int iIter)
         dU = Ksys.ldlt().solve(Residual); break;
     default:
         dU = Ksys.fullPivHouseholderQr().solve(Residual); break;
+    }
+
+    if(TapeActive) {
+
+      /*--- Start recording if it was stopped for the linear solver ---*/
+
+      AD::StartRecording();
+
+      for (unsigned long iRes; iRes < Residual.size(); iRes++)
+        AD::SetExtFuncOut(&dU[iRes]);
+
+#ifdef CODI_REVERSE_TYPE
+      AD::FuncHelper->addToTape(CStructure::SolveTransposeLinearStaticSystem);
+#endif
+
+      AD::EndExtFunc();
     }
 
     addouble relative_error = (Ksys*dU -Residual).norm() / Residual.norm(); // norm() is L2 norm
@@ -584,6 +616,31 @@ void CStructure::SolveLinearStaticSystem(int iIter)
 //	LLT 	                          llt() 	Positive definite  +++ 	+
 //	LDLT 	                         ldlt() Positive or negative semidefinite 	+++ 	++
     
+}
+
+void CStructure::SolveTransposeLinearStaticSystem(void)
+{
+
+    switch(kind_linSol){
+    case PartialPivLu:
+        dU = Ksys.transpose().partialPivLu().solve(Residual); break;
+    case FullPivLu:
+        dU = Ksys.transpose().fullPivLu().solve(Residual); break;
+    case HouseholderQr:
+        dU = Ksys.transpose().householderQr().solve(Residual); break;
+    case ColPivHouseholderQr:
+        dU = Ksys.transpose().colPivHouseholderQr().solve(Residual); break;
+    case FullPivHouseholderQr:
+        dU = Ksys.transpose().fullPivHouseholderQr().solve(Residual); break;
+    case LLT:
+        dU = Ksys.transpose().llt().solve(Residual); break;
+    case LDLT:
+        dU = Ksys.transpose().ldlt().solve(Residual); break;
+    default:
+        dU = Ksys.transpose().fullPivHouseholderQr().solve(Residual); break;
+    }
+
+
 }
 
 void CStructure::SolveLinearStaticSystem_RBE2(int iIter)

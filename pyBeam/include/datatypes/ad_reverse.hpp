@@ -34,6 +34,8 @@ namespace AD{
 	
   /*--- Reference to the tape ---*/
   extern addouble::TapeType& globalTape;
+  typedef codi::ExternalFunctionHelper<addouble> ExtFuncHelper;
+  extern ExtFuncHelper* FuncHelper;
 
   /*--- Register variables as input/output ---*/
   inline void RegisterInput(addouble &data) {AD::globalTape.registerInput(data);}
@@ -59,5 +61,25 @@ namespace AD{
 
   /*--- Reset the tape ---*/
   inline void Reset() { globalTape.reset(); }
+
+  inline void SetExtFuncIn(addouble &data) {
+    FuncHelper->addInput(data);
+  }
+
+  inline void SetExtFuncOut(addouble &data) {
+    if (AD::globalTape.isActive()) {
+      FuncHelper->addOutput(data);
+    }
+  }
+
+  inline void StartExtFunc(bool storePrimalInput, bool storePrimalOutput){
+    FuncHelper = new ExtFuncHelper(true);
+    if (!storePrimalInput){
+      FuncHelper->disableInputPrimalStore();
+    }
+    if (!storePrimalOutput){
+      FuncHelper->disableOutputPrimalStore();
+    }
+  }
 	
 }

@@ -46,4 +46,9 @@ namespace AD{
   inline void ClearAdjoints() { }
   inline void ComputeAdjoint() { }
   inline void Reset() { }
+
+  inline void SetExtFuncIn(addouble &data) { }
+  inline void SetExtFuncOut(addouble &data) { }
+
+  inline void StartExtFunc(bool storePrimalInput, bool storePrimalOutput) { }
 }

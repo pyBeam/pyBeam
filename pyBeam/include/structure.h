@@ -145,6 +145,8 @@ public:
     // Assembles LHS and RHS and solves the linear static problem
     
     void SolveLinearStaticSystem(int iIter);
+
+    void SolveTransposeLinearStaticSystem(void);
     
     void SolveLinearStaticSystem_RBE2(int iIter);        
     
