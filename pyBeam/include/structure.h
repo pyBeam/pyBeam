@@ -146,8 +146,6 @@ public:
     
     void SolveLinearStaticSystem(int iIter);
 
-    void SolveTransposeLinearStaticSystem(void);
-    
     void SolveLinearStaticSystem_RBE2(int iIter);        
     
     void SolveLinearStaticSystem_RBE2_penalty(int iIter);   

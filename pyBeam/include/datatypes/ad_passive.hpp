@@ -51,4 +51,6 @@ namespace AD{
   inline void SetExtFuncOut(addouble &data) { }
 
   inline void StartExtFunc(bool storePrimalInput, bool storePrimalOutput) { }
+
+  inline void EndExtFunc(){ }
 }

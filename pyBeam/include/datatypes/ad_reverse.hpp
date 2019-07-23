@@ -29,13 +29,15 @@
 #include "../../externals/CoDiPack/include/codi.hpp"
 
 typedef codi::RealReverse addouble;
+typedef codi::ExternalFunctionHelper<addouble> ExtFuncHelper;
 
 namespace AD{
 	
   /*--- Reference to the tape ---*/
-  extern addouble::TapeType& globalTape;
-  typedef codi::ExternalFunctionHelper<addouble> ExtFuncHelper;
+
   extern ExtFuncHelper* FuncHelper;
+
+  extern addouble::TapeType& globalTape;
 
   /*--- Register variables as input/output ---*/
   inline void RegisterInput(addouble &data) {AD::globalTape.registerInput(data);}
@@ -62,24 +64,32 @@ namespace AD{
   /*--- Reset the tape ---*/
   inline void Reset() { globalTape.reset(); }
 
-  inline void SetExtFuncIn(addouble &data) {
-    FuncHelper->addInput(data);
-  }
+  inline void SetExtFuncIn(const addouble &data) {AD::FuncHelper->addInput(data);}
 
-  inline void SetExtFuncOut(addouble &data) {
+  inline void SetExtFuncOut(addouble &data){
     if (AD::globalTape.isActive()) {
-      FuncHelper->addOutput(data);
+      AD::FuncHelper->addOutput(data);
     }
   }
 
   inline void StartExtFunc(bool storePrimalInput, bool storePrimalOutput){
     FuncHelper = new ExtFuncHelper(true);
     if (!storePrimalInput){
-      FuncHelper->disableInputPrimalStore();
+      AD::FuncHelper->disableInputPrimalStore();
     }
     if (!storePrimalOutput){
-      FuncHelper->disableOutputPrimalStore();
+      AD::FuncHelper->disableOutputPrimalStore();
     }
   }
+
+  inline void EndExtFunc() {delete AD::FuncHelper;}
 	
 }
+
+class SolveAdjSys{
+
+public:
+  static void SolveSys(const codi::RealReverse::Real* x, codi::RealReverse::Real* x_b, size_t m,
+                       const codi::RealReverse::Real* y, const codi::RealReverse::Real* y_b, size_t n,
+                       codi::DataStore* d);
+};

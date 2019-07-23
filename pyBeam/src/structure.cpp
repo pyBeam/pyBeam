@@ -554,7 +554,7 @@ void CStructure::SolveLinearStaticSystem(int iIter)
     AD::StartExtFunc(false, false);
 
     for (unsigned long iRes; iRes < Residual.size(); iRes++)
-      AD::SetExtFuncIn(&Residual[iRes]);
+      AD::SetExtFuncIn(Residual(iRes));
 
     /*--- Stop the recording for the linear solver ---*/
 
@@ -587,10 +587,14 @@ void CStructure::SolveLinearStaticSystem(int iIter)
       AD::StartRecording();
 
       for (unsigned long iRes; iRes < Residual.size(); iRes++)
-        AD::SetExtFuncOut(&dU[iRes]);
+        AD::SetExtFuncOut(dU(iRes));
 
 #ifdef CODI_REVERSE_TYPE
-      AD::FuncHelper->addToTape(CStructure::SolveTransposeLinearStaticSystem);
+      AD::FuncHelper->addUserData(nNode);
+      AD::FuncHelper->addUserData(kind_linSol);
+      AD::FuncHelper->addUserData(Ksys);
+
+      AD::FuncHelper->addToTape(SolveAdjSys::SolveSys);
 #endif
 
       AD::EndExtFunc();
@@ -616,31 +620,6 @@ void CStructure::SolveLinearStaticSystem(int iIter)
 //	LLT 	                          llt() 	Positive definite  +++ 	+
 //	LDLT 	                         ldlt() Positive or negative semidefinite 	+++ 	++
     
-}
-
-void CStructure::SolveTransposeLinearStaticSystem(void)
-{
-
-    switch(kind_linSol){
-    case PartialPivLu:
-        dU = Ksys.transpose().partialPivLu().solve(Residual); break;
-    case FullPivLu:
-        dU = Ksys.transpose().fullPivLu().solve(Residual); break;
-    case HouseholderQr:
-        dU = Ksys.transpose().householderQr().solve(Residual); break;
-    case ColPivHouseholderQr:
-        dU = Ksys.transpose().colPivHouseholderQr().solve(Residual); break;
-    case FullPivHouseholderQr:
-        dU = Ksys.transpose().fullPivHouseholderQr().solve(Residual); break;
-    case LLT:
-        dU = Ksys.transpose().llt().solve(Residual); break;
-    case LDLT:
-        dU = Ksys.transpose().ldlt().solve(Residual); break;
-    default:
-        dU = Ksys.transpose().fullPivHouseholderQr().solve(Residual); break;
-    }
-
-
 }
 
 void CStructure::SolveLinearStaticSystem_RBE2(int iIter)
