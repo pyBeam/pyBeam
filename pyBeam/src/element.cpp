@@ -479,6 +479,7 @@ void CElement::InitializeRotMats()
 
 }
 
+/*
 void CElement::EvalRotMatFiniteDifferences( VectorXdDiff dU_AB_eps,  VectorXdDiff  X_AB, Matrix3dDiff &R_eps)
 {
 
@@ -505,7 +506,7 @@ void CElement::EvalRotMatFiniteDifferences( VectorXdDiff dU_AB_eps,  VectorXdDif
     
     /*---------------------
      *       e1
-     *---------------------*/
+     *---------------------
     // here I can just sum the infinitesimal displacement
     X_AB_eps.head(3) = X_AB.head(3) + dU_AB_eps.head(3);
     X_AB_eps.tail(3) = X_AB.tail(3) + dU_AB_eps.segment(7-1,3); ;    
@@ -514,7 +515,7 @@ void CElement::EvalRotMatFiniteDifferences( VectorXdDiff dU_AB_eps,  VectorXdDif
     
     /*---------------------
      *      p
-     *---------------------*/
+     *---------------------
     
     e2 = R.block(1-1,2-1,3,1);      // This is the old y in global ref
     
@@ -541,7 +542,7 @@ void CElement::EvalRotMatFiniteDifferences( VectorXdDiff dU_AB_eps,  VectorXdDif
 
     /*---------------------
      *       e3
-     *---------------------*/
+     *---------------------
     
     // Find the new e3 versor (in old local CS)
     e3 = e1.cross(p);
@@ -549,7 +550,7 @@ void CElement::EvalRotMatFiniteDifferences( VectorXdDiff dU_AB_eps,  VectorXdDif
     
     /*---------------------
      *       e2
-     *---------------------*/
+     *---------------------
     
     // Find the new e2 versor (in old local CS)
     e2 = e3.cross(e1);
@@ -563,7 +564,7 @@ void CElement::EvalRotMatFiniteDifferences( VectorXdDiff dU_AB_eps,  VectorXdDif
     R_eps.block(1-1,3-1,3,1) = e3.segment(1-1,3);    
            
 }
-
+*/
 
 
 
