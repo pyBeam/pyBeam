@@ -1,0 +1,382 @@
+Working directory is set to /media/rocco/290CF0EB732D1122/Adjoint_project/SU2/SU2_PY/pyBeam_FSI/ONERAM6_new_v2_Eurogen_new_CFDmesh
+
+***************************** Initializing SU2 **************************************
+
+-------------------------------------------------------------------------
+|    ___ _   _ ___                                                      |
+|   / __| | | |_  )   Release 6.2.0  "Falcon"                           |
+|   \__ \ |_| |/ /                                                      |
+|   |___/\___//___|   Suite (Computational Fluid Dynamics Code)         |
+|                                                                       |
+-------------------------------------------------------------------------
+| The current SU2 release has been coordinated by the                   |
+| SU2 International Developers Society <www.su2devsociety.org>          |
+| with selected contributions from the open-source community.           |
+-------------------------------------------------------------------------
+| The main research teams contributing to the current release are:      |
+| - Prof. Juan J. Alonso's group at Stanford University.                |
+| - Prof. Piero Colonna's group at Delft University of Technology.      |
+| - Prof. Nicolas R. Gauger's group at Kaiserslautern U. of Technology. |
+| - Prof. Alberto Guardone's group at Polytechnic University of Milan.  |
+| - Prof. Rafael Palacios' group at Imperial College London.            |
+| - Prof. Vincent Terrapon's group at the University of Liege.          |
+| - Prof. Edwin van der Weide's group at the University of Twente.      |
+| - Lab. of New Concepts in Aeronautics at Tech. Inst. of Aeronautics.  |
+-------------------------------------------------------------------------
+| Copyright 2012-2019, Francisco D. Palacios, Thomas D. Economon,       |
+|                      Tim Albring, and the SU2 contributors.           |
+|                                                                       |
+| SU2 is free software; you can redistribute it and/or                  |
+| modify it under the terms of the GNU Lesser General Public            |
+| License as published by the Free Software Foundation; either          |
+| version 2.1 of the License, or (at your option) any later version.    |
+|                                                                       |
+| SU2 is distributed in the hope that it will be useful,                |
+| but WITHOUT ANY WARRANTY; without even the implied warranty of        |
+| MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU      |
+| Lesser General Public License for more details.                       |
+|                                                                       |
+| You should have received a copy of the GNU Lesser General Public      |
+| License along with SU2. If not, see <http://www.gnu.org/licenses/>.   |
+-------------------------------------------------------------------------
+
+------------------------ Physical Case Definition -----------------------
+Compressible Euler equations.
+Mach number: 0.8395.
+Angle of attack (AoA): 3.06 deg, and angle of sideslip (AoS): 0 deg.
+Performing a dynamic mesh simulation: No restart solution, use the values at infinity (freestream).
+Non-Dimensional simulation (V=1.0, Rho=1.0, T=1.0 at the farfield).
+The reference area will be computed using y(2D) or z(3D) projection.
+The semi-span will be computed using the max y(3D) value.
+The reference length is 1 m.
+Reference origin for moment evaluation is (0.25, 0, 0).
+Surface(s) where the force coefficients are evaluated: WING.
+
+Surface(s) where the objective function is evaluated: WING.
+Surface(s) plotted in the output file: WING.
+Input mesh file name: mesh_ONERAM6_inv.su2
+
+---------------------- Space Numerical Integration ----------------------
+Jameson-Schmidt-Turkel scheme (2nd order in space) for the flow inviscid terms.
+JST viscous coefficients (2nd & 4th): 0.5, 0.02.
+The method includes a grid stretching correction (p = 0.3).
+Gradient Computation using weighted Least-Squares method.
+
+---------------------- Time Numerical Integration -----------------------
+Local time stepping (steady state simulation).
+Euler implicit method for the flow equations.
+FGMRES is used for solving the linear system.
+Using a LU-SGS preconditioning.
+Convergence criteria of the linear solver: 1e-06.
+Max number of linear iterations: 2.
+W Multigrid Cycle, with 3 multigrid levels.
+Damping factor for the residual restriction: 0.9.
+Damping factor for the correction prolongation: 0.9.
+No CFL adaptation.
++-------------------------------------------+
+|  MG Level| Presmooth|PostSmooth|CorrectSmo|
++-------------------------------------------+
+|         0|         1|         0|         0|
+|         1|         2|         0|         0|
+|         2|         3|         0|         0|
+|         3|         3|         0|         0|
++-------------------------------------------+
+Courant-Friedrichs-Lewy number:        5
+
+------------------------- Convergence Criteria --------------------------
+Maximum number of solver subiterations: 100.
+Maximum number of physical time-steps: 1.
+Reduce the density residual 8 orders of magnitude.
+The minimum bound for the density residual is 10^(-12).
+Start convergence criteria at iteration 25.
+
+-------------------------- Output Information ---------------------------
+Writing a solution file every 100 iterations.
+Writing the convergence history every 1 iterations.
+The output file format is Paraview binary legacy (.vtk).
+Convergence history file name: ./Output/history.
+Forces breakdown file name: ./Output/forces_breakdown.dat.
+Surface flow coefficients file name: ./Output/surface_flow.
+Flow variables file name: ./Output/flow.
+Restart flow file name: ./Output/restart_flow.dat.
+
+------------------- Config File Boundary Information --------------------
++-----------------------------------------+
+|         Marker Type|         Marker Name|
++-----------------------------------------+
+|          Euler wall|                WING|
++-----------------------------------------+
+|           Far-field|       XNORMAL_FACES|
+|                    |       ZNORMAL_FACES|
+|                    |       YNORMAL_FACES|
++-----------------------------------------+
+|      Symmetry plane|            SYMMETRY|
++-----------------------------------------+
+
+---------------------- Read Grid File Information -----------------------
+Three dimensional problem.
+108396 points before parallel partitioning.
+Performing linear partitioning of the grid nodes.
+582752 interior elements before parallel partitioning.
+Executing the partitioning functions.
+Building the graph adjacency structure.
+Distributing elements across all ranks.
+5 surface markers.
++------------------------------------+
+| Index|        Marker|      Elements|
++------------------------------------+
+|     0|          WING|         36454|
+|     1| XNORMAL_FACES|           173|
+|     2| ZNORMAL_FACES|           142|
+|     3| YNORMAL_FACES|           153|
+|     4|      SYMMETRY|          1834|
++------------------------------------+
+Calling ParMETIS... graph partitioning complete (12276 edge cuts).
+Distributing ParMETIS coloring.
+Rebalancing vertices.
+Rebalancing volume element connectivity.
+Rebalancing markers and surface elements.
+115667 vertices including ghost points. 
+601471 interior elements including halo cells. 
+601471 tetrahedra.
+Establishing MPI communication patterns.
+
+------------------------- Geometry Preprocessing ------------------------
+Setting point connectivity.
+Renumbering points (Reverse Cuthill McKee Ordering).
+Recomputing point connectivity.
+Setting element connectivity.
+Checking the numerical grid orientation.
+Identifying edges and vertices.
+Computing centers of gravity.
+Setting the control volume structure.
+Volume of the computational grid: 4.54e+03.
+Searching for the closest normal neighbors to the surfaces.
+Storing a mapping from global to local point index.
+Compute the surface curvature.
+Max K: 2.16e+04. Mean K: 295. Standard deviation K: 888.
+Checking for periodicity.
+Setting the multigrid structure.
++-------------------------------------------+
+|  MG Level|       CVs|Aggl. Rate|       CFL|
++-------------------------------------------+
+|         0|    115667|    1/1.00|         5|
+|         1|     20844|    1/5.55|      4.24|
+|         2|      4872|    1/4.28|      3.91|
+Finding max control volume width.
+Communicating number of neighbors.
+Reference area = 0.758 m^2.
+Semi-span length = 1.22 m.
+Wetted area = 1.55 m^2.
+Area projection in the x-plane = 0.0737 m^2, y-plane = 0.018 m^2, z-plane = 0.758 m^2.
+Max. coordinate in the x-direction = 1.14 m, y-direction = 1.22 m, z-direction = 0.0392 m.
+Min coordinate in the x-direction = 0 m, y-direction = 0 m, z-direction = -0.0392 m.
+
+------------------------- Driver information --------------------------
+A Fluid driver has been instantiated.
+
+------------------------ Iteration Preprocessing ------------------------
+Zone 1: Euler/Navier-Stokes/RANS fluid iteration.
+
+------------------------- Solver Preprocessing --------------------------
+Inviscid flow: Computing density based on free-stream
+temperature and pressure using the ideal gas law.
+Force coefficients computed using MACH_MOTION.
+
+-- Models:
++------------------------------------------------------------------------------+
+|          Viscosity Model|        Conductivity Model|              Fluid Model|
++------------------------------------------------------------------------------+
+|                        -|                         -|             STANDARD_AIR|
++------------------------------------------------------------------------------+
+-- Fluid properties:
++------------------------------------------------------------------------------+
+|                  Name|    Dim. value|    Ref. value|      Unit|Non-dim. value|
++------------------------------------------------------------------------------+
+|          Gas Constant|       287.058|        283.23|  N.m/kg.K|       1.01352|
+|      Spec. Heat Ratio|             -|             -|         -|           1.4|
++------------------------------------------------------------------------------+
+-- Initial and free-stream conditions:
++------------------------------------------------------------------------------+
+|                  Name|    Dim. value|    Ref. value|      Unit|Non-dim. value|
++------------------------------------------------------------------------------+
+|       Static Pressure|        101325|       99973.8|        Pa|       1.01352|
+|               Density|       1.22498|       1.22498|    kg/m^3|             1|
+|           Temperature|        288.15|        288.15|         K|             1|
+|          Total Energy|        247596|       81612.7|   m^2/s^2|       3.03379|
+|            Velocity-X|       285.272|       285.679|       m/s|      0.998574|
+|            Velocity-Y|             0|       285.679|       m/s|             0|
+|            Velocity-Z|         15.25|       285.679|       m/s|     0.0533817|
+|    Velocity Magnitude|       285.679|       285.679|       m/s|             1|
++------------------------------------------------------------------------------+
+|           Mach Number|             -|             -|         -|        0.8395|
++------------------------------------------------------------------------------+
+Initialize Jacobian structure (Euler). MG level: 0.
+Initialize Jacobian structure (Euler). MG level: 1.
+Initialize Jacobian structure (Euler). MG level: 2.
+Computing volumes of the grid elements.
+
+----------------- Integration and Numerics Preprocessing ----------------
+Integration Preprocessing.
+Numerics Preprocessing.
+Setting dynamic mesh structure for zone 1.
+
+---------------------- Python Interface Preprocessing ---------------------
+Setting customized boundary conditions for zone 0
+
+***************************** Initializing pyBeam ************************************
+
+------------------------------ Configuring the structural tester solver for FSI simulation: pyBeam ------------------------------
+
+---------------------------------------------------------------------------
+|                                                                         |
+| pyBeam, a Beam Solver - Release 0.1 (beta)                              |
+|                       - https://github.com/rsanfer/pyBeam               |
+|                                                                         |
+---------------------------------------------------------------------------
+|                                                                         |
+| Copyright 2018-2019 Rocco Bombardieri (Carlos III University Madrid)    |
+|                     Rauno Cavallaro (Carlos III University Madrid)      |
+|                     Tim Albring (SciComp, TU Kaiserslautern)            |
+|                     Ruben Sanchez (SciComp, TU Kaiserslautern)          |
+|                                                                         |
+| pyBeam is free software: you can redistribute it and/or                 |
+| modify it under the terms of the GNU Affero General Public License      |
+| as published by the Free Software Foundation, either version 3 of the   |
+| License, or (at your option) any later version.                         |
+|                                                                         |
+| pyBeam is distributed in the hope that it will be useful,               |
+| but WITHOUT ANY WARRANTY; without even the implied warranty             |
+| of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                 |
+| See the GNU Affero General Public License for more details.             |
+|                                                                         |
+| You should have received a copy of the GNU Affero                       |
+| General Public License along with pyBeam.                               |
+| If not, see <http://www.gnu.org/licenses/>.                             |
+|                                                                         |
+---------------------------------------------------------------------------
+
+FOLLOWER_FLAG is an invalid option !
+FullPivHouseholderQr
+--> Reading mesh file: /media/rocco/290CF0EB732D1122/Adjoint_project/SU2/SU2_PY/pyBeam_FSI/ONERAM6_new_v2_Eurogen_new_CFDmesh/mesh_str.msh.
+--> Reading property file: /media/rocco/290CF0EB732D1122/Adjoint_project/SU2/SU2_PY/pyBeam_FSI/ONERAM6_new_v2_Eurogen_new_CFDmesh/property_n.prt.
+--> Node Structure Initialization... ok!
+--> Finite Element Initialization... ok!
+--> Initialization successful
+
+---------------------------------------------------------------------------
+
+
+***************************** Initializing FSI interface *****************************
+Fluid solver : SU2_CFD
+Solid solver : pyBeam
+Steady coupled simulation
+Matching fluid-solid interface using Moving Least Squares method
+Maximum number of FSI iterations : 10
+FSI tolerance : 1e-07
+Static under-relaxation with constant parameter 0.3
+FSI interface is set
+Fluid solver is initialized on process 4
+Fluid solver is initialized on process 5
+Fluid solver is initialized on process 3
+Fluid solver is initialized on process 1
+Number of interface fluid nodes (halo nodes included) on proccess 3 and marker WING: 2847
+Fluid solver is initialized on process 2
+Number of interface fluid nodes (halo nodes included) on proccess 2 and marker WING: 3496
+Number of interface fluid nodes (halo nodes included) on proccess 4 and marker WING: 2791
+Number of interface fluid nodes (halo nodes included) on proccess 5 and marker WING: 3277
+Number of interface fluid nodes (halo nodes included) on proccess 1 and marker WING: 2708
+
+***************************** Connect fluid and solid solvers *****************************
+Fluid solver is initialized on process 0
+Number of interface fluid nodes (halo nodes included) on proccess 0 and marker WING: 3872
+Solid solver is initialized on process 0
+Total number of fluid interface nodes (halo nodes included) : 18991
+Total number of physical fluid interface nodes : 18285
+Total number of beam interface nodes : 100
+Total number of fluid interface nodes : 18285
+Total number of solid interface nodes : 100
+sendCounts: [3752 2552 3378 2727 2709 3167], total: 18285
+(18285, 3)
+(100, 3)
+
+***************************** Initializing MLS Interpolation *************************
+Storing MLS parameters from input file 
+Performing the Meshless Method
+
+********************************************************************************
+Meshless Project
+C++ package for meshless approach within SU2@FSI
+
+********************************************************************************
+
+Size of space: 3
+Number of k nearest points required: 100
+Reading query nodes...done. Found 18285 nodes.
+Reading basic nodes...done. Found 100 nodes.
+
+
+Splining: norm of interpolation error over nodes position = 0.00624955786936
+
+------------------------------ Begin Solver -----------------------------
+
+
+********************************
+* Begin steady FSI computation *
+********************************
+
+
+*************** Enter Block Gauss Seidel (BGS) method for strong coupling FSI ***************
+
+>>>> FSI iteration 0 <<<<
+
+##### Transferring displacements
+
+Checking f/s interface conservation...
+Solid side (Wx, Wy, Wz) = (0.0, 0.0, 0.0)
+Fluid side (Wx, Wy, Wz) = (0.0, 0.0, 0.0)
+
+##### Launching fluid solver for a steady computation
+
+
+Deforming the grid for static Fluid-Structure Interaction applications(new solver).
+Deforming the volume grid.
+Min. volume in the undeformed mesh: 8.164711e-11, max. volume: 2.938180e+00.
+CSysSolve::ConjugateGradient(): system solved by initial guess.
+Computing volumes of the grid elements.
+Linear solver iter.: 0. Min. volume in the deformed mesh: 8.164711e-11. Error: 0.000000e+00.
+
+------------------------ Evaluate Special Output ------------------------
+Writing the forces breakdown file (./Output/forces_breakdown.dat).
+-------------------------------------------------------------------------
+
+
+---------------------- Local Time Stepping Summary ----------------------
+MG level: 0 -> Min. DT: 2.800991e-04. Max. DT: 1.257589e+00. CFL: 5.000000e+00.
+MG level: 1 -> Min. DT: 5.129781e-04. Max. DT: 1.821675e+00. CFL: 4.236285e+00.
+MG level: 2 -> Min. DT: 5.060955e-04. Max. DT: 3.031520e+00. CFL: 3.914279e+00.
+-------------------------------------------------------------------------
+
+----------------------- Residual Evolution Summary ----------------------
+log10[Maximum residual]: -4.052661e+00.
+Maximum residual point 18259, located at (1.465651e-01, 1.550838e-01, -2.515800e-02).
+-------------------------------------------------------------------------
+
+ Iter    Time(s)     Res[Rho]     Res[RhoE]      CL(Total)      CD(Total)
+    0   3.457216    -5.204928     -4.597762       0.192920       0.106084
+    1   3.247213    -4.946572     -4.291229       0.182314       0.062163
+    2   3.149156    -4.853398     -4.223368       0.209974       0.051997
+    3   3.136603    -4.748330     -4.138619       0.229135       0.047330
+    4   3.157408    -4.670922     -4.067147       0.241088       0.040429
+    5   3.163891    -4.648868     -4.048922       0.250125       0.034690
+    6   3.158652    -4.638959     -4.044668       0.256660       0.030449
+    7   3.136039    -4.625062     -4.035552       0.261466       0.026972
+    8   3.117611    -4.620570     -4.034375       0.265428       0.023997
+    9   3.103714    -4.632608     -4.050600       0.269074       0.021461
+   10   3.099430    -4.652920     -4.077935       0.272603       0.019294
+   11   3.101861    -4.664578     -4.096952       0.276015       0.017419
+   12   3.085297    -4.661648     -4.096829       0.279232       0.015785
+   13   3.091800    -4.655403     -4.089028       0.282164       0.014362
+   14   3.100610    -4.658470     -4.089727       0.284743       0.013139
+   15   3.101854    -4.675727     -4.106321       0.286920       0.012115
+   16   3.102964    -4.705942     -4.138766       0.288661       0.011290
