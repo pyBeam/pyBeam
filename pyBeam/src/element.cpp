@@ -99,7 +99,7 @@ void CElement::Initializer(CNode* Node1, CNode* Node2, CProperty* Property, CInp
 
     //Mass matrix initialization (element level)
     Mfem  = MatrixXdDiff::Zero(elemdofs, elemdofs);
-
+    
     //Internal forces vector initialization (element level)
     fint = VectorXdDiff::Zero(elemdofs);
 
@@ -113,7 +113,7 @@ void CElement::Initializer(CNode* Node1, CNode* Node2, CProperty* Property, CInp
     // Initialize cumulative strain vector
     eps = VectorXdDiff::Zero(6);
 
-    // Initialize tension vector
+    // Initialize stress vector
     phi = VectorXdDiff::Zero(6);
         
     // INITIALIZATION of KPRIM  (linear)
@@ -339,7 +339,9 @@ void CElement::EvalRotMat(VectorXdDiff &dU_AB,  VectorXdDiff  &X_AB)
     Vector3dDiff pa = Vector3dDiff::Zero();
     Vector3dDiff pb = Vector3dDiff::Zero();
     Vector3dDiff p= Vector3dDiff::Zero();
-    Vector3dDiff pseudo= Vector3dDiff::Zero();
+    Vector3dDiff pseudo= Vector3dDiff::Zero();    
+    Vector3dDiff pseudoA= Vector3dDiff::Zero();
+    Vector3dDiff pseudoB= Vector3dDiff::Zero();    
     Matrix3dDiff Rnode= Matrix3dDiff::Zero();
     
     // New versor in old local coord system
@@ -363,19 +365,22 @@ void CElement::EvalRotMat(VectorXdDiff &dU_AB,  VectorXdDiff  &X_AB)
     
     Vector3dDiff e2_old = Vector3dDiff::Zero();
     e2_old = R.block(1-1,2-1,3,1);      // This is the old y in global ref
-    pseudo = dU_AB.segment(4-1,3);      // Rotation at triad A
-    PseudoToRot(pseudo, Rnode);
+    pseudoA = dU_AB.segment(4-1,3);      // Rotation at triad A  
+    PseudoToRot(pseudoA, Rnode);
     pa = Rnode*e2_old;
     
+        
     //===> Node B
     
-    pseudo = dU_AB.segment(10-1,3);     // Rotation at triad A
-    PseudoToRot(pseudo ,  Rnode);
+    pseudoB = dU_AB.segment(10-1,3);     // Rotation at triad B   
+    PseudoToRot(pseudoB ,  Rnode);
     pb = Rnode*e2_old;
-    
+        
     // Auxiliary Vector for building the new e3
     p = 0.5*(pa + pb);
+    //p= p/p.norm();
     
+   
     /*---------------------
      *       e3
      *---------------------*/
@@ -390,6 +395,8 @@ void CElement::EvalRotMat(VectorXdDiff &dU_AB,  VectorXdDiff  &X_AB)
     
     // Find the new e2 versor (in old local CS)
     e2 = e3.cross(e1);
+    e2 = e2/e2.norm();
+    
     
     Rprev = R;
     // Update
@@ -401,7 +408,9 @@ void CElement::EvalRotMat(VectorXdDiff &dU_AB,  VectorXdDiff  &X_AB)
     R.block(4-1,4-1,3,3) = R.block(1-1,1-1,3,3);
     
     Rrig = Rprev.transpose() * R;
-        
+    
+
+           
 }
 
 /***************************************************************
@@ -455,18 +464,107 @@ void CElement::InitializeRotMats()
     e2 = e3.cross(e1);   
 
     // Update
-    
-    R.block(1-1,1-1,3,1) = e1.segment(1-1,3);
-    R.block(1-1,2-1,3,1) = e2.segment(1-1,3);
-    R.block(1-1,3-1,3,1) = e3.segment(1-1,3);
-    
-    R.block(4-1,4-1,3,3) = R.block(1-1,1-1,3,3);
-    
-    Rprev = R;    
-    
-    Rrig = Rprev.transpose()*R;
+
+    R.block(1 - 1, 1 - 1, 3, 1) = e1.segment(1 - 1, 3);
+    R.block(1 - 1, 2 - 1, 3, 1) = e2.segment(1 - 1, 3);
+    R.block(1 - 1, 3 - 1, 3, 1) = e3.segment(1 - 1, 3);
+
+    R.block(4 - 1, 4 - 1, 3, 3) = R.block(1 - 1, 1 - 1, 3, 3);
+
+    Rprev = R;
+
+    Rrig = Rprev.transpose() * R;
+
+
 
 }
+
+/*
+void CElement::EvalRotMatFiniteDifferences( VectorXdDiff dU_AB_eps,  VectorXdDiff  X_AB, Matrix3dDiff &R_eps)
+{
+
+    VectorXdDiff X_AB_eps = VectorXdDiff::Zero(6);    
+    Vector3dDiff pa = Vector3dDiff::Zero();
+    Vector3dDiff pb = Vector3dDiff::Zero();
+    Vector3dDiff p= Vector3dDiff::Zero();
+    Vector3dDiff pseudo= Vector3dDiff::Zero();    
+    Vector3dDiff pseudoA= Vector3dDiff::Zero();
+    Vector3dDiff pseudoA_eps= Vector3dDiff::Zero();    
+    Vector3dDiff pseudoB= Vector3dDiff::Zero();
+    Vector3dDiff pseudoB_eps= Vector3dDiff::Zero();    
+    Matrix3dDiff RnodeA= Matrix3dDiff::Zero();
+    Matrix3dDiff RnodeB= Matrix3dDiff::Zero();
+    Matrix3dDiff RnodeA_eps= Matrix3dDiff::Zero();
+    Matrix3dDiff RnodeB_eps= Matrix3dDiff::Zero();  
+    
+    R_eps = Matrix3dDiff::Zero();
+    
+    // New versor in old local coord system
+    Vector3dDiff e1 = Vector3dDiff::Zero();
+    Vector3dDiff e2 = Vector3dDiff::Zero();
+    Vector3dDiff e3 = Vector3dDiff::Zero();
+    
+    /*---------------------
+     *       e1
+     *---------------------
+    // here I can just sum the infinitesimal displacement
+    X_AB_eps.head(3) = X_AB.head(3) + dU_AB_eps.head(3);
+    X_AB_eps.tail(3) = X_AB.tail(3) + dU_AB_eps.segment(7-1,3); ;    
+    e1 = X_AB_eps.tail(3) - X_AB_eps.head(3);
+    e1 = e1/e1.norm();
+    
+    /*---------------------
+     *      p
+     *---------------------
+    
+    e2 = R.block(1-1,2-1,3,1);      // This is the old y in global ref
+    
+    // In this case the infinitesimal rotation has to be added with a rotation matrix
+    //===> Node A
+
+    
+    pseudoA_eps = dU_AB_eps.segment(4-1,3);      // Rotation at triad A  
+    PseudoToRot(pseudoA_eps, RnodeA_eps);    
+    
+    pa = RnodeA_eps*e2;
+
+   
+    //===> Node B
+     
+    pseudoB_eps = dU_AB_eps.segment(10-1,3);     // Rotation at triad B   
+    PseudoToRot(pseudoB_eps ,  RnodeB_eps);   
+    
+    pb = RnodeB_eps*e2;
+        
+    // Auxiliary Vector for building the new e3
+    p = 0.5*(pa + pb);
+    //p= p/p.norm();
+
+    /*---------------------
+     *       e3
+     *---------------------
+    
+    // Find the new e3 versor (in old local CS)
+    e3 = e1.cross(p);
+    e3 = e3/e3.norm();
+    
+    /*---------------------
+     *       e2
+     *---------------------
+    
+    // Find the new e2 versor (in old local CS)
+    e2 = e3.cross(e1);
+    e2 = e2/e2.norm();
+       
+
+    // Evaluate the updated matrix
+    
+    R_eps.block(1-1,1-1,3,1) = e1.segment(1-1,3);
+    R_eps.block(1-1,2-1,3,1) = e2.segment(1-1,3);
+    R_eps.block(1-1,3-1,3,1) = e3.segment(1-1,3);    
+           
+}
+*/
 
 
 

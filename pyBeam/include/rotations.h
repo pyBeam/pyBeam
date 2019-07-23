@@ -34,6 +34,8 @@
 
 void RotToPseudo(Vector3dDiff& pseudo , Matrix3dDiff R);
 
-void PseudoToRot(Vector3dDiff pseudo , Matrix3dDiff& R);
+void PseudoToRot(Vector3dDiff pseudo , Matrix3dDiff& R,  int print=0);
+
+//void PseudoToRotDer(Vector3dDiff pseudo , Matrix3dDiff& dR_1, Matrix3dDiff& dR_2, Matrix3dDiff& dR_3)
 
 

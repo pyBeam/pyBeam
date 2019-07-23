@@ -206,8 +206,9 @@ class pyBeamSolverAD:
       
     """ This function computes the objective function (Important to be recorded) """
     displacement = self.beam.OF_NodeDisplacement(iNode)
-    print("Objective Function - Displacement(",iNode,") = ", displacement)
-
+    print("Objective Function - Displacement(", iNode, ") = ", displacement)
+    print(str.format('{0:.20f}', displacement))
+    
   def Run(self):
     """ This function runs the solver and stores the results.
         Needs to be run after __SetLoads """
@@ -239,6 +240,38 @@ class pyBeamSolverAD:
         self.displacement_X.append(self.beam.ExtractDisplacements(jNode, 0))
         self.displacement_Y.append(self.beam.ExtractDisplacements(jNode, 1))
         self.displacement_Z.append(self.beam.ExtractDisplacements(jNode, 2))
+
+  def Restart(self):
+      """ This function runs the restart and stores the results.
+          Needs to be run after __SetLoads """
+
+      self.beam.Restart(0)
+
+      self.coordinate_X = []
+      self.coordinate_Y = []
+      self.coordinate_Z = []
+
+      self.coordinate_X0 = []
+      self.coordinate_Y0 = []
+      self.coordinate_Z0 = []
+
+      self.displacement_X = []
+      self.displacement_Y = []
+      self.displacement_Z = []
+
+      for jNode in range(0, self.nPoint):
+          self.coordinate_X.append(self.beam.ExtractCoordinate(jNode, 0))
+          self.coordinate_Y.append(self.beam.ExtractCoordinate(jNode, 1))
+          self.coordinate_Z.append(self.beam.ExtractCoordinate(jNode, 2))
+
+          self.coordinate_X0.append(self.beam.ExtractCoordinate0(jNode, 0))
+          self.coordinate_Y0.append(self.beam.ExtractCoordinate0(jNode, 1))
+          self.coordinate_Z0.append(self.beam.ExtractCoordinate0(jNode, 2))
+
+          self.displacement_X.append(self.beam.ExtractDisplacements(jNode, 0))
+          self.displacement_Y.append(self.beam.ExtractDisplacements(jNode, 1))
+          self.displacement_Z.append(self.beam.ExtractDisplacements(jNode, 2))
+
 
   def Restart(self):
       """ This function runs the restart and stores the results.

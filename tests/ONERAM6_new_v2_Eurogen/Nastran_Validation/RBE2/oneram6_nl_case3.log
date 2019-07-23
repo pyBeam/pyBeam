@@ -1,0 +1,105 @@
+NX Nastran V9.1 (Intel64 Family 6 Model 60 Stepping 3 Windows  ) Control File:
+-------------------------------------------------------------------
+Nastran BUFFSIZE=8193 $(c:/program files/siemens/nxnastran/nxn9p1/conf/nast9.rcf[2])
+Nastran DIAGA=128 DIAGB=0 $(c:/program files/siemens/nxnastran/nxn9p1/conf/nast9.rcf[6])
+Nastran REAL=2127560704 $(program default)
+JID='c:/users/bomba/desktop/oneram6_eurogen/validation/oneram6_nl_case3.bdf'
+OUT='./oneram6_nl_case3'
+MEM=26214400
+MACH='Intel64 Family 6 Model 60 Stepping 3'
+OPER='Windows'
+OSV=' '
+MODEL='Intel(R) Core(TM) i7-4700MQ CPU @ 2.40GHz (DESKTOP-2J90NL5)'
+CONFIG=8666
+NPROC=8
+symbol=DELDIR='c:/program files/siemens/nxnastran/nxn9p1/nxn9p1/nast/del' $(program default)
+symbol=DEMODIR='c:/program files/siemens/nxnastran/nxn9p1/nxn9p1/nast/demo' $(program default)
+symbol=SSSALTERDIR='c:/program files/siemens/nxnastran/nxn9p1/nxn9p1/nast/misc/sssalter' $(program default)
+symbol=TPLDIR='c:/program files/siemens/nxnastran/nxn9p1/nxn9p1/nast/tpl' $(program default)
+SDIR='c:/users/bomba/appdata/local/temp/oneram6_nl_case3.T9268_7'
+DBS='./oneram6_nl_case3'
+SCR=no
+NEWDEL='c:/program files/siemens/nxnastran/nxn9p1/nxn9p1/em64tnt/SSS'
+DEL='NXNDEF'
+AUTH='28000@localhost'
+AUTHQUE=0
+MSGCAT='c:/program files/siemens/nxnastran/nxn9p1/nxn9p1/em64tnt/analysis.msg'
+MSGDEST='f06'
+NEWS='c:/program files/siemens/nxnastran/nxn9p1/nxn9p1/nast/news.txt'
+-------------------------------------------------------------------
+NXN_ISHELLPATH=C:\Program Files\Siemens\NXNastran\nxn9p1\bin
+NXN_JIDPATH=
+PATH=c:/program files/siemens/nxnastran/nxn9p1/nxn9p1/em64tnt;c:/program files/siemens/nxnastran/nxn9p1/nxn9p1/em64tnt/mpi/bin;C:\Program Files (x86)\Common Files\Intel\Shared Files\cpp\bin\Intel64;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Program Files\MATLAB\R2019a\bin;C:\Users\bomba\AppData\Local\Microsoft\WindowsApps;
+Command Line: JID=C:\Users\bomba\Desktop\Oneram6_Eurogen\Validation\ONERAM6_NL_CASE3.bdf
+Current Dir: C:\Users\bomba\Desktop\Oneram6_Eurogen\Validation
+Executable:  c:/program files/siemens/nxnastran/nxn9p1/nxn9p1/em64tnt/analysis.exe
+NXN_MSG:     stderr
+FPE:         no
+-------------------------------------------------------------------
+Current resource limits:
+ Physical memory:                     8128 MB
+ Physical memory available:           3293 MB
+ Paging file size:                    9408 MB
+ Paging file size available:          3168 MB
+ Virtual memory:                 134217727 MB
+ Virtual memory available:       134213576 MB
+-------------------------------------------------------------------
+System configuration:
+ Hostname:         DESKTOP-2J90NL5
+ Architecture:     em64tnt
+ Platform:         Intel64 Family 6 Model 60 Stepping 3 Windows  
+ Model:            Intel(R) Core(TM) i7-4700MQ CPU @ 2.40GHz
+ Clock freq.:      2394 MHz
+ Number of CPUs:   8
+ Executable:       standard
+ Raw model ID:     8666
+ Config number:    8666
+ Physical memory:  8128 MB
+ Virtual memory:   9408 MB
+ Numeric format:   32-bit little-endian IEEE.
+ Bytes per word:   4
+ Disk block size:  512 bytes (128 words)
+ Remote shell cmd: "c:/program files/siemens/nxnastran/nxn9p1/nxn9p1/em64tnt/edsrmtcmd.exe" (Windows, UNIX)
+-------------------------------------------------------------------
+NX Nastran started  Sat Jul 13 23:47:07 WEDT 2019
+ 23:47:08  Beginning Analysis
+
+ 23:47:08  NX NASTRAN Authorization Information - System Attributes
+ 23:47:08  --------------------------------------------------------
+ 23:47:08  Model: Intel(R) Core(TM) i7-4700MQ CPU
+ 23:47:08  Machine: Intel64 Family 6 Model 60 Steppi
+ 23:47:08  OS: Windows
+ 23:47:08  Version:
+ 23:47:08  License File(s): 28000@localhost
+
+
+ 23:47:14  NX NASTRAN Licensing Information
+ 23:47:14  -------------------------------
+ 23:47:14  Sold To ID:            No Server Id
+ 23:47:14  Webkey Access Code:    No Webkey
+ 23:47:14  License File Issuer:   No Issuer
+
+
+ 23:47:14  NX NASTRAN Authorization Information - Checkout Successful
+ 23:47:14  ----------------------------------------------------------
+ 23:47:14  License for module NX Nastran Basic checked out successfully
+
+
+ 23:47:14  NX NASTRAN Authorization Information - Checkout Successful
+ 23:47:14  ----------------------------------------------------------
+ 23:47:14  License for module NX Nastran Non-linear checked out successfully
+
+ 23:47:14  Analysis started.
+ 23:47:14  Geometry access/verification to CAD part initiated (if needed).
+ 23:47:14  Geometry access/verification to CAD part successfully completed (if needed).
+ 23:47:14  Finite element model generation started.
+ 23:47:14  Finite element model generated 600 degrees of freedom.
+ 23:47:14  Finite element model generation successfully completed.
+ 23:47:14  Application of Loads and Boundary Conditions to the finite element model started.
+ 23:47:14  Application of Loads and Boundary Conditions to the finite element model successfully completed.
+ 23:47:15  NSEXIT: EXIT(0)
+ 23:47:15  Analysis complete  0
+Real:        7.636 seconds ( 0:00:07.636)
+User:        1.093 seconds ( 0:00:01.093)
+Sys:         0.500 seconds ( 0:00:00.500)
+NX Nastran finished Sat Jul 13 23:47:15 WEDT 2019

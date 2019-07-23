@@ -83,8 +83,9 @@ public:
 
   void Solve(int FSIIter);
   
+  void Debug_Print(int iElement);  
+    
   void Restart(int FSIIter);
-  
   passivedouble OF_NodeDisplacement(int iNode);
 
   void ComputeAdjoint(void);
