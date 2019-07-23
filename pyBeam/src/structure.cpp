@@ -346,18 +346,26 @@ void CStructure::AssemblyTang(int iIter)
 
         // Reorganize the element tangent matrix into the global matrix according to the element DOFs
         for (int jjj=1; jjj<= 2; jjj++){
-
+            
             // Determine the global element node id "j"
             if (jjj==1) {dof_jjj = (nodeA_id-1)*6 +1;} else {dof_jjj = (nodeB_id-1)*6 +1;}
-
+            
             for (int kkk=1; kkk<= 2; kkk++){
-
+                
                 // Determine the global element node id "k"
                 if (kkk==1) {dof_kkk  =  (nodeA_id-1)*6 +1;} else {dof_kkk  =  (nodeB_id-1)*6 +1;}          
                 
                 // Rotates the element's SUBMATRIX tangent
                 Krotated = (element[id_el-1]->R * Ktang.block((jjj-1)*6+1 -1,(kkk-1)*6+1 -1,6,6)  ) * element[id_el-1]->R.transpose() ;
-
+                /*
+                 if (id_el == 1) {
+                 std::cout << "Length    = \n" << element[id_el-1]->GetCurrent_Length() << std::endl;
+                 std::cout << "Kprim    = \n" << element[id_el-1]->Kprim << std::endl;
+                 std::cout << "Krotated    = \n" << Krotated << std::endl;  
+                 std::cout << "R    = \n" << element[id_el-1]->R << std::endl;
+                 std::cout << "Ktang_block    = \n" << Ktang.block((jjj-1)*6+1 -1,(kkk-1)*6+1 -1,6,6)   << std::endl;
+                 }*/
+                
                 // Contribution to the appropriate location of the global matrix
                 Ksys.block(dof_jjj-1,dof_kkk-1,6,6) += Krotated;
                 
@@ -365,13 +373,17 @@ void CStructure::AssemblyTang(int iIter)
         }
         
     }
-
+    
     /*--------------------------------------------------------
      *    Rigid rotation contribution to the Stiffness Matrix
      * -------------------------------------------------------*/
-
-    EvalSensRot();
-
+    
+    //EvalSensRot(iIter);
+    if (iIter !=0)
+    {
+        //EvalSensRotFiniteDifferences();
+        EvalSensRot();
+    }
     /*------------------------------------
      *    Imposing  B.C.
      *------------------------------------*/
@@ -387,34 +399,54 @@ void CStructure::AssemblyTang(int iIter)
     
 }
 
-
-
 /*===================================================
- *        Evaluate the Sensitivty of Rotation Matrix
+ *        Evaluate the Sensitivity of Rotation Matrix
  *===================================================*/
 /* Given the element's internal forces and the R, evaluates the
- * contribution to the tangent matrix dF = dR*f
+ * contribution to the tangent matrix dF/dU = dR/dU*f
  * */
 
 void CStructure::EvalSensRot(){
-
+    
     VectorXdDiff dl_dU =  VectorXdDiff::Zero(12);
+    Vector3dDiff e1    = Vector3dDiff::Zero();
+    Vector3dDiff e3    = Vector3dDiff::Zero();
+    Vector3dDiff e2    = Vector3dDiff::Zero();
     MatrixXdDiff de1 = MatrixXdDiff::Zero(3,12);
     MatrixXdDiff de2 = MatrixXdDiff::Zero(3,12);
     MatrixXdDiff de3 = MatrixXdDiff::Zero(3,12);
-    
+       
     MatrixXdDiff Krot = MatrixXdDiff::Zero(12,12);
     VectorXdDiff fint =  VectorXdDiff::Zero(12);
+    
+    MatrixXdDiff I = MatrixXdDiff::Identity(3,3);
     
     addouble onetol = 0.0;
     
     MatrixXdDiff de1_part1 = MatrixXdDiff::Zero(3,12);
     
-    de1_part1.block(1-1,1-1,3,3) = - MatrixXdDiff::Identity(3,3);
-    de1_part1.block(1-1,7-1,3,3) =   MatrixXdDiff::Identity(3,3);
+    de1_part1.block(1-1,1-1,3,3) = - I;
+    de1_part1.block(1-1,7-1,3,3) =   I;
+        
+
+    VectorXdDiff dU_AB = VectorXdDiff::Zero(12);
+    VectorXdDiff  X_AB = VectorXdDiff::Zero(6);
+
+    MatrixXdDiff alpha = MatrixXdDiff::Zero(3,12);
+    MatrixXdDiff beta = MatrixXdDiff::Zero(3,12);
+
+    Vector3dDiff p= Vector3dDiff::Zero();
+
     
-    Vector3dDiff de1_i = Vector3dDiff::Zero();
-    Vector3dDiff e3    = Vector3dDiff::Zero();
+    Matrix3dDiff e1_star = Matrix3dDiff::Zero(); // rearrangement of e1 in matrix form
+    Matrix3dDiff p_star = Matrix3dDiff::Zero();  // rearrangement of p in matrix form
+    
+    MatrixXdDiff dp_1 = MatrixXdDiff::Zero(3,12);  
+    Matrix3dDiff gamma = Matrix3dDiff::Zero();   
+    Matrix3dDiff dp_block = Matrix3dDiff::Zero();   
+    Matrix3dDiff e3_star = Matrix3dDiff::Zero(); // rearrangement of e3 in matrix form    
+    Matrix3dDiff E2 = Matrix3dDiff::Zero(); 
+    Matrix3dDiff E3 = Matrix3dDiff::Zero();     
     
     //-------------------------------
     
@@ -423,17 +455,46 @@ void CStructure::EvalSensRot(){
     int nodeA_id = 0; int nodeB_id = 0;    
     
     int dof_jjj = 0; int dof_kkk = 0;
-    
-    
+      
     for (int id_el=1; id_el<= nfem; id_el++) {
+        
+        // Setting to zero the various coefficients
+        //alpha = Vector3dDiff::Zero(); 
+        alpha = MatrixXdDiff::Zero(3,12);
+        de1 = MatrixXdDiff::Zero(3,12);
+        de3 = MatrixXdDiff::Zero(3,12); 
+        dp_1 = MatrixXdDiff::Zero(3,12);
+        dp_block = Matrix3dDiff::Zero();
+        p = Vector3dDiff::Zero();  
+        p_star = Matrix3dDiff::Zero(); 
+        e1_star = Matrix3dDiff::Zero(); 
+        E2 = Matrix3dDiff::Zero(); 
+        E3 = Matrix3dDiff::Zero(); 
+        beta = MatrixXdDiff::Zero(3,12);         
+        gamma = Matrix3dDiff::Zero();  
+        e3_star = Matrix3dDiff::Zero(); 
         
         nodeA_id = element[id_el-1]->nodeA->GeID();
         nodeB_id = element[id_el-1]->nodeB->GeID();
         
-        XbmXa = X.segment((nodeB_id-1)*3+1 -1,3) - X.segment((nodeA_id-1)*3+1 -1,3);
+        // Position of the A and B (initial and final) nodes of the element
+        // They are already in the global CS (but not the updated final one).
+        X_AB.head(3) = X.segment((nodeA_id-1)*3+1 -1,3);
+        X_AB.tail(3) = X.segment((nodeB_id-1)*3+1 -1,3);
+        
+        // Displacements of the A and B (initial and final) nodes of the element
+        // They are already in the global CS (but not the updated final one).
+        dU_AB.head(6) = dU.segment((nodeA_id-1)*6+1 -1,6);
+        dU_AB.tail(6) = dU.segment((nodeB_id-1)*6+1 -1,6);        
         
         fint = element[id_el-1]->fint;
         
+        e1 = element[id_el-1]->R.block(1-1,1-1,3,1);
+        e2 = element[id_el-1]->R.block(1-1,2-1,3,1);
+        e3 = element[id_el-1]->R.block(1-1,3-1,3,1);
+        
+        //===   de1_du ===
+        XbmXa = X.segment((nodeB_id-1)*3+1 -1,3) - X.segment((nodeA_id-1)*3+1 -1,3);
         onetol = 1.0/element[id_el-1]->GetCurrent_Length(); //  1/l
         
         dl_dU.head(3)        = -element[id_el-1]->R.block(1-1,1-1,3,1);
@@ -441,18 +502,62 @@ void CStructure::EvalSensRot(){
         
         de1 = (-onetol*onetol)*( XbmXa * dl_dU.transpose());    //
         de1 += onetol*de1_part1;
-
-        //===   de3_du === 0    TEMPORARY HAS TO BE FIXED!!!!
-        de3 = MatrixXdDiff::Zero(3,12);
         
-        // de2_du =    de3_du X e1 + e3 X de1_du
-        // HNOT EFFICIENT IN THIS WAY!
-        for (int i=1; i<= 12; i++)
-        {
-            de1_i = de1.block(1-1,i-1,3,1);
-            e3 = element[id_el-1]->R.block(1-1,3-1,3,1);
-            de2.block(1-1,i-1,3,1) = e3.cross(de1_i);
-        }
+        //===   de3_du === 0    
+        p = e2;
+
+        
+        /* e1_star = [ 0      -e_1(3)  e_1(2)
+         *             e_1(3)    0    -e_1(1)
+         *            -e_1(2)  e_1(1)   0     ]*/
+        e1_star(2-1,1-1) =  e1(3-1);      e1_star(1-1,2-1) =  -e1(3-1);    e1_star(1-1,3-1) =  e1(2-1);
+        e1_star(3-1,1-1) =  -e1(2-1);   e1_star(3-1,2-1) =  e1(1-1);      e1_star(2-1,3-1) =  -e1(1-1);
+
+        /* p_star  = [ 0      -p(3)   p(2)
+         *             p(3)     0    -p(1)
+         *            -p(2)    p(1)    0     ]    alias: e2_star*/   
+
+        p_star(2-1,1-1) =  p(3-1);
+        p_star(3-1,1-1) =  -p(2-1); //
+        p_star(1-1,2-1) =  -p(3-1);                
+        p_star(3-1,2-1) =  p(1-1); //
+        p_star(1-1,3-1) =  p(2-1);
+        p_star(2-1,3-1) =  -p(1-1); 
+
+        /* e3_star = [ 0      -e_3(3)  e_3(2)
+         *             e_3(3)    0    -e_3(1)
+         *            -e_3(2)  e_3(1)   0     ]*/
+        // rearrangement of e3 in matrix form
+        e3_star(2-1,1-1) =  e3(3-1);      e3_star(1-1,2-1) =  -e3(3-1);    e3_star(1-1,3-1) =  e3(2-1);
+        e3_star(3-1,1-1) =  -e3(2-1);   e3_star(3-1,2-1) =  e3(1-1);      e3_star(2-1,3-1) =  -e3(1-1);  
+        
+        E2 = e2*e2.transpose();
+        
+        E3 = e3*e3.transpose();
+        
+         /* dp_block  = [ 0      e2(3)   -e2(2)
+         *             -e2(3)     0    -e2(1)
+         *             e2(2)    -e2(1)    0     ]*/ 
+        dp_block(2-1,1-1) =  -e2(3-1);      dp_block(1-1,2-1) =  e2(3-1);    dp_block(1-1,3-1) =  -e2(2-1);
+        dp_block(3-1,1-1) =  e2(2-1);   dp_block(3-1,2-1) =  -e2(1-1);      dp_block(2-1,3-1) =  e2(1-1);
+        
+        dp_1.block(1-1,4-1,3,3) = dp_block;
+        dp_1.block(1-1,10-1,3,3) =   dp_block;    
+        
+        dp_1 = dp_1*0.5;
+        
+        alpha = e1_star*dp_1 - p_star*de1 - E3*(e1_star*dp_1 - p_star*de1);
+        
+        beta = e3_star*de1 - E2*e3_star*de1;
+        
+        gamma = I - (e1_star- E3*e1_star)*(- e1_star + E2*e1_star);
+        
+        // dU = Ksys.fullPivHouseholderQr().solve(Residual);
+        //de3 = gamma.fullPivHouseholderQr().solve( (e1_star - E3*e1_star)*beta + alpha );
+        
+        de3 = alpha;
+        
+        de2 = (- e1_star + E2*e1_star)* de3 + beta;
         
         // ====== Krot
         
@@ -460,24 +565,25 @@ void CStructure::EvalSensRot(){
         Krot.block(4-1,1-1,3,12)  =  de1*fint(4-1)  + de2*fint(5-1)  + de3*fint(6-1) ;
         Krot.block(7-1,1-1,3,12)  =  de1*fint(7-1)  + de2*fint(8-1)  + de3*fint(9-1) ;
         Krot.block(10-1,1-1,3,12) =  de1*fint(10-1) + de2*fint(11-1) + de3*fint(12-1) ;
-        
+                              
         // ================= > insert in the right position
         
         
         for (int jjj=1; jjj<= 2; jjj++) {
-
+            
             if (jjj==1) {dof_jjj  =  (nodeA_id-1)*6 +1;} else {dof_jjj  =  (nodeB_id-1)*6 +1;}
-
+            
             for (int kkk=1; kkk<= 2; kkk++) {
                 if (kkk==1) {dof_kkk  =  (nodeA_id-1)*6 +1;} else {dof_kkk  =  (nodeB_id-1)*6 +1;} 
                 
                 Ksys.block(dof_jjj-1,dof_kkk-1,6,6) += Krot.block((jjj-1)*6+1 -1,(kkk-1)*6+1 -1,6,6);
                 
             }
+            
         }
         
     }
-    
+
 }
 
 
@@ -491,6 +597,8 @@ void CStructure::EvalSensRot(){
 
 void CStructure::EvalResidual(unsigned short irigid)
 {
+    
+    
     Residual = Fext - Fint;
 
     int iii = 0; int constr_dof_id = 0;
@@ -514,6 +622,22 @@ void CStructure::EvalResidual(unsigned short irigid)
 void CStructure::SolveLinearStaticSystem(int iIter)
 {
 
+    bool TapeActive = false;
+
+#ifdef CODI_REVERSE_TYPE
+
+    TapeActive = AD::globalTape.isActive();
+
+    AD::StartExtFunc(false, false);
+
+    for (unsigned long iRes; iRes < Residual.size(); iRes++)
+      AD::SetExtFuncIn(Residual(iRes));
+
+    /*--- Stop the recording for the linear solver ---*/
+
+    AD::StopRecording();
+#endif
+    
     switch(kind_linSol){
     case PartialPivLu:
         dU = Ksys.partialPivLu().solve(Residual); break;
@@ -533,12 +657,29 @@ void CStructure::SolveLinearStaticSystem(int iIter)
         dU = Ksys.fullPivHouseholderQr().solve(Residual); break;
     }
 
+    if(TapeActive) {
+
+      /*--- Start recording if it was stopped for the linear solver ---*/
+
+      AD::StartRecording();
+
+      for (unsigned long iRes; iRes < Residual.size(); iRes++)
+        AD::SetExtFuncOut(dU(iRes));
+
+#ifdef CODI_REVERSE_TYPE
+      AD::FuncHelper->addUserData(nNode);
+      AD::FuncHelper->addUserData(kind_linSol);
+      AD::FuncHelper->addUserData(Ksys);
+
+      AD::FuncHelper->addToTape(SolveAdjSys::SolveSys);
+#endif
+
+      AD::EndExtFunc();
+    }
+
     addouble relative_error = (Ksys*dU -Residual).norm() / Residual.norm(); // norm() is L2 norm
 
     std::cout.width(17); std::cout << log10(relative_error);
-
-    //std::cout<< "Ksys = \n" << Ksys << std::endl;
-//    std::cout<< "Residual = \n" << Residual << std::endl;
 
     if (relative_error > tol_LinSol)
     {
@@ -1055,6 +1196,9 @@ void CStructure::UpdateInternalForces()
     Vector3dDiff pseudo_A = Vector3dDiff::Zero();
     Vector3dDiff pseudo_B = Vector3dDiff::Zero();
     
+    Vector3dDiff pseudo_A_el = Vector3dDiff::Zero();
+    Vector3dDiff pseudo_B_el = Vector3dDiff::Zero();    
+    
     Matrix3dDiff Rnode_A = Matrix3dDiff::Zero();
     Matrix3dDiff Rnode_B = Matrix3dDiff::Zero();
     
@@ -1082,9 +1226,11 @@ void CStructure::UpdateInternalForces()
     /*-------------------------------
      //     LOOPING FINITE ELEMENTS
      * -------------------------------*/
-    
+    //std::cout.precision(17);
     for (int id_fe=1;     id_fe <= nfem ; id_fe++) {
 
+        du_el = VectorXdDiff::Zero(12);        
+        
         nodeA_id = element[id_fe-1]->nodeA->GeID();
         nodeB_id = element[id_fe-1]->nodeB->GeID();
 
@@ -1115,7 +1261,7 @@ void CStructure::UpdateInternalForces()
         
         PseudoToRot(pseudo_A , Rnode_A);
         PseudoToRot(pseudo_B , Rnode_B);
-
+        
         // (C) Using identity Rnode*Rprev = R*Relastic
         /* Relastic = R'*Rnode_A*Rprev  */
         //
@@ -1124,12 +1270,14 @@ void CStructure::UpdateInternalForces()
         Rel_A = Rtransp  *  Rnode_A  * element[id_fe-1]->Rprev.block(0,0,3,3);
         Rel_B = Rtransp  *  Rnode_B  * element[id_fe-1]->Rprev.block(0,0,3,3);
         
+        
         // (c) Transforming in pseudo-vector, since infinitesimal (elastic), the components are independent
-        RotToPseudo(pseudo_A , Rel_A);
-        RotToPseudo(pseudo_B , Rel_B);
+        RotToPseudo(pseudo_A_el , Rel_A);
+        RotToPseudo(pseudo_B_el , Rel_B);
 
-        du_el.segment(4 -1,3)  = pseudo_A;
-        du_el.segment(10 -1,3) = pseudo_B;
+        
+        du_el.segment(4 -1,3)  = pseudo_A_el;
+        du_el.segment(10 -1,3) = pseudo_B_el;
         
         // Incrementing the cumulative elastic displacements
         // phi is the deformational state vector
@@ -1215,3 +1363,122 @@ void CStructure::InitializeInternalForces()
     }
 
 }
+
+/*
+/*===================================================
+ *        Evaluate the Sensitivty of Rotation Matrix with finite differences
+ *===================================================*/
+/* Given the element's internal forces and the R, evaluates the
+ * contribution to the tangent matrix dF/dU = dR/dU*f
+ * */
+/*
+void CStructure::EvalSensRotFiniteDifferences(){
+    
+    VectorXdDiff dU_AB = VectorXdDiff::Zero(12);
+    VectorXdDiff  X_AB = VectorXdDiff::Zero(6); 
+    Matrix3dDiff R_eps = Matrix3dDiff::Zero();
+    
+    MatrixXdDiff de1 = MatrixXdDiff::Zero(3,12);
+    MatrixXdDiff de2 = MatrixXdDiff::Zero(3,12);
+    MatrixXdDiff de3 = MatrixXdDiff::Zero(3,12);
+    
+    MatrixXdDiff Krot = MatrixXdDiff::Zero(12,12);
+    VectorXdDiff fint =  VectorXdDiff::Zero(12);
+    
+    
+    MatrixXdDiff de1_part1 = MatrixXdDiff::Zero(3,12);
+    
+    de1_part1.block(1-1,1-1,3,3) = - MatrixXdDiff::Identity(3,3);
+    de1_part1.block(1-1,7-1,3,3) =   MatrixXdDiff::Identity(3,3);
+    
+    
+    //-------------------------------
+    
+    
+    int nodeA_id = 0; int nodeB_id = 0;    
+    
+    int dof_jjj = 0; int dof_kkk = 0;
+    
+    // Finite difference for translation DOFs
+    addouble fd_t = 1.0e-10;
+    // Finite difference for rotational DOFs
+    addouble fd_r = 1.0e-10;    
+    addouble fd;  
+    
+    int ii;
+    
+    std::ofstream file("./FD_de1_de2_de3.txt");
+    std::cout.precision(17); 
+    
+    for (int id_el=1; id_el<= nfem; id_el++) {
+
+        nodeA_id = element[id_el-1]->nodeA->GeID();
+        nodeB_id = element[id_el-1]->nodeB->GeID();
+        
+        fint = element[id_el-1]->fint;        
+        
+        // Position of the A and B (initial and final) nodes of the element
+        // They are already in the global CS (but not the updated final one).
+        X_AB.head(3) = X.segment((nodeA_id-1)*3+1 -1,3);
+        X_AB.tail(3) = X.segment((nodeB_id-1)*3+1 -1,3);
+        
+        // Displacements of the A and B (initial and final) nodes of the element
+        // They are already in the global CS (but not the updated final one).
+        dU_AB.head(6) = dU.segment((nodeA_id-1)*6+1 -1,6);
+        dU_AB.tail(6) = dU.segment((nodeB_id-1)*6+1 -1,6);        
+        
+        for (ii=1; ii <=12; ii++)
+        {
+            VectorXdDiff dU_AB_eps = VectorXdDiff::Zero(12);
+            if ( ii <4 or ( ii>6 and ii<10) ) { 
+                fd = fd_t;
+            }
+            else {
+                fd = fd_r; 
+            }
+            
+            dU_AB_eps(ii -1) = fd; 
+            
+            element[id_el-1]->EvalRotMatFiniteDifferences( dU_AB_eps, X_AB, R_eps);
+            
+            de1.block(1-1,ii-1,3,1) =  ( R_eps.block(1-1,1-1,3,1) - element[id_el-1]->R.block(1-1,1-1,3,1) ) / fd;
+            de2.block(1-1,ii-1,3,1) =  ( R_eps.block(1-1,2-1,3,1) - element[id_el-1]->R.block(1-1,2-1,3,1) ) / fd;
+            de3.block(1-1,ii-1,3,1) =  ( R_eps.block(1-1,3-1,3,1) - element[id_el-1]->R.block(1-1,3-1,3,1) ) / fd;
+            
+        }    
+        
+        // ====== Krot
+        
+        Krot.block(1-1,1-1,3,12)  =  de1*fint(1-1)  + de2*fint(2-1)  + de3*fint(3-1) ;
+        Krot.block(4-1,1-1,3,12)  =  de1*fint(4-1)  + de2*fint(5-1)  + de3*fint(6-1) ;
+        Krot.block(7-1,1-1,3,12)  =  de1*fint(7-1)  + de2*fint(8-1)  + de3*fint(9-1) ;
+        Krot.block(10-1,1-1,3,12) =  de1*fint(10-1) + de2*fint(11-1) + de3*fint(12-1) ;
+        
+        // ================= > insert in the right position
+        
+        
+        for (int jjj=1; jjj<= 2; jjj++) {
+            
+            if (jjj==1) {dof_jjj  =  (nodeA_id-1)*6 +1;} else {dof_jjj  =  (nodeB_id-1)*6 +1;}
+            
+            for (int kkk=1; kkk<= 2; kkk++) {
+                if (kkk==1) {dof_kkk  =  (nodeA_id-1)*6 +1;} else {dof_kkk  =  (nodeB_id-1)*6 +1;} 
+                
+                Ksys.block(dof_jjj-1,dof_kkk-1,6,6) += Krot.block((jjj-1)*6+1 -1,(kkk-1)*6+1 -1,6,6);
+                
+            }
+        }
+        file  <<  "Element: " << id_el << '\n';       
+        file  << '\n';         
+        file  <<  "de1 = \n "<< de1 << '\n';                       
+        file  << '\n';
+        file  <<   "de2 = \n "<< de2 << '\n';
+        file  << '\n';
+        file  <<   "de3 = \n "<< de3 << '\n';
+        file  << '\n';        
+    }
+    file.close();
+}
+*/
+
+

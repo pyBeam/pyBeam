@@ -312,12 +312,14 @@ void CBeamSolver::Restart(int FSIIter = 0){
     std::cout.width(17); std::cout << "Log10(Norm_Disp)";
     std::cout.width(17); std::cout << "Log10(Disp_Fact)" << std::endl;
     
+    int nIter = 1; //  input->Get_nIter()
+    
     //===============================================
     //               ITERATIVE SEQUENCE
     //===============================================
     bool converged = false;
     
-    for (iIter = 0; iIter < input->Get_nIter(); iIter++) {
+    for (iIter = 0; iIter < nIter; iIter++) {
         
         std::cout.width(6); std::cout << iIter;
         
@@ -419,6 +421,8 @@ passivedouble CBeamSolver::OF_NodeDisplacement(int iNode){
     pos3 = structure->GetDisplacement(iNode, 2);
     
     objective_function = sqrt(pow(pos1, 2.0) + pow(pos2, 2.0) + pow(pos3, 2.0));
+    
+    std::cout.width(20); std::cout << "objective_function = " << objective_function << std::endl;
     
     return AD::GetValue(objective_function);
     
@@ -640,6 +644,24 @@ void CBeamSolver::CoordExtract(std::string line , int &nNode, double &x,double &
         is >> nNode >> x >> y >> z;
 }
 
+
+void CBeamSolver::Debug_Print(int iElement){
+    /*
+    std::cout << "For element " <<  iElement  << ":" << std::endl;
+    std::cout << "Auxiliary vector    = \n" <<  element[iElement]->aux_vector  << std::endl;        
+    std::cout << "Kprim    = \n" <<  element[iElement]->Kprim  << std::endl;    
+    std::cout << "Length   = " <<  element[iElement]->GetInitial_Length()  << std::endl;
+    std::cout << "Rotation matrix = " <<  element[iElement]->Rprev  << std::endl;    
+    std::cout << "Property: A   = " <<  element[iElement]->property->GetA()  << std::endl;
+    std::cout << "Property: Iyy = " <<  element[iElement]->property->GetIyy()  << std::endl;
+    std::cout << "Property: Izz = " <<  element[iElement]->property->GetIzz()  << std::endl;
+    std::cout << "Property: Jt  = " <<  element[iElement]->property->GetJt()  << std::endl;  
+    std::cout << "Input: E      = " <<  input->GetYoungModulus()  << std::endl;      
+    std::cout << "Input: ni     = " <<  input->GetPoisson()  << std::endl;    
+    std::cout << "Input: G      = " <<  input->GetShear()  << std::endl;  
+    std::cout << "Stiffness matrix:       = \n" <<  structure->Ksys.block(0,0,12,12)  << std::endl;     
+    */
+}
 void CBeamSolver::ElemStrainExtract(std::string line , int &nElem, double &eps1, double &eps2, double &eps3, double &eps4, double &eps5, double &eps6)
 {
         std::istringstream is( line );
@@ -650,4 +672,5 @@ void CBeamSolver::ElemRefExtract(std::string line , int &nElem, double &e11, dou
 {
         std::istringstream is( line );
         is >> nElem >> e11 >> e12 >> e13 >> e21 >> e22 >> e23 >> e31 >> e32 >> e33 ;
+
 }

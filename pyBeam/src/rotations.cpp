@@ -85,16 +85,17 @@ void RotToPseudo(Vector3dDiff& pseudo , Matrix3dDiff R)
 /* This routine, given a pseudo-vector,
 transforms it in its rotation matrix form */
 
-void PseudoToRot(Vector3dDiff pseudo , Matrix3dDiff& R)
+void PseudoToRot(Vector3dDiff pseudo , Matrix3dDiff& R, int print)
 {
 	//const addouble pi = 2*acos(0.0);
 
 	Vector3dDiff rot(0.0,0.0,0.0);
 
-    pseudo(2-1) = ( pseudo(2-1));  // atan( pseudo(2-1));
-    pseudo(3-1) = ( pseudo(3-1));  // atan( pseudo(3-1));
+    //pseudo(2-1) = ( pseudo(2-1));  // atan( pseudo(2-1));
+    //pseudo(3-1) = ( pseudo(3-1));  // atan( pseudo(3-1));
 
 	addouble theta = pseudo.norm();
+        
 	if (theta != 0.0 )
 	{
 	rot = pseudo/pseudo.norm();
@@ -128,4 +129,13 @@ void PseudoToRot(Vector3dDiff pseudo , Matrix3dDiff& R)
 	}
 
 
+        if (print ==1)
+        {
+        //std::cout << "\nTheta: " << theta << std::endl;      
+        //std::cout << "\nSkewRot: " << SkewRot << std::endl;      
+        //std::cout << "\nRot_Rodr: " << R << std::endl; 
+           
+        }
+        
+        
 }

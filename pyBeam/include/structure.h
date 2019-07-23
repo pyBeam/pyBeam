@@ -136,8 +136,10 @@ public:
     //===================================================
     
     void AssemblyTang(int iIter);
+       
+    void EvalSensRot();    // Evaluate the sensitivity of Rotation Matrix - need for Jacobian
     
-    void EvalSensRot();  // Evaluate the sensitivity of Rotation Matrix - need for Jacobian
+    //void EvalSensRotFiniteDifferences();    // Evaluate the sensitivity of Rotation Matrix - need for Jacobian
     
     //===================================================
     //      Solve linear static system
@@ -145,7 +147,7 @@ public:
     // Assembles LHS and RHS and solves the linear static problem
     
     void SolveLinearStaticSystem(int iIter);
-    
+
     void SolveLinearStaticSystem_RBE2(int iIter);        
     
     void SolveLinearStaticSystem_RBE2_penalty(int iIter);   
