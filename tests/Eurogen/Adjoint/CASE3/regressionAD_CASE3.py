@@ -28,12 +28,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import sys, os
-from pyBeamLib import pyBeamSolver
+from pyBeamLibAD import pyBeamSolverAD
+
+# Node where to evaluate the objective function
+iNode = 20 - 1;
 
 # Load running directory
 file_dir = os.path.dirname(os.path.realpath(__file__))
 
-beam = pyBeamSolver(file_dir ,'config_NL_AD.cfg')
+beam = pyBeamSolverAD(file_dir ,'config_NL_AD.cfg')
 
 beam.SetLoads(        0 ,  0.00013,  0.00004 ,  0.00114 )
 beam.SetLoads(        1 ,  0.00010,  0.00003 ,  0.00122 )
@@ -136,44 +139,17 @@ beam.SetLoads(       97 ,  0.00006,  0.00009 , -0.00265 )
 beam.SetLoads(       98 ,  0.00006,  0.00012 , -0.00268 )
 beam.SetLoads(       99 ,  0.00006,  0.00016 , -0.00271 )
 
+beam.StartRecording()
+
+beam.SetDependencies()
+
 beam.Run()
 
-beam.coordinate_Y1 = beam.coordinate_Y; beam.coordinate_X1 = beam.coordinate_X; beam.coordinate_Z1 = beam.coordinate_Z
+beam.ComputeObjectiveFunction(iNode)
 
+beam.StopRecording()
 
-fig = plt.figure()
-ax = fig.add_subplot(111, projection='3d')
+beam.ComputeAdjoint()
 
-# Create cubic bounding box to simulate equal aspect ratio
-max_range = np.array([np.amax(beam.coordinate_X0) - np.amin(beam.coordinate_X0), np.amax(beam.coordinate_Y0) - np.amin(beam.coordinate_Y0),
-                      np.amax(beam.coordinate_Z0) - np.amin(beam.coordinate_Z0)]).max()
-Xb = 0.5 * max_range * np.mgrid[-1:2:2, -1:2:2, -1:2:2][0].flatten() + 0.5 * (
-            np.amax(beam.coordinate_X0) + np.amin(beam.coordinate_X0))
-Yb = 0.5 * max_range * np.mgrid[-1:2:2, -1:2:2, -1:2:2][1].flatten() + 0.5 * (
-            np.amax(beam.coordinate_Y0) + np.amin(beam.coordinate_Y0))
-Zb = 0.5 * max_range * np.mgrid[-1:2:2, -1:2:2, -1:2:2][2].flatten() + 0.5 * (
-            np.amax(beam.coordinate_Z0) + np.amin(beam.coordinate_Z0))
-# Comment or uncomment following both lines to test the fake bounding box:
-for xb, yb, zb in zip(Xb, Yb, Zb):
-    plt.plot([xb], [yb], [zb], 'w')
+beam.PrintSensitivitiesAllLoads()
 
-#plt.plot(beam.coordinate_X2[0:20], beam.coordinate_Y2[0:20], beam.coordinate_Z2[0:20],'r')
-plt.plot(beam.coordinate_X1[0:20], beam.coordinate_Y1[0:20], beam.coordinate_Z1[0:20],'b')
-plt.plot(beam.coordinate_X0[0:20], beam.coordinate_Y0[0:20], beam.coordinate_Z0[0:20],'g')
-rigid = 80
-
-for i in range(19,19+rigid):
-    node_i = int(beam.elem_py[i].GetNodes()[0, 0] - 1)
-    node_j = int(beam.elem_py[i].GetNodes()[1, 0] - 1)
-    #plt.plot([ beam.coordinate_X2[node_i],beam.coordinate_X2[node_j] ], [ beam.coordinate_Y2[node_i],beam.coordinate_Y2[node_j] ], [ beam.coordinate_Z2[node_i],beam.coordinate_Z2[node_j] ],'r')
-    plt.plot([ beam.coordinate_X1[node_i],beam.coordinate_X1[node_j] ], [ beam.coordinate_Y1[node_i],beam.coordinate_Y1[node_j] ], [ beam.coordinate_Z1[node_i],beam.coordinate_Z1[node_j] ],'b')
-    plt.plot([ beam.coordinate_X0[node_i],beam.coordinate_X0[node_j] ], [ beam.coordinate_Y0[node_i],beam.coordinate_Y0[node_j] ], [ beam.coordinate_Z0[node_i],beam.coordinate_Z0[node_j] ],'g')
-
-
-
-plt.xlabel('X')
-plt.ylabel('Y')
-plt.show()
-
-for i in range(beam.nPoint):
-    print('{} {}  {}  {} '.format(i, beam.displacement_X[i],beam.displacement_Y[i],beam.displacement_Z[i]) )

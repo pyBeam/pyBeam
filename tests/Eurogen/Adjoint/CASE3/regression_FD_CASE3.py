@@ -31,12 +31,16 @@ import sys, os
 from pyBeamLib import pyBeamSolver
 
 
-def RunPrimal(node):
+def RunPrimal(node,delta, load,file):
+
+
+   # Node where to evaluate the objective function
+   iNode = 20 -1 ;
 
    # Load running directory
    file_dir = os.path.dirname(os.path.realpath(__file__))
 
-   beam = pyBeamSolver(file_dir ,'config_NL.cfg')
+   beam = pyBeamSolver(file_dir ,'config_NL_AD.cfg')
 
    beam.SetLoads(        0 ,  0.00013,  0.00004 ,  0.00114 )
    beam.SetLoads(        1 ,  0.00010,  0.00003 ,  0.00122 )
@@ -57,10 +61,11 @@ def RunPrimal(node):
    beam.SetLoads(       16 , -0.00005,  0.00015 ,  0.00089 )
    beam.SetLoads(       17 , -0.00005,  0.00018 ,  0.00076 )
    beam.SetLoads(       18 , -0.00005,  0.00021 ,  0.00063 )
-   if node ==1:
-      beam.SetLoads(       19 , -0.00005,  0.00024 ,  0.00048 ) # here
+   if node ==0:
+      file.write("Check. Node {}. Set Load = {} {} {} \n".format(node, load[0], load[1], (1+delta)*load[2] ))
+      beam.SetLoads(       19 , load[0],  load[1] ,  (1+delta)*load[2] ) # here
    else:
-      beam.SetLoads(       19 , -0.00005,  0.00024 ,  0.00048 ) # here
+      beam.SetLoads(       19 , -0.00005,  0.00024 ,  0.00048 )
    beam.SetLoads(       20 ,  0.00014, -0.00006 ,  0.00153 )
    beam.SetLoads(       21 ,  0.00011, -0.00006 ,  0.00167 )
    beam.SetLoads(       22 ,  0.00009, -0.00006 ,  0.00179 )
@@ -80,8 +85,9 @@ def RunPrimal(node):
    beam.SetLoads(       36 , -0.00012,  0.00019 ,  0.00181 )
    beam.SetLoads(       37 , -0.00012,  0.00022 ,  0.00170 )
    beam.SetLoads(       38 , -0.00012,  0.00026 ,  0.00156 )
-   if node ==2:
-      beam.SetLoads(       39 , -0.00012,  0.00030 ,  0.00141 )  # here
+   if node ==1:
+      file.write("Check. Node {}. Set Load = {} {} {} \n".format(node, load[0], load[1], (1 + delta) * load[2]))
+      beam.SetLoads(       39 ,load[0],  load[1] ,  (1+delta)*load[2]  )  # here
    else:
       beam.SetLoads(       39 , -0.00012,  0.00030 ,  0.00141 )  # here
    beam.SetLoads(       40 , -0.00002,  0.00008 ,  0.00032 )
@@ -103,8 +109,9 @@ def RunPrimal(node):
    beam.SetLoads(       56 , -0.00000,  0.00004 , -0.00059 )
    beam.SetLoads(       57 ,  0.00000,  0.00007 , -0.00072 )
    beam.SetLoads(       58 ,  0.00001,  0.00009 , -0.00086 )
-   if node == 3:
-      beam.SetLoads(       59 ,  0.00002,  0.00013 , -0.00100 )  # here
+   if node == 2:
+      file.write("Check. Node {}. Set Load = {} {} {} \n".format(node, load[0], load[1], (1 + delta) * load[2]))
+      beam.SetLoads(       59 ,  load[0],  load[1] ,  (1+delta)*load[2]  )  # here
    else:
       beam.SetLoads(       59 ,  0.00002,  0.00013 , -0.00100)  # here
 
@@ -127,8 +134,9 @@ def RunPrimal(node):
    beam.SetLoads(       76 , -0.00017,  0.00024 ,  0.00442 )
    beam.SetLoads(       77 , -0.00016,  0.00027 ,  0.00418 )
    beam.SetLoads(       78 , -0.00016,  0.00030 ,  0.00393 )
-   if node == 4:
-      beam.SetLoads(       79 , -0.00016,  0.00033 ,  0.00367 )  # here
+   if node == 3:
+      file.write("Check. Node {}. Set Load = {} {} {} \n".format(node, load[0], load[1], (1 + delta) * load[2]))
+      beam.SetLoads(       79 , load[0],  load[1] ,  (1+delta)*load[2]  )  # here
    else:
       beam.SetLoads(       79 , -0.00016,  0.00033 ,  0.00367 )  # here
 
@@ -152,11 +160,63 @@ def RunPrimal(node):
    beam.SetLoads(       97 ,  0.00006,  0.00009 , -0.00265 )
    beam.SetLoads(       98 ,  0.00006,  0.00012 , -0.00268 )
    if node == 4:
-      beam.SetLoads(       99 ,  0.00006,  0.00016 , -0.00271 )  # here
-   else
+      file.write("Check. Node {}. Set Load = {} {} {} \n".format(node, load[0], load[1], (1 + delta) * load[2]))
+      beam.SetLoads(       99 ,  load[0],  load[1] ,  (1+delta)*load[2]  )  # here
+   else:
        beam.SetLoads(99, 0.00006, 0.00016, -0.00271)  # here
+
+
    beam.Run()
 
    OF = beam.ComputeObjectiveFunction( iNode)
 
    return OF
+
+################################################################
+
+# Central scheme to evaluate the sensitivity to the objective function
+
+#delta = [1.0e-07, 5.0e-06, 1.0e-06,5.0e-05, 1.0e-05, 5.0e-04, 1.0e-04, 5.0e-03, 1.0e-03, 5.0e-02, 1.0e-02]
+delta = [1.0e-05, 5.0e-05, 1.0e-04, 5.0e-04, 1.0e-03, 5.0e-03, 1.0e-02, 5.0e-02, 1.0e-01]
+
+#load_19 = [-0.00005, 0.00024, 0.00048]
+#load_39 = [-0.00012, 0.00030, 0.00141]
+#load_59 = [0.00002, 0.00013, -0.00100]
+#load_79 = [-0.00016, 0.00033, 0.00367]
+#load_99 = [0.00006, 0.00016, -0.00271]
+
+load_tip = [[-0.00005, 0.00024, 0.00048], [-0.00012, 0.00030, 0.00141], [0.00002, 0.00013, -0.00100], [-0.00016, 0.00033, 0.00367], [0.00006, 0.00016, -0.00271]]
+
+
+
+#for node in range(0,5):
+for node in range(0,1) :
+   file = open("Sensitivity_FD_node" + str(node) + "_forward.txt", "a", 0)
+   file.write("node = {}\n".format(node))
+
+   for i in range(len(delta)):
+
+
+
+     delta_used = delta[i]
+     load = [load_tip[node][0],load_tip[node][1],load_tip[node][2]]
+
+     file.write("Delta used = {}\n".format(delta_used))
+     file.write("Load = {} {} {}\n".format(load[0],load[1],load[2]))
+
+
+     OF_plus = RunPrimal(node,delta_used,load,file)
+     file.write("OF_plus = {:16.12f}\n".format(OF_plus))
+
+     OF_minus = RunPrimal(node,0,load,file)
+     file.write("OF_minus = {:16.12f}\n".format(OF_minus))
+
+     Sensitivity = (OF_plus - OF_minus)/(delta_used*load[2])
+
+     file.write("Sensitivity = {:16.12f}\n".format(Sensitivity))
+
+     file.write("\n")
+     file.write("\n")
+
+
+   file.close()
