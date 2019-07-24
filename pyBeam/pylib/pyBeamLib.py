@@ -189,6 +189,8 @@ class pyBeamSolver:
       print("Objective Function - Displacement(", iNode, ") = ", displacement)
       print(str.format('{0:.20f}', displacement))
 
+      return displacement
+
 
   def Run(self):
     """ This function runs the solver and stores the results.

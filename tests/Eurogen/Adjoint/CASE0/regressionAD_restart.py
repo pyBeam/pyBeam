@@ -43,7 +43,7 @@ beam.SetDependencies()
 
 #beam.SetDisplacementAdjoint(iNode, 0.0, 0.0, 0.0)
 
-beam.Run() 
+beam.Restart()
 
 beam.ComputeObjectiveFunction(iNode)
 

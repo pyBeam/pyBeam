@@ -28,14 +28,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import sys, os
-from pyBeamLibAD import pyBeamSolverAD
+from pyBeamLib import pyBeamSolver
 
 # Load running directory
 file_dir = os.path.dirname(os.path.realpath(__file__))
 
-iNode = 59
-
-beam = pyBeamSolverAD(file_dir ,'config_NL_AD.cfg')
+beam = pyBeamSolver(file_dir ,'config_NL_AD.cfg')
 
 beam.SetLoads(        0 ,  0.00013,  0.00004 ,  0.00114 )
 beam.SetLoads(        1 ,  0.00010,  0.00003 ,  0.00122 )
@@ -138,21 +136,7 @@ beam.SetLoads(       97 ,  0.00006,  0.00009 , -0.00265 )
 beam.SetLoads(       98 ,  0.00006,  0.00012 , -0.00268 )
 beam.SetLoads(       99 ,  0.00006,  0.00016 , -0.00271 )
 
-beam.StartRecording()
-
-beam.SetDependencies()
-
-beam.Restart()
-
-beam.ComputeObjectiveFunction(iNode)
-
-beam.StopRecording()
-
-beam.ComputeAdjoint()
-
-beam.PrintSensitivitiesAllLoads()
-
-exit()
+beam.Run()
 
 beam.coordinate_Y1 = beam.coordinate_Y; beam.coordinate_X1 = beam.coordinate_X; beam.coordinate_Z1 = beam.coordinate_Z
 

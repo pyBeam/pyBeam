@@ -33,6 +33,17 @@ dv_dP_AD = 0.00016840030716481512;
 
 ERR = (dv_dP_6 - dv_dP_AD)/dv_dP_6*100
 
+%% Analytic derivatives
+V_nominal = 16.45456089056611759247;
+
+dv = 16.46297752843531725375; dP = 5.0e+1;    
+
+dv_dP_6 = (dv - V_nominal)/dP                 %% Winner
+
+dv_dP_AD =  0.00016837114090406322;
+
+ERR = (dv_dP_6 - dv_dP_AD)/dv_dP_6*100
+
 % %% Linear case
 % 
 % L = 30;

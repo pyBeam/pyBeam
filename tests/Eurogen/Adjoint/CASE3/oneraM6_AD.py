@@ -28,14 +28,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import sys, os
-from pyBeamLib import pyBeamSolver
+from pyBeamLibAD import pyBeamSolverAD
 
 # Load running directory
 file_dir = os.path.dirname(os.path.realpath(__file__))
 
 iNode = 59
 
-beam = pyBeamSolver(file_dir ,'config_NL.cfg')
+beam = pyBeamSolverAD(file_dir ,'config_NL_AD.cfg')
 
 beam.SetLoads(        0 ,  0.00013,  0.00004 ,  0.00114 )
 beam.SetLoads(        1 ,  0.00010,  0.00003 ,  0.00122 )
@@ -56,7 +56,7 @@ beam.SetLoads(       15 , -0.00005,  0.00012 ,  0.00100 )
 beam.SetLoads(       16 , -0.00005,  0.00015 ,  0.00089 )
 beam.SetLoads(       17 , -0.00005,  0.00018 ,  0.00076 )
 beam.SetLoads(       18 , -0.00005,  0.00021 ,  0.00063 )
-beam.SetLoads(       19 , -0.00005,  0.00024 ,  0.00048 )
+beam.SetLoads(       19 , -0.00005,  0.00024 ,  0.00048 ) # here
 beam.SetLoads(       20 ,  0.00014, -0.00006 ,  0.00153 )
 beam.SetLoads(       21 ,  0.00011, -0.00006 ,  0.00167 )
 beam.SetLoads(       22 ,  0.00009, -0.00006 ,  0.00179 )
@@ -76,7 +76,7 @@ beam.SetLoads(       35 , -0.00011,  0.00016 ,  0.00192 )
 beam.SetLoads(       36 , -0.00012,  0.00019 ,  0.00181 )
 beam.SetLoads(       37 , -0.00012,  0.00022 ,  0.00170 )
 beam.SetLoads(       38 , -0.00012,  0.00026 ,  0.00156 )
-beam.SetLoads(       39 , -0.00012,  0.00030 ,  0.00141 )
+beam.SetLoads(       39 , -0.00012,  0.00030 ,  0.00141 ) # here
 beam.SetLoads(       40 , -0.00002,  0.00008 ,  0.00032 )
 beam.SetLoads(       41 , -0.00002,  0.00005 ,  0.00033 )
 beam.SetLoads(       42 , -0.00002,  0.00003 ,  0.00032 )
@@ -96,7 +96,7 @@ beam.SetLoads(       55 , -0.00001,  0.00002 , -0.00047 )
 beam.SetLoads(       56 , -0.00000,  0.00004 , -0.00059 )
 beam.SetLoads(       57 ,  0.00000,  0.00007 , -0.00072 )
 beam.SetLoads(       58 ,  0.00001,  0.00009 , -0.00086 )
-beam.SetLoads(       59 ,  0.00002,  0.00013 , -0.00100 )
+beam.SetLoads(       59 ,  0.00002,  0.00013 , -0.00100 ) # here
 beam.SetLoads(       60 , -0.00000,  0.00015 ,  0.00628 )
 beam.SetLoads(       61 , -0.00003,  0.00014 ,  0.00627 )
 beam.SetLoads(       62 , -0.00004,  0.00013 ,  0.00624 )
@@ -116,7 +116,7 @@ beam.SetLoads(       75 , -0.00017,  0.00022 ,  0.00464 )
 beam.SetLoads(       76 , -0.00017,  0.00024 ,  0.00442 )
 beam.SetLoads(       77 , -0.00016,  0.00027 ,  0.00418 )
 beam.SetLoads(       78 , -0.00016,  0.00030 ,  0.00393 )
-beam.SetLoads(       79 , -0.00016,  0.00033 ,  0.00367 )
+beam.SetLoads(       79 , -0.00016,  0.00033 ,  0.00367 ) # here
 beam.SetLoads(       80 ,  0.00026, -0.00007 , -0.00399 )
 beam.SetLoads(       81 ,  0.00024, -0.00008 , -0.00382 )
 beam.SetLoads(       82 ,  0.00022, -0.00009 , -0.00366 )
@@ -136,11 +136,23 @@ beam.SetLoads(       95 ,  0.00007,  0.00003 , -0.00264 )
 beam.SetLoads(       96 ,  0.00006,  0.00006 , -0.00264 )
 beam.SetLoads(       97 ,  0.00006,  0.00009 , -0.00265 )
 beam.SetLoads(       98 ,  0.00006,  0.00012 , -0.00268 )
-beam.SetLoads(       99 ,  0.00006,  0.00016 , -0.00271 )
+beam.SetLoads(       99 ,  0.00006,  0.00016 , -0.00271 ) # here
 
-beam.Run()
+beam.StartRecording()
+
+beam.SetDependencies()
+
+beam.Restart()
 
 beam.ComputeObjectiveFunction(iNode)
+
+beam.StopRecording()
+
+beam.ComputeAdjoint()
+
+beam.PrintSensitivitiesAllLoads()
+
+exit()
 
 beam.coordinate_Y1 = beam.coordinate_Y; beam.coordinate_X1 = beam.coordinate_X; beam.coordinate_Z1 = beam.coordinate_Z
 
