@@ -1,0 +1,82 @@
+node = 3
+Delta used = 1e-05
+Load = -0.00016 0.00033 0.00367
+Check. Node 3. Set Load = -0.00016 0.00033 0.0036700367 
+OF_plus =   0.059005385935
+Check. Node 3. Set Load = -0.00016 0.00033 0.0036699633 
+OF_minus =   0.059004893358
+Sensitivity =   6.710861264682
+
+
+Delta used = 5e-05
+Load = -0.00016 0.00033 0.00367
+Check. Node 3. Set Load = -0.00016 0.00033 0.0036701835 
+OF_plus =   0.059005564359
+Check. Node 3. Set Load = -0.00016 0.00033 0.0036698165 
+OF_minus =   0.059004758971
+Sensitivity =   2.194516300855
+
+
+Delta used = 0.0001
+Load = -0.00016 0.00033 0.00367
+Check. Node 3. Set Load = -0.00016 0.00033 0.003670367 
+OF_plus =   0.059005891749
+Check. Node 3. Set Load = -0.00016 0.00033 0.003669633 
+OF_minus =   0.059004108824
+Sensitivity =   2.429053426810
+
+
+Delta used = 0.0005
+Load = -0.00016 0.00033 0.00367
+Check. Node 3. Set Load = -0.00016 0.00033 0.003671835 
+OF_plus =   0.059009478720
+Check. Node 3. Set Load = -0.00016 0.00033 0.003668165 
+OF_minus =   0.059001364886
+Sensitivity =   2.210854100971
+
+
+Delta used = 0.001
+Load = -0.00016 0.00033 0.00367
+Check. Node 3. Set Load = -0.00016 0.00033 0.00367367 
+OF_plus =   0.059012995928
+Check. Node 3. Set Load = -0.00016 0.00033 0.00366633 
+OF_minus =   0.058996999375
+Sensitivity =   2.179366951631
+
+
+Delta used = 0.005
+Load = -0.00016 0.00033 0.00367
+Check. Node 3. Set Load = -0.00016 0.00033 0.00368835 
+OF_plus =   0.059047267252
+Check. Node 3. Set Load = -0.00016 0.00033 0.00365165 
+OF_minus =   0.058962900449
+Sensitivity =   2.298822963458
+
+
+Delta used = 0.01
+Load = -0.00016 0.00033 0.00367
+Check. Node 3. Set Load = -0.00016 0.00033 0.0037067 
+OF_plus =   0.059088724849
+Check. Node 3. Set Load = -0.00016 0.00033 0.0036333 
+OF_minus =   0.058921378603
+Sensitivity =   2.279921617552
+
+
+Delta used = 0.05
+Load = -0.00016 0.00033 0.00367
+Check. Node 3. Set Load = -0.00016 0.00033 0.0038535 
+OF_plus =   0.059423394764
+Check. Node 3. Set Load = -0.00016 0.00033 0.0034865 
+OF_minus =   0.058587067657
+Sensitivity =   2.278820456465
+
+
+Delta used = 0.1
+Load = -0.00016 0.00033 0.00367
+Check. Node 3. Set Load = -0.00016 0.00033 0.004037 
+OF_plus =   0.059841333465
+Check. Node 3. Set Load = -0.00016 0.00033 0.003303 
+OF_minus =   0.058168938497
+Sensitivity =   2.278467258809
+
+
