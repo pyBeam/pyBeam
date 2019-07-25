@@ -630,7 +630,7 @@ void CStructure::SolveLinearStaticSystem(int iIter)
 
     AD::StartExtFunc(false, false);
 
-    for (unsigned long iRes; iRes < Residual.size(); iRes++)
+    for (unsigned long iRes = 0; iRes < Residual.size(); iRes++)
       AD::SetExtFuncIn(Residual(iRes));
 
     /*--- Stop the recording for the linear solver ---*/
@@ -663,7 +663,7 @@ void CStructure::SolveLinearStaticSystem(int iIter)
 
       AD::StartRecording();
 
-      for (unsigned long iRes; iRes < Residual.size(); iRes++)
+      for (unsigned long iRes = 0; iRes < Residual.size(); iRes++)
         AD::SetExtFuncOut(dU(iRes));
 
 #ifdef CODI_REVERSE_TYPE
