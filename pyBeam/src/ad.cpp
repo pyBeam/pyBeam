@@ -46,6 +46,10 @@ namespace AD {
   /*--- Initialization of the tape ---*/
   addouble::TapeType& globalTape = addouble::getGlobalTape();
 
+  int adjointVectorPosition = 0;
+
+  std::vector<addouble::GradientData> inputValues;
+
 }
 
 void SolveAdjSys::SolveSys(const codi::RealReverse::Real* x, codi::RealReverse::Real* x_b, size_t m,
@@ -65,38 +69,47 @@ void SolveAdjSys::SolveSys(const codi::RealReverse::Real* x, codi::RealReverse::
     VectorXdDiff Residual_bar;
     Residual_bar = VectorXdDiff::Zero(nNode_b*6);
 
+//    VectorXdDiff Residual;
+//    d->getData(Residual);
+
     MatrixXdDiff Ksys_b;
     d->getData(Ksys_b);
-    addouble a;
 
     /*--- Initialize the right-hand side with the gradient of the solution of the primal linear system ---*/
 
     for (unsigned long i = 0; i < n; i ++) {
-      Residual_bar(i) = y_b[i];
+      dU_bar(i) = y_b[i];
     }
 
     switch(kind_linSol_b){
     case PartialPivLu:
-      dU_bar = Ksys_b.transpose().partialPivLu().solve(Residual_bar); break;
+      Residual_bar = Ksys_b.transpose().partialPivLu().solve(dU_bar); break;
     case FullPivLu:
-      dU_bar = Ksys_b.transpose().fullPivLu().solve(Residual_bar); break;
+      Residual_bar = Ksys_b.transpose().fullPivLu().solve(dU_bar); break;
     case HouseholderQr:
-      dU_bar = Ksys_b.transpose().householderQr().solve(Residual_bar); break;
+      Residual_bar = Ksys_b.transpose().householderQr().solve(dU_bar); break;
     case ColPivHouseholderQr:
-      dU_bar = Ksys_b.transpose().colPivHouseholderQr().solve(Residual_bar); break;
+      Residual_bar = Ksys_b.transpose().colPivHouseholderQr().solve(dU_bar); break;
     case FullPivHouseholderQr:
-      dU_bar = Ksys_b.transpose().fullPivHouseholderQr().solve(Residual_bar); break;
+      Residual_bar = Ksys_b.transpose().fullPivHouseholderQr().solve(dU_bar); break;
     case LLT:
-      dU_bar = Ksys_b.transpose().llt().solve(Residual_bar); break;
+      Residual_bar = Ksys_b.transpose().llt().solve(dU_bar); break;
     case LDLT:
-      dU_bar = Ksys_b.transpose().ldlt().solve(Residual_bar); break;
+      Residual_bar = Ksys_b.transpose().ldlt().solve(dU_bar); break;
     default:
-      dU_bar = Ksys_b.transpose().fullPivHouseholderQr().solve(Residual_bar); break;
+      Residual_bar = Ksys_b.transpose().fullPivHouseholderQr().solve(dU_bar); break;
     }
 
     for (unsigned long i = 0; i < n; i ++) {
-      x_b[i] = AD::GetValue(dU_bar(i));
+      x_b[i] = AD::GetValue(Residual_bar(i));
     }
+
+//    for (unsigned long i = 0; i < n; i ++) {
+//      for (unsigned long j = 0; j < n; j ++) {
+//        x_b[(i+1)*n+j] = AD::GetValue(- 1 * Residual_bar(i) * Residual(j));
+//      }
+//    }
+
 
 }
 

@@ -39,8 +39,12 @@ namespace AD{
 
   extern addouble::TapeType& globalTape;
 
+  extern std::vector<addouble::GradientData> inputValues;
+  extern int adjointVectorPosition;
+
   /*--- Register variables as input/output ---*/
-  inline void RegisterInput(addouble &data) {AD::globalTape.registerInput(data);}
+  inline void RegisterInput(addouble &data) {AD::globalTape.registerInput(data);
+                                             inputValues.push_back(data.getGradientData());}
   inline void RegisterOutput(addouble& data) {AD::globalTape.registerOutput(data);}
   
   /*--- Activate/deactivate the tape ---*/
@@ -51,7 +55,7 @@ namespace AD{
   inline void ClearAdjoints() {AD::globalTape.clearAdjoints(); }
   
   /*--- Evaluate the tape ---*/
-  inline void ComputeAdjoint() {AD::globalTape.evaluate(); }
+  inline void ComputeAdjoint() {AD::globalTape.evaluate(); adjointVectorPosition = 0;}
 
   /*--- Set the value of a variable ---*/
   inline void SetValue(addouble& data, const double &val) {data.setValue(val);}
@@ -59,10 +63,16 @@ namespace AD{
   
   /*--- Set the derivative of a variable ---*/
   inline void SetDerivative(addouble& data, const double &val) {data.setGradient(val);}    
-  inline double GetDerivative(const addouble& data) { return data.getGradient();} 
+  inline double GetDerivative(const addouble& data) { return AD::globalTape.getGradient(AD::inputValues[AD::adjointVectorPosition++]);}
 
   /*--- Reset the tape ---*/
-  inline void Reset() { globalTape.reset(); }
+  inline void Reset() {
+    if (inputValues.size() != 0) {
+      globalTape.reset();
+      adjointVectorPosition = 0;
+      inputValues.clear();
+    }
+  }
 
   inline void SetExtFuncIn(const addouble &data) {AD::FuncHelper->addInput(data);}
 
