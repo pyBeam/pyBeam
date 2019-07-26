@@ -369,29 +369,30 @@ void CBeamSolver::SetRestart(void){
     totalIter = 1;
 
     std::cout << "--> Initializing from restart file" << std::endl;
+    structure->InitialCoord();
     structure-> RestartCoord();
-    structure-> UpdateLength();
-    structure-> InitializeInternalForces();
 
 }
 
 
 void CBeamSolver::RunRestart(int FSIIter = 0){
 
+    // This function set the current initial coordinates and memorizes them as the old one before the converging procedure starts
+
     // Beam total length
     addouble TotalLength = 0;
     for  ( unsigned long iFEM = 0; iFEM < nFEM; iFEM++) {
         TotalLength += element[iFEM]->GetInitial_Length();
     }
-    
+
     std::cout << "--> Setting External Forces" << std::endl;
     structure->ReadForces(nTotalDOF, loadVector);
-    
-    if (nRBE2 != 0){ 
+
+    if (nRBE2 != 0){
         std::cout << "--> Setting RBE2 Matrix for Rigid Constraints" << std::endl;
-        structure->AddRBE2(input, RBE2);        
+        structure->AddRBE2(input, RBE2);
     };
-    
+
     addouble  lambda = 1.0;
     addouble dlambda =  1.0/input->Get_LoadSteps() ;
     addouble initResNorm   =  1.0;
@@ -401,124 +402,86 @@ void CBeamSolver::RunRestart(int FSIIter = 0){
     unsigned long loadStep = 1;
     cout.setf(ios::fixed, ios::floatfield);
 
-    // This function set the current initial coordinates and memorizes them as the old one before the converging procedure starts
-    structure->InitialCoord();
-    
-    ReadRestart();
 
-    std::cout << "--> Initializing from restart file" << std::endl; 
-    structure-> RestartCoord();
+    /*--- Restart the internal forces ---*/
     structure-> UpdateLength();
-    structure-> UpdateRotationMatrix_FP();  // based on the rotational displacements      
+    structure-> UpdateRotationMatrix_FP();  // based on the rotational displacements
     structure-> UpdateInternalForces_FP();
-    
+
     std::cout << "--> Starting Restart Sequence" << std::endl;
     std::cout << "===========================================================================" << std::endl;
-    
-    std::cout.width(6); std::cout << "Iter";
-    std::cout.width(17); std::cout << "Log10(Norm_Res)";
+
+    std::cout.width(8); std::cout << "Iter";
+    std::cout.width(16); std::cout << "Log10(Res)";
     std::cout.width(17); std::cout << "Log10(Lin_Sol)";
-    std::cout.width(17); std::cout << "Log10(Norm_Disp)";
+    std::cout.width(16); std::cout << "Log10(Disp)";
     std::cout.width(17); std::cout << "Log10(Disp_Fact)" << std::endl;
-    
+
     int nIter = 1; //  input->Get_nIter()
-    
+
     //===============================================
     //               ITERATIVE SEQUENCE
     //===============================================
     bool converged = false;
-    
-    for (iIter = 0; iIter < nIter; iIter++) {
-        
-        std::cout.width(6); std::cout << iIter;
-        
-        //std::cout << "   ----- ITERATION  -----" << iIter << std::endl;
-        
-        /*--------------------------------------------------
-         *   Updates  Fext, Residual,
-         *----------------------------------------------------*/
-        
-        // Update the External Forces with the loadStep
-        structure->UpdateExtForces(lambda);
-        
-        // Evaluate the Residual
-        structure->EvalResidual(input->Get_RigidCriteria());
-        
-        if(iIter == 0){initResNorm = structure->Residual.norm();}
-        std::cout.width(17); std::cout << log10(structure->Residual.norm() / initResNorm);
-        
-        /*--------------------------------------------------
-         *   Assembly Ktang, Solve System
-         *----------------------------------------------------*/
-        
-        // Reassembling Stiffness Matrix + Applying Boundary Conditions
-        structure->AssemblyTang(iIter);
-        
-        // Solve Linear System   K*dU = Res = Fext - Fin
-        if (nRBE2 != 0 and input->Get_RigidCriteria() == 0) {
-            std::cout << "-->  Update KRBE matrix "  << std::endl;
-            structure->AssemblyRigidConstr();
-            structure->SolveLinearStaticSystem_RBE2(iIter);
-        }
-        else if (nRBE2 != 0 and input->Get_RigidCriteria() == 1) {
-            std::cout << "-->  Update penalty matrix for RBEs "  << std::endl;
-            structure->AssemblyRigidPenalty(input->GetPenalty());
-            structure->SolveLinearStaticSystem_RBE2_penalty(iIter);
-        }
-        else {
-            structure->SolveLinearStaticSystem(iIter);
-        }
-        
-        if(iIter == 0){initDispNorm = structure->dU.norm();}
-        std::cout.width(17); std::cout << log10(structure->dU.norm() / initDispNorm);
-        
-        /*--------------------------------------------------
-         *   Updates Coordinates, Updates Rotation Matrices
-         *----------------------------------------------------*/
-        
-        structure->UpdateCoord();
-        
-        // Now only X is updated
-        //structure->UpdateRotationMatrix();  // based on the rotational displacements
-        structure->UpdateRotationMatrix_FP();  // based on the rotational displacements        
-        structure->UpdateLength();          // Updating length, important
-        
-        /*--------------------------------------------------
-         *   Update Internal Forces
-         *----------------------------------------------------*/
-        // Now, X, R, l are updated
-        structure->UpdateInternalForces();
-        structure->UpdateInternalForces_FP();        
-        /*--------------------------------------------------
-         *   Update Penalty Forces
-         *----------------------------------------------------*/
-        
-        if (nRBE2 != 0 and input->Get_RigidCriteria() == 1)
-        {
-            //structure->UpdateAxvector_RBE2();
-            //structure->EvalPenaltyForces(input->GetPenalty());
-            //structure->UpdateRigidConstr(iIter); 
-        }
-        /*--------------------------------------------------
-         *    Check Convergence
-         *----------------------------------------------------*/
-        
-        addouble disp_factor =   structure->dU.norm()/TotalLength;
 
-        UpdateDisplacements();
-        
-        std::cout.width(17); std::cout << log10(disp_factor);
-        std::cout << std::endl;
+    std::cout.width(8); std::cout << "RESTART";
 
-        if (disp_factor <= input->Get_ConvCriteria()) {
-            converged = true;
-            totalIter += iIter;
-            break;
-        }
+    /*--------------------------------------------------
+    *   Updates  Fext, Residual,
+    *----------------------------------------------------*/
+
+    // Update the External Forces with the loadStep
+    structure->UpdateExtForces(1);
+
+    // Evaluate the Residual
+    structure->EvalResidual(input->Get_RigidCriteria());
+
+    std::cout.width(16); std::cout << log10(structure->Residual.norm());
+
+    /*--------------------------------------------------
+    *   Assembly Ktang, Solve System
+    *----------------------------------------------------*/
+
+    // Reassembling Stiffness Matrix + Applying Boundary Conditions
+    structure->AssemblyTang(1);
+
+    // Solve Linear System   K*dU = Res = Fext - Fin
+    if (nRBE2 != 0 and input->Get_RigidCriteria() == 0) {
+        std::cout << "-->  Update KRBE matrix "  << std::endl;
+        structure->AssemblyRigidConstr();
+        structure->SolveLinearStaticSystem_RBE2(1);
     }
-    
+    else if (nRBE2 != 0 and input->Get_RigidCriteria() == 1) {
+        std::cout << "-->  Update penalty matrix for RBEs "  << std::endl;
+        structure->AssemblyRigidPenalty(input->GetPenalty());
+        structure->SolveLinearStaticSystem_RBE2_penalty(1);
+    }
+    else {
+        structure->SolveLinearStaticSystem(1);
+    }
+
+    std::cout.width(16); std::cout << log10(structure->dU.norm());
+
+    /*--------------------------------------------------
+    *   Updates Coordinates, Updates Rotation Matrices
+    *----------------------------------------------------*/
+
+    structure->UpdateCoord();
+
+    /*--------------------------------------------------
+    *    Check Convergence
+    *----------------------------------------------------*/
+
+    addouble disp_factor =   structure->dU.norm()/TotalLength;
+
+    UpdateDisplacements();
+
+    std::cout.width(17); std::cout << log10(disp_factor);
+    std::cout << std::endl;
+
+
     std::cout << "===========================================================================" << std::endl;
-    std::cout << std::endl << "--> Exiting Restart Sequence." << std::endl;    
+    std::cout << std::endl << "--> Exiting Restart Sequence." << std::endl;
     
 }
 
