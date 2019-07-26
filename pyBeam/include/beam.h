@@ -131,8 +131,6 @@ public:
 
   void StoreDisplacementAdjoint(int iNode, int iDim, passivedouble val_adj);
 
-  void SetRestart();
-
   void RunRestart(int FSIIter);
   
   void WriteRestart();

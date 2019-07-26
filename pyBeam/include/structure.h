@@ -199,14 +199,6 @@ public:
         AD::RegisterOutput(disp[iNode][iDim]);
     };
 
-    inline void SetSolutionDependencies(void) {
-        for (unsigned long i = 0; i < nNode; i++){
-           X(i*3) = U(i*6) ;
-           X(i*3+1) = U(i*6+1);
-           X(i*3+2) = U(i*6+2);
-        }
-    };
-
     inline void RegisterSolutionInput(void) {
         for (unsigned long i = 0; i < nNode * 6; i++)
           AD::RegisterInput(U(i));

@@ -267,19 +267,6 @@ void CBeamSolver::Solve(int FSIIter = 0){
     
 }
 
-void CBeamSolver::SetRestart(void){
-
-    ReadRestart();
-
-    totalIter = 1;
-
-    std::cout << "--> Initializing from restart file" << std::endl;
-    structure->InitialCoord();
-    structure-> RestartCoord();
-
-}
-
-
 void CBeamSolver::RunRestart(int FSIIter = 0){
 
     // This function set the current initial coordinates and memorizes them as the old one before the converging procedure starts
@@ -309,9 +296,12 @@ void CBeamSolver::RunRestart(int FSIIter = 0){
 
 
     /*--- Restart the internal forces ---*/
-    structure-> UpdateLength();
-    structure-> UpdateRotationMatrix_FP();  // based on the rotational displacements
-    structure-> UpdateInternalForces_FP();
+    std::cout << "--> Initializing from restart file" << std::endl;
+    structure->InitialCoord();
+    structure->RestartCoord();
+    structure->UpdateLength();
+    structure->UpdateRotationMatrix_FP();  // based on the rotational displacements
+    structure->UpdateInternalForces_FP();
 
     std::cout << "--> Starting Restart Sequence" << std::endl;
     std::cout << "===========================================================================" << std::endl;
