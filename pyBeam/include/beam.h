@@ -87,8 +87,6 @@ public:
 
   void Solve(int FSIIter);
 
-  void Extend();
-  
   void Debug_Print(int iElement);  
 
   passivedouble OF_NodeDisplacement(int iNode);
