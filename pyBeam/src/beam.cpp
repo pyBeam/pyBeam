@@ -260,9 +260,7 @@ void CBeamSolver::Solve(int FSIIter = 0){
     
     std::cout << "===========================================================================" << std::endl;
     std::cout << std::endl << "--> Exiting Iterative Sequence." << std::endl;
-    
-    std::cout << std::endl << "--> U" << structure->U << std::endl;
-    
+       
     if (input->Get_WriteRestartFlag() ==1)
     {
         WriteRestart();
@@ -559,8 +557,7 @@ void CBeamSolver::ReadRestart(){
             posX += 6;
             
         }
-    }
-    std::cout << std::endl << "--> U" << structure->U << std::endl;    
+    } 
 }
 
 void CBeamSolver::Debug_Print(int iElement){
