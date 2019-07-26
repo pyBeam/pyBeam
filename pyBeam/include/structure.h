@@ -90,6 +90,8 @@ public:
     VectorXdDiff dU_red;           // Displacement array (iterative) [relative to masters in case of RBE2]        
     VectorXdDiff X;            // Position of the fem nodes in global coordinate system
     VectorXdDiff X0;            // Position of the fem nodes in global coordinate system
+
+    VectorXdDiff U_adj;         // Adjoint of the displacement array (cumulative)
     
     VectorXdDiff Fpenal;        // Array of internal forces
     VectorXdDiff Fint;        // Array of internal forces
@@ -191,6 +193,35 @@ public:
 
     inline void RegisterDisplacement(int iNode, int iDim) {
         AD::RegisterOutput(disp[iNode][iDim]);
+    };
+
+    inline void SetSolutionDependencies(void) {
+        for (unsigned long i = 0; i < nNode; i++){
+           X(i*3) = U(i*6) ;
+           X(i*3+1) = U(i*6+1);
+           X(i*3+2) = U(i*6+2);
+        }
+    };
+
+    inline void RegisterSolutionInput(void) {
+        for (unsigned long i = 0; i < nNode * 6; i++)
+          AD::RegisterInput(U(i));
+    };
+
+    inline void RegisterSolutionOutput(void) {
+        for (unsigned long i = 0; i < nNode * 6; i++)
+          AD::RegisterOutput(U(i));
+    };
+
+    inline void ExtractSolutionAdjoint(void) {
+        for (unsigned long i = 0; i < nNode * 6; i++){
+          U_adj(i) = AD::GetDerivative(U(i));
+        }
+    };
+
+    inline void SetSolutionAdjoint(void) {
+        for (unsigned long i = 0; i < nNode * 6; i++)
+          AD::SetDerivative(U(i), AD::GetValue(U_adj(i)));
     };
 
     inline void StoreDisplacementAdjoint(int iNode, int iDim, passivedouble val_adj) {
