@@ -359,14 +359,6 @@ void CStructure::AssemblyTang(int iIter)
                 
                 // Rotates the element's SUBMATRIX tangent
                 Krotated = (element[id_el-1]->R * Ktang.block((jjj-1)*6+1 -1,(kkk-1)*6+1 -1,6,6)  ) * element[id_el-1]->R.transpose() ;
-                /*
-                 if (id_el == 1) {
-                 std::cout << "Length    = \n" << element[id_el-1]->GetCurrent_Length() << std::endl;
-                 std::cout << "Kprim    = \n" << element[id_el-1]->Kprim << std::endl;
-                 std::cout << "Krotated    = \n" << Krotated << std::endl;  
-                 std::cout << "R    = \n" << element[id_el-1]->R << std::endl;
-                 std::cout << "Ktang_block    = \n" << Ktang.block((jjj-1)*6+1 -1,(kkk-1)*6+1 -1,6,6)   << std::endl;
-                 }*/
                 
                 // Contribution to the appropriate location of the global matrix
                 Ksys.block(dof_jjj-1,dof_kkk-1,6,6) += Krotated;
@@ -928,7 +920,7 @@ void CStructure::UpdateCoord() {
         posX += 3;
         posU += 6;
     }
-    
+   
 }
 
 /*===================================================
@@ -944,7 +936,7 @@ void CStructure::RestartCoord() {
     //std::cout << "-->  Update Global Coordinates "  << std::endl;
     
     /* We have the X array, we need to add the displacements referred to the pre-last displacement local reference system.
-     Thus, this operation need to eb done before the rottion matrix is updated. */
+     Thus, this operation need to be done before the rotation matrix is updated. */
     
 
     int posX = 1;    // current  position in the X array
@@ -953,6 +945,7 @@ void CStructure::RestartCoord() {
     // Browsing all the nodes of the current segment
     for (int id_node=1-1; id_node<=nNode-1 ; id_node++) {
           
+        X.segment(posX-1,3) +=  U.segment(posU-1,3);
         // Updating the node's coordinates
         for (int iDim=0; iDim < 3; iDim++) {
          node[id_node]->SetCoordinate(iDim, X(posX+iDim-1)) ;
@@ -1159,7 +1152,9 @@ void CStructure::UpdateRotationMatrix() {
     int nodeA_id = 0;
     int nodeB_id = 0;        
 
-    for (int i_fe=1; i_fe<=nfem; i_fe++) {
+    int i_fe;
+    
+    for ( i_fe =1; i_fe<=nfem; i_fe++) {
         
         nodeA_id = element[i_fe-1]->nodeA->GeID();
         nodeB_id = element[i_fe-1]->nodeB->GeID();
@@ -1178,6 +1173,52 @@ void CStructure::UpdateRotationMatrix() {
         element[i_fe-1]->EvalRotMat(dU_AB,X_AB);
     }
 
+    i_fe = i_fe -1;       
+    
+}
+
+/*===================================================
+ *  n Update Rotation Matrix
+ *===================================================
+ Given the incremental displacement and the previous (cumulative) Rotation Matrix,
+ 
+ (a)  the (cumulative) rotation matrix
+ (b)  incremental rotation matrix is updated
+ */
+
+void CStructure::UpdateRotationMatrix_FP() {
+
+    //=============   Updating Rotation Matrix   ======================
+    
+    //std::cout << "-->  Updating Rotation Matrix "  << std::endl;
+    
+    VectorXdDiff dU_AB = VectorXdDiff::Zero(12);
+    VectorXdDiff  X_AB = VectorXdDiff::Zero(6);
+    
+    int nodeA_id = 0;
+    int nodeB_id = 0;        
+    int i_fe;
+    for (i_fe=1; i_fe<=nfem; i_fe++) {
+        
+        nodeA_id = element[i_fe-1]->nodeA->GeID();
+        nodeB_id = element[i_fe-1]->nodeB->GeID();
+        
+        // Position of the A and B (initial and final) nodes of the element
+        // They are already in the global CS (but not the updated final one).
+        X_AB.head(3) = X.segment((nodeA_id-1)*3+1 -1,3);
+        X_AB.tail(3) = X.segment((nodeB_id-1)*3+1 -1,3);
+        
+        // Displacements of the A and B (initial and final) nodes of the element
+        // They are already in the global CS (but not the updated final one).
+        dU_AB.head(6) = U.segment((nodeA_id-1)*6+1 -1,6);
+        dU_AB.tail(6) = U.segment((nodeB_id-1)*6+1 -1,6);
+        
+        // Calling the coordinate update routine
+        element[i_fe-1]->EvalRotMat_FP(dU_AB,X_AB);
+        
+    }
+    i_fe = i_fe -1; 
+  
 }
 
 /*===================================================
@@ -1237,8 +1278,10 @@ void CStructure::UpdateInternalForces()
     /*-------------------------------
      //     LOOPING FINITE ELEMENTS
      * -------------------------------*/
-    //std::cout.precision(17);
-    for (int id_fe=1;     id_fe <= nfem ; id_fe++) {
+    
+    int id_fe;
+    
+    for (id_fe=1;     id_fe <= nfem ; id_fe++) {
 
         du_el = VectorXdDiff::Zero(12);        
         
@@ -1280,7 +1323,7 @@ void CStructure::UpdateInternalForces()
         Rtransp = Rreduc.transpose();
         Rel_A = Rtransp  *  Rnode_A  * element[id_fe-1]->Rprev.block(0,0,3,3);
         Rel_B = Rtransp  *  Rnode_B  * element[id_fe-1]->Rprev.block(0,0,3,3);
-        
+         
         
         // (c) Transforming in pseudo-vector, since infinitesimal (elastic), the components are independent
         RotToPseudo(pseudo_A_el , Rel_A);
@@ -1319,7 +1362,7 @@ void CStructure::UpdateInternalForces()
         Fint.segment((nodeB_id-1)*6+1 -1,6) +=  element[id_fe-1]->R * element[id_fe-1]->fint.segment(7-1,6);
 
     }
-
+  
 }
 
 void CStructure::InitializeInternalForces()
@@ -1371,6 +1414,155 @@ void CStructure::InitializeInternalForces()
         Fint.segment((nodeA_id-1)*6+1 -1,6) +=  element[id_fe-1]->R * element[id_fe-1]->fint.segment(1-1,6);
         Fint.segment((nodeB_id-1)*6+1 -1,6) +=  element[id_fe-1]->R * element[id_fe-1]->fint.segment(7-1,6);
 
+    }
+
+}
+
+
+/*===================================================
+ *           INTERNAL FORCES FP
+ *===================================================
+ Given the incremental cumulative displacement U,  updated X,l,R
+ 
+ (a) 
+ (b) evaluates CUMULATIVE ELASTIC DISPL.
+ (c) evaluates the NODAL INTERNAL FORCE ARRAY
+ 
+ */
+
+void CStructure::UpdateInternalForces_FP()
+{
+    
+    //std::cout << "-->  Updating Internal Forces "   << std::endl;
+    
+    // U is the displacement
+    // Need to evaluate the displacements in the new reference system.
+    // Re is the matrix which rotates from one to the other one.
+    
+    int nodeA_id = 0;
+    int nodeB_id = 0;  
+    
+    // Nodal full Rotation PseudoVectors and Matrices
+    Vector3dDiff pseudo_A = Vector3dDiff::Zero();
+    Vector3dDiff pseudo_B = Vector3dDiff::Zero();
+    
+    Vector3dDiff pseudo_A_el = Vector3dDiff::Zero();
+    Vector3dDiff pseudo_B_el = Vector3dDiff::Zero();    
+    
+    Matrix3dDiff Rnode_A = Matrix3dDiff::Zero();
+    Matrix3dDiff Rnode_B = Matrix3dDiff::Zero();
+    
+    // Nodal ELASTIC Rotation Matrix
+    Matrix3dDiff Rel_A = Matrix3dDiff::Zero();
+    Matrix3dDiff Rel_B = Matrix3dDiff::Zero();
+    
+    Matrix3dDiff Rreduc = Matrix3dDiff::Zero();;
+    Matrix3dDiff Rtransp = Matrix3dDiff::Zero();;
+
+    // Auxiliary matrices for the elastic component
+    MatrixXdDiff Na = MatrixXdDiff::Zero(6,6);
+    MatrixXdDiff Nb = MatrixXdDiff::Zero(6,6);
+    
+    int tot_dofs= nNode*6;
+    
+    // Element's level  forces/elastic displ
+    VectorXdDiff u_el = VectorXdDiff::Zero(12);
+    
+    // Nodal vector of internal forces
+    // VERY IMPORTANT to reset it to 0 every time
+    Fint = VectorXdDiff::Zero(nNode*6);
+    
+    VectorXdDiff eps = VectorXdDiff::Zero(6);
+    VectorXdDiff phi = VectorXdDiff::Zero(6);
+    VectorXdDiff fint = VectorXdDiff::Zero(12);    
+    
+    /*-------------------------------
+     //     LOOPING FINITE ELEMENTS
+     * -------------------------------*/
+    
+    int id_fe;
+    
+    for (id_fe=1;     id_fe <= nfem ; id_fe++) {
+
+        u_el = VectorXdDiff::Zero(12);
+        pseudo_A_el = Vector3dDiff::Zero();
+        pseudo_B_el = Vector3dDiff::Zero(); 
+        Rel_A = Matrix3dDiff::Zero();
+        Rel_B = Matrix3dDiff::Zero();
+
+        
+        nodeA_id = element[id_fe-1]->nodeA->GeID();
+        nodeB_id = element[id_fe-1]->nodeB->GeID();
+        
+        /*----------------------------
+         //      TRANSLATIONAL PART
+         * ---------------------------*/
+
+        // Relative displacement of the second node is only along the new axis direction
+        u_el(7-1) = element[id_fe-1]->GetCurrent_Length() - element[id_fe-1]->GetInitial_Length();
+
+        
+        /*----------------------------
+         *       ROTATIONAL PART
+         * ----------------------------*/
+        // (a) pseudo-vector is in global CS
+        
+        // Extracting  rotation
+        pseudo_A = U.segment((nodeA_id-1)*6+4 -1,3);
+        pseudo_B = U.segment((nodeB_id-1)*6+4 -1,3);
+        
+        // (b) transforming nodal pseudo-vector in Rotation/Transformation Matrix
+        /* CAREFUL, this rotation does not directly lead from global to nodal triad. But is is
+         * an  rotation given in global coordinates. Which means that, it should be augmented with
+         * the rotation from global to old_local.
+         * Rnodal = Rnode_A * Rprev  */
+        
+        PseudoToRot(pseudo_A , Rnode_A);
+        PseudoToRot(pseudo_B , Rnode_B);
+
+        // (C) Using identity Rnode*Rprev = R*Relastic
+        /* Relastic = R'*Rnode_A*Rprev  */
+        //              
+        Rreduc = element[id_fe-1]->R.block(0,0,3,3);
+        Rtransp = Rreduc.transpose();
+        Rel_A = Rtransp  *  Rnode_A * element[id_fe-1]->R0.block(0,0,3,3);
+        Rel_B = Rtransp  *  Rnode_B * element[id_fe-1]->R0.block(0,0,3,3) ;
+        
+        // (c) Transforming in pseudo-vector, since infinitesimal (elastic), the components are independent
+        RotToPseudo(pseudo_A_el , Rel_A);
+        RotToPseudo(pseudo_B_el , Rel_B);
+
+        u_el.segment(4 -1,3)  = pseudo_A_el;
+        u_el.segment(10 -1,3) = pseudo_B_el;
+        
+        
+        // Incrementing the cumulative elastic displacements
+        // phi is the deformational state vector
+        // eps = {    DL,    DTheta ,  Theta_y_el_B ,  Theta_z_el_B , Theta_y_el_A,  Theta_z_el_A)
+        element[id_fe-1]->eps(1-1) = u_el( 7-1);
+        element[id_fe-1]->eps(2-1) = u_el( 10-1) - u_el( 4-1);
+        element[id_fe-1]->eps(3-1) = u_el( 11-1);
+        element[id_fe-1]->eps(4-1) = u_el( 12-1);
+        element[id_fe-1]->eps(5-1) = u_el( 5-1);
+        element[id_fe-1]->eps(6-1) = u_el( 6-1);
+                  
+        // Constitutive relation between deformational and tensional state
+        // phi = tensional state = { N ,  Mt , MBy , MBz , MAy , M_Az }
+        
+        element[id_fe-1]->phi =  element[id_fe-1]->Kprim*element[id_fe-1]->eps;
+        
+        Na = MatrixXdDiff::Zero(6,6);
+        Nb = MatrixXdDiff::Zero(6,6);
+        
+        element[id_fe-1]->EvalNaNb(Na , Nb);
+        
+        // Updating cumulative internal forces
+        element[id_fe-1]->fint.segment(1-1,6) =  Na.transpose()*element[id_fe-1]->phi;
+        element[id_fe-1]->fint.segment(7-1,6) =  Nb.transpose()*element[id_fe-1]->phi;
+
+        // Contribution to the NODAL Internal Forces ARRAY
+        Fint.segment((nodeA_id-1)*6+1 -1,6) +=  element[id_fe-1]->R * element[id_fe-1]->fint.segment(1-1,6);
+        Fint.segment((nodeB_id-1)*6+1 -1,6) +=  element[id_fe-1]->R * element[id_fe-1]->fint.segment(7-1,6);
     }
 
 }

@@ -51,7 +51,11 @@ def RunPrimal(node,delta, load,file):
    beam.SetLoads(        6 ,  0.00002,  0.00000 ,  0.00143 )
    beam.SetLoads(        7 ,  0.00001,  0.00000 ,  0.00144 )
    beam.SetLoads(        8 , -0.00000,  0.00001 ,  0.00143 )
-   beam.SetLoads(        9 , -0.00001,  0.00002 ,  0.00141 )
+   if node ==0:
+      file.write("Check. Node {}. Set Load = {} {} {} \n".format(node, load[0], load[1], (1+delta)*load[2] ))
+      beam.SetLoads(       9 , load[0],  load[1] ,  (1+delta)*load[2] ) # here
+   else:
+      beam.SetLoads(        9 , -0.00001,  0.00002 ,  0.00141 )
    beam.SetLoads(       10 , -0.00002,  0.00003 ,  0.00137 )
    beam.SetLoads(       11 , -0.00003,  0.00004 ,  0.00132 )
    beam.SetLoads(       12 , -0.00004,  0.00006 ,  0.00126 )
@@ -61,11 +65,7 @@ def RunPrimal(node,delta, load,file):
    beam.SetLoads(       16 , -0.00005,  0.00015 ,  0.00089 )
    beam.SetLoads(       17 , -0.00005,  0.00018 ,  0.00076 )
    beam.SetLoads(       18 , -0.00005,  0.00021 ,  0.00063 )
-   if node ==0:
-      file.write("Check. Node {}. Set Load = {} {} {} \n".format(node, load[0], load[1], (1+delta)*load[2] ))
-      beam.SetLoads(       19 , load[0],  load[1] ,  (1+delta)*load[2] ) # here
-   else:
-      beam.SetLoads(       19 , -0.00005,  0.00024 ,  0.00048 )
+   beam.SetLoads(       19 , -0.00005,  0.00024 ,  0.00048 )
    beam.SetLoads(       20 ,  0.00014, -0.00006 ,  0.00153 )
    beam.SetLoads(       21 ,  0.00011, -0.00006 ,  0.00167 )
    beam.SetLoads(       22 ,  0.00009, -0.00006 ,  0.00179 )
@@ -75,7 +75,11 @@ def RunPrimal(node,delta, load,file):
    beam.SetLoads(       26 , -0.00000, -0.00003 ,  0.00212 )
    beam.SetLoads(       27 , -0.00002, -0.00002 ,  0.00216 )
    beam.SetLoads(       28 , -0.00004, -0.00000 ,  0.00218 )
-   beam.SetLoads(       29 , -0.00005,  0.00001 ,  0.00219 )
+   if node ==1:
+      file.write("Check. Node {}. Set Load = {} {} {} \n".format(node, load[0], load[1], (1 + delta) * load[2]))
+      beam.SetLoads(       29 ,load[0],  load[1] ,  (1+delta)*load[2]  )  # here
+   else:
+      beam.SetLoads(       29 , -0.00005,  0.00001 ,  0.00219 )
    beam.SetLoads(       30 , -0.00007,  0.00003 ,  0.00219 )
    beam.SetLoads(       31 , -0.00008,  0.00005 ,  0.00216 )
    beam.SetLoads(       32 , -0.00009,  0.00008 ,  0.00213 )
@@ -85,11 +89,7 @@ def RunPrimal(node,delta, load,file):
    beam.SetLoads(       36 , -0.00012,  0.00019 ,  0.00181 )
    beam.SetLoads(       37 , -0.00012,  0.00022 ,  0.00170 )
    beam.SetLoads(       38 , -0.00012,  0.00026 ,  0.00156 )
-   if node ==1:
-      file.write("Check. Node {}. Set Load = {} {} {} \n".format(node, load[0], load[1], (1 + delta) * load[2]))
-      beam.SetLoads(       39 ,load[0],  load[1] ,  (1+delta)*load[2]  )  # here
-   else:
-      beam.SetLoads(       39 , -0.00012,  0.00030 ,  0.00141 )  # here
+   beam.SetLoads(       39 , -0.00012,  0.00030 ,  0.00141 )  # here
    beam.SetLoads(       40 , -0.00002,  0.00008 ,  0.00032 )
    beam.SetLoads(       41 , -0.00002,  0.00005 ,  0.00033 )
    beam.SetLoads(       42 , -0.00002,  0.00003 ,  0.00032 )
@@ -99,7 +99,11 @@ def RunPrimal(node,delta, load,file):
    beam.SetLoads(       46 , -0.00003, -0.00003 ,  0.00023 )
    beam.SetLoads(       47 , -0.00003, -0.00004 ,  0.00019 )
    beam.SetLoads(       48 , -0.00003, -0.00005 ,  0.00014 )
-   beam.SetLoads(       49 , -0.00003, -0.00005 ,  0.00007 )
+   if node == 2:
+      file.write("Check. Node {}. Set Load = {} {} {} \n".format(node, load[0], load[1], (1 + delta) * load[2]))
+      beam.SetLoads(       49 ,  load[0],  load[1] ,  (1+delta)*load[2]  )  # here
+   else:
+      beam.SetLoads(       49 , -0.00003, -0.00005 ,  0.00007 )
    beam.SetLoads(       50 , -0.00003, -0.00004 ,  0.00001 )
    beam.SetLoads(       51 , -0.00002, -0.00004 , -0.00007 )
    beam.SetLoads(       52 , -0.00002, -0.00003 , -0.00016 )
@@ -109,12 +113,7 @@ def RunPrimal(node,delta, load,file):
    beam.SetLoads(       56 , -0.00000,  0.00004 , -0.00059 )
    beam.SetLoads(       57 ,  0.00000,  0.00007 , -0.00072 )
    beam.SetLoads(       58 ,  0.00001,  0.00009 , -0.00086 )
-   if node == 2:
-      file.write("Check. Node {}. Set Load = {} {} {} \n".format(node, load[0], load[1], (1 + delta) * load[2]))
-      beam.SetLoads(       59 ,  load[0],  load[1] ,  (1+delta)*load[2]  )  # here
-   else:
-      beam.SetLoads(       59 ,  0.00002,  0.00013 , -0.00100)  # here
-
+   beam.SetLoads(       59 ,  0.00002,  0.00013 , -0.00100 )  # here
    beam.SetLoads(       60 , -0.00000,  0.00015 ,  0.00628 )
    beam.SetLoads(       61 , -0.00003,  0.00014 ,  0.00627 )
    beam.SetLoads(       62 , -0.00004,  0.00013 ,  0.00624 )
@@ -124,7 +123,11 @@ def RunPrimal(node,delta, load,file):
    beam.SetLoads(       66 , -0.00011,  0.00011 ,  0.00601 )
    beam.SetLoads(       67 , -0.00012,  0.00011 ,  0.00591 )
    beam.SetLoads(       68 , -0.00013,  0.00012 ,  0.00580 )
-   beam.SetLoads(       69 , -0.00014,  0.00012 ,  0.00568 )
+   if node == 3:
+      file.write("Check. Node {}. Set Load = {} {} {} \n".format(node, load[0], load[1], (1 + delta) * load[2]))
+      beam.SetLoads(       69 , load[0],  load[1] ,  (1+delta)*load[2]  )  # here
+   else:
+      beam.SetLoads(       69 , -0.00014,  0.00012 ,  0.00568 )
    beam.SetLoads(       70 , -0.00015,  0.00013 ,  0.00554 )
    beam.SetLoads(       71 , -0.00016,  0.00014 ,  0.00539 )
    beam.SetLoads(       72 , -0.00016,  0.00016 ,  0.00522 )
@@ -134,12 +137,7 @@ def RunPrimal(node,delta, load,file):
    beam.SetLoads(       76 , -0.00017,  0.00024 ,  0.00442 )
    beam.SetLoads(       77 , -0.00016,  0.00027 ,  0.00418 )
    beam.SetLoads(       78 , -0.00016,  0.00030 ,  0.00393 )
-   if node == 3:
-      file.write("Check. Node {}. Set Load = {} {} {} \n".format(node, load[0], load[1], (1 + delta) * load[2]))
-      beam.SetLoads(       79 , load[0],  load[1] ,  (1+delta)*load[2]  )  # here
-   else:
-      beam.SetLoads(       79 , -0.00016,  0.00033 ,  0.00367 )  # here
-
+   beam.SetLoads(       79 , -0.00016,  0.00033 ,  0.00367 )  # here
    beam.SetLoads(       80 ,  0.00026, -0.00007 , -0.00399 )
    beam.SetLoads(       81 ,  0.00024, -0.00008 , -0.00382 )
    beam.SetLoads(       82 ,  0.00022, -0.00009 , -0.00366 )
@@ -149,7 +147,11 @@ def RunPrimal(node,delta, load,file):
    beam.SetLoads(       86 ,  0.00015, -0.00011 , -0.00314 )
    beam.SetLoads(       87 ,  0.00014, -0.00010 , -0.00304 )
    beam.SetLoads(       88 ,  0.00012, -0.00010 , -0.00295 )
-   beam.SetLoads(       89 ,  0.00011, -0.00009 , -0.00287 )
+   if node == 4:
+      file.write("Check. Node {}. Set Load = {} {} {} \n".format(node, load[0], load[1], (1 + delta) * load[2]))
+      beam.SetLoads(       89 ,  load[0],  load[1] ,  (1+delta)*load[2]  )  # here
+   else:
+      beam.SetLoads(       89 ,  0.00011, -0.00009 , -0.00287 )
    beam.SetLoads(       90 ,  0.00010, -0.00007 , -0.00280 )
    beam.SetLoads(       91 ,  0.00009, -0.00006 , -0.00274 )
    beam.SetLoads(       92 ,  0.00008, -0.00004 , -0.00270 )
@@ -159,11 +161,7 @@ def RunPrimal(node,delta, load,file):
    beam.SetLoads(       96 ,  0.00006,  0.00006 , -0.00264 )
    beam.SetLoads(       97 ,  0.00006,  0.00009 , -0.00265 )
    beam.SetLoads(       98 ,  0.00006,  0.00012 , -0.00268 )
-   if node == 4:
-      file.write("Check. Node {}. Set Load = {} {} {} \n".format(node, load[0], load[1], (1 + delta) * load[2]))
-      beam.SetLoads(       99 ,  load[0],  load[1] ,  (1+delta)*load[2]  )  # here
-   else:
-       beam.SetLoads(99, 0.00006, 0.00016, -0.00271)  # here
+   beam.SetLoads(99, 0.00006, 0.00016, -0.00271)  # here
 
 
    beam.Run()
@@ -179,19 +177,19 @@ def RunPrimal(node,delta, load,file):
 #delta = [1.0e-07, 5.0e-06, 1.0e-06,5.0e-05, 1.0e-05, 5.0e-04, 1.0e-04, 5.0e-03, 1.0e-03, 5.0e-02, 1.0e-02]
 delta = [1.0e-05, 5.0e-05, 1.0e-04, 5.0e-04, 1.0e-03, 5.0e-03, 1.0e-02, 5.0e-02, 1.0e-01]
 
-#load_19 = [-0.00005, 0.00024, 0.00048]
-#load_39 = [-0.00012, 0.00030, 0.00141]
-#load_59 = [0.00002, 0.00013, -0.00100]
-#load_79 = [-0.00016, 0.00033, 0.00367]
-#load_99 = [0.00006, 0.00016, -0.00271]
+#load_9 = [ -0.00001,  0.00002 ,  0.00141]
+#load_29 = [-0.00005,  0.00001 ,  0.00219 ]
+#load_49 = [ -0.00003, -0.00005 ,  0.00007]
+#load_69 = [-0.00014,  0.00012 ,  0.00568]
+#load_89 = [0.00006, 0.00016, -0.00271]
 
-load_tip = [[-0.00005, 0.00024, 0.00048], [-0.00012, 0.00030, 0.00141], [0.00002, 0.00013, -0.00100], [-0.00016, 0.00033, 0.00367], [0.00006, 0.00016, -0.00271]]
+load_tip = [[ -0.00001,  0.00002 ,  0.00141], [-0.00005,  0.00001 ,  0.00219 ], [ -0.00003, -0.00005 ,  0.00007], [-0.00014,  0.00012 ,  0.00568], [ 0.00011, -0.00009 , -0.00287]]
 
 
 
 #for node in range(0,5):
 for node in range(0,5) :
-   file = open("Sensitivity_FD_node" + str(node) + "_centered.txt", "a", 0)
+   file = open("Sensitivity_FD_node" + str(node) + "midspan_centered.txt", "a", 0)
    file.write("node = {}\n".format(node))
 
    for i in range(len(delta)):

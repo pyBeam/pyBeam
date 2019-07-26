@@ -216,15 +216,16 @@ void CBeamSolver::Solve(int FSIIter = 0){
             structure->UpdateCoord();
             
             // Now only X is updated
-            structure->UpdateRotationMatrix();  // based on the rotational displacements
+            //structure->UpdateRotationMatrix();  // based on the rotational displacements
+            structure->UpdateRotationMatrix_FP();  // based on the rotational displacements            
             structure->UpdateLength();          // Updating length, important
                      
             /*--------------------------------------------------
              *   Update Internal Forces
              *----------------------------------------------------*/
             // Now, X, R, l are updated
-            structure->UpdateInternalForces();
-            
+            //structure->UpdateInternalForces();
+            structure-> UpdateInternalForces_FP();            
             /*--------------------------------------------------
              *   Update Penalty Forces
              *----------------------------------------------------*/
@@ -257,7 +258,7 @@ void CBeamSolver::Solve(int FSIIter = 0){
     
     std::cout << "===========================================================================" << std::endl;
     std::cout << std::endl << "--> Exiting Iterative Sequence." << std::endl;
-    
+       
     if (input->Get_WriteRestartFlag() ==1)
     {
         WriteRestart();
@@ -408,7 +409,8 @@ void CBeamSolver::RunRestart(int FSIIter = 0){
     std::cout << "--> Initializing from restart file" << std::endl; 
     structure-> RestartCoord();
     structure-> UpdateLength();
-    structure-> InitializeInternalForces();
+    structure-> UpdateRotationMatrix_FP();  // based on the rotational displacements      
+    structure-> UpdateInternalForces_FP();
     
     std::cout << "--> Starting Restart Sequence" << std::endl;
     std::cout << "===========================================================================" << std::endl;
@@ -477,7 +479,8 @@ void CBeamSolver::RunRestart(int FSIIter = 0){
         structure->UpdateCoord();
         
         // Now only X is updated
-        structure->UpdateRotationMatrix();  // based on the rotational displacements
+        //structure->UpdateRotationMatrix();  // based on the rotational displacements
+        structure->UpdateRotationMatrix_FP();  // based on the rotational displacements        
         structure->UpdateLength();          // Updating length, important
         
         /*--------------------------------------------------
@@ -485,7 +488,7 @@ void CBeamSolver::RunRestart(int FSIIter = 0){
          *----------------------------------------------------*/
         // Now, X, R, l are updated
         structure->UpdateInternalForces();
-        
+        structure->UpdateInternalForces_FP();        
         /*--------------------------------------------------
          *   Update Penalty Forces
          *----------------------------------------------------*/
@@ -638,131 +641,43 @@ void CBeamSolver::StoreDisplacementAdjoint(int iNode, int iDim, passivedouble va
 void CBeamSolver::WriteRestart(){
     std::ofstream myfile;
     myfile.open ("restart_structure.dat");
-        //==== Writing Nodes info
-    myfile << "Node ID          ";
-    myfile << "Coord. X         ";
-    myfile << "Coord. Y         ";
-    myfile << "Coord. Z        \n";     
-    int posX = 1;    // current  position in the X array
+    int posX = 1;
+    //==== Writing Nodes info
+    myfile << "Node ID              "; myfile << "U 1                "; myfile << "U 2                "; myfile << "U 3                ";
+    myfile << "U 4                "; myfile << "U 5                "; myfile << "U 6            //\n";          
     for (int id_node=1; id_node<= input->Get_nNodes() ; id_node++)   {
         myfile << id_node  << "           ";
-        for (int iDim=0; iDim < 3; iDim++) {
-            myfile << std::scientific << setprecision(17) << structure->X(posX+iDim-1) << "           " ;
+        for (int iDim=0; iDim < 6; iDim++) {
+            myfile << std::scientific << setprecision(17) << structure->U(posX+iDim-1) << "           " ;
         }
         myfile << "\n";
-        posX += 3;
-    }    
-    //==== Writing Elements info   
-    myfile << "Element ID              "; myfile << "Strain 1                "; myfile << "Strain 2                "; myfile << "Strain 3                ";
-    myfile << "Strain 4                "; myfile << "Strain 5                "; myfile << "Strain 6            //\n";    
-    myfile << "Element ID              "; myfile << "Reference e1(1)         "; myfile << "Reference e1(2)         "; myfile << "Reference e1(3)        ";
-    myfile << "Reference e2(1)        "; myfile << "Reference e2(2)        "; myfile << "Reference e2(3)        ";
-    myfile << "Reference e3(1)        "; myfile << "Reference e3(2)        "; myfile << "Reference e3(3)    //\n";   
-    myfile << "Element ID          "; myfile << "Reference e1_old(1)    "; myfile << "Reference e1_old(2)    "; myfile << "Reference e1_old(3)    ";
-    myfile << "Reference e2_old(1)    "; myfile << "Reference e2_old(2)    "; myfile << "Reference e2_old(3)    "; 
-    myfile << "Reference e3_old(1)    "; myfile << "Reference e3_old(2)    "; myfile << "Reference e3_old(3) //\n";     
-    for (int id_fe=1;     id_fe <= input->Get_nFEM() ; id_fe++){
-        myfile << id_fe  << "           ";   
-        //strains
-        for (int i=1;     i <= 6 ; i++){
-            myfile << std::scientific << setprecision(17) << element[id_fe-1]->eps(i-1) << "           " ;            
-        }
-        myfile << "\n";
-        //e1
-        myfile << id_fe  << "           ";
-        for (int j=1;  j <= 3 ; j++){
-            myfile << std::scientific << setprecision(17) << element[id_fe-1]->R(j-1,1-1) << "           " ;                        
-        }
-        //e2
-        for (int j=1;  j <= 3 ; j++){
-            myfile << std::scientific << setprecision(17) << element[id_fe-1]->R(j-1,2-1) << "           " ;                        
-        }
-        //e3
-        for (int j=1;  j <= 3 ; j++){
-            myfile << std::scientific << setprecision(17) << element[id_fe-1]->R(j-1,3-1) << "           " ;                        
-        }        
-        myfile << "\n";
-        //e1_old
-        myfile << id_fe  << "           ";
-        for (int j=1;  j <= 3 ; j++){
-            myfile << std::scientific << setprecision(17) << element[id_fe-1]->Rprev(j-1,1-1) << "           " ;                        
-        }
-        //e2_old
-        for (int j=1;  j <= 3 ; j++){
-            myfile << std::scientific << setprecision(17) << element[id_fe-1]->Rprev(j-1,2-1) << "           " ;                        
-        }
-        //e3_old
-        for (int j=1;  j <= 3 ; j++){
-            myfile << std::scientific << setprecision(17) << element[id_fe-1]->Rprev(j-1,3-1) << "           " ;                        
-        }        
-        myfile << "\n";        
+        posX += 6;
     }
-    
     
     myfile.close();
 }
 
 
 void CBeamSolver::ReadRestart(){
-    int nNode; double x;double y;double z;
-    int nElem; double eps1; double eps2; double eps3; double eps4; double eps5; double eps6; double e11; double e12; double e13; double e21; double e22; double e23; double e31; double e32; double e33;
+    int nNode; double Ux;double Uy;double Uz; double Urx;double Ury;double Urz;
+    //int nElem; double eps1; double eps2; double eps3; double eps4; double eps5; double eps6; double e11; double e12; double e13; double e21; double e22; double e23; double e31; double e32; double e33;
     int posX = 1;    // current  position in the X array
     string line;
-    Vector3dDiff e1; Vector3dDiff e2; Vector3dDiff e3;
+
     
     ifstream myfile ("restart_structure.dat");
     if (myfile.is_open()){
         getline (myfile,line); //Line of comments for Nodes
         for (int id_node=1; id_node<= input->Get_nNodes() ; id_node++)   {
             getline (myfile,line);   
-            CoordExtract( line ,  nNode,  x, y, z);
-            structure->X(posX+0-1) = x; structure->X(posX+1-1) = y; structure->X(posX+2-1) = z; 
-            posX += 3;
+            UExtract( line , nNode, Ux, Uy, Uz, Urx, Ury, Urz);
+            structure->U(posX+0-1) = Ux; structure->U(posX+1-1) = Uy; structure->U(posX+2-1) = Uz;
+            structure->U(posX+3-1) = Urx; structure->U(posX+4-1) = Ury; structure->U(posX+5-1) = Urz;
+            posX += 6;
             
         }
-        getline (myfile,line); //Line of comments for Elements (1)
-        getline (myfile,line); //Line of comments for Elements (2)
-        getline (myfile,line); //Line of comments for Elements (3)        
-        for (int id_fe=1;     id_fe <= input->Get_nFEM() ; id_fe++)
-        {
-            getline (myfile,line);   // line of the strain  
-            ElemStrainExtract( line , nElem, eps1,eps2, eps3, eps4, eps5, eps6);
-            element[id_fe-1]->eps(1-1) = eps1; element[id_fe-1]->eps(2-1) = eps2; element[id_fe-1]->eps(3-1) = eps3;
-            element[id_fe-1]->eps(4-1) = eps4; element[id_fe-1]->eps(5-1) = eps5; element[id_fe-1]->eps(6-1) = eps6;     
-            
-            getline (myfile,line);   // line of the OLD ref system 
-            ElemRefExtract( line , nElem, e11, e12, e13, e21, e22, e23, e31, e32, e33);
-            e1(1-1) = e11;  e1(2-1) = e12; e1(3-1) = e13;
-            e2(1-1) = e21;  e2(2-1) = e22; e2(3-1) = e23;
-            e3(1-1) = e31;  e3(2-1) = e32; e3(3-1) = e33;
-            
-            element[id_fe-1]->R.block(1-1,1-1,3,1) = e1.segment(1-1,3);
-            element[id_fe-1]->R.block(1-1,2-1,3,1) = e2.segment(1-1,3);
-            element[id_fe-1]->R.block(1-1,3-1,3,1) = e3.segment(1-1,3);
-            
-            element[id_fe-1]->R.block(4-1,4-1,3,3) = element[id_fe-1]->R.block(1-1,1-1,3,3);   
-            
-            getline (myfile,line);   // line of the OLD ref system 
-            ElemRefExtract( line , nElem, e11, e12, e13, e21, e22, e23, e31, e32, e33);
-            e1(1-1) = e11;  e1(2-1) = e12; e1(3-1) = e13;
-            e2(1-1) = e21;  e2(2-1) = e22; e2(3-1) = e23;
-            e3(1-1) = e31;  e3(2-1) = e32; e3(3-1) = e33;
-            
-            element[id_fe-1]->Rprev.block(1-1,1-1,3,1) = e1.segment(1-1,3);
-            element[id_fe-1]->Rprev.block(1-1,2-1,3,1) = e2.segment(1-1,3);
-            element[id_fe-1]->Rprev.block(1-1,3-1,3,1) = e3.segment(1-1,3);
-            
-            element[id_fe-1]->Rprev.block(4-1,4-1,3,3) = element[id_fe-1]->Rprev.block(1-1,1-1,3,3);              
-        }
-    }
+    } 
 }
-
-void CBeamSolver::CoordExtract(std::string line , int &nNode, double &x,double &y,double &z)
-{
-        std::istringstream is( line );
-        is >> nNode >> x >> y >> z;
-}
-
 
 void CBeamSolver::Debug_Print(int iElement){
     /*
@@ -781,15 +696,10 @@ void CBeamSolver::Debug_Print(int iElement){
     std::cout << "Stiffness matrix:       = \n" <<  structure->Ksys.block(0,0,12,12)  << std::endl;     
     */
 }
-void CBeamSolver::ElemStrainExtract(std::string line , int &nElem, double &eps1, double &eps2, double &eps3, double &eps4, double &eps5, double &eps6)
+
+void CBeamSolver::UExtract(std::string line ,int &nNode, double &Ux, double &Uy, double &Uz, double &Urx, double &Ury, double &Urz)
 {
         std::istringstream is( line );
-        is >> nElem >> eps1 >> eps2 >> eps3 >> eps4 >> eps5 >> eps6 ;
+        is >> nNode >> Ux >> Uy >> Uz >> Urx >> Ury >> Urz ;
 }
 
-void CBeamSolver::ElemRefExtract(std::string line , int &nElem, double &e11, double &e12, double &e13, double &e21, double &e22, double &e23, double &e31, double &e32, double &e33)
-{
-        std::istringstream is( line );
-        is >> nElem >> e11 >> e12 >> e13 >> e21 >> e22 >> e23 >> e31 >> e32 >> e33 ;
-
-}
