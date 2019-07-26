@@ -173,11 +173,15 @@ public:
     
     void UpdateRotationMatrix();
     
+    void UpdateRotationMatrix_FP();    
+    
     //===================================================
     //      INTERNAL FORCES
     //===================================================
         
     void UpdateInternalForces();
+
+    void UpdateInternalForces_FP();    
     
     void InitializeInternalForces();
     

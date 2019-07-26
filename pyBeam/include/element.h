@@ -69,6 +69,8 @@ public:
     MatrixXdDiff R;             // Local reference system in GCS
     MatrixXdDiff Rprev;         // m_R previous value
 
+    MatrixXdDiff R0;         // m_R previous value    
+
     Vector3dDiff aux_vector;   // Versor directed from nodeA to nodeB
 
     MatrixXdDiff Mfem;
@@ -130,6 +132,9 @@ public:
     // Evaluates FEM element rotation matrix
     void EvalRotMat(VectorXdDiff &dU_AB , VectorXdDiff &X_AB );
 
+    //   Evaluates FEM element rotation matrix startign from undeformed configuration  
+    void EvalRotMat_FP(VectorXdDiff &dU_AB,  VectorXdDiff  &X_AB);
+    
     // Initially rotates the elements
     void InitializeRotMats();    
 

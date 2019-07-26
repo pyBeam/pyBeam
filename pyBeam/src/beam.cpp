@@ -218,15 +218,16 @@ void CBeamSolver::Solve(int FSIIter = 0){
             structure->UpdateCoord();
             
             // Now only X is updated
-            structure->UpdateRotationMatrix();  // based on the rotational displacements
+            //structure->UpdateRotationMatrix();  // based on the rotational displacements
+            structure->UpdateRotationMatrix_FP();  // based on the rotational displacements            
             structure->UpdateLength();          // Updating length, important
                      
             /*--------------------------------------------------
              *   Update Internal Forces
              *----------------------------------------------------*/
             // Now, X, R, l are updated
-            structure->UpdateInternalForces();
-            
+            //structure->UpdateInternalForces();
+            structure-> UpdateInternalForces_FP();            
             /*--------------------------------------------------
              *   Update Penalty Forces
              *----------------------------------------------------*/
@@ -538,10 +539,7 @@ void CBeamSolver::WriteRestart(){
     myfile << "Strain 4                "; myfile << "Strain 5                "; myfile << "Strain 6            //\n";    
     myfile << "Element ID              "; myfile << "Reference e1(1)         "; myfile << "Reference e1(2)         "; myfile << "Reference e1(3)        ";
     myfile << "Reference e2(1)        "; myfile << "Reference e2(2)        "; myfile << "Reference e2(3)        ";
-    myfile << "Reference e3(1)        "; myfile << "Reference e3(2)        "; myfile << "Reference e3(3)    //\n";   
-    myfile << "Element ID          "; myfile << "Reference e1_old(1)    "; myfile << "Reference e1_old(2)    "; myfile << "Reference e1_old(3)    ";
-    myfile << "Reference e2_old(1)    "; myfile << "Reference e2_old(2)    "; myfile << "Reference e2_old(3)    "; 
-    myfile << "Reference e3_old(1)    "; myfile << "Reference e3_old(2)    "; myfile << "Reference e3_old(3) //\n";     
+    myfile << "Reference e3(1)        "; myfile << "Reference e3(2)        "; myfile << "Reference e3(3)    //\n";        
     for (int id_fe=1;     id_fe <= input->Get_nFEM() ; id_fe++){
         myfile << id_fe  << "           ";   
         //strains
@@ -562,21 +560,7 @@ void CBeamSolver::WriteRestart(){
         for (int j=1;  j <= 3 ; j++){
             myfile << std::scientific << setprecision(17) << element[id_fe-1]->R(j-1,3-1) << "           " ;                        
         }        
-        myfile << "\n";
-        //e1_old
-        myfile << id_fe  << "           ";
-        for (int j=1;  j <= 3 ; j++){
-            myfile << std::scientific << setprecision(17) << element[id_fe-1]->Rprev(j-1,1-1) << "           " ;                        
-        }
-        //e2_old
-        for (int j=1;  j <= 3 ; j++){
-            myfile << std::scientific << setprecision(17) << element[id_fe-1]->Rprev(j-1,2-1) << "           " ;                        
-        }
-        //e3_old
-        for (int j=1;  j <= 3 ; j++){
-            myfile << std::scientific << setprecision(17) << element[id_fe-1]->Rprev(j-1,3-1) << "           " ;                        
-        }        
-        myfile << "\n";        
+        myfile << "\n";   
     }
     
     
@@ -602,8 +586,7 @@ void CBeamSolver::ReadRestart(){
             
         }
         getline (myfile,line); //Line of comments for Elements (1)
-        getline (myfile,line); //Line of comments for Elements (2)
-        getline (myfile,line); //Line of comments for Elements (3)        
+        getline (myfile,line); //Line of comments for Elements (2)      
         for (int id_fe=1;     id_fe <= input->Get_nFEM() ; id_fe++)
         {
             getline (myfile,line);   // line of the strain  
@@ -611,7 +594,7 @@ void CBeamSolver::ReadRestart(){
             element[id_fe-1]->eps(1-1) = eps1; element[id_fe-1]->eps(2-1) = eps2; element[id_fe-1]->eps(3-1) = eps3;
             element[id_fe-1]->eps(4-1) = eps4; element[id_fe-1]->eps(5-1) = eps5; element[id_fe-1]->eps(6-1) = eps6;     
             
-            getline (myfile,line);   // line of the OLD ref system 
+            getline (myfile,line);   // line of the ref system 
             ElemRefExtract( line , nElem, e11, e12, e13, e21, e22, e23, e31, e32, e33);
             e1(1-1) = e11;  e1(2-1) = e12; e1(3-1) = e13;
             e2(1-1) = e21;  e2(2-1) = e22; e2(3-1) = e23;
@@ -622,18 +605,7 @@ void CBeamSolver::ReadRestart(){
             element[id_fe-1]->R.block(1-1,3-1,3,1) = e3.segment(1-1,3);
             
             element[id_fe-1]->R.block(4-1,4-1,3,3) = element[id_fe-1]->R.block(1-1,1-1,3,3);   
-            
-            getline (myfile,line);   // line of the OLD ref system 
-            ElemRefExtract( line , nElem, e11, e12, e13, e21, e22, e23, e31, e32, e33);
-            e1(1-1) = e11;  e1(2-1) = e12; e1(3-1) = e13;
-            e2(1-1) = e21;  e2(2-1) = e22; e2(3-1) = e23;
-            e3(1-1) = e31;  e3(2-1) = e32; e3(3-1) = e33;
-            
-            element[id_fe-1]->Rprev.block(1-1,1-1,3,1) = e1.segment(1-1,3);
-            element[id_fe-1]->Rprev.block(1-1,2-1,3,1) = e2.segment(1-1,3);
-            element[id_fe-1]->Rprev.block(1-1,3-1,3,1) = e3.segment(1-1,3);
-            
-            element[id_fe-1]->Rprev.block(4-1,4-1,3,3) = element[id_fe-1]->Rprev.block(1-1,1-1,3,3);              
+     
         }
     }
 }
