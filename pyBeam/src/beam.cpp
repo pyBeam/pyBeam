@@ -432,31 +432,35 @@ void CBeamSolver::SetDependencies(void){
 }
 
 void CBeamSolver::ComputeAdjoint(void){
+
+    for (unsigned short iTer = 0; iTer < input->Get_nIter(); iTer++){
     
-    AD::SetDerivative(objective_function, 1.0);
+        AD::SetDerivative(objective_function, 1.0);
 
-    structure->SetSolutionAdjoint();
+        structure->SetSolutionAdjoint();
 
-    unsigned long iNode, iLoad;
-    unsigned short iDim;
-    for (iNode = 0; iNode <  input->Get_nNodes(); iNode++){
-      for (iDim =0; iDim < 3; iDim++){
-       structure->SetDisplacementAdjoint(iNode, iDim);
-      }
-    }
+        unsigned long iNode, iLoad;
+        unsigned short iDim;
+        for (iNode = 0; iNode <  input->Get_nNodes(); iNode++){
+          for (iDim =0; iDim < 3; iDim++){
+           structure->SetDisplacementAdjoint(iNode, iDim);
+          }
+        }
 
-    AD::ComputeAdjoint();
+        AD::ComputeAdjoint();
 
-    structure->ExtractSolutionAdjoint();
+        structure->ExtractSolutionAdjoint();
 
-    E_grad = input->GetGradient_E();
-    Nu_grad = input->GetGradient_Nu();
+        E_grad = input->GetGradient_E();
+        Nu_grad = input->GetGradient_Nu();
 
-    for (iLoad = 0; iLoad < nTotalDOF; iLoad++){
-        loadGradient[iLoad] = AD::GetValue(AD::GetDerivative(loadVector[iLoad]));
-    }
+        for (iLoad = 0; iLoad < nTotalDOF; iLoad++){
+            loadGradient[iLoad] = AD::GetValue(AD::GetDerivative(loadVector[iLoad]));
+        }
 
-    AD::ClearAdjoints();
+        AD::ClearAdjoints();
+
+   }
 
 }
 
