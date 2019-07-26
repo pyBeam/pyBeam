@@ -55,6 +55,8 @@ CStructure::CStructure(CInput *input, CElement **container_element, CNode **cont
 
     U   = VectorXdDiff::Zero(nNode*6);         // Whole system displacements (Cumulative)
     dU  = VectorXdDiff::Zero(nNode*6);         // Incremental system displacements
+
+    U_adj   = VectorXdDiff::Zero(nNode*6);       // Whole system displacement adjoint
     
     X  = VectorXdDiff::Zero(nNode*3);          // Current coordinates of the system
     X0 = VectorXdDiff::Zero(nNode*3);          // Initial coordinates of the system
