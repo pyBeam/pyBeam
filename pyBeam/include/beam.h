@@ -60,6 +60,10 @@ private:
 
   int nDOF, nTotalDOF, nRBE2, nDim;
   unsigned long nFEM;
+
+  unsigned long totalIter;
+  addouble initDispNorm;
+  addouble initResNorm;
   addouble *loadVector;
   addouble thickness;
  
@@ -82,10 +86,11 @@ public:
   inline void InitializeStructure(void) {structure = new CStructure(input, element, node);}
 
   void Solve(int FSIIter);
+
+  void Extend();
   
   void Debug_Print(int iElement);  
-    
-  void Restart(int FSIIter);
+
   passivedouble OF_NodeDisplacement(int iNode);
 
   void ComputeAdjoint(void);
@@ -127,6 +132,10 @@ public:
   void UpdateDisplacements(void);
 
   void StoreDisplacementAdjoint(int iNode, int iDim, passivedouble val_adj);
+
+  void SetRestart();
+
+  void RunRestart(int FSIIter);
   
   void WriteRestart();
   

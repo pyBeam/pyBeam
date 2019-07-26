@@ -243,11 +243,9 @@ class pyBeamSolverAD:
         self.displacement_Y.append(self.beam.ExtractDisplacements(jNode, 1))
         self.displacement_Z.append(self.beam.ExtractDisplacements(jNode, 2))
 
-  def Restart(self):
-      """ This function runs the restart and stores the results.
-          Needs to be run after __SetLoads """
+  def Extend(self):
 
-      self.beam.Restart(0)
+      self.beam.Extend()
 
       self.coordinate_X = []
       self.coordinate_Y = []
@@ -275,11 +273,15 @@ class pyBeamSolverAD:
           self.displacement_Z.append(self.beam.ExtractDisplacements(jNode, 2))
 
 
+  def SetRestart(self):
+
+      self.beam.SetRestart()
+
   def Restart(self):
       """ This function runs the restart and stores the results.
           Needs to be run after __SetLoads """
 
-      self.beam.Restart(0)
+      self.beam.RunRestart(0)
 
       self.coordinate_X = []
       self.coordinate_Y = []

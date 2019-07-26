@@ -45,6 +45,10 @@ CBeamSolver::CBeamSolver(void) {
     
     register_loads = false;
     objective_function = 0.0;
+
+    totalIter = 0;
+    initResNorm   =  1.0;
+    initDispNorm  =  1.0;
     
 }
 
@@ -56,11 +60,6 @@ void CBeamSolver::InitializeInput(CInput* py_input){   // insert node class and 
     
     // I'm memorizing as a member variable the object input passed from outside
     input = py_input;
-
-    if (input->GetDiscreteAdjoint()){
-        input->RegisterInput_E();
-        input->RegisterInput_Nu();
-    }
 
     input->SetParameters();
 
@@ -137,16 +136,15 @@ void CBeamSolver::Solve(int FSIIter = 0){
 
     addouble  lambda = 1.0;
     addouble dlambda =  1.0/input->Get_LoadSteps() ;
-    addouble initResNorm   =  1.0;
-    addouble initDispNorm  =  1.0;
     unsigned long iIter;
-    unsigned long totalIter = 0;
+
     unsigned long loadStep = 1;
     cout.setf(ios::fixed, ios::floatfield);
     
     // This function set the current initial coordinates and memorizes them as the old one before the converging procedure starts
     structure->InitialCoord();
 
+    totalIter = 0;
     for  ( loadStep = 0; loadStep < input->Get_LoadSteps(); loadStep++) {
 
         lambda = dlambda*(loadStep+1);
@@ -250,9 +248,9 @@ void CBeamSolver::Solve(int FSIIter = 0){
             
             if (disp_factor <= input->Get_ConvCriteria()) {
                 converged = true;
-                totalIter += iIter;
                 break;
             }
+            totalIter++;
         }
         
     }
@@ -268,8 +266,117 @@ void CBeamSolver::Solve(int FSIIter = 0){
     
 }
 
-void CBeamSolver::Restart(int FSIIter = 0){
-    
+void CBeamSolver::Extend(void){
+
+    // Beam total length
+    addouble TotalLength = 0;
+    for  ( unsigned long iFEM = 0; iFEM < nFEM; iFEM++) {
+        TotalLength += element[iFEM]->GetInitial_Length();
+    }
+
+    std::cout << "--> Setting External Forces" << std::endl;
+    structure->ReadForces(nTotalDOF, loadVector);
+
+    addouble dlambda =  1.0 ;
+    unsigned long loadStep = 1;
+    cout.setf(ios::fixed, ios::floatfield);
+
+    // This function set the current initial coordinates and memorizes them as the old one before the converging procedure starts
+    //structure->InitialCoord();
+
+    std::cout << "===========================================================================" << std::endl;
+    std::cout << "==                      ADDITIONAL ITERATION                             ==" << std::endl;
+    std::cout << "===========================================================================" << std::endl;
+
+    std::cout.width(6); std::cout << "Iter";
+    std::cout.width(17); std::cout << "Log10(Norm_Res)";
+    std::cout.width(17); std::cout << "Log10(Lin_Sol)";
+    std::cout.width(17); std::cout << "Log10(Norm_Disp)";
+    std::cout.width(17); std::cout << "Log10(Disp_Fact)" << std::endl;
+
+    std::cout.width(6); std::cout << totalIter;
+
+    structure->SetSolutionDependencies();
+
+    /*--------------------------------------------------
+    *   Updates  Fext, Residual,
+    *----------------------------------------------------*/
+
+    // Update the External Forces with the loadStep
+    structure->UpdateExtForces(1.0);
+
+    // Now only X is updated
+    structure->UpdateRotationMatrix();  // based on the rotational displacements
+    structure->UpdateLength();          // Updating length, important
+
+   /*--------------------------------------------------
+    *   Update Internal Forces
+    *----------------------------------------------------*/
+    // Now, X, R, l are updated
+    structure->UpdateInternalForces();
+
+    // Evaluate the Residual
+    structure->EvalResidual(input->Get_RigidCriteria());
+
+    std::cout.width(17); std::cout << log10(structure->Residual.norm() / initResNorm);
+
+    /*--------------------------------------------------
+     *   Assembly Ktang, Solve System
+     *----------------------------------------------------*/
+
+     // Reassembling Stiffness Matrix + Applying Boundary Conditions
+     structure->AssemblyTang(totalIter);
+
+     // Solve Linear System   K*dU = Res = Fext - Fin
+     structure->SolveLinearStaticSystem(totalIter);
+
+     std::cout.width(17); std::cout << log10(structure->dU.norm() / initDispNorm);
+
+      /*--------------------------------------------------
+       *   Updates Coordinates, Updates Rotation Matrices
+       *----------------------------------------------------*/
+
+     structure->UpdateCoord();
+
+     // Now only X is updated
+     //structure->UpdateRotationMatrix();  // based on the rotational displacements
+     //structure->UpdateLength();          // Updating length, important
+
+     /*--------------------------------------------------
+      *   Update Internal Forces
+      *----------------------------------------------------*/
+      // Now, X, R, l are updated
+      //structure->UpdateInternalForces();
+
+     /*--------------------------------------------------
+      *    Check Convergence
+      *----------------------------------------------------*/
+
+      addouble disp_factor = structure->dU.norm()/TotalLength;
+
+      UpdateDisplacements();
+
+      std::cout.width(17); std::cout << log10(disp_factor);
+      std::cout << std::endl;
+
+}
+
+void CBeamSolver::SetRestart(void){
+
+    ReadRestart();
+
+    totalIter = 1;
+
+    std::cout << "--> Initializing from restart file" << std::endl;
+    structure-> RestartCoord();
+    structure-> UpdateLength();
+    structure-> InitializeInternalForces();
+
+}
+
+
+void CBeamSolver::RunRestart(int FSIIter = 0){
+
     // Beam total length
     addouble TotalLength = 0;
     for  ( unsigned long iFEM = 0; iFEM < nFEM; iFEM++) {
@@ -303,7 +410,7 @@ void CBeamSolver::Restart(int FSIIter = 0){
     structure-> UpdateLength();
     structure-> InitializeInternalForces();
     
-        std::cout << "--> Starting Restart Sequence" << std::endl; 
+    std::cout << "--> Starting Restart Sequence" << std::endl;
     std::cout << "===========================================================================" << std::endl;
     
     std::cout.width(6); std::cout << "Iter";
@@ -399,13 +506,13 @@ void CBeamSolver::Restart(int FSIIter = 0){
         
         std::cout.width(17); std::cout << log10(disp_factor);
         std::cout << std::endl;
-        
+
         if (disp_factor <= input->Get_ConvCriteria()) {
             converged = true;
             totalIter += iIter;
             break;
         }
-    }    
+    }
     
     std::cout << "===========================================================================" << std::endl;
     std::cout << std::endl << "--> Exiting Restart Sequence." << std::endl;    
@@ -429,6 +536,9 @@ passivedouble CBeamSolver::OF_NodeDisplacement(int iNode){
 }
 
 void CBeamSolver::SetDependencies(void){
+
+    /** Register the solution as input **/
+    structure->RegisterSolutionInput();
 
     addouble E, Nu, G;
     unsigned long iFEM, iLoad;
@@ -464,6 +574,8 @@ void CBeamSolver::ComputeAdjoint(void){
     
     AD::SetDerivative(objective_function, 1.0);
 
+    structure->SetSolutionAdjoint();
+
     unsigned long iNode, iLoad;
     unsigned short iDim;
     for (iNode = 0; iNode <  input->Get_nNodes(); iNode++){
@@ -474,12 +586,16 @@ void CBeamSolver::ComputeAdjoint(void){
 
     AD::ComputeAdjoint();
 
+    structure->ExtractSolutionAdjoint();
+
     E_grad = input->GetGradient_E();
     Nu_grad = input->GetGradient_Nu();
 
     for (iLoad = 0; iLoad < nTotalDOF; iLoad++){
         loadGradient[iLoad] = AD::GetValue(AD::GetDerivative(loadVector[iLoad]));
     }
+
+    AD::ClearAdjoints();
 
 }
 
@@ -488,7 +604,7 @@ void CBeamSolver::UpdateDisplacements(void){
     unsigned long iNode;
     unsigned short iDim;
     for (iNode = 0; iNode <  input->Get_nNodes(); iNode++){
-      for (iDim =0; iDim < 3; iDim++){
+      for (iDim = 0; iDim < 3; iDim++){
          structure->SetDisplacement(iNode, iDim);
       }
     }
@@ -498,9 +614,12 @@ void CBeamSolver::UpdateDisplacements(void){
 
 void CBeamSolver::StopRecording(void) {
 
- AD::RegisterOutput(objective_function);
+  AD::RegisterOutput(objective_function);
 
-  unsigned long iNode;
+  /** Register the solution as output **/
+  structure->RegisterSolutionOutput();
+
+ unsigned long iNode;
   unsigned short iDim;
   for (iNode = 0; iNode <  input->Get_nNodes(); iNode++){
     for (iDim =0; iDim < 3; iDim++){

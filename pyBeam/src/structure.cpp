@@ -631,9 +631,17 @@ void CStructure::SolveLinearStaticSystem(int iIter)
     TapeActive = AD::globalTape.isActive();
 
     AD::StartExtFunc(false, false);
+    unsigned long index = 0;
 
-    for (unsigned long iRes; iRes < Residual.size(); iRes++)
+    for (unsigned long iRes = 0; iRes < Residual.size(); iRes++){
       AD::SetExtFuncIn(Residual(iRes));
+    }
+
+//    for (unsigned long iRes = 0; iRes < Residual.size(); iRes++){
+//      for (unsigned long jRes = 0; jRes < Residual.size(); jRes++){
+//        AD::SetExtFuncIn(Ksys(iRes, jRes));
+//      }
+//    }
 
     /*--- Stop the recording for the linear solver ---*/
 
@@ -665,12 +673,13 @@ void CStructure::SolveLinearStaticSystem(int iIter)
 
       AD::StartRecording();
 
-      for (unsigned long iRes; iRes < Residual.size(); iRes++)
+      for (unsigned long iRes = 0; iRes < Residual.size(); iRes++)
         AD::SetExtFuncOut(dU(iRes));
 
 #ifdef CODI_REVERSE_TYPE
       AD::FuncHelper->addUserData(nNode);
       AD::FuncHelper->addUserData(kind_linSol);
+//     AD::FuncHelper->addUserData(Residual);
       AD::FuncHelper->addUserData(Ksys);
 
       AD::FuncHelper->addToTape(SolveAdjSys::SolveSys);
@@ -880,7 +889,7 @@ void CStructure::UpdateCoord() {
     VectorXdDiff DX;
     DX = VectorXdDiff::Zero(nNode*3);
 
-    
+
     // Browsing all the nodes of the current segment
     for (int id_node=1-1; id_node<=nNode-1 ; id_node++) {
         
