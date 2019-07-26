@@ -224,6 +224,10 @@ class pyBeamSolver:
         self.displacement_Y.append(self.beam.ExtractDisplacements(jNode, 1))
         self.displacement_Z.append(self.beam.ExtractDisplacements(jNode, 2))
 
+  def ReadRestart(self):
+
+      self.beam.ReadRestart()
+
   def Restart(self):
       """ This function runs the restart and stores the results.
           Needs to be run after __SetLoads """

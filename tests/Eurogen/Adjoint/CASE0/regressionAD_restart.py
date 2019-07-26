@@ -31,11 +31,13 @@ from pyBeamLibAD import pyBeamSolverAD
 # Load running directory
 file_dir = os.path.dirname(os.path.realpath(__file__))
 
-beam = pyBeamSolverAD(file_dir, 'config.cfg')
+beam = pyBeamSolverAD(file_dir, 'config_AD.cfg')
 
 iNode = 21 - 1
 
-beam.SetLoads(iNode,0,0,60000)
+beam.ReadRestart()
+
+beam.SetLoads(iNode,0,0,100000)
 
 beam.StartRecording()
 

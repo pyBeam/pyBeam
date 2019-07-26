@@ -37,9 +37,9 @@ beam = pyBeamSolver(file_dir, 'config.cfg')
 
 iNode = 21 - 1
 
-beam.SetLoads(iNode,0,0,100000 )  #
+beam.SetLoads(iNode,0,0,60000)  #
 
-beam.Run()
+beam.Restart()
 
 beam.PrintDisplacements(iNode)
 

@@ -1,0 +1,76 @@
+---------------------------------------------------------------------------
+|                                                                         |
+| pyBeam, a Beam Solver (AD) - Release 0.1 (beta)                         |
+|                            - https://github.com/rsanfer/pyBeam          |
+|                                                                         |
+---------------------------------------------------------------------------
+|                                                                         |
+| Copyright 2018-2019 Rocco Bombardieri (Carlos III University Madrid)    |
+|                     Rauno Cavallaro (Carlos III University Madrid)      |
+|                     Tim Albring (SciComp, TU Kaiserslautern)            |
+|                     Ruben Sanchez (SciComp, TU Kaiserslautern)          |
+|                                                                         |
+| pyBeam is free software: you can redistribute it and/or                 |
+| modify it under the terms of the GNU Affero General Public License      |
+| as published by the Free Software Foundation, either version 3 of the   |
+| License, or (at your option) any later version.                         |
+|                                                                         |
+| pyBeam is distributed in the hope that it will be useful,               |
+| but WITHOUT ANY WARRANTY; without even the implied warranty             |
+| of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                 |
+| See the GNU Affero General Public License for more details.             |
+|                                                                         |
+| You should have received a copy of the GNU Affero                       |
+| General Public License along with pyBeam.                               |
+| If not, see <http://www.gnu.org/licenses/>.                             |
+|                                                                         |
+---------------------------------------------------------------------------
+
+FOLLOWER_FLAG is an invalid option !
+FullPivHouseholderQr
+--> Reading mesh file: /media/rocco/290CF0EB732D1122/Adjoint_project/pyBeam/tests/Eurogen/Adjoint/CASE0/mesh.msh.
+--> Reading property file: /media/rocco/290CF0EB732D1122/Adjoint_project/pyBeam/tests/Eurogen/Adjoint/CASE0/property.prt.
+--> Initialization successful
+--> Node Structure Initialization... ok!
+--> Finite Element Initialization... ok!
+--> Initialization successful
+
+---------------------------------------------------------------------------
+
+--> Setting External Forces
+--> Initializing from restart file
+--> Starting Restart Sequence
+===========================================================================
+    Iter      Log10(Res)   Log10(Lin_Sol)     Log10(Disp) Log10(Disp_Fact)
+ RESTART       -4.407628       -14.302707      -12.137314       -13.614435
+===========================================================================
+
+--> Exiting Restart Sequence.
+objective_function = 21.513333
+('Objective Function - Displacement(', 20, ') = ', 21.513332579727642)
+21.51333257972764201327
+("E', Nu' = (", -1.3508194106561384e-10, 0.0, ')')
+("F'(", 0, ') = (', 0.0, 0.0, 0.0, ')')
+("F'(", 1, ') = (', -4.3965232568651266e-08, 6.39992109e-315, 7.035617349935888e-07, ')')
+("F'(", 2, ') = (', -4.0631564810254513e-07, 2.4882338e-314, 2.7010853398175644e-06, ')')
+("F'(", 3, ') = (', -1.3229391776081944e-06, 5.2370091216e-314, 5.795575879896089e-06, ')')
+("F'(", 4, ') = (', -2.9486910663706314e-06, 8.467924304e-314, 9.774879103414054e-06, ')')
+("F'(", 5, ') = (', -5.369353595191619e-06, 1.17578549567e-313, 1.4431996328464275e-05, ')')
+("F'(", 6, ') = (', -8.615694223195114e-06, 1.4760639909e-313, 1.9578223915782073e-05, ')')
+("F'(", 7, ') = (', -1.2677340406544818e-05, 1.72868596245e-313, 2.5050375203785554e-05, ')')
+("F'(", 8, ') = (', -1.7515138001228074e-05, 1.9252493409e-313, 3.071358029492127e-05, ')')
+("F'(", 9, ') = (', -2.3071385474519763e-05, 2.0697538115e-313, 3.646107219715387e-05, ')')
+("F'(", 10, ') = (', -2.927782249529672e-05, 2.1702443202e-313, 4.221212441113755e-05, ')')
+("F'(", 11, ') = (', -3.6061535951324634e-05, 2.23514817937e-313, 4.790901793602066e-05, ')')
+("F'(", 12, ') = (', -4.3349083173437614e-05, 2.27228464464e-313, 5.3513648333068845e-05, ')')
+("F'(", 13, ') = (', -5.1069172556260223e-05, 2.28838416767e-313, 5.900416389011053e-05, ')')
+("F'(", 14, ') = (', -5.915422646498013e-05, 2.2889473591e-313, 6.437186025394974e-05, ')')
+("F'(", 15, ') = (', -6.75411087443728e-05, 2.27830293757e-313, 6.961844006807372e-05, ')')
+("F'(", 16, ') = (', -7.617124732054412e-05, 2.25976465714e-313, 7.475366865720757e-05, ')')
+("F'(", 17, ') = (', -8.499033161032307e-05, 2.23582427594e-313, 7.979340852504019e-05, ')')
+("F'(", 18, ') = (', -9.394771986866323e-05, 2.20834581654e-313, 8.47579874778728e-05, ')')
+("F'(", 19, ') = (', -0.00010299565520487267, 2.17874550586e-313, 8.967084048926269e-05, ')')
+("F'(", 20, ') = (', -0.0001120883610565058, 2.1481536927e-313, 9.455735874592986e-05, ')')
+
+
+

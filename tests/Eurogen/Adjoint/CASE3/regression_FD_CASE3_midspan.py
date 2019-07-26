@@ -40,7 +40,7 @@ def RunPrimal(node,delta, load,file):
    # Load running directory
    file_dir = os.path.dirname(os.path.realpath(__file__))
 
-   beam = pyBeamSolver(file_dir ,'config_NL_AD.cfg')
+   beam = pyBeamSolver(file_dir ,'config_NL.cfg')
 
    beam.SetLoads(        0 ,  0.00013,  0.00004 ,  0.00114 )
    beam.SetLoads(        1 ,  0.00010,  0.00003 ,  0.00122 )
