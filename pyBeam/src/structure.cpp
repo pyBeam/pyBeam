@@ -925,7 +925,7 @@ void CStructure::RestartCoord() {
     //std::cout << "-->  Update Global Coordinates "  << std::endl;
     
     /* We have the X array, we need to add the displacements referred to the pre-last displacement local reference system.
-     Thus, this operation need to eb done before the rottion matrix is updated. */
+     Thus, this operation need to be done before the rotation matrix is updated. */
     
 
     int posX = 1;    // current  position in the X array
@@ -934,6 +934,7 @@ void CStructure::RestartCoord() {
     // Browsing all the nodes of the current segment
     for (int id_node=1-1; id_node<=nNode-1 ; id_node++) {
           
+        X.segment(posX-1,3) +=  U.segment(posU-1,3);
         // Updating the node's coordinates
         for (int iDim=0; iDim < 3; iDim++) {
          node[id_node]->SetCoordinate(iDim, X(posX+iDim-1)) ;

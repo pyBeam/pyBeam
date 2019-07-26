@@ -132,10 +132,5 @@ public:
   
   void ReadRestart();
   
-  void CoordExtract(std::string line , int &nNode, double &x,double &y,double &z);
-
-  void ElemStrainExtract(std::string line , int &nElem, double &eps1, double &eps2, double &eps3, double &eps4, double &eps5, double &eps6);
-
-  void ElemRefExtract(std::string line , int &nElem, double &e11, double &e12, double &e13, double &e21, double &e22, double &e23, double &e31, double &e32, double &e33);
-
+  void UExtract(std::string line  ,int &nNode, double &Ux, double &Uy, double &Uz, double &Urx, double &Ury, double &Urz);
 };
