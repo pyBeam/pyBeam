@@ -72,6 +72,9 @@ namespace AD{
       adjointVectorPosition = 0;
       inputValues.clear();
     }
+    else{
+      globalTape.reset();
+    }
   }
 
   inline void SetExtFuncIn(const addouble &data) {AD::FuncHelper->addInput(data);}

@@ -56,7 +56,7 @@ CStructure::CStructure(CInput *input, CElement **container_element, CNode **cont
     U   = VectorXdDiff::Zero(nNode*6);         // Whole system displacements (Cumulative)
     dU  = VectorXdDiff::Zero(nNode*6);         // Incremental system displacements
 
-    U_adj   = VectorXdDiff::Zero(nNode*6);       // Whole system displacement adjoint
+    U_adj = VectorXdDiff::Zero(nNode*6);       // Whole system displacement adjoint
     
     X  = VectorXdDiff::Zero(nNode*3);          // Current coordinates of the system
     X0 = VectorXdDiff::Zero(nNode*3);          // Initial coordinates of the system
@@ -68,13 +68,8 @@ CStructure::CStructure(CInput *input, CElement **container_element, CNode **cont
           disp[iNode][iDim] = 0.0;
     }
 
-    disp_adj = new passivedouble* [nNode];            // Displacement adjoint storage
-    for (unsigned long iNode; iNode < nNode; iNode++){
-        disp_adj[iNode] = new passivedouble[3];
-        for (unsigned short iDim; iDim < 3; iDim++)
-          disp_adj[iNode][iDim] = 0.0;
-    }
-    
+    cross_term = VectorXdDiff::Zero(nNode*6);    // Displacement adjoint cross-term storage
+
     // Forces nodal Vector
     Fnom     =  VectorXdDiff::Zero(nNode*6);
     Fext     =  VectorXdDiff::Zero(nNode*6);
@@ -1068,12 +1063,45 @@ void CStructure::EvalPenaltyForces(addouble penalty)
  *
  *
  */
+void CStructure::SetCoord0()
+{
+    std::cout << "-->  Setting the Initial Coordinates "  << std::endl;
+    // Here we should refer directly to the node objects
+    X0 = VectorXdDiff::Zero(nNode*3);
+
+    int posX = 1;    // current  position in the X array
+    int count = 0;   // number of fe upstream the node
+
+    //Browse the nodes    (again this is not related to the number of fem elements)
+    for (int id_node=1-1; id_node<= nNode -1; id_node++) {
+
+        for (int iDim=0; iDim < 3; iDim++) {
+
+            // I need the old position of the nodes before the iterative procedure starts
+            node[id_node]->SetCoordinateOld(iDim, node[id_node]->GetCoordinate(iDim));
+
+            X0(posX+iDim-1) = node[id_node]->GetCoordinate0(iDim);
+        }
+
+        posX += 3;
+        count += 1;
+    }
+
+
+}
+/*
+//===================================================
+//     Initialize  Coordinates
+//===================================================
+/* This member function initialize the coordinates of the fem nodes. It should be changed to a more general function reading the grid ecc ecc
+ *
+ *
+ */
 void CStructure::InitialCoord()
 {
     //std::cout << "---------  Resetting Initial Coordinate Values "  << std::endl;
     // Here we should refer directly to the node objects
     X  = VectorXdDiff::Zero(nNode*3);
-    X0 = VectorXdDiff::Zero(nNode*3);
     
     int posX = 1;    // current  position in the X array
     int count = 0;   // number of fe upstream the node
@@ -1082,12 +1110,7 @@ void CStructure::InitialCoord()
     for (int id_node=1-1; id_node<= nNode -1; id_node++) {
 
         for (int iDim=0; iDim < 3; iDim++) {
-            
-            // I need the old position of the nodes before the iterative procedure starts           
-            node[id_node]->SetCoordinateOld(iDim, node[id_node]->GetCoordinate(iDim));
-            
-            X(posX+iDim-1) = node[id_node]->GetCoordinate(iDim);
-            X0(posX+iDim-1) = node[id_node]->GetCoordinate0(iDim);
+            X(posX+iDim-1) = node[id_node]->GetCoordinate0(iDim);
         }
         
         posX += 3;
