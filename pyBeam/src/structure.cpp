@@ -5,6 +5,7 @@
  * 
  * File developers: Rocco Bombardieri (Carlos III University Madrid)
  *                  Rauno Cavallaro (Carlos III University Madrid)
+ *                  Ruben Sanchez (TU Kaiserslautern)
  *
  * This file is part of pyBeam.
  *

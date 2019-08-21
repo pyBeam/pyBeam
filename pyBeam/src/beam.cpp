@@ -498,7 +498,7 @@ void CBeamSolver::ReadRestart(){
     string line;
 
 
-    ifstream myfile ("restart_structure.dat");
+    ifstream myfile ("solution_structure.dat");
     if (myfile.is_open()){
         getline (myfile,line); //Line of comments for Nodes
         for (int id_node=1; id_node<= input->Get_nNodes() ; id_node++)   {
@@ -509,7 +509,11 @@ void CBeamSolver::ReadRestart(){
             posX += 6;
             
         }
-    } 
+    }
+    if (myfile.fail()){
+        cout << "Error opening solution file (solution_structure.dat)." << endl;
+        exit (EXIT_FAILURE);
+    }
 }
 
 void CBeamSolver::Debug_Print(int iElement){
