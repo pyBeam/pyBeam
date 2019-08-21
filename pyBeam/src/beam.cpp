@@ -185,8 +185,7 @@ void CBeamSolver::Solve(int FSIIter = 0){
             // Evaluate the Residual
             structure->EvalResidual(input->Get_RigidCriteria());
 
-            if(iIter == 0){initResNorm = structure->Residual.norm();}
-            std::cout.width(17); std::cout << log10(structure->Residual.norm() / initResNorm);
+            std::cout.width(17); std::cout << log10(structure->Residual.norm());
 
             /*--------------------------------------------------
              *   Assembly Ktang, Solve System
@@ -210,8 +209,7 @@ void CBeamSolver::Solve(int FSIIter = 0){
               structure->SolveLinearStaticSystem(iIter);
              }
 
-            if(iIter == 0){initDispNorm = structure->dU.norm();}
-            std::cout.width(17); std::cout << log10(structure->dU.norm() / initDispNorm);
+            std::cout.width(17); std::cout << log10(structure->dU.norm());
 
             /*--------------------------------------------------
              *   Updates Coordinates, Updates Rotation Matrices
