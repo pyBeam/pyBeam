@@ -143,6 +143,10 @@ void CBeamSolver::Solve(int FSIIter = 0){
     
     // This function set the current initial coordinates and memorizes them as the old one before the converging procedure starts
     structure->InitialCoord();
+    structure->RestartCoord();
+    structure->UpdateRotationMatrix_FP();  // based on the rotational displacements
+    structure->UpdateLength();
+    structure->UpdateInternalForces_FP();
 
     totalIter = 0;
     for  ( loadStep = 0; loadStep < input->Get_LoadSteps(); loadStep++) {
@@ -189,7 +193,7 @@ void CBeamSolver::Solve(int FSIIter = 0){
              *----------------------------------------------------*/
             
             // Reassembling Stiffness Matrix + Applying Boundary Conditions
-            structure->AssemblyTang(iIter);
+            structure->AssemblyTang(1);
             
             // Solve Linear System   K*dU = Res = Fext - Fin
             if (nRBE2 != 0 and input->Get_RigidCriteria() == 0) {
