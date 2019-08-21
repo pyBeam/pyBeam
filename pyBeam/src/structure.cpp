@@ -651,7 +651,7 @@ void CStructure::SolveLinearStaticSystem(int iIter)
     case LDLT:
         dU = Ksys.ldlt().solve(Residual); break;
     default:
-        dU = Ksys.fullPivHouseholderQr().solve(Residual); break;
+        dU = Ksys.fullPivLu().solve(Residual); break;
     }
 
     if(TapeActive) {
