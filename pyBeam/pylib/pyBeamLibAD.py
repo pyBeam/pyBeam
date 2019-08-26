@@ -308,6 +308,12 @@ class pyBeamSolverAD:
       """ This function prints the sensitivities of the objective functions for the single load"""
       print("F'(",iNode,") = (", self.beam.ExtractLoadGradient(iNode,iDOF), ")")
 
+  def PrintSensitivityE(self):
+
+      """ This function prints the sensitivities of the objective functions for all the loads"""
+      print("E' = ", self.beam.ExtractGradient_E())
+
+      return self.beam.ExtractGradient_E()
                                       
   def TestSensitivities(self, iNode, tol, coorX, coorY, coorZ):                                      
   
