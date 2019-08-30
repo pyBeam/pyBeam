@@ -103,7 +103,7 @@ def main():
     if myid == rootProcess:
         print('\n***************************** Initializing SU2 **************************************')
     try:
-        FluidSolver = pysu2.CSinglezoneDriver(CFD_ConFile, 1, FSI_config['NDIM'], comm)
+        FluidSolver = pysu2.CSinglezoneDriver(CFD_ConFile, 1, comm)
     except TypeError as exception:
         print('A TypeError occured in pysu2.CSingleZoneDriver : ', exception)
         if have_MPI:
