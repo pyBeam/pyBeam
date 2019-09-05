@@ -72,7 +72,7 @@ public:
     CNode **node;        // Pointer to the first finite element
 
     addouble **disp;     // Store the displacement vector
-    passivedouble **disp_adj;     // Store the displacement vector
+    VectorXdDiff cross_term;     // Store the displacement vector
     
     MatrixXdDiff M;      // Recall in Eigen X stays for dynamic, d for addouble:  (nfem+1)*6  X   (nfem+1)*6
     MatrixXdDiff Ksys;
@@ -101,6 +101,8 @@ public:
     
     VectorXdDiff Fnom;        // Array of nominal forces
     
+    addouble YoungModulus;
+    
     CStructure(CInput *input, CElement **container_element, CNode **container_node);
     
     ~CStructure();
@@ -115,7 +117,7 @@ public:
       for (int iLoad = 0; iLoad < nTotalDOF; iLoad++){Fnom(iLoad) = loadVector[iLoad];}
     }
     
-    inline void UpdateExtForces(addouble lambda){ Fext = lambda* Fnom; }
+    inline void UpdateExtForces(addouble lambda){ Fext = lambda* Fnom / YoungModulus; }  // External forces are normalized by the Young Modulus
 
     void EvalResidual(unsigned short rigid);
 
@@ -170,6 +172,8 @@ public:
     void UpdateCoord_RBE2(int iIter);        
     
     void InitialCoord();
+
+    void SetCoord0();
     
     void UpdateLength();
     
@@ -187,16 +191,8 @@ public:
     
     void InitializeInternalForces();
     
-    addouble GetDisplacement(int pos, int index) {
-        return disp[pos][index];
-    };
-
-    inline void SetDisplacement(int iNode, int iDim) {
-        disp[iNode][iDim] = X(3*iNode+iDim) - X0(3*iNode+iDim);
-    };
-
-    inline void RegisterDisplacement(int iNode, int iDim) {
-        AD::RegisterOutput(disp[iNode][iDim]);
+    addouble GetDisplacement(int iNode, int iDim) {
+        return U(6*iNode+iDim);
     };
 
     inline void RegisterSolutionInput(void) {
@@ -217,15 +213,11 @@ public:
 
     inline void SetSolutionAdjoint(void) {
         for (unsigned long i = 0; i < nNode * 6; i++)
-          AD::SetDerivative(U(i), AD::GetValue(U_adj(i)));
+          AD::SetDerivative(U(i), AD::GetValue(U_adj(i) + cross_term(i)));
     };
 
     inline void StoreDisplacementAdjoint(int iNode, int iDim, passivedouble val_adj) {
-        disp_adj[iNode][iDim] = val_adj;
-    };
-
-    inline void SetDisplacementAdjoint(int iNode, int iDim) {
-        AD::SetDerivative(disp[iNode][iDim], AD::GetValue(disp_adj[iNode][iDim]));
+        cross_term(6*iNode+iDim) = val_adj;
     };
     
     addouble GetCoordinates(int pos, int index) {return X(3*pos+index);};

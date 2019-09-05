@@ -95,7 +95,7 @@ class pyBeamConfig:
                     self._ConfigContent[this_param] = float(this_value)
                     break
                 if case("KIND_LINSOL"):
-                    print(this_value)
+                    #print(this_value)
                     if this_value == "PartialPivLu":
                         self._ConfigContent[this_param] = 1
                         break
@@ -108,19 +108,18 @@ class pyBeamConfig:
                     elif this_value == "ColPivHouseholderQr":
                         self._ConfigContent[this_param] = 4
                         break
-                    elif this_value == "LLT":
+                    elif this_value == "FullPivHouseholderQr":
                         self._ConfigContent[this_param] = 5
                         break
-                    elif this_value == "LDLT":
+                    elif this_value == "LLT":
                         self._ConfigContent[this_param] = 6
                         break
-                    elif this_value == "FullPivHouseholderQr":
-                        self._ConfigContent[this_param] = 0
+                    elif this_value == "LDLT":
+                        self._ConfigContent[this_param] = 7
                         break
                     else:
-                        self._ConfigContent[this_param] = 0
+                        self._ConfigContent[this_param] = 2
                         break
-
                 if case("B_MESH")          :       pass
                 if case("B_PROPERTY")                 :               
                     self._ConfigContent[this_param] = this_value

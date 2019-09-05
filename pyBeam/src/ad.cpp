@@ -97,7 +97,7 @@ void SolveAdjSys::SolveSys(const codi::RealReverse::Real* x, codi::RealReverse::
     case LDLT:
       Residual_bar = Ksys_b.transpose().ldlt().solve(dU_bar); break;
     default:
-      Residual_bar = Ksys_b.transpose().fullPivHouseholderQr().solve(dU_bar); break;
+      Residual_bar = Ksys_b.transpose().fullPivLu().solve(dU_bar); break;
     }
 
     for (unsigned long i = 0; i < n; i ++) {

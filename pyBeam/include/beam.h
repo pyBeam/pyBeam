@@ -83,7 +83,7 @@ public:
   
   inline void InitializeRBE2(CRBE2* py_RBE2,unsigned long iRBE2) {RBE2[iRBE2] = py_RBE2;}
 
-  inline void InitializeStructure(void) {structure = new CStructure(input, element, node);}
+  inline void InitializeStructure(void) {structure = new CStructure(input, element, node); structure->SetCoord0();}
 
   void Solve(int FSIIter);
 
@@ -111,7 +111,7 @@ public:
 
   inline passivedouble GetInitialCoordinates(int iNode, int iDim) {return AD::GetValue(structure->node[iNode]->GetCoordinate(iDim));}
 
-  inline void StartRecording(void) { AD:: Reset(); AD::StartRecording();}
+  inline void StartRecording(void) { AD::Reset(); AD::StartRecording();}
 
   inline void RegisterThickness(void) { AD::RegisterInput(thickness);}
 
@@ -126,8 +126,6 @@ public:
   inline passivedouble ExtractGradient_Nu(void) {return Nu_grad;}
 
   inline unsigned long Get_nNodes(void) {return input->Get_nNodes();}
-
-  void UpdateDisplacements(void);
 
   void StoreDisplacementAdjoint(int iNode, int iDim, passivedouble val_adj);
 

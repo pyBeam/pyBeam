@@ -143,6 +143,10 @@ void CBeamSolver::Solve(int FSIIter = 0){
     
     // This function set the current initial coordinates and memorizes them as the old one before the converging procedure starts
     structure->InitialCoord();
+    structure->RestartCoord();
+    structure->UpdateRotationMatrix_FP();  // based on the rotational displacements
+    structure->UpdateLength();
+    structure->UpdateInternalForces_FP();
 
     totalIter = 0;
     for  ( loadStep = 0; loadStep < input->Get_LoadSteps(); loadStep++) {
@@ -181,15 +185,14 @@ void CBeamSolver::Solve(int FSIIter = 0){
             // Evaluate the Residual
             structure->EvalResidual(input->Get_RigidCriteria());
 
-            if(iIter == 0){initResNorm = structure->Residual.norm();}
-            std::cout.width(17); std::cout << log10(structure->Residual.norm() / initResNorm);
+            std::cout.width(17); std::cout << log10(structure->Residual.norm());
 
             /*--------------------------------------------------
              *   Assembly Ktang, Solve System
              *----------------------------------------------------*/
             
             // Reassembling Stiffness Matrix + Applying Boundary Conditions
-            structure->AssemblyTang(iIter);
+            structure->AssemblyTang(1);
             
             // Solve Linear System   K*dU = Res = Fext - Fin
             if (nRBE2 != 0 and input->Get_RigidCriteria() == 0) {
@@ -206,8 +209,7 @@ void CBeamSolver::Solve(int FSIIter = 0){
               structure->SolveLinearStaticSystem(iIter);
              }
 
-            if(iIter == 0){initDispNorm = structure->dU.norm();}
-            std::cout.width(17); std::cout << log10(structure->dU.norm() / initDispNorm);
+            std::cout.width(17); std::cout << log10(structure->dU.norm());
 
             /*--------------------------------------------------
              *   Updates Coordinates, Updates Rotation Matrices
@@ -241,8 +243,6 @@ void CBeamSolver::Solve(int FSIIter = 0){
              *----------------------------------------------------*/
             
             addouble disp_factor =   structure->dU.norm()/TotalLength;
-
-            UpdateDisplacements();
 
             std::cout.width(17); std::cout << log10(disp_factor);
             std::cout << std::endl;
@@ -369,8 +369,6 @@ void CBeamSolver::RunRestart(int FSIIter = 0){
 
     addouble disp_factor =   structure->dU.norm()/TotalLength;
 
-    UpdateDisplacements();
-
     std::cout.width(17); std::cout << log10(disp_factor);
     std::cout << std::endl;
 
@@ -433,19 +431,13 @@ void CBeamSolver::SetDependencies(void){
 
 void CBeamSolver::ComputeAdjoint(void){
 
+    unsigned long iLoad;
+
     for (unsigned short iTer = 0; iTer < input->Get_nIter(); iTer++){
     
         AD::SetDerivative(objective_function, 1.0);
 
         structure->SetSolutionAdjoint();
-
-        unsigned long iNode, iLoad;
-        unsigned short iDim;
-        for (iNode = 0; iNode <  input->Get_nNodes(); iNode++){
-          for (iDim =0; iDim < 3; iDim++){
-           structure->SetDisplacementAdjoint(iNode, iDim);
-          }
-        }
 
         AD::ComputeAdjoint();
 
@@ -464,19 +456,6 @@ void CBeamSolver::ComputeAdjoint(void){
 
 }
 
-void CBeamSolver::UpdateDisplacements(void){
-
-    unsigned long iNode;
-    unsigned short iDim;
-    for (iNode = 0; iNode <  input->Get_nNodes(); iNode++){
-      for (iDim = 0; iDim < 3; iDim++){
-         structure->SetDisplacement(iNode, iDim);
-      }
-    }
-
-}
-
-
 void CBeamSolver::StopRecording(void) {
 
   AD::RegisterOutput(objective_function);
@@ -484,15 +463,7 @@ void CBeamSolver::StopRecording(void) {
   /** Register the solution as output **/
   structure->RegisterSolutionOutput();
 
- unsigned long iNode;
-  unsigned short iDim;
-  for (iNode = 0; iNode <  input->Get_nNodes(); iNode++){
-    for (iDim =0; iDim < 3; iDim++){
-       structure->RegisterDisplacement(iNode, iDim);
-    }
-  }
-
- AD::StopRecording();
+  AD::StopRecording();
 
 }
 
@@ -526,8 +497,8 @@ void CBeamSolver::ReadRestart(){
     int posX = 1;    // current  position in the X array
     string line;
 
-    
-    ifstream myfile ("restart_structure.dat");
+
+    ifstream myfile ("solution_structure.dat");
     if (myfile.is_open()){
         getline (myfile,line); //Line of comments for Nodes
         for (int id_node=1; id_node<= input->Get_nNodes() ; id_node++)   {
@@ -538,7 +509,11 @@ void CBeamSolver::ReadRestart(){
             posX += 6;
             
         }
-    } 
+    }
+    if (myfile.fail()){
+        cout << "Error opening solution file (solution_structure.dat)." << endl;
+        exit (EXIT_FAILURE);
+    }
 }
 
 void CBeamSolver::Debug_Print(int iElement){

@@ -77,10 +77,11 @@ protected:
 
 	//##############    Material inputs (only ONE homogeneous material is allowed by now)  ###########################
 	// Units Sys: SI
-	addouble E; 				// Elastic modulus [GPa]  
+	addouble E; 				// Elastic modulus [GPa] 
+        addouble E_dimensional;                 // Dimensional Elastic modulus [GPa]
 	addouble Poiss; 			// Poisson Ratio
 	addouble ro;				// Beam Density [kg/m^3]
-	addouble G;				// Shear modulus                                        // To be removed
+	addouble G;				// Shear modulus                                       
 
 	//################     Convergence Parameters    ###########################
 
@@ -103,7 +104,7 @@ public:
 
   bool GetDiscreteAdjoint(void) {return discrete_adjoint; }
   
-  void SetYoungModulus(passivedouble YoungModulus) {E = YoungModulus;}
+  void SetYoungModulus(passivedouble YoungModulus) {E_dimensional = YoungModulus;}
 
   void SetPoisson(passivedouble Poisson) {Poiss = Poisson;}
 
@@ -140,6 +141,8 @@ public:
   MatrixXdDiff  GetConstrMatrix() {return Constr_matrix;};
   
   addouble GetYoungModulus() {return E; }
+  
+  addouble GetYoungModulus_dimensional() {return E_dimensional; }  
 
   addouble GetPoisson() {return Poiss; }
 

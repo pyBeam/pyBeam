@@ -75,7 +75,7 @@ class pyBeamSolver:
     print("| If not, see <http://www.gnu.org/licenses/>.                             |")
     print("|                                                                         |")
     print("---------------------------------------------------------------------------\n")
-    
+
     # Parsing config file
     self.Config = pyConfig.pyBeamConfig(self.Config_file)  # Beam configuration file
 
@@ -187,10 +187,8 @@ class pyBeamSolver:
       """ This function computes the objective function (Important to be recorded) """
       displacement = self.beam.OF_NodeDisplacement(iNode)
       print("Objective Function - Displacement(", iNode, ") = ", displacement)
-      print(str.format('{0:.20f}', displacement))
 
       return displacement
-
 
   def Run(self):
     """ This function runs the solver and stores the results.
@@ -232,7 +230,7 @@ class pyBeamSolver:
       """ This function runs the restart and stores the results.
           Needs to be run after __SetLoads """
 
-      self.beam.Restart(0)
+      self.beam.RunRestart(0)
 
       self.coordinate_X = []
       self.coordinate_Y = []
@@ -276,6 +274,22 @@ class pyBeamSolver:
                                       self.displacement_X[iVertex], 
                                       self.displacement_Y[iVertex], 
                                       self.displacement_Z[iVertex]))
+
+  def PrintPosition(self, iVertex):
+
+      """ This function prints to screen the displacements on the nodes """
+      print("--> Coord({}) : {:16.12f} {:16.12f} {:16.12f}".format(iVertex,
+                                                                   self.coordinate_X[iVertex],
+                                                                   self.coordinate_Y[iVertex],
+                                                                   self.coordinate_Z[iVertex]))
+
+  def PrintDisplacement(self, iVertex):
+
+      """ This function prints to screen the displacements on the nodes """
+      print("--> Displ({}) : {:16.12f} {:16.12f} {:16.12f}".format(iVertex,
+                                                                   self.displacement_X[iVertex],
+                                                                   self.displacement_Y[iVertex],
+                                                                   self.displacement_Z[iVertex]))
 
   def Debug_Print(self, iElement):
       """ This function prints some input information for debugging purposes """

@@ -57,7 +57,7 @@ void CInput::SetParameters(){
 	//##############    Material inputs (only ONE homogeneous material is allowed by now)  ###########################
 	// Units Sys: SI
 
-
+        E = E_dimensional/E_dimensional; 
 	G = E/(2*(1+Poiss) );	// Shear modulus
 
 }
