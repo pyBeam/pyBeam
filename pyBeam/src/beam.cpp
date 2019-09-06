@@ -473,7 +473,7 @@ void CBeamSolver::StoreDisplacementAdjoint(int iNode, int iDim, passivedouble va
 
 void CBeamSolver::WriteRestart(){
     std::ofstream myfile;
-    myfile.open ("restart_structure.dat");
+    myfile.open ("solution_structure.dat");
     int posX = 1;
     //==== Writing Nodes info
     myfile << "Node ID              "; myfile << "U 1                "; myfile << "U 2                "; myfile << "U 3                ";

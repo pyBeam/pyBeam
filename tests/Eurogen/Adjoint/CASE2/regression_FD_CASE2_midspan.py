@@ -189,7 +189,7 @@ load_tip = [[ -0.00001,  0.00002 ,  0.00141], [-0.00005,  0.00001 ,  0.00219 ], 
 
 #for node in range(0,5):
 for node in range(0,5) :
-   file = open("Sensitivity_FD_node" + str(node) + "midspan_centered.txt", "a", 0)
+   file = open("Sensitivity_FD_node" + str(node) + "midspan_centered.txt", "w+")
    file.write("node = {}\n".format(node))
 
    for i in range(len(delta)):
