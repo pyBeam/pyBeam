@@ -1,10 +1,11 @@
 /*
- * pyBeam, a Beam Solver
+ * pyBeam, an open-source Beam Solver
  *
- * Copyright (C) 2018 Tim Albring, Ruben Sanchez, Rocco Bombardieri, Rauno Cavallaro 
- * 
- * Developers: Tim Albring, Ruben Sanchez (SciComp, TU Kaiserslautern)
- *             Rocco Bombardieri, Rauno Cavallaro (Carlos III University Madrid)
+ * Copyright (C) 2019 by the authors
+ *
+ * File developers: Rocco Bombardieri (Carlos III University Madrid)
+ *                  Rauno Cavallaro (Carlos III University Madrid)
+ *                  Ruben Sanchez (SciComp, TU Kaiserslautern)
  *
  * This file is part of pyBeam.
  *
@@ -35,35 +36,28 @@ using namespace std;
 
 CInput::CInput(int py_nPoint, int py_nElem) {
 
-  nNodes = py_nPoint;
-  nFEM = py_nElem;
-  nRBE2 = 0;
-  
+    nNodes = py_nPoint;
+    nFEM = py_nElem;
+    nRBE2 = 0;
+
 }
 
 CInput::CInput(int py_nPoint, int py_nElem, int py_nRBE2) {
 
-  nNodes = py_nPoint;
-  nFEM = py_nElem;
-  nRBE2 = py_nRBE2;
-  
+    nNodes = py_nPoint;
+    nFEM   = py_nElem;
+    nRBE2  = py_nRBE2;
+
 }
 
-void CInput::SetParameters(){	
-    //##################     Numerical Inputs     ###########################
-	
-	nDOF = 6;                // To be removed
+void CInput::SetParameters(){
 
-	//##############    Material inputs (only ONE homogeneous material is allowed by now)  ###########################
-	// Units Sys: SI
-
-        E = E_dimensional/E_dimensional; 
-	G = E/(2*(1+Poiss) );	// Shear modulus
+    nDOF = 6;                // To be removed
+    E = E_dimensional/E_dimensional;
+    G = E/(2*(1+Poiss) );	// Shear modulus
 
 }
 
 CInput::~CInput(void) {
-	
+
 }
-
-

@@ -1,7 +1,7 @@
 /*
- * pyBeam, a Beam Solver
+ * pyBeam, an open-source Beam Solver
  *
- * Copyright (C) 2018 Tim Albring, Ruben Sanchez, Rocco Bombardieri, Rauno Cavallaro 
+ * Copyright (C) 2019 by the authors
  * 
  * File developers: Rocco Bombardieri (Carlos III University Madrid)
  *                  Ruben Sanchez (SciComp, TU Kaiserslautern)

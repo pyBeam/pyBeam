@@ -1,10 +1,10 @@
 /*
- * pyBeam, a Beam Solver
+ * pyBeam, an open-source Beam Solver
  *
- * Copyright (C) 2018 Tim Albring, Ruben Sanchez, Rocco Bombardieri, Rauno Cavallaro 
- * 
- * Developers: Tim Albring, Ruben Sanchez (SciComp, TU Kaiserslautern)
- *             Rocco Bombardieri, Rauno Cavallaro (Carlos III University Madrid)
+ * Copyright (C) 2019 by the authors
+ *
+ * File developers: Rocco Bombardieri (Carlos III University Madrid)
+ *                  Ruben Sanchez (SciComp, TU Kaiserslautern)
  *
  * This file is part of pyBeam.
  *
@@ -39,14 +39,14 @@ using namespace Eigen;
 CProperty::CProperty(int ID) {PropertyID = ID; }
 
 void CProperty::SetSectionProperties(passivedouble A_in, passivedouble Iyy_in, passivedouble Izz_in, passivedouble Jt_in) { 
-    
-    
-    A = A_in;  Iyy = Iyy_in; Izz = Izz_in;  J0 = Iyy + Izz;  Jt = Jt_in;
-    //cout << A << endl;
-    //cout << Iyy << endl;
-    //cout << Izz << endl;
-    //cout << J0 << endl;
-} 
+
+    A = A_in;
+    Iyy = Iyy_in;
+    Izz = Izz_in;
+    J0 = Iyy + Izz;
+    Jt = Jt_in;
+
+}
 
 
 CProperty::~CProperty(void) {};

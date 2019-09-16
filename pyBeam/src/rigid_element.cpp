@@ -1,10 +1,10 @@
 /*
- * pyBeam, a Beam Solver
+ * pyBeam, an open-source Beam Solver
  *
- * Copyright (C) 2018 Tim Albring, Ruben Sanchez, Rocco Bombardieri, Rauno Cavallaro 
- * 
- * Developers: Tim Albring, Ruben Sanchez (SciComp, TU Kaiserslautern)
- *             Rocco Bombardieri, Rauno Cavallaro (Carlos III University Madrid)
+ * Copyright (C) 2019 by the authors
+ *
+ * File developers: Rocco Bombardieri (Carlos III University Madrid)
+ *                  Rauno Cavallaro (Carlos III University Madrid)
  *
  * This file is part of pyBeam.
  *
@@ -38,9 +38,9 @@ void CRBE2::setGlobalDOFs() {
     int nodeIndexS = node_slave-> GeID();
     int i = 0;
     for (int i = 1; i <= 6; i++) {
-        // This coefficients will be used to asseble full_to_red and red_to_full vectors which have 0 expressing no relation so it is decided that DOFs will be from 1 to 6 
-        MasterDOFs(i - 1) = (nodeIndexM - 1)*6 + i; // -1;      
-        SlaveDOFs(i - 1) = (nodeIndexS - 1)*6 + i; // -1;       
+        // This coefficients will be used to asseble full_to_red and red_to_full vectors which have 0 expressing no relation so it is decided that DOFs will be from 1 to 6
+        MasterDOFs(i - 1) = (nodeIndexM - 1)*6 + i; // -1;
+        SlaveDOFs(i - 1) = (nodeIndexS - 1)*6 + i; // -1;
     };
 
 };
@@ -166,7 +166,7 @@ void CRBE2::EvalConstraintEquation(VectorXdDiff Um, VectorXdDiff Us)
     */
 }
 
- void CRBE2::EvalJacobian(VectorXdDiff Um, VectorXdDiff Us)
+void CRBE2::EvalJacobian(VectorXdDiff Um, VectorXdDiff Us)
 {
     // This residual is added not to make the formulas below indefinite
     addouble um_1 = Um(1 - 1) + pow(10, -22.0);
@@ -213,7 +213,7 @@ void CRBE2::EvalConstraintEquation(VectorXdDiff Um, VectorXdDiff Us)
 
 }
 
- void CRBE2::EvalHessian(VectorXdDiff Um, VectorXdDiff Us) {
+void CRBE2::EvalHessian(VectorXdDiff Um, VectorXdDiff Us) {
 
     addouble um_1 = Um(1 - 1) + pow(10, -22.0);
     addouble um_2 = Um(2 - 1) + pow(10, -22.0);

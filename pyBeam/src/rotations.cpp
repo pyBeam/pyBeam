@@ -1,7 +1,7 @@
 /*
- * pyBeam, a Beam Solver
+ * pyBeam, an open-source Beam Solver
  *
- * Copyright (C) 2018 Tim Albring, Ruben Sanchez, Rocco Bombardieri, Rauno Cavallaro 
+ * Copyright (C) 2019 by the authors
  * 
  * File developers: Rauno Cavallaro (Carlos III University Madrid)
  *
@@ -25,7 +25,6 @@
 
 #include "../include/rotations.h"
 
-
 /**********************************
  *
  *        RotToPseudo
@@ -34,46 +33,43 @@
 /* This routine, given a rotation matrix,
 transforms it in its pseudo-vector form */
 
-void RotToPseudo(Vector3dDiff& pseudo , Matrix3dDiff R)
-{
-	addouble theta = 0.0;               // Angle of Rotation
-	addouble rho[3] = {0.0,0.0,0.0};
+void RotToPseudo(Vector3dDiff& pseudo , Matrix3dDiff R) {
+    addouble theta = 0.0;               // Angle of Rotation
+    addouble rho[3] = {0.0,0.0,0.0};
 
-	addouble fraction = (R.trace()  - 1.0)/2.0;
+    addouble fraction = (R.trace()  - 1.0)/2.0;
 
-	if (abs(fraction) >= 1 - 5e-16)   // (FRACTION >= ONE)
-		theta = 0.0;
-	else
-		theta = acos(fraction);
+    if (abs(fraction) >= 1 - 5e-16)   // (FRACTION >= ONE)
+        theta = 0.0;
+    else
+        theta = acos(fraction);
 
-	if (theta>0.0)
-	{
-		rho[0] = R(3-1,2-1) - R(2-1,3-1);
-		rho[1] = R(1-1,3-1) - R(3-1,1-1);
-		rho[2] = R(2-1,1-1) - R(1-1,2-1);
+    if (theta>0.0) {
+        rho[0] = R(3-1,2-1) - R(2-1,3-1);
+        rho[1] = R(1-1,3-1) - R(3-1,1-1);
+        rho[2] = R(2-1,1-1) - R(1-1,2-1);
 
-		addouble norm_rho = 0.0 ;
-		
-		norm_rho = sqrt( pow(rho[0], 2.0) + 
-		                 pow(rho[1], 2.0) + 
-		                 pow(rho[2], 2.0));
+        addouble norm_rho = 0.0 ;
 
-		if (norm_rho <= 1.0e-20)
+        norm_rho = sqrt( pow(rho[0], 2.0) +
+                   pow(rho[1], 2.0) +
+                pow(rho[2], 2.0));
 
-			pseudo  = Vector3dDiff::Zero(3);
-		else
+        if (norm_rho <= 1.0e-20)
 
-			for(unsigned short iVar = 0; iVar < 3; iVar++)
-				pseudo(iVar) = theta * rho[iVar]/norm_rho;
+            pseudo  = Vector3dDiff::Zero(3);
+        else
 
-		    pseudo(2-1) = (pseudo(2-1));  // tan(pseudo(2-1));
-		    pseudo(3-1) = (pseudo(3-1));  // tan(pseudo(3-1));
+            for(unsigned short iVar = 0; iVar < 3; iVar++)
+                pseudo(iVar) = theta * rho[iVar]/norm_rho;
 
-	}
-	else
-	{
-		pseudo  = VectorXdDiff::Zero(3);
-	}
+        pseudo(2-1) = (pseudo(2-1));  // tan(pseudo(2-1));
+        pseudo(3-1) = (pseudo(3-1));  // tan(pseudo(3-1));
+
+    }
+    else {
+        pseudo  = VectorXdDiff::Zero(3);
+    }
 
 }
 
@@ -85,57 +81,44 @@ void RotToPseudo(Vector3dDiff& pseudo , Matrix3dDiff R)
 /* This routine, given a pseudo-vector,
 transforms it in its rotation matrix form */
 
-void PseudoToRot(Vector3dDiff pseudo , Matrix3dDiff& R, int print)
-{
-	//const addouble pi = 2*acos(0.0);
+void PseudoToRot(Vector3dDiff pseudo , Matrix3dDiff& R, int print) {
+    //const addouble pi = 2*acos(0.0);
 
-	Vector3dDiff rot(0.0,0.0,0.0);
+    Vector3dDiff rot(0.0,0.0,0.0);
 
     //pseudo(2-1) = ( pseudo(2-1));  // atan( pseudo(2-1));
     //pseudo(3-1) = ( pseudo(3-1));  // atan( pseudo(3-1));
 
-	addouble theta = pseudo.norm();
-        
-	if (theta != 0.0 )
-	{
-	rot = pseudo/pseudo.norm();
-	}
+    addouble theta = pseudo.norm();
 
-	Matrix3dDiff SkewRot = Matrix3dDiff::Zero(3,3);
-	SkewRot(2-1,1-1) = rot(3-1);    SkewRot(1-1,2-1) = -rot(3-1);
-	SkewRot(3-1,1-1) =-rot(2-1);    SkewRot(1-1,3-1) =  rot(2-1);
-	SkewRot(3-1,2-1) = rot(1-1);    SkewRot(2-1,3-1) = -rot(1-1);
+    if (theta != 0.0 ) {
+        rot = pseudo/pseudo.norm();
+    }
 
-	/* Rodriguez Matrix
-	 *
-	 for very small angles need to avoid divisions
-	 Using:   sinx = x - x^3/3! + x^5/5!   and
-	          cosx = 1 - x^2/2 + x^4/24  */
+    Matrix3dDiff SkewRot = Matrix3dDiff::Zero(3,3);
+    SkewRot(2-1,1-1) = rot(3-1);    SkewRot(1-1,2-1) = -rot(3-1);
+    SkewRot(3-1,1-1) =-rot(2-1);    SkewRot(1-1,3-1) =  rot(2-1);
+    SkewRot(3-1,2-1) = rot(1-1);    SkewRot(2-1,3-1) = -rot(1-1);
 
-	if (theta < 1.0e-8)
-	{
+    /* Rodriguez Matrix
+     *
+     for very small angles need to avoid divisions
+     Using:   sinx = x - x^3/3! + x^5/5!   and
+              cosx = 1 - x^2/2 + x^4/24  */
 
-		R.block(0,0,3,3) =  MatrixXdDiff::Identity(3,3) +
-				theta*(1-theta*theta/6.0 + pow(theta,4)/120.0)  * SkewRot +
-				theta*theta*(0.5 - theta*theta/24.0 ) *SkewRot*SkewRot;
+    if (theta < 1.0e-8) {
 
-	}
-	else
-	{
+        R.block(0,0,3,3) =  MatrixXdDiff::Identity(3,3) +
+                            theta*(1-theta*theta/6.0 + pow(theta,4)/120.0)  * SkewRot +
+                            theta*theta*(0.5 - theta*theta/24.0 ) *SkewRot*SkewRot;
 
-		R.block(0,0,3,3) = MatrixXdDiff::Identity(3,3) +
-				sin(theta) * SkewRot +
-				(1 - cos(theta))*SkewRot*SkewRot;
-	}
+    }
+    else {
+
+        R.block(0,0,3,3) = MatrixXdDiff::Identity(3,3) +
+                           sin(theta) * SkewRot +
+                           (1 - cos(theta))*SkewRot*SkewRot;
+    }
 
 
-        if (print ==1)
-        {
-        //std::cout << "\nTheta: " << theta << std::endl;      
-        //std::cout << "\nSkewRot: " << SkewRot << std::endl;      
-        //std::cout << "\nRot_Rodr: " << R << std::endl; 
-           
-        }
-        
-        
 }
