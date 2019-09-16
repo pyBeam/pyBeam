@@ -281,17 +281,7 @@ void CBeamSolver::RunRestart(int FSIIter = 0){
     if (nRBE2 != 0){
         std::cout << "--> Setting RBE2 Matrix for Rigid Constraints" << std::endl;
         structure->AddRBE2(input, RBE2);
-    };
-
-    addouble  lambda = 1.0;
-    addouble dlambda =  1.0/input->Get_LoadSteps() ;
-    addouble initResNorm   =  1.0;
-    addouble initDispNorm  =  1.0;
-    unsigned long iIter;
-    unsigned long totalIter = 0;
-    unsigned long loadStep = 1;
-    cout.setf(ios::fixed, ios::floatfield);
-
+    }
 
     /*--- Restart the internal forces ---*/
     std::cout << "--> Initializing from restart file" << std::endl;
@@ -304,18 +294,16 @@ void CBeamSolver::RunRestart(int FSIIter = 0){
     std::cout << "--> Starting Restart Sequence" << std::endl;
     std::cout << "===========================================================================" << std::endl;
 
+    cout.setf(ios::fixed, ios::floatfield);
     std::cout.width(8); std::cout << "Iter";
     std::cout.width(16); std::cout << "Log10(Res)";
     std::cout.width(17); std::cout << "Log10(Lin_Sol)";
     std::cout.width(16); std::cout << "Log10(Disp)";
     std::cout.width(17); std::cout << "Log10(Disp_Fact)" << std::endl;
 
-    int nIter = 1; //  input->Get_nIter()
-
     //===============================================
-    //               ITERATIVE SEQUENCE
+    //               RESTART SEQUENCE
     //===============================================
-    bool converged = false;
 
     std::cout.width(8); std::cout << "RESTART";
 
