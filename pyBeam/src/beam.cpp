@@ -257,12 +257,10 @@ void CBeamSolver::Solve(int FSIIter = 0){
     }
     
     std::cout << "===========================================================================" << std::endl;
+    std::cout << std::endl << "--> Writing Restart file (restart.pyBeam)." << std::endl;
+    WriteRestart();
     std::cout << std::endl << "--> Exiting Iterative Sequence." << std::endl;
-       
-    if (input->Get_WriteRestartFlag() ==1)
-    {
-        WriteRestart();
-    }
+
     
     
 }
@@ -476,7 +474,7 @@ void CBeamSolver::StoreDisplacementAdjoint(int iNode, int iDim, passivedouble va
 
 void CBeamSolver::WriteRestart(){
     std::ofstream myfile;
-    myfile.open ("solution_structure.dat");
+    myfile.open ("restart.pyBeam");
     int posX = 1;
     //==== Writing Nodes info
     myfile << "Node ID              "; myfile << "U 1                "; myfile << "U 2                "; myfile << "U 3                ";
@@ -500,8 +498,7 @@ void CBeamSolver::ReadRestart(){
     int posX = 1;    // current  position in the X array
     string line;
 
-
-    ifstream myfile ("solution_structure.dat");
+    ifstream myfile ("solution.pyBeam");
     if (myfile.is_open()){
         getline (myfile,line); //Line of comments for Nodes
         for (int id_node=1; id_node<= input->Get_nNodes() ; id_node++)   {
@@ -514,7 +511,7 @@ void CBeamSolver::ReadRestart(){
         }
     }
     if (myfile.fail()){
-        cout << "Error opening solution file (solution_structure.dat)." << endl;
+        cout << "Error opening solution file (solution.pyBeam)." << endl;
         exit (EXIT_FAILURE);
     }
 }
