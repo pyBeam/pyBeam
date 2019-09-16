@@ -28,7 +28,6 @@
 #include "../include/element.h"
 #include <iostream>
 
-
 CElement::CElement(int element_ID) {
 
     iElement = element_ID;
@@ -63,7 +62,8 @@ void CElement::setLength() {
     l_ini = sqrt(intermediate);
 };
 
-void CElement::Initializer(CNode* Node1, CNode* Node2, CProperty* Property, CInput* Input, passivedouble AuxVector_x, passivedouble AuxVector_y, passivedouble AuxVector_z){
+void CElement::Initializer(CNode* Node1, CNode* Node2, CProperty* Property, CInput* Input,
+                           passivedouble AuxVector_x, passivedouble AuxVector_y, passivedouble AuxVector_z){
 
     // Associate the nodes object
     SetNode_1(Node1);
@@ -161,8 +161,6 @@ void CElement::SetDependencies(void){
     Kprim(4-1,6-1) = 2*EIz/l_ini;  Kprim(6-1,4-1) = Kprim(4-1,6-1);
 
 }
-
-
 
 
 //-----------------------------------------------
