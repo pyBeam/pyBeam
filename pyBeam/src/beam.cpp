@@ -365,19 +365,17 @@ void CBeamSolver::RunRestart(int FSIIter = 0){
 }
 
 passivedouble CBeamSolver::OF_NodeDisplacement(int iNode){
-    
+
     addouble pos1, pos2, pos3;
-    
+
     pos1 = structure->GetDisplacement(iNode, 0);
     pos2 = structure->GetDisplacement(iNode, 1);
     pos3 = structure->GetDisplacement(iNode, 2);
     
     objective_function = sqrt(pow(pos1, 2.0) + pow(pos2, 2.0) + pow(pos3, 2.0));
-    
-    std::cout.width(20); std::cout << "objective_function = " << objective_function << std::endl;
-    
+
     return AD::GetValue(objective_function);
-    
+
 }
 
 void CBeamSolver::SetDependencies(void){
