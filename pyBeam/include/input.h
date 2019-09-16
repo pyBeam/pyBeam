@@ -108,11 +108,11 @@ public:
 
   void SetPoisson(passivedouble Poisson) {Poiss = Poisson;}
 
-  void RegisterInput_E(void) {AD::RegisterInput(E);}
+  void RegisterInput_E(void) {AD::RegisterInput(E_dimensional);}
 
   void RegisterInput_Nu(void) {AD::RegisterInput(Poiss);}
 
-  passivedouble GetGradient_E(void) {return AD::GetValue(AD::GetDerivative(E));}
+  passivedouble GetGradient_E(void) {return AD::GetValue(AD::GetDerivative(E_dimensional));}
 
   passivedouble GetGradient_Nu(void) {return AD::GetValue(AD::GetDerivative(Poiss));}
   

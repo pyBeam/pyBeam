@@ -399,11 +399,14 @@ void CBeamSolver::SetDependencies(void){
     /** Register the solution as input **/
     structure->RegisterSolutionInput();
 
-    addouble E, Nu, G;
+    addouble E, E_dim, Nu, G;
     unsigned long iFEM, iLoad;
 
     input->RegisterInput_E();
     input->RegisterInput_Nu();
+
+    E_dim = input->GetYoungModulus_dimensional();
+    structure->SetDimensionalYoungModulus(E_dim);
 
     E = input->GetYoungModulus();
     Nu = input->GetPoisson();
