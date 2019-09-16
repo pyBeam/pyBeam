@@ -1,10 +1,10 @@
 /*
- * pyBeam, a Beam Solver
+ * pyBeam, an open-source Beam Solver
  *
- * Copyright (C) 2018 Tim Albring, Ruben Sanchez, Rocco Bombardieri, Rauno Cavallaro 
- * 
- * Developers: Tim Albring, Ruben Sanchez (SciComp, TU Kaiserslautern)
- *             Rocco Bombardieri, Rauno Cavallaro (Carlos III University Madrid)
+ * Copyright (C) 2019 by the authors
+ *
+ * File developers: Ruben Sanchez (SciComp, TU Kaiserslautern)
+ *                  Tim Albring (SciComp, TU Kaiserslautern)
  *
  * This file is part of pyBeam.
  *
@@ -29,8 +29,6 @@
 #ifdef CODI_REVERSE_TYPE
 #include "../include/datatypes/ad_reverse.hpp"
 #include "../include/types.h"
-#elif CODI_FORWARD_TYPE
-#include "../include/datatypes/ad_forward.hpp"
 #else
 #include "../include/datatypes/ad_passive.hpp"
 #endif
@@ -69,9 +67,6 @@ void SolveAdjSys::SolveSys(const codi::RealReverse::Real* x, codi::RealReverse::
     VectorXdDiff Residual_bar;
     Residual_bar = VectorXdDiff::Zero(nNode_b*6);
 
-//    VectorXdDiff Residual;
-//    d->getData(Residual);
-
     MatrixXdDiff Ksys_b;
     d->getData(Ksys_b);
 
@@ -103,12 +98,6 @@ void SolveAdjSys::SolveSys(const codi::RealReverse::Real* x, codi::RealReverse::
     for (unsigned long i = 0; i < n; i ++) {
       x_b[i] = AD::GetValue(Residual_bar(i));
     }
-
-//    for (unsigned long i = 0; i < n; i ++) {
-//      for (unsigned long j = 0; j < n; j ++) {
-//        x_b[(i+1)*n+j] = AD::GetValue(- 1 * Residual_bar(i) * Residual(j));
-//      }
-//    }
 
 
 }
