@@ -43,8 +43,6 @@ using namespace std;
 
 #ifdef CODI_REVERSE_TYPE
 #include "./datatypes/ad_reverse.hpp"
-#elif CODI_FORWARD_TYPE
-#include "./datatypes/ad_forward.hpp"
 #else
 #include "./datatypes/ad_passive.hpp"
 #endif

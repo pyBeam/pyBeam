@@ -1,7 +1,7 @@
 /*
- * pyBeam, a Beam Solver
+ * pyBeam, an open-source Beam Solver
  *
- * Copyright (C) 2018 Tim Albring, Ruben Sanchez, Rocco Bombardieri, Rauno Cavallaro 
+ * Copyright (C) 2019 by the authors
  * 
  * File developers: Rocco Bombardieri (Carlos III University Madrid)
  *                  Ruben Sanchez (SciComp, TU Kaiserslautern)
@@ -39,16 +39,12 @@ private:
 
 protected:
 
-  unsigned long ID;  
-    
-  Vector3dDiff coord = VectorXdDiff::Zero(3);
-  
-  Vector3dDiff coordOld = VectorXdDiff::Zero(3);  
-  
-  Vector3dDiff coord0 = VectorXdDiff::Zero(3); 
-  
-  Vector3dDiff Vel = VectorXdDiff::Zero(3);
+  unsigned long ID;
 
+  Vector3dDiff coord = VectorXdDiff::Zero(3);
+  Vector3dDiff coordOld = VectorXdDiff::Zero(3);
+  Vector3dDiff coord0 = VectorXdDiff::Zero(3);
+  Vector3dDiff Vel = VectorXdDiff::Zero(3);
   Vector3dDiff Force = VectorXdDiff::Zero(3);
 
 public:
@@ -60,11 +56,11 @@ public:
   inline void SetCoordinate(int iDim, passivedouble val_coor) {AD::SetValue(coord(iDim), val_coor);}
 
   inline void SetCoordinateOld(int iDim, passivedouble val_coor) {AD::SetValue(coordOld(iDim), val_coor);}
-  
+
   inline void SetCoordinate0(int iDim, passivedouble val_coor) {AD::SetValue(coord0(iDim), val_coor);}
-  
+
   inline void SetVel(int iDim, passivedouble val_vel) {AD::SetValue(Vel(iDim), val_vel);}
-  
+
   inline void SetForce(int iDim, passivedouble val_force) {AD::SetValue(Force(iDim), val_force);}
 
 #ifdef CODI_REVERSE_TYPE
@@ -77,14 +73,14 @@ public:
   
   inline addouble GetCoordinate(int iDim) {return coord(iDim);}
 
-  inline addouble GetCoordinateOld(int iDim) {return coordOld(iDim);}  
+  inline addouble GetCoordinateOld(int iDim) {return coordOld(iDim);}
   
-  inline addouble GetCoordinate0(int iDim) {return coord0(iDim);}  
+  inline addouble GetCoordinate0(int iDim) {return coord0(iDim);}
   
   inline addouble GetVel(int iDim) {return Vel(iDim);} 
   
-  inline addouble GetForce(int iDim) {return Force(iDim);}   
+  inline addouble GetForce(int iDim) {return Force(iDim);}
   
-  inline int GeID() {return ID;}    
+  inline int GeID() {return ID;}
 
 };

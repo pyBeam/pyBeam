@@ -1,10 +1,10 @@
 /*
- * pyBeam, a Beam Solver
+ * pyBeam, an open-source Beam Solver
  *
- * Copyright (C) 2018 Tim Albring, Ruben Sanchez, Rocco Bombardieri, Rauno Cavallaro 
- * 
- * Developers: Tim Albring, Ruben Sanchez (SciComp, TU Kaiserslautern)
- *             Rocco Bombardieri, Rauno Cavallaro (Carlos III University Madrid)
+ * Copyright (C) 2019 by the authors
+ *
+ * File developers: Rocco Bombardieri (Carlos III University Madrid)
+ *                  Ruben Sanchez (SciComp, TU Kaiserslautern)
  *
  * This file is part of pyBeam.
  *
@@ -27,55 +27,41 @@
 #pragma once
 #include <math.h>
 #include <map>
-#include <stdio.h>      /* printf, fopen */
-/*We can think of using #include "./mpi_structure.hpp" and the command SU2_MPI::Error
- * once fully integrated with SU2 core
- */ 
-#include <stdlib.h>     /* exit, EXIT_FAILURE */ 
+#include <stdio.h>
+#include <stdlib.h>
 
 #include "../include/types.h"
 
 
+class CProperty{
 
-
-
-class CProperty
-{
-    
 private:
-    
+
 protected:
-    
+
     // Units Sys: SI
-    
-    
-    addouble A;				// cross section area
-    addouble Iyy, Izz;
-    addouble Jt; 				//Torsional Moment of Inertia
-    addouble J0; 				//Polar Moment of Inertia
-    unsigned long PropertyID  ;        
-    
-    
+    addouble A;                 // cross section area
+    addouble Iyy, Izz;          // Bending Moment of Inertia
+    addouble Jt;                // Torsional Moment of Inertia
+    addouble J0;                // Polar Moment of Inertia
+    unsigned long PropertyID;   // ID of the property
+
 public:
-    
-    
-    
+
     CProperty(int ID) ;
-    
+
     ~CProperty(void);
-    
-    void SetSectionProperties(passivedouble A_in, passivedouble Iyy_in, passivedouble Izz_in, passivedouble Jt_in) ; 
-    
-    addouble GetIyy(void) { return Iyy; }     
-    
-    addouble GetIzz(void) { return Izz; } 
-    
-    addouble GetA(void) { return A; }   
-    
-    addouble GetJt(void) { return Jt; }
-    
-    addouble GetJ0(void) { return J0; }  
-    
-    //Vector3dDiff GetAuxVect { return AuxVector;}
-    
+
+    void SetSectionProperties(passivedouble A_in, passivedouble Iyy_in, passivedouble Izz_in, passivedouble Jt_in) ;
+
+    inline addouble GetIyy(void) { return Iyy; }
+
+    inline addouble GetIzz(void) { return Izz; }
+
+    inline addouble GetA(void) { return A; }
+
+    inline addouble GetJt(void) { return Jt; }
+
+    inline addouble GetJ0(void) { return J0; }
+
 };

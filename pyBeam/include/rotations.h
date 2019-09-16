@@ -1,7 +1,7 @@
 /*
- * pyBeam, a Beam Solver
+ * pyBeam, an open-source Beam Solver
  *
- * Copyright (C) 2018 Tim Albring, Ruben Sanchez, Rocco Bombardieri, Rauno Cavallaro 
+ * Copyright (C) 2019 by the authors
  * 
  * File developers: Rauno Cavallaro (Carlos III University Madrid)
  *
@@ -35,7 +35,3 @@
 void RotToPseudo(Vector3dDiff& pseudo , Matrix3dDiff R);
 
 void PseudoToRot(Vector3dDiff pseudo , Matrix3dDiff& R,  int print=0);
-
-//void PseudoToRotDer(Vector3dDiff pseudo , Matrix3dDiff& dR_1, Matrix3dDiff& dR_2, Matrix3dDiff& dR_3)
-
-
