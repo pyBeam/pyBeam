@@ -1,7 +1,7 @@
 /*
- * pyBeam, a Beam Solver
+ * pyBeam, an open-source Beam Solver
  *
- * Copyright (C) 2018 Tim Albring, Ruben Sanchez, Rocco Bombardieri, Rauno Cavallaro 
+ * Copyright (C) 2019 by the authors
  *
  * File developers: Rocco Bombardieri (Carlos III University Madrid)
  *                  Rauno Cavallaro (Carlos III University Madrid)
@@ -96,13 +96,13 @@ void CBeamSolver::InitializeInput(CInput* py_input){   // insert node class and 
     //==============================================================
     //      RBE2 initialization
     //==============================================================
-    if (nRBE2 != 0){  
+    if (nRBE2 != 0){
         cout << "--> RBE2 initialization... ";
         RBE2 = new CRBE2*[nRBE2];
         std::cout << "ok!"  <<std::endl;
         std::cout << "--> Warning: the code works if slave nodes are not connected to beams! "  << std::endl;
     }
-    else {RBE2 = NULL; }     
+    else {RBE2 = NULL; }
     
     
     //===============================================
@@ -123,11 +123,11 @@ void CBeamSolver::Solve(int FSIIter = 0){
     std::cout << "--> Setting External Forces" << std::endl;
     structure->ReadForces(nTotalDOF, loadVector);
     
-    if (nRBE2 != 0){ 
+    if (nRBE2 != 0){
         std::cout << "--> Setting RBE2 Matrix for Rigid Constraints" << std::endl;
-        structure->AddRBE2(input, RBE2);        
-    };
-        
+        structure->AddRBE2(input, RBE2);
+    }
+
     //===============================================
     // LOAD STEPPING
     //===============================================
@@ -181,7 +181,7 @@ void CBeamSolver::Solve(int FSIIter = 0){
             
             // Update the External Forces with the loadStep
             structure->UpdateExtForces(lambda);
-                        
+
             // Evaluate the Residual
             structure->EvalResidual(input->Get_RigidCriteria());
 
@@ -196,18 +196,18 @@ void CBeamSolver::Solve(int FSIIter = 0){
             
             // Solve Linear System   K*dU = Res = Fext - Fin
             if (nRBE2 != 0 and input->Get_RigidCriteria() == 0) {
-              std::cout << "-->  Update KRBE matrix "  << std::endl;
-              structure->AssemblyRigidConstr();
-              structure->SolveLinearStaticSystem_RBE2(iIter);
+                std::cout << "-->  Update KRBE matrix "  << std::endl;
+                structure->AssemblyRigidConstr();
+                structure->SolveLinearStaticSystem_RBE2(iIter);
             }
             else if (nRBE2 != 0 and input->Get_RigidCriteria() == 1) {
-              std::cout << "-->  Update penalty matrix for RBEs "  << std::endl;
-              structure->AssemblyRigidPenalty(input->GetPenalty());
-              structure->SolveLinearStaticSystem_RBE2_penalty(iIter);
+                std::cout << "-->  Update penalty matrix for RBEs "  << std::endl;
+                structure->AssemblyRigidPenalty(input->GetPenalty());
+                structure->SolveLinearStaticSystem_RBE2_penalty(iIter);
             }
             else {
-              structure->SolveLinearStaticSystem(iIter);
-             }
+                structure->SolveLinearStaticSystem(iIter);
+            }
 
             std::cout.width(17); std::cout << log10(structure->dU.norm());
 
@@ -219,24 +219,24 @@ void CBeamSolver::Solve(int FSIIter = 0){
             
             // Now only X is updated
             //structure->UpdateRotationMatrix();  // based on the rotational displacements
-            structure->UpdateRotationMatrix_FP();  // based on the rotational displacements            
+            structure->UpdateRotationMatrix_FP();  // based on the rotational displacements
             structure->UpdateLength();          // Updating length, important
-                     
+
             /*--------------------------------------------------
              *   Update Internal Forces
              *----------------------------------------------------*/
             // Now, X, R, l are updated
             //structure->UpdateInternalForces();
-            structure-> UpdateInternalForces_FP();            
+            structure-> UpdateInternalForces_FP();
             /*--------------------------------------------------
              *   Update Penalty Forces
              *----------------------------------------------------*/
             
             if (nRBE2 != 0 and input->Get_RigidCriteria() == 1)
             {
-            //structure->UpdateAxvector_RBE2();
-            //structure->EvalPenaltyForces(input->GetPenalty());
-            //structure->UpdateRigidConstr(iIter); 
+                //structure->UpdateAxvector_RBE2();
+                //structure->EvalPenaltyForces(input->GetPenalty());
+                //structure->UpdateRigidConstr(iIter);
             }
             /*--------------------------------------------------
              *    Check Convergence
@@ -423,7 +423,7 @@ void CBeamSolver::ComputeAdjoint(void){
     unsigned long iLoad;
 
     for (unsigned short iTer = 0; iTer < input->Get_nIter(); iTer++){
-    
+
         AD::SetDerivative(objective_function, 1.0);
 
         structure->SetSolutionAdjoint();
@@ -441,23 +441,23 @@ void CBeamSolver::ComputeAdjoint(void){
 
         AD::ClearAdjoints();
 
-   }
+    }
 
 }
 
 void CBeamSolver::StopRecording(void) {
 
-  AD::RegisterOutput(objective_function);
+    AD::RegisterOutput(objective_function);
 
-  /** Register the solution as output **/
-  structure->RegisterSolutionOutput();
+    /** Register the solution as output **/
+    structure->RegisterSolutionOutput();
 
-  AD::StopRecording();
+    AD::StopRecording();
 
 }
 
 void CBeamSolver::StoreDisplacementAdjoint(int iNode, int iDim, passivedouble val_adj){
-   structure->StoreDisplacementAdjoint(iNode, iDim, val_adj);
+    structure->StoreDisplacementAdjoint(iNode, iDim, val_adj);
 }
 
 void CBeamSolver::WriteRestart(){
@@ -465,8 +465,10 @@ void CBeamSolver::WriteRestart(){
     myfile.open ("restart.pyBeam");
     int posX = 1;
     //==== Writing Nodes info
-    myfile << "Node ID              "; myfile << "U 1                "; myfile << "U 2                "; myfile << "U 3                ";
-    myfile << "U 4                "; myfile << "U 5                "; myfile << "U 6            //\n";          
+    myfile << "Node ID              ";
+    myfile << "U 1                "; myfile << "U 2                ";
+    myfile << "U 3                "; myfile << "U 4                ";
+    myfile << "U 5                "; myfile << "U 6            //\n";
     for (int id_node=1; id_node<= input->Get_nNodes() ; id_node++)   {
         myfile << id_node  << "           ";
         for (int iDim=0; iDim < 6; iDim++) {
@@ -482,7 +484,6 @@ void CBeamSolver::WriteRestart(){
 
 void CBeamSolver::ReadRestart(){
     int nNode; double Ux;double Uy;double Uz; double Urx;double Ury;double Urz;
-    //int nElem; double eps1; double eps2; double eps3; double eps4; double eps5; double eps6; double e11; double e12; double e13; double e21; double e22; double e23; double e31; double e32; double e33;
     int posX = 1;    // current  position in the X array
     string line;
 
@@ -490,7 +491,7 @@ void CBeamSolver::ReadRestart(){
     if (myfile.is_open()){
         getline (myfile,line); //Line of comments for Nodes
         for (int id_node=1; id_node<= input->Get_nNodes() ; id_node++)   {
-            getline (myfile,line);   
+            getline (myfile,line);
             UExtract( line , nNode, Ux, Uy, Uz, Urx, Ury, Urz);
             structure->U(posX+0-1) = Ux; structure->U(posX+1-1) = Uy; structure->U(posX+2-1) = Uz;
             structure->U(posX+3-1) = Urx; structure->U(posX+4-1) = Ury; structure->U(posX+5-1) = Urz;
@@ -507,24 +508,25 @@ void CBeamSolver::ReadRestart(){
 void CBeamSolver::Debug_Print(int iElement){
     /*
     std::cout << "For element " <<  iElement  << ":" << std::endl;
-    std::cout << "Auxiliary vector    = \n" <<  element[iElement]->aux_vector  << std::endl;        
-    std::cout << "Kprim    = \n" <<  element[iElement]->Kprim  << std::endl;    
+    std::cout << "Auxiliary vector    = \n" <<  element[iElement]->aux_vector  << std::endl;
+    std::cout << "Kprim    = \n" <<  element[iElement]->Kprim  << std::endl;
     std::cout << "Length   = " <<  element[iElement]->GetInitial_Length()  << std::endl;
-    std::cout << "Rotation matrix = " <<  element[iElement]->Rprev  << std::endl;    
+    std::cout << "Rotation matrix = " <<  element[iElement]->Rprev  << std::endl;
     std::cout << "Property: A   = " <<  element[iElement]->property->GetA()  << std::endl;
     std::cout << "Property: Iyy = " <<  element[iElement]->property->GetIyy()  << std::endl;
     std::cout << "Property: Izz = " <<  element[iElement]->property->GetIzz()  << std::endl;
-    std::cout << "Property: Jt  = " <<  element[iElement]->property->GetJt()  << std::endl;  
-    std::cout << "Input: E      = " <<  input->GetYoungModulus()  << std::endl;      
-    std::cout << "Input: ni     = " <<  input->GetPoisson()  << std::endl;    
-    std::cout << "Input: G      = " <<  input->GetShear()  << std::endl;  
-    std::cout << "Stiffness matrix:       = \n" <<  structure->Ksys.block(0,0,12,12)  << std::endl;     
+    std::cout << "Property: Jt  = " <<  element[iElement]->property->GetJt()  << std::endl;
+    std::cout << "Input: E      = " <<  input->GetYoungModulus()  << std::endl;
+    std::cout << "Input: ni     = " <<  input->GetPoisson()  << std::endl;
+    std::cout << "Input: G      = " <<  input->GetShear()  << std::endl;
+    std::cout << "Stiffness matrix:       = \n" <<  structure->Ksys.block(0,0,12,12)  << std::endl;
     */
 }
 
-void CBeamSolver::UExtract(std::string line ,int &nNode, double &Ux, double &Uy, double &Uz, double &Urx, double &Ury, double &Urz)
+void CBeamSolver::UExtract(std::string line ,int &nNode, double &Ux, double &Uy,
+                           double &Uz, double &Urx, double &Ury, double &Urz)
 {
-        std::istringstream is( line );
-        is >> nNode >> Ux >> Uy >> Uz >> Urx >> Ury >> Urz ;
+    std::istringstream is( line );
+    is >> nNode >> Ux >> Uy >> Uz >> Urx >> Ury >> Urz ;
 }
 
