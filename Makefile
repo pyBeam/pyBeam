@@ -24,8 +24,7 @@ INCLPATH_MLS =  -I$(EIGEN_PATH) -I$(ANN_PATH) -I$(IGL_PATH) $(PYBEAM_INCLUDEPY)
 LIBS_MLS = -L$(ANN_LIB) -lANN
 #==========================================================
 
-_SRC = ./pyBeam/src/main.cpp \
-       ./pyBeam/src/ad.cpp \
+_SRC = ./pyBeam/src/ad.cpp \
        ./pyBeam/src/input.cpp \
        ./pyBeam/src/geometry.cpp \
        ./pyBeam/src/element.cpp \
@@ -37,8 +36,7 @@ _SRC = ./pyBeam/src/main.cpp \
 
 _SRC_MLS = ./pyMLS/src/interface.cpp
 
-_OBJS = ./pyBeam/obj/main.o \
-        ./pyBeam/obj/ad.o \
+_OBJS = ./pyBeam/obj/ad.o \
         ./pyBeam/obj/input.o \
         ./pyBeam/obj/geometry.o \
         ./pyBeam/obj/element.o \
@@ -55,25 +53,16 @@ _OBJ_MLS = ./pyMLS/obj/interface.o \
 primal:
 	swig -c++ -python -Wall ./pyBeam/swig/pyBeam.i
 	# Compile the objects and generate the python wrapped functions
-	g++ -O2 -c -w -std=gnu++11 -DLINUX=1 -fPIC ./pyBeam/swig/pyBeam_wrap.cxx $(_SRC) $(INCLPATH)
+	g++ -O2 -c -w -std=gnu++11 -DLINUX=1 -fPIC -DSWIG_TYPE_TABLE=pyBeam ./pyBeam/swig/pyBeam_wrap.cxx $(_SRC) $(INCLPATH)
 	# Move objects
 	mv *.o ./pyBeam/obj
 	# Compile the dynamic library
 	g++ -O2 -shared -fPIC $(_OBJS) ./pyBeam/obj/pyBeam_wrap.o -o ./pyBeam/lib/_pyBeam.so  $(INCLPATH)
-
-forward:
-	swig -c++ -python -Wall ./pyBeam/swig/pyBeamFM.i
-	# Compile the objects and generate the python wrapped functions
-	g++ -O2 -c -w -std=gnu++11 -DLINUX=1 -DCODI_FORWARD_TYPE -fPIC ./pyBeam/swig/pyBeamFM_wrap.cxx $(_SRC) $(INCLPATH)
-	# Move objects
-	mv *.o ./pyBeam/obj
-	# Compile the dynamic library
-	g++ -O2 -shared -DCODI_FORWARD_TYPE -fPIC $(_OBJS) ./pyBeam/obj/pyBeamFM_wrap.o -o ./pyBeam/lib/_pyBeamFM.so  $(INCLPATH)
 	
 reverse:
 	swig -c++ -python -Wall ./pyBeam/swig/pyBeamAD.i
 	# Compile the objects and generate the python wrapped functions
-	g++ -O2 -c -w -std=gnu++11 -DLINUX=1 -DCODI_REVERSE_TYPE -fPIC ./pyBeam/swig/pyBeamAD_wrap.cxx $(_SRC) $(INCLPATH)
+	g++ -O2 -c -w -std=gnu++11 -DLINUX=1 -DCODI_REVERSE_TYPE -DSWIG_TYPE_TABLE=pyBeamAD -fPIC ./pyBeam/swig/pyBeamAD_wrap.cxx $(_SRC) $(INCLPATH)
 	# Move objects
 	mv *.o ./pyBeam/obj
 	# Compile the dynamic library
