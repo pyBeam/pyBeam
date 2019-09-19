@@ -26,13 +26,11 @@ LIBS_MLS = -L$(ANN_LIB) -lANN
 
 _SRC = ./pyBeam/src/ad.cpp \
        ./pyBeam/src/input.cpp \
-       ./pyBeam/src/geometry.cpp \
        ./pyBeam/src/element.cpp \
        ./pyBeam/src/rigid_element.cpp \
        ./pyBeam/src/structure.cpp \
        ./pyBeam/src/rotations.cpp \
-       ./pyBeam/src/beam.cpp \
-       ./pyBeam/src/property.cpp
+       ./pyBeam/src/beam.cpp
 
 _SRC_MLS = ./pyMLS/src/interface.cpp
 
