@@ -46,6 +46,7 @@ class CStructure
     
 private:
 
+    bool verbose = true;
     addouble tol_LinSol;
     unsigned short kind_linSol;
 
@@ -227,4 +228,7 @@ public:
     inline addouble GetCoordinates(int pos, int index) {return X(3*pos+index);}
 
     inline addouble GetInitialCoordinates(int pos, int index) {return X0(3*pos+index);}
+
+    inline void SetLowVerbosity(void) { verbose = false; }
+    inline void SetHighVerbosity(void) { verbose = true; }
 };

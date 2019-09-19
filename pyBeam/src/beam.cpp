@@ -80,27 +80,28 @@ void CBeamSolver::InitializeInput(CInput* py_input){   // insert node class and 
     //      Node vector initialization
     //==============================================================
     
-    cout << "--> Node Structure Initialization... ";
+    if (verbose){cout << "--> Node Structure Initialization... ";}
     unsigned long nNodes = input->Get_nNodes();   //substitute from mesh file
     node = new CNode*[nNodes];
-    std::cout << "ok!"  <<std::endl;
+    if (verbose){std::cout << "ok!"  <<std::endl;}
     
     //==============================================================
     //      Finite Element vector initialization
     //==============================================================
     
-    cout << "--> Finite Element Initialization... ";
+    if (verbose){cout << "--> Finite Element Initialization... ";}
     element = new CElement*[nFEM];
-    std::cout << "ok!"  <<std::endl;
+    if (verbose){std::cout << "ok!"  <<std::endl;}
     
     //==============================================================
     //      RBE2 initialization
     //==============================================================
     if (nRBE2 != 0){
-        cout << "--> RBE2 initialization... ";
+        if (verbose){cout << "--> RBE2 initialization... ";}
         RBE2 = new CRBE2*[nRBE2];
-        std::cout << "ok!"  <<std::endl;
-        std::cout << "--> Warning: the code works if slave nodes are not connected to beams! "  << std::endl;
+        if (verbose){std::cout << "ok!"  <<std::endl;}
+        if (verbose){std::cout << "--> Warning: the code works if slave nodes are not connected to beams! "
+                               << std::endl;}
     }
     else {RBE2 = NULL; }
     
@@ -120,11 +121,11 @@ void CBeamSolver::Solve(int FSIIter = 0){
         TotalLength += element[iFEM]->GetInitial_Length();
     }
 
-    std::cout << "--> Setting External Forces" << std::endl;
+    if (verbose){std::cout << "--> Setting External Forces" << std::endl;}
     structure->ReadForces(nTotalDOF, loadVector);
     
     if (nRBE2 != 0){
-        std::cout << "--> Setting RBE2 Matrix for Rigid Constraints" << std::endl;
+        if (verbose){std::cout << "--> Setting RBE2 Matrix for Rigid Constraints" << std::endl;}
         structure->AddRBE2(input, RBE2);
     }
 
@@ -132,7 +133,7 @@ void CBeamSolver::Solve(int FSIIter = 0){
     // LOAD STEPPING
     //===============================================
     
-    std::cout << "--> Starting Load Stepping" << std::endl << std::endl;
+    if (verbose){std::cout << "--> Starting Load Stepping" << std::endl << std::endl;}
 
     addouble  lambda = 1.0;
     addouble dlambda =  1.0/input->Get_LoadSteps() ;
@@ -152,6 +153,7 @@ void CBeamSolver::Solve(int FSIIter = 0){
     for  ( loadStep = 0; loadStep < input->Get_LoadSteps(); loadStep++) {
 
         lambda = dlambda*(loadStep+1);
+        if (verbose){
         std::cout << "===========================================================================" << std::endl;
         std::cout << "==       LOAD STEP     " << loadStep << std::endl;
         std::cout.precision(8);
@@ -163,6 +165,7 @@ void CBeamSolver::Solve(int FSIIter = 0){
         std::cout.width(17); std::cout << "Log10(Lin_Sol)";
         std::cout.width(17); std::cout << "Log10(Norm_Disp)";
         std::cout.width(17); std::cout << "Log10(Disp_Fact)" << std::endl;
+        }
         
         //===============================================
         //               ITERATIVE SEQUENCE
@@ -171,7 +174,7 @@ void CBeamSolver::Solve(int FSIIter = 0){
         
         for (iIter = 0; iIter < input->Get_nIter(); iIter++) {
 
-            std::cout.width(6); std::cout << iIter;
+            if (verbose){std::cout.width(6); std::cout << iIter;}
 
             //std::cout << "   ----- ITERATION  -----" << iIter << std::endl;
             
@@ -185,7 +188,7 @@ void CBeamSolver::Solve(int FSIIter = 0){
             // Evaluate the Residual
             structure->EvalResidual(input->Get_RigidCriteria());
 
-            std::cout.width(17); std::cout << log10(structure->Residual.norm());
+            if (verbose){std::cout.width(17); std::cout << log10(structure->Residual.norm());}
 
             /*--------------------------------------------------
              *   Assembly Ktang, Solve System
@@ -196,12 +199,12 @@ void CBeamSolver::Solve(int FSIIter = 0){
             
             // Solve Linear System   K*dU = Res = Fext - Fin
             if (nRBE2 != 0 and input->Get_RigidCriteria() == 0) {
-                std::cout << "-->  Update KRBE matrix "  << std::endl;
+                if (verbose){std::cout << "-->  Update KRBE matrix "  << std::endl;}
                 structure->AssemblyRigidConstr();
                 structure->SolveLinearStaticSystem_RBE2(iIter);
             }
             else if (nRBE2 != 0 and input->Get_RigidCriteria() == 1) {
-                std::cout << "-->  Update penalty matrix for RBEs "  << std::endl;
+                if (verbose){std::cout << "-->  Update penalty matrix for RBEs "  << std::endl;}
                 structure->AssemblyRigidPenalty(input->GetPenalty());
                 structure->SolveLinearStaticSystem_RBE2_penalty(iIter);
             }
@@ -209,7 +212,7 @@ void CBeamSolver::Solve(int FSIIter = 0){
                 structure->SolveLinearStaticSystem(iIter);
             }
 
-            std::cout.width(17); std::cout << log10(structure->dU.norm());
+            if (verbose){std::cout.width(17); std::cout << log10(structure->dU.norm());}
 
             /*--------------------------------------------------
              *   Updates Coordinates, Updates Rotation Matrices
@@ -244,8 +247,8 @@ void CBeamSolver::Solve(int FSIIter = 0){
             
             addouble disp_factor =   structure->dU.norm()/TotalLength;
 
-            std::cout.width(17); std::cout << log10(disp_factor);
-            std::cout << std::endl;
+            if (verbose){std::cout.width(17); std::cout << log10(disp_factor);}
+            if (verbose){std::cout << std::endl;}
             
             if (disp_factor <= input->Get_ConvCriteria()) {
                 converged = true;
@@ -256,10 +259,12 @@ void CBeamSolver::Solve(int FSIIter = 0){
         
     }
     
+    if (verbose){
     std::cout << "===========================================================================" << std::endl;
     std::cout << std::endl << "--> Writing Restart file (restart.pyBeam)." << std::endl;
+    }
     WriteRestart();
-    std::cout << std::endl << "--> Exiting Iterative Sequence." << std::endl;
+    if (verbose){std::cout << std::endl << "--> Exiting Iterative Sequence." << std::endl;}
 
     
     
@@ -275,22 +280,23 @@ void CBeamSolver::RunRestart(int FSIIter = 0){
         TotalLength += element[iFEM]->GetInitial_Length();
     }
 
-    std::cout << "--> Setting External Forces" << std::endl;
+    if (verbose){std::cout << "--> Setting External Forces" << std::endl;}
     structure->ReadForces(nTotalDOF, loadVector);
 
     if (nRBE2 != 0){
-        std::cout << "--> Setting RBE2 Matrix for Rigid Constraints" << std::endl;
+        if (verbose){std::cout << "--> Setting RBE2 Matrix for Rigid Constraints" << std::endl;}
         structure->AddRBE2(input, RBE2);
     }
 
     /*--- Restart the internal forces ---*/
-    std::cout << "--> Initializing from restart file" << std::endl;
+    if (verbose){std::cout << "--> Initializing from restart file" << std::endl;}
     structure->InitialCoord();
     structure->RestartCoord();
     structure->UpdateLength();
     structure->UpdateRotationMatrix_FP();  // based on the rotational displacements
     structure->UpdateInternalForces_FP();
 
+    if (verbose){
     std::cout << "--> Starting Restart Sequence" << std::endl;
     std::cout << "===========================================================================" << std::endl;
 
@@ -300,12 +306,13 @@ void CBeamSolver::RunRestart(int FSIIter = 0){
     std::cout.width(17); std::cout << "Log10(Lin_Sol)";
     std::cout.width(16); std::cout << "Log10(Disp)";
     std::cout.width(17); std::cout << "Log10(Disp_Fact)" << std::endl;
+    }
 
     //===============================================
     //               RESTART SEQUENCE
     //===============================================
 
-    std::cout.width(8); std::cout << "RESTART";
+    if (verbose){std::cout.width(8); std::cout << "RESTART";}
 
     /*--------------------------------------------------
     *   Updates  Fext, Residual,
@@ -317,7 +324,7 @@ void CBeamSolver::RunRestart(int FSIIter = 0){
     // Evaluate the Residual
     structure->EvalResidual(input->Get_RigidCriteria());
 
-    std::cout.width(16); std::cout << log10(structure->Residual.norm());
+    if (verbose){std::cout.width(16); std::cout << log10(structure->Residual.norm());}
 
     /*--------------------------------------------------
     *   Assembly Ktang, Solve System
@@ -328,12 +335,12 @@ void CBeamSolver::RunRestart(int FSIIter = 0){
 
     // Solve Linear System   K*dU = Res = Fext - Fin
     if (nRBE2 != 0 and input->Get_RigidCriteria() == 0) {
-        std::cout << "-->  Update KRBE matrix "  << std::endl;
+        if (verbose){std::cout << "-->  Update KRBE matrix "  << std::endl;}
         structure->AssemblyRigidConstr();
         structure->SolveLinearStaticSystem_RBE2(1);
     }
     else if (nRBE2 != 0 and input->Get_RigidCriteria() == 1) {
-        std::cout << "-->  Update penalty matrix for RBEs "  << std::endl;
+        if (verbose){std::cout << "-->  Update penalty matrix for RBEs "  << std::endl;}
         structure->AssemblyRigidPenalty(input->GetPenalty());
         structure->SolveLinearStaticSystem_RBE2_penalty(1);
     }
@@ -341,7 +348,7 @@ void CBeamSolver::RunRestart(int FSIIter = 0){
         structure->SolveLinearStaticSystem(1);
     }
 
-    std::cout.width(16); std::cout << log10(structure->dU.norm());
+    if (verbose){std::cout.width(16); std::cout << log10(structure->dU.norm());}
 
     /*--------------------------------------------------
     *   Updates Coordinates, Updates Rotation Matrices
@@ -355,12 +362,14 @@ void CBeamSolver::RunRestart(int FSIIter = 0){
 
     addouble disp_factor =   structure->dU.norm()/TotalLength;
 
+    if (verbose){
     std::cout.width(17); std::cout << log10(disp_factor);
     std::cout << std::endl;
 
 
     std::cout << "===========================================================================" << std::endl;
     std::cout << std::endl << "--> Exiting Restart Sequence." << std::endl;
+    }
     
 }
 

@@ -47,6 +47,8 @@ private:
     passivedouble *loadGradient;
     passivedouble E_grad, Nu_grad;
 
+    bool verbose = true;
+
     CNode **node;                         /*!< \brief Vector which stores the node initial coordinates. */
     //CConnectivity **connectivity;       /*!< \brief Vector which stores the connectivity. */
 
@@ -145,4 +147,7 @@ public:
 
     void UExtract(std::string line ,int &nNode, double &Ux, double &Uy,
                   double &Uz, double &Urx, double &Ury, double &Urz);
+
+    inline void SetLowVerbosity(void) { verbose = false; structure->SetLowVerbosity();}
+    inline void SetHighVerbosity(void) { verbose = true; structure->SetLowVerbosity();}
 };

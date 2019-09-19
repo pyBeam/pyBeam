@@ -310,9 +310,13 @@ class pyBeamSolver:
       print("--> TEST FAILED")           
       return(1)
 
+  def SetLowVerbosity(self):
 
+      self.beam.SetLowVerbosity()
 
+  def SetHighVerbosity(self):
 
+      self.beam.SetHighVerbosity()
 
 
 

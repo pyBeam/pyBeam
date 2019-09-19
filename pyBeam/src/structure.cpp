@@ -669,7 +669,7 @@ void CStructure::SolveLinearStaticSystem(int iIter) {
 
     addouble relative_error = (Ksys*dU -Residual).norm() / Residual.norm(); // norm() is L2 norm
 
-    std::cout.width(17); std::cout << log10(relative_error);
+    if (verbose){std::cout.width(17); std::cout << log10(relative_error);}
 
     if (relative_error > tol_LinSol)
     {
@@ -701,7 +701,7 @@ void CStructure::SolveLinearStaticSystem_RBE2(int iIter)
     Ksys_red = KRBE.transpose()*Ksys*KRBE - KRBE_ext;
     //    cout << "Ksys_red = \n" <<Ksys_red << endl;
     Residual_red = KRBE.transpose()* Residual;
-    std::cout << "-->  Solving Linear System, "  << std::endl;
+    if (verbose){std::cout << "-->  Solving Linear System, "  << std::endl;}
     
     //    std::cout << "Residual red = \n" << Residual_red << endl;
     

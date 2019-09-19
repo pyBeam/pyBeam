@@ -208,7 +208,6 @@ class pyBeamSolverAD:
     """ This function computes the objective function (Important to be recorded) """
     displacement = self.beam.OF_NodeDisplacement(iNode)
     print("Objective Function - Displacement(", iNode, ") = ", displacement)
-    print(str.format('{0:.20f}', displacement))
 
     return displacement
 
@@ -351,7 +350,13 @@ class pyBeamSolverAD:
 
     return dispX, dispY, dispZ
 
+  def SetLowVerbosity(self):
 
+      self.beam.SetLowVerbosity()
+
+  def SetHighVerbosity(self):
+
+      self.beam.SetHighVerbosity()
 
 
 
