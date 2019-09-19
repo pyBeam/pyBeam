@@ -64,3 +64,5 @@ tests/regression/config.cfg~
 tests/regression/mesh2.msh~
 
 **/restart.pyBeam
+**/build
+lib
