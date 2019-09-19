@@ -256,7 +256,7 @@ class pyBeamSolver:
           self.displacement_Y.append(self.beam.ExtractDisplacements(jNode, 1))
           self.displacement_Z.append(self.beam.ExtractDisplacements(jNode, 2))
 
-  def PrintDisplacements(self, iVertex):
+  def PrintSolution(self, iVertex):
     
     """ This function prints to screen the displacements on the nodes """
     print("\n--> Coord0({}): {:16.12f} {:16.12f} {:16.12f}".format(iVertex, 

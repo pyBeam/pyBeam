@@ -42,7 +42,7 @@ iNode = 20
 primal = pyBeamSolver(file_dir, 'config.pyBeam')
 primal.SetLoads(iNode, 0, -1000, 20000)
 primal.Run()
-posX, posY, posZ = primal.PrintDisplacements(iNode)
+posX, posY, posZ = primal.PrintSolution(iNode)
 primal.ComputeObjectiveFunction(iNode)
 
 # Move restart file into solution file before running FD
