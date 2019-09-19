@@ -7,14 +7,24 @@ project('pyBeam', 'cpp',
 
 pymod = import('python')
 python = pymod.find_installation()
+python_dep = dependency('python3')
 
 # check for swig
 swig = find_program('swig')
+swig_gen = generator(
+    swig,
+    output: ['@BASENAME@.cxx'],
+    arguments: [ '-c++', '-python', '-outdir', meson.current_build_dir(), '-o', './@OUTPUT@', '@INPUT@'],
+    depfile: '@BASENAME@.d',
+)
+
+eigen_dep = [declare_dependency(include_directories: './pyBeam/externals/Eigen')]
 
 pyBeam_cpp_args = []
 pyBeam_deps     = []
 
 # compile common library
+subdir('pyMLS/externals/ann')
 subdir('pyMLS')
 subdir('pyBeam')
 
