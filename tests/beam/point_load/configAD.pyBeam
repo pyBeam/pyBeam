@@ -1,14 +1,11 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                              %
-% BEAM configuration file                                                      %
-% Case description: validation example                                         %
-% Author: _Rocco Bombardieri ________________________________________________  %
-% Institution: _UC3M_________________________________________________________  %
-% Date: _01/02/19_                                                             %
-% File Version                                                %
+% pyBeam configuration file                                                    %
+% Case description: point load - primal                                        %
+% Author:_Rocco Bombardieri, Ruben Sanchez___________________________________  %
+% Institution: UC3M, TU KL___________________________________________________  %
 %                                                                              %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 
 % Young modulus [GPa]
 Y_MODULUS = 70000000000
