@@ -27,4 +27,5 @@ pyBeam_deps     = []
 subdir('pyMLS/externals/ann')
 subdir('pyMLS')
 subdir('pyBeam')
+subdir('pyBeam/pylib')
 
