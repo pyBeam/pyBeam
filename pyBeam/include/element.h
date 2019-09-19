@@ -86,7 +86,7 @@ private:
 public:
     
     // In the constructor we assign to the element its nodes and properties
-    CElement(int element_ID) ; 
+    CElement(int element_ID);
     
     ~CElement(void);
 

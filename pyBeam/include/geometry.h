@@ -49,27 +49,22 @@ protected:
 
 public:
 
-  CNode( int id);
+  CNode( int id) { ID = id; }
 
-  ~CNode(void);
+  ~CNode(void) { }
 
-  inline void SetCoordinate(int iDim, passivedouble val_coor) {AD::SetValue(coord(iDim), val_coor);}
-
-  inline void SetCoordinateOld(int iDim, passivedouble val_coor) {AD::SetValue(coordOld(iDim), val_coor);}
-
-  inline void SetCoordinate0(int iDim, passivedouble val_coor) {AD::SetValue(coord0(iDim), val_coor);}
+  inline void InitCoordinate(int iDim, passivedouble val_coor) {AD::SetValue(coord(iDim), val_coor);
+                                                                AD::SetValue(coord0(iDim), val_coor);}
 
   inline void SetVel(int iDim, passivedouble val_vel) {AD::SetValue(Vel(iDim), val_vel);}
 
   inline void SetForce(int iDim, passivedouble val_force) {AD::SetValue(Force(iDim), val_force);}
 
-#ifdef CODI_REVERSE_TYPE
   inline void SetCoordinate(int iDim, addouble val_coor) {coord(iDim) = val_coor;}
 
   inline void SetCoordinateOld(int iDim, addouble val_coor) {coordOld(iDim) = val_coor;}
 
   inline void SetCoordinate0(int iDim, addouble val_coor) {coord0(iDim) = val_coor;}
-#endif
   
   inline addouble GetCoordinate(int iDim) {return coord(iDim);}
 

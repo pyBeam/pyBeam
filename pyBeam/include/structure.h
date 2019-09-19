@@ -72,10 +72,8 @@ public:
     CElement **element;         // Pointer to the first finite element
     CNode **node;               // Pointer to the first finite element
 
-    addouble **disp;            // Store the displacement vector
     VectorXdDiff cross_term;    // Store the displacement vector
     
-    MatrixXdDiff M;              // Recall in Eigen X stays for dynamic, d for addouble:  (nfem+1)*6  X   (nfem+1)*6
     MatrixXdDiff Ksys;
     MatrixXdDiff Ksys_red;      // [relative to masters in case of RBE2]
     MatrixXdDiff K_penal;       // penalty matrix for rigid elements

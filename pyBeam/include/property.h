@@ -48,11 +48,18 @@ protected:
 
 public:
 
-    CProperty(int ID) ;
+    CProperty(int ID) {PropertyID = ID; }
 
-    ~CProperty(void);
+    ~CProperty(void){}
 
-    void SetSectionProperties(passivedouble A_in, passivedouble Iyy_in, passivedouble Izz_in, passivedouble Jt_in) ;
+    inline void SetSectionProperties(passivedouble A_in, passivedouble Iyy_in,
+                                     passivedouble Izz_in, passivedouble Jt_in) {
+        A = A_in;
+        Iyy = Iyy_in;
+        Izz = Izz_in;
+        J0 = Iyy + Izz;
+        Jt = Jt_in;
+    }
 
     inline addouble GetIyy(void) { return Iyy; }
 
