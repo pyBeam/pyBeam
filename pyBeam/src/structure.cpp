@@ -31,6 +31,11 @@
 CStructure::CStructure(CInput *input, CElement **container_element, CNode **container_node)
 {
 
+    // Initialize the pointers
+    RBE2    = nullptr;
+    element = nullptr;
+    node    = nullptr;
+
     tol_LinSol = input->GetTolerance_LinSol();
     kind_linSol = input->GetKind_LinSol();
 
@@ -39,8 +44,7 @@ CStructure::CStructure(CInput *input, CElement **container_element, CNode **cont
     // Links to the finite-element object
     element = container_element;
     node = container_node;
-    
-    // Resizes and zeros the M matrices
+
     nNode = input->Get_nNodes();
     nfem = input->Get_nFEM();
     
@@ -52,9 +56,7 @@ CStructure::CStructure(CInput *input, CElement **container_element, CNode **cont
     // Resizes and zeros the K matrices
     Ksys.resize(nNode*6,nNode*6);
     Ksys = MatrixXdDiff::Zero(nNode*6,nNode*6);
-    
-    M.resize(nNode*6,nNode*6);
-    M = MatrixXdDiff::Zero(nNode*6,nNode*6);
+
 
     U   = VectorXdDiff::Zero(nNode*6);         // Whole system displacements (Cumulative)
     dU  = VectorXdDiff::Zero(nNode*6);         // Incremental system displacements
@@ -64,12 +66,6 @@ CStructure::CStructure(CInput *input, CElement **container_element, CNode **cont
     X  = VectorXdDiff::Zero(nNode*3);          // Current coordinates of the system
     X0 = VectorXdDiff::Zero(nNode*3);          // Initial coordinates of the system
 
-    disp = new addouble* [nNode];                // Displacement storage
-    for (unsigned long iNode; iNode < nNode; iNode++){
-        disp[iNode] = new addouble[3];
-        for (unsigned short iDim; iDim < 3; iDim++)
-            disp[iNode][iDim] = 0.0;
-    }
 
     cross_term = VectorXdDiff::Zero(nNode*6);    // Displacement adjoint cross-term storage
 
@@ -84,7 +80,18 @@ CStructure::CStructure(CInput *input, CElement **container_element, CNode **cont
 
 CStructure::~CStructure(void)
 {
-    
+    if (RBE2 != nullptr) delete [] RBE2;  // Pointer to the first RBE2 element
+    if (element != nullptr){
+        for (int iElem = 0; iElem < nfem; iElem++)
+            if (element[iElem] != nullptr) delete [] element[iElem];
+        delete [] element;
+    }
+    if (node != nullptr){
+        for (int iNode = 0; iNode < nNode; iNode++)
+            if (node[iNode] != nullptr) delete [] node[iNode];
+        delete [] node;
+    }
+
 }
 //===================================================
 //      Assembly RBE2 rigid constraint matrix

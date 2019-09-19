@@ -35,9 +35,16 @@ CElement::CElement(int element_ID) {
     GlobalDOFs = VectorXdDiff::Zero(12);  // Global DOFs
     aux_vector = Vector3dDiff::Zero(3);   // Vector that orientates the section of the beam
 
+    nodeA = nullptr;
+    nodeB= nullptr;
+    elprop = nullptr;
+    input = nullptr;
+
 };
 
-CElement::~CElement(void) {};
+CElement::~CElement(void) {
+
+};
 
 void CElement::setGlobalDOFs(){
 

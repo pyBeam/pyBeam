@@ -24,8 +24,6 @@
  *
  */
 
-#pragma once
-
 #ifdef CODI_REVERSE_TYPE
 #include "../include/datatypes/ad_reverse.hpp"
 #include "../include/types.h"

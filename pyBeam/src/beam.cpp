@@ -53,7 +53,7 @@ CBeamSolver::CBeamSolver(void) {
 }
 
 CBeamSolver::~CBeamSolver(void) {
-    
+
 }
 
 void CBeamSolver::InitializeInput(CInput* py_input){   // insert node class and connectivity
