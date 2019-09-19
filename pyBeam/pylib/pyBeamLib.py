@@ -107,8 +107,7 @@ class pyBeamSolver:
     for i in range(self.nPoint):
         self.node.append(pyBeam.CNode(self.node_py[i].GetID()))
         for j in range(self.nDim):
-            self.node[i].SetCoordinate(j, float(self.node_py[i].GetCoord()[j][0]))
-            self.node[i].SetCoordinate0(j, float(self.node_py[i].GetCoord0()[j][0]))
+            self.node[i].InitCoordinate(j, float(self.node_py[i].GetCoord()[j][0]))
         self.beam.InitializeNode(self.node[i], i)
 
     # Assigning property values to the property objects in C++
