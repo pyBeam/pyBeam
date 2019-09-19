@@ -62,3 +62,5 @@ tests/Bug_pyBeam130690
 tests/Bug_pyBeam130690_local_system_updated
 tests/regression/config.cfg~
 tests/regression/mesh2.msh~
+
+**/restart.pyBeam
