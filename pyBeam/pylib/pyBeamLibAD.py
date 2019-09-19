@@ -303,10 +303,17 @@ class pyBeamSolverAD:
     for iNode in range(0,self.nPoint):
        print("F'(",iNode,") = (", self.beam.ExtractLoadGradient(iNode,0), self.beam.ExtractLoadGradient(iNode,1), self.beam.ExtractLoadGradient(iNode,2), ")")
 
-  def PrintSensitivitiesSingleLoad(self, iNode, iDOF):
+  def PrintSensitivityLoad(self, iNode):
 
       """ This function prints the sensitivities of the objective functions for the single load"""
-      print("F'(",iNode,") = (", self.beam.ExtractLoadGradient(iNode,iDOF), ")")
+
+      sensX = self.beam.ExtractLoadGradient(iNode,0)
+      sensY = self.beam.ExtractLoadGradient(iNode,1)
+      sensZ = self.beam.ExtractLoadGradient(iNode,2)
+
+      print("F'(",iNode,") = (", sensX, sensY, sensZ, ")")
+
+      return sensX, sensY, sensZ
 
   def PrintSensitivityE(self):
 
@@ -315,21 +322,32 @@ class pyBeamSolverAD:
 
       return self.beam.ExtractGradient_E()
 
-  def TestSensitivities(self, iNode, tol, coorX, coorY, coorZ):
+  def TestSensitivityE(self, sensEres, sensECheck):
 
-      delta_gradient_x = self.beam.ExtractLoadGradient(iNode,0) + coorX
-      delta_gradient_y = self.beam.ExtractLoadGradient(iNode,1) + coorY
-      delta_gradient_z = self.beam.ExtractLoadGradient(iNode,2) + coorZ
+      """ This function prints the sensitivities of the objective functions for all the loads"""
 
-      test_val = np.sqrt(delta_gradient_x**2 + delta_gradient_y**2 + delta_gradient_z**2)
+      test_val = 100*abs((sensEres - sensECheck)/sensECheck)
+
+      # Tolerance is set to 0.0001%
+      if (test_val < 0.0001):
+          print("--> Test E sensitivity: Error to reference {:9.5f}% (< 0.0001%) -> PASSED".format(test_val))
+          return (0)
+      else:
+          print("--> Test E sensitivity: Error to reference {:9.5f}% (> 0.0001%) -> FAILED".format(test_val))
+          return (1)
+
+  def TestLoadSensitivity(self, iNode, sensX, sensY, sensZ, sensX_FD, sensY_FD, sensZ_FD):
+
+      errorX = 100 * abs((sensX - sensX_FD) / sensX_FD)
+      errorY = 100 * abs((sensY - sensY_FD) / sensY_FD)
+      errorZ = 100 * abs((sensZ - sensZ_FD) / sensZ_FD)
 
     # Tolerance is set to 1E-8
-      if (test_val < tol):
-        print("--> Tolerance: {:16.12E} (< {:16.12E})".format(test_val, tol))
+      if errorX < 0.5 and errorY < 0.5 and errorZ < 0.5:
+        print("--> Test Load sensitivity: Error to FD below 0.5% -> PASSED")
         return(0)
       else:
-        print("--> Tolerance: {:16.12E} (> {:16.12E})".format(test_val, tol))
-        print("--> TEST FAILED")
+        print("--> Test Load sensitivity: Error to FD above 0.5% -> FAILED")
         return(1)
 
   def GetInitialCoordinates(self,iVertex):

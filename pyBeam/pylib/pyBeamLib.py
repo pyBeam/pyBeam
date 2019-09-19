@@ -274,6 +274,8 @@ class pyBeamSolver:
                                       self.displacement_Y[iVertex], 
                                       self.displacement_Z[iVertex]))
 
+    return self.coordinate_X[iVertex], self.coordinate_Y[iVertex], self.coordinate_Z[iVertex]
+
   def PrintPosition(self, iVertex):
 
       """ This function prints to screen the displacements on the nodes """
@@ -295,19 +297,17 @@ class pyBeamSolver:
       self.beam.Debug_Print(iElement)
 
 
-  def TestNodePosition(self, iVertex, tol, coorX, coorY, coorZ):
+  def TestNodePosition(self, coorX, coorY, coorZ, coorX_ref, coorY_ref, coorZ_ref, tol):
     
-    test_val = np.sqrt((self.coordinate_X[20]-coorX)**2+
-                       (self.coordinate_Y[20]-coorY)**2+
-                       (self.coordinate_Z[20]-coorZ)**2)
-    
-    # Tolerance is set to 1E-8
+    test_val = np.sqrt((coorX-coorX_ref)**2+
+                       (coorY-coorY_ref)**2+
+                       (coorZ-coorZ_ref)**2)
+
     if (test_val < tol):
-      print("--> Tolerance: {:16.12E} (< {:16.12E})".format(test_val, tol))
+      print("--> Test node position differs {:16.12E} from reference (< {:16.12E}) -> PASSED".format(test_val, tol))
       return(0)
     else:
-      print("--> Tolerance: {:16.12E} (> {:16.12E})".format(test_val, tol))      
-      print("--> TEST FAILED")           
+      print("--> Test node position differs {:16.12E} from reference (> {:16.12E}) -> FAILED".format(test_val, tol))
       return(1)
 
   def SetLowVerbosity(self):
