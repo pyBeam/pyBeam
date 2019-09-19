@@ -1,5 +1,6 @@
 install_data(['pyBeamLib.py',
-              'pyBeamLibAD.py'], 
+              'pyBeamLibAD.py',
+              'pyBeamInterface.py'],
               install_dir: join_paths(get_option('libdir')))
 
 install_data(['pyBeamIO/pyBeamConfig.py',

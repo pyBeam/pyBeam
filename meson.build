@@ -26,6 +26,7 @@ pyBeam_deps     = []
 # compile common library
 subdir('pyMLS/externals/ann')
 subdir('pyMLS')
+subdir('pyMLS/pylib')
 subdir('pyBeam')
 subdir('pyBeam/pylib')
 
