@@ -2,7 +2,7 @@
 #
 # pyBeam, an open-source Beam Solver
 #
-# Copyright (C) 2018 by the authors
+# Copyright (C) 2019 by the authors
 # 
 # File developers: Ruben Sanchez (SciComp, TU Kaiserslautern)
 #
