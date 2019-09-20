@@ -27,6 +27,8 @@ env:
         - CONFIGURE_COMMAND="meson build --prefix=$PWD"
           MAKE_COMMAND="ninja -j4 -C build install"
           TEST_BEAM=$TRAVIS_BUILD_DIR/tests/beam/point_load/run.py
+          TEST_ONERA=$TRAVIS_BUILD_DIR/tests/oneram6/fluid_load/run.py
+          TEST_ONERA_ADJ=$TRAVIS_BUILD_DIR/tests/oneram6/adjoint_flow/run.py
 
 before_install:
     # Temporarily fixes Travis CI issue with paths for Python packages
@@ -68,3 +70,5 @@ install:
 script: 
     # Run the tests via the Python scripts
     - python $TEST_BEAM  
+    - python $TEST_ONERA
+    - python $TEST_ONERA_ADJ
