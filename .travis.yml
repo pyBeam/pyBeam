@@ -12,12 +12,12 @@ compiler:
 notifications:
     email:
         recipients:
-            #- bombardierirocco@gmail.com
+            - bombardierirocco@gmail.com
             - ruben.sanchez@scicomp.uni-kl.de
   
 branches:
     only:
-        - feature_release_0.1
+        - develop
 
 env:
     global:
