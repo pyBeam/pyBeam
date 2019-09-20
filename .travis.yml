@@ -12,12 +12,12 @@ compiler:
 notifications:
     email:
         recipients:
-            #- bombardierirocco@gmail.com
+            - bombardierirocco@gmail.com
             - ruben.sanchez@scicomp.uni-kl.de
   
 branches:
     only:
-        - feature_release_0.1
+        - develop
 
 env:
     global:
@@ -52,13 +52,7 @@ before_install:
 
 install:
     # Configure, make, and install pyBeam
-    - echo $TRAVIS_BUILD_DIR
-    - echo $CONFIGURE_COMMAND
-    - echo $PYTHON_INCLUDE
-    - echo $PATH
     - $CONFIGURE_COMMAND
-    - ls -ll
-    - ls -ll ./ninja
     - $MAKE_COMMAND
 
     # Add environmental variables according to the configure step
