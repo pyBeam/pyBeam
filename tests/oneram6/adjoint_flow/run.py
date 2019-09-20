@@ -39,7 +39,8 @@ file_dir = os.path.dirname(os.path.realpath(__file__))
 ############################
 # Import data stored
 ############################
-f = open('data.pkl', 'rb')
+input_file = file_dir + '/data.pkl'
+f = open(input_file, 'rb')
 StructNodes, AeroNodes, AeroLoads, AeroAdjoints = pickle.load(f)
 
 MLS = interpolate.pyMLSInterface('config.pyMLS', AeroNodes, StructNodes)
