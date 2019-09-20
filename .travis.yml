@@ -62,6 +62,7 @@ install:
     # Add environmental variables according to the configure step
     - export PYBEAM_LIB=$TRAVIS_BUILD_DIR/lib
     - export PYTHONPATH=$PYTHONPATH:$PYBEAM_LIB
+    - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$PYBEAM_LIB
     
 
 script: 
