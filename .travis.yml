@@ -38,6 +38,7 @@ before_install:
     
     - git clone --depth=1 -b release https://github.com/ninja-build/ninja.git ./ninjasrc
     - ./ninjasrc/configure.py --bootstrap
+    - export PATH="./":$PATH
     - pip install meson
   
     # to avoid interference with MPI
