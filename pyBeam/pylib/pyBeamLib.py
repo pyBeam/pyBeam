@@ -2,7 +2,7 @@
 #
 # pyBeam, a Beam Solver
 #
-# Copyright (C) 2018 Ruben Sanchez, Rocco Bombardieri, Rauno Cavallaro
+# Copyright (C) 2019 by the authors
 # 
 # File developers: Ruben Sanchez (SciComp, TU Kaiserslautern)
 #                  Rocco Bombardieri (Carlos III University Madrid)
@@ -57,8 +57,8 @@ class pyBeamSolver:
     print("|                                                                         |")
     print("| Copyright 2018-2019 Rocco Bombardieri (Carlos III University Madrid)    |")
     print("|                     Rauno Cavallaro (Carlos III University Madrid)      |")
-    print("|                     Tim Albring (SciComp, TU Kaiserslautern)            |")
     print("|                     Ruben Sanchez (SciComp, TU Kaiserslautern)          |")
+    print("|                     Tim Albring (SciComp, TU Kaiserslautern)            |")
     print("|                                                                         |")
     print("| pyBeam is free software: you can redistribute it and/or                 |")
     print("| modify it under the terms of the GNU Affero General Public License      |")
@@ -79,8 +79,8 @@ class pyBeamSolver:
     # Parsing config file
     self.Config = pyConfig.pyBeamConfig(self.Config_file)  # Beam configuration file
 
-    self.Mesh_file = self.file_dir + '/' + self.Config['B_MESH']
-    self.Property = self.file_dir + '/' + self.Config['B_PROPERTY']
+    self.Mesh_file = self.file_dir + '/' + self.Config['MESH_FILE']
+    self.Property = self.file_dir + '/' + self.Config['PROPERTY_FILE']
 
     # Parsing mesh file
     self.nDim= pyInput.readDimension(self.Mesh_file)

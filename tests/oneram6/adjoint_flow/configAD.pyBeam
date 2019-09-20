@@ -33,7 +33,7 @@ TOLERANCE_LINSOL = 1e-7
 KIND_LINSOL = FullPivLu
 
 % MESH file 
-B_MESH = mesh.pyBeam
+MESH_FILE = mesh.pyBeam
 
 % PROPERTY file 
-B_PROPERTY = property.pyBeam
+PROPERTY_FILE = property.pyBeam

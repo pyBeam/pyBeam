@@ -31,7 +31,10 @@ TOLERANCE_LINSOL = 1e-7
 % Kind of linear solver (FullPivHouseholderQr, PartialPivLu, FullPivLu, HouseholderQr, ColPivHouseholderQr, LLT, LDLT)
 KIND_LINSOL = FullPivLu
 
-B_MESH = mesh.pyBeam
-B_PROPERTY =  property.pyBeam
+% MESH file 
+MESH_FILE = mesh.pyBeam
+
+% PROPERTY file 
+PROPERTY_FILE =  property.pyBeam
 
 

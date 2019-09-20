@@ -2,7 +2,7 @@
 #
 # pyBeam, a Beam Solver
 #
-# Copyright (C) 2018 Ruben Sanchez, Rocco Bombardieri, Rauno Cavallaro
+# Copyright (C) 2019 by the authors
 # 
 # Developers: Ruben Sanchez (SciComp, TU Kaiserslautern)
 #             Rocco Bombardieri, Rauno Cavallaro (Carlos III University Madrid)
@@ -73,20 +73,20 @@ class pyBeamConfig:
 
             for case in switch(this_param):
                 #integer values
-                if case("RESTART")     :       pass
-                if case("LOAD_STEPS")	      : pass
-                if case("N_STRUCT_ITER")	                      : 
+                if case("RESTART"): pass
+                if case("LOAD_STEPS"): pass
+                if case("N_STRUCT_ITER"):
                     self._ConfigContent[this_param] = int(this_value)
                     break
                 #float values
-                if case("W_THICKNESS")         : pass                 
-                if case("W_HEIGHT")        : pass                
-                if case("F_WIDTH")                      : pass
-                if case("Y_MODULUS")                      : pass
-                if case("POISSON")                      : pass
-                if case("RHO")                      : pass
-                if case("LOAD")		      : pass
-                if case("CONV_CRITERIUM")          : 
+                if case("W_THICKNESS"): pass
+                if case("W_HEIGHT"): pass
+                if case("F_WIDTH"): pass
+                if case("Y_MODULUS"): pass
+                if case("POISSON"): pass
+                if case("RHO"): pass
+                if case("LOAD"): pass
+                if case("CONV_CRITERIUM"):
                     self._ConfigContent[this_param] = float(this_value)
                     break
                 #string values  MEMO_GEN_FORCE_OUTPUT
@@ -119,8 +119,8 @@ class pyBeamConfig:
                     else:
                         self._ConfigContent[this_param] = 2
                         break
-                if case("B_MESH")          :       pass
-                if case("B_PROPERTY")                 :               
+                if case("MESH_FILE"): pass
+                if case("PROPERTY_FILE"):
                     self._ConfigContent[this_param] = this_value
                     break
                 if case():
