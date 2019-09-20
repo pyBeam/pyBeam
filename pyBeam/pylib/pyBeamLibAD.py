@@ -329,11 +329,11 @@ class pyBeamSolverAD:
       test_val = 100*abs((sensEres - sensECheck)/sensECheck)
 
       # Tolerance is set to 0.0001%
-      if (test_val < 0.0001):
-          print("--> Test E sensitivity: Error to reference {:9.5f}% (< 0.0001%) -> PASSED".format(test_val))
+      if (test_val < 0.000001):
+          print("--> Test E sensitivity: Error to reference {:10.7f}% (< 0.000001%) -> PASSED".format(test_val))
           return (0)
       else:
-          print("--> Test E sensitivity: Error to reference {:9.5f}% (> 0.0001%) -> FAILED".format(test_val))
+          print("--> Test E sensitivity: Error to reference {:10.7f}% (> 0.000001%) -> FAILED".format(test_val))
           return (1)
 
   def TestLoadSensitivity(self, iNode, sensX, sensY, sensZ, sensX_FD, sensY_FD, sensZ_FD):
