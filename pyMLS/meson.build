@@ -19,6 +19,7 @@ swig_lib = shared_library(
     dependencies: [pyMLS_dep, python_dep, eigen_dep, mls_dep],
     install: true,
     include_directories : ['./include/'],
+    install_dir: ['lib'],
     cpp_args : ['-Wno-ignored-attributes', '-Wno-deprecated-declarations'],
     name_prefix : '',
 )
