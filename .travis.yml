@@ -12,49 +12,41 @@ compiler:
 notifications:
     email:
         recipients:
-            - bombardierirocco@gmail.com
+            #- bombardierirocco@gmail.com
             - ruben.sanchez@scicomp.uni-kl.de
   
 branches:
     only:
-        - develop
- 
-python:
-    - 2.7
+        - feature_release_0.1
+
+virtualenv:
+  system_site_packages: true
 
 env:
     global:
         CXXFLAGS="" 
     matrix:
         # Primal and adjoint builds and tests
-        - MAKE_COMMAND="make primal reverse"
-          TEST_PRIMAL=$TRAVIS_BUILD_DIR/tests/regression/regression.py
-          TEST_LBEAM_LLOAD_Z=$TRAVIS_BUILD_DIR/tests/test_Lbeam_Lload_z/regression.py   
-          TEST_LBEAM_LLOAD_Z_RESTART=$TRAVIS_BUILD_DIR/tests/test_Lbeam_Lload_z/restart.py           
-          TEST_ADJOINT=$TRAVIS_BUILD_DIR/tests/regressionAD/regressionAD.py
+        - CONFIGURE_COMMAND="meson build --prefix=$PWD"
+          MAKE_COMMAND="ninja -j4 build install"
+          TEST_BEAM=$TRAVIS_BUILD_DIR/tests/beam/point_load/run.py
 
 before_install:
     # Temporarily fixes Travis CI issue with paths for Python packages
     - export PATH=/usr/bin:$PATH
-
+    - sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 10
     # Install the necessary packages using apt-get with sudo
     - sudo apt-get update -qq
-    - sudo apt-get install -qq build-essential 
- 
-    # Install Python dependencies
-    # http://conda.pydata.org/docs/travis.html#the-travis-yml-file
-    - wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
-    - bash miniconda.sh -b -p $HOME/miniconda
-    - export PATH="$HOME/miniconda/bin:$PATH"
-    - hash -r
-    - conda config --set always_yes yes --set changeps1 no
-    - conda update -q conda
-    - conda install -q python=$TRAVIS_PYTHON_VERSION numpy scipy swig
+    - sudo apt-get install -qq build-essential python3-numpy python3-scipy swig 
     
-    - export PYBEAM_INCLUDEPY="$(python-config --includes)"
-
+    - export NINJA_LATEST=$(curl -s https://api.github.com/repos/ninja-build/ninja/releases/latest | grep browser_download_url | cut -d '"' -f 4 | grep ninja-linux.zip)
+    - wget "$NINJA_LATEST"
+    - unzip -q ninja-linux.zip -d build
+    - export PATH="$PWD/build:$PATH"
+    - pip install meson
+  
     # to avoid interference with MPI
-    - test -n $CC  && unset CC
+    - test -n $CC  && unset CC  
     - test -n $CXX && unset CXX
 
 install:
@@ -62,18 +54,14 @@ install:
     - echo $TRAVIS_BUILD_DIR
     - echo $CONFIGURE_COMMAND
     - echo $PYTHON_INCLUDE
+    - $CONFIGURE_COMMAND
     - $MAKE_COMMAND
 
     # Add environmental variables according to the configure step
-    - export PYBEAM_LIB=$TRAVIS_BUILD_DIR/pyBeam/lib
-    - export PYBEAM_PYLIB=$TRAVIS_BUILD_DIR/pyBeam/pylib
+    - export PYBEAM_LIB=$TRAVIS_BUILD_DIR/lib
     - export PYTHONPATH=$PYTHONPATH:$PYBEAM_LIB
-    - export PYTHONPATH=$PYTHONPATH:$PYBEAM_PYLIB
     
 
 script: 
     # Run the tests via the Python scripts
-    - python $TEST_PRIMAL
-    - python $TEST_LBEAM_LLOAD_Z  
-    - python $TEST_LBEAM_LLOAD_Z_RESTART
-    - python $TEST_ADJOINT    
+    - python $TEST_BEAM  
