@@ -25,7 +25,7 @@ env:
     matrix:
         # Primal and adjoint builds and tests
         - CONFIGURE_COMMAND="meson build --prefix=$PWD"
-          MAKE_COMMAND="ninja -j4 build install"
+          MAKE_COMMAND="ninja -j4 -C build install"
           TEST_BEAM=$TRAVIS_BUILD_DIR/tests/beam/point_load/run.py
 
 before_install:
