@@ -43,7 +43,8 @@ input_file = file_dir + '/data.pkl'
 f = open(input_file, 'rb')
 StructNodes, AeroNodes, AeroLoads, AeroAdjoints = pickle.load(f)
 
-MLS = interpolate.pyMLSInterface('config.pyMLS', AeroNodes, StructNodes)
+config_file = file_dir + '/config.pyMLS'
+MLS = interpolate.pyMLSInterface(config_file, AeroNodes, StructNodes)
 
 loadsX = MLS.interpolation_matrix.transpose().dot(AeroLoads[:,0])
 loadsY = MLS.interpolation_matrix.transpose().dot(AeroLoads[:,1])
