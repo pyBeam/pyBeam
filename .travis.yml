@@ -50,8 +50,8 @@ install:
     - echo $TRAVIS_BUILD_DIR
     - echo $CONFIGURE_COMMAND
     - echo $PYTHON_INCLUDE
-    - ls -ll
     - $CONFIGURE_COMMAND
+    - ls -ll
     - $MAKE_COMMAND
 
     # Add environmental variables according to the configure step
