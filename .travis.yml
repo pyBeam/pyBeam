@@ -36,10 +36,8 @@ before_install:
     - sudo apt-get update -qq
     - sudo apt-get install -qq build-essential python3-numpy python3-scipy swig 
     
-    - export NINJA_LATEST=$(curl -s https://api.github.com/repos/ninja-build/ninja/releases/latest | grep browser_download_url | cut -d '"' -f 4 | grep ninja-linux.zip)
-    - wget "$NINJA_LATEST"
-    - unzip -q ninja-linux.zip -d build
-    - export PATH="$PWD/build:$PATH"
+    - git clone --depth=1 -b release https://github.com/ninja-build/ninja.git ./ninjasrc
+    - ./ninjasrc/configure.py --bootstrap
     - pip install meson
   
     # to avoid interference with MPI
@@ -51,6 +49,7 @@ install:
     - echo $TRAVIS_BUILD_DIR
     - echo $CONFIGURE_COMMAND
     - echo $PYTHON_INCLUDE
+    - ls -ll
     - $CONFIGURE_COMMAND
     - $MAKE_COMMAND
 
