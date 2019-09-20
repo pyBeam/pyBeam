@@ -19,9 +19,6 @@ branches:
     only:
         - feature_release_0.1
 
-virtualenv:
-  system_site_packages: true
-
 env:
     global:
         CXXFLAGS="" 
