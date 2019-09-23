@@ -113,6 +113,12 @@ void CBeamSolver::InitializeInput(CInput* py_input){   // insert node class and 
     
 }
 
+/**
+ * @todo Remove unused parameters
+ * @body Remove unused FSIIter from the arguments of the function, and also from the python wrapper and library.
+ */
+
+
 void CBeamSolver::Solve(int FSIIter = 0){
     
     // Beam total length

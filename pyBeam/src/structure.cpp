@@ -93,6 +93,12 @@ CStructure::~CStructure(void)
     }
 
 }
+
+/**
+ * @todo Finalize implementation of RBE2 elements
+ * @body It's necessary to finalize and verify the implementation of rigid elements. Before opening a PR, cleanup
+ *       debug comments.
+ */
 //===================================================
 //      Assembly RBE2 rigid constraint matrix
 //===================================================
