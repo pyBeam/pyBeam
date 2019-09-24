@@ -1,7 +1,7 @@
 /*
- * pyBeam, a Beam Solver
+ * pyBeam, an open-source Beam Solver
  *
- * Copyright (C) 2018 Tim Albring, Ruben Sanchez, Rocco Bombardieri, Rauno Cavallaro 
+ * Copyright (C) 2019 by the authors
  * 
  * File developers: Ruben Sanchez (SciComp, TU Kaiserslautern)
  *                  Tim Albring (SciComp, TU Kaiserslautern)
@@ -29,21 +29,28 @@
 typedef double addouble;
 
 namespace AD{
-	
-  /*--- Set the value of a variable ---*/
-  inline void SetValue(addouble& data, const addouble &val) {data = val;}
-  inline double GetValue(const addouble& data) { return data;}
-  
-  /*--- Set the derivative of a variable ---*/
-  inline void SetDerivative(addouble &data, const addouble &val) {}
-  inline double GetDerivative(const addouble& data) { return 0.0;}
-  
-  /*--- Overloaded functions ---*/
-  inline void RegisterInput(addouble &data) { }
-  inline void RegisterOutput(addouble& data) { }
-  inline void StartRecording() { }
-  inline void StopRecording() { }
-  inline void ClearAdjoints() { }
-  inline void ComputeAdjoint() { }
-  inline void Reset() { }
+
+    /*--- Set the value of a variable ---*/
+    inline void SetValue(addouble& data, const addouble &val) {data = val;}
+    inline double GetValue(const addouble& data) { return data;}
+
+    /*--- Set the derivative of a variable ---*/
+    inline void SetDerivative(addouble &data, const addouble &val) {}
+    inline double GetDerivative(const addouble& data) { return 0.0;}
+
+    /*--- Overloaded functions ---*/
+    inline void RegisterInput(addouble &data) { }
+    inline void RegisterOutput(addouble& data) { }
+    inline void StartRecording() { }
+    inline void StopRecording() { }
+    inline void ClearAdjoints() { }
+    inline void ComputeAdjoint() { }
+    inline void Reset() { }
+
+    inline void SetExtFuncIn(addouble &data) { }
+    inline void SetExtFuncOut(addouble &data) { }
+
+    inline void StartExtFunc(bool storePrimalInput, bool storePrimalOutput) { }
+
+    inline void EndExtFunc(){ }
 }

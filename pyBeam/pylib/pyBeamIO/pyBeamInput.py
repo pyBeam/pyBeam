@@ -44,7 +44,7 @@ class Point:
     self.Force = np.zeros((3,1))
     
   def GetCoord0(self):
-    return self.Coord0   
+    return self.Coord0
  
 
   def GetCoord(self):
@@ -90,7 +90,7 @@ class Point:
 class Element:  # for boundary elements
     
   def __init__(self):    
-    self.Conn = np.zeros((2,1), dtype=int)    
+    self.Conn = np.zeros((2,1), dtype=int)
     self.ID = 0
     self.Property = 0  
     self.AuxVect = np.zeros((3,1))
@@ -106,11 +106,11 @@ class Element:  # for boundary elements
     self.Conn[0] = node1
     self.Conn[1] = node2 
     
-  def SetAuxVector(self,Auxval_Coord):    
+  def SetAuxVector(self,Auxval_Coord):
     x, y, z = Auxval_Coord
     self.AuxVect[0] = x
     self.AuxVect[1] = y
-    self.AuxVect[2] = z   
+    self.AuxVect[2] = z
       
   def GetNodes(self):
     return self.Conn
@@ -126,20 +126,20 @@ class Element:  # for boundary elements
 
 class RBE2_elem:  # for boundary elements
     
-  def __init__(self):    
-    self.Conn = np.zeros((2,1), dtype=int)    
+  def __init__(self):
+    self.Conn = np.zeros((2,1), dtype=int)
     self.ID = 0
 
   def SetConnectivity(self,val_Conn): # line element
     node1, node2, = val_Conn
     self.Conn[0] = node1
-    self.Conn[1] = node2 
+    self.Conn[1] = node2
     
   def GetNodes(self):
-    return self.Conn    
+    return self.Conn
 
-  def SetID(self,ID):    
-    self.ID = ID  
+  def SetID(self,ID):
+    self.ID = ID
 
 class Property:
   """ Description. """
@@ -154,13 +154,13 @@ class Property:
     self.A = A 
     
   def SetIyy(self,Iyy):
-    self.Iyy = Iyy    
+    self.Iyy = Iyy
     
   def SetIzz(self,Izz):
-    self.Izz = Izz    
+    self.Izz = Izz
     
   def SetJt(self,Jt):
-    self.Jt = Jt  
+    self.Jt = Jt
     
   def GetA(self):
     return self.A
@@ -197,10 +197,10 @@ def readDimension(Mesh_file):
 
     return nDim      
 
-def readMesh(Mesh_file,nDim):	  
+def readMesh(Mesh_file,nDim):
 	
-    nPoint = 0      
-    node = []     
+    nPoint = 0
+    node = []
      
     with open(Mesh_file, 'r') as meshfile:
       #print('Opened mesh file ' + Mesh_file + '.')

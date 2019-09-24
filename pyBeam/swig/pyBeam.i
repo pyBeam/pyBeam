@@ -9,7 +9,7 @@
     #include "../include/input.h"
     #include "../include/property.h"
     #include "../include/geometry.h"
-    #include "../include/element.h"    
+    #include "../include/element.h"
     #include "../include/rigid_element.h"
 %}
 

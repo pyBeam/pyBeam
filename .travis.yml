@@ -18,60 +18,51 @@ notifications:
 branches:
     only:
         - develop
- 
-python:
-    - 2.7
 
 env:
     global:
         CXXFLAGS="" 
     matrix:
         # Primal and adjoint builds and tests
-        - MAKE_COMMAND="make primal reverse"
-          TEST_PRIMAL=$TRAVIS_BUILD_DIR/tests/regression/regression.py
-          TEST_LBEAM_LLOAD_Z=$TRAVIS_BUILD_DIR/tests/test_Lbeam_Lload_z/regression.py          
-          TEST_ADJOINT=$TRAVIS_BUILD_DIR/tests/regressionAD/regressionAD.py
+        - CONFIGURE_COMMAND="meson build --prefix=$PWD"
+          MAKE_COMMAND="ninja -j4 -C build install"
+          TEST_BEAM=$TRAVIS_BUILD_DIR/tests/beam/point_load/run.py
+          TEST_ONERA=$TRAVIS_BUILD_DIR/tests/oneram6/fluid_load/run.py
+          TEST_ONERA_ADJ=$TRAVIS_BUILD_DIR/tests/oneram6/adjoint_flow/run.py
 
 before_install:
     # Temporarily fixes Travis CI issue with paths for Python packages
     - export PATH=/usr/bin:$PATH
-
+    - sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 10
     # Install the necessary packages using apt-get with sudo
     - sudo apt-get update -qq
-    - sudo apt-get install -qq build-essential 
- 
-    # Install Python dependencies
-    # http://conda.pydata.org/docs/travis.html#the-travis-yml-file
-    - wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
-    - bash miniconda.sh -b -p $HOME/miniconda
-    - export PATH="$HOME/miniconda/bin:$PATH"
-    - hash -r
-    - conda config --set always_yes yes --set changeps1 no
-    - conda update -q conda
-    - conda install -q python=$TRAVIS_PYTHON_VERSION numpy scipy swig
-    
-    - export PYBEAM_INCLUDEPY="$(python-config --includes)"
-
+    - sudo apt-get install -qq build-essential python3-numpy python3-scipy swig 
+    # Clone and configure ninja in a subdirectory
+    - git clone --depth=1 -b release https://github.com/ninja-build/ninja.git ./ninja
+    - cd ninja
+    - ./configure.py --bootstrap
+    - export PATH=$PWD:$PATH
+    - cd ..
+    # Install meson
+    - pip install meson
+  
     # to avoid interference with MPI
-    - test -n $CC  && unset CC
+    - test -n $CC  && unset CC  
     - test -n $CXX && unset CXX
 
 install:
     # Configure, make, and install pyBeam
-    - echo $TRAVIS_BUILD_DIR
-    - echo $CONFIGURE_COMMAND
-    - echo $PYTHON_INCLUDE
+    - $CONFIGURE_COMMAND
     - $MAKE_COMMAND
 
     # Add environmental variables according to the configure step
-    - export PYBEAM_LIB=$TRAVIS_BUILD_DIR/pyBeam/lib
-    - export PYBEAM_PYLIB=$TRAVIS_BUILD_DIR/pyBeam/pylib
+    - export PYBEAM_LIB=$TRAVIS_BUILD_DIR/lib
     - export PYTHONPATH=$PYTHONPATH:$PYBEAM_LIB
-    - export PYTHONPATH=$PYTHONPATH:$PYBEAM_PYLIB
+    - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$PYBEAM_LIB
     
 
 script: 
     # Run the tests via the Python scripts
-    - python $TEST_PRIMAL
-    - python $TEST_LBEAM_LLOAD_Z    
-    - python $TEST_ADJOINT    
+    - python $TEST_BEAM  
+    - python $TEST_ONERA
+    - python $TEST_ONERA_ADJ

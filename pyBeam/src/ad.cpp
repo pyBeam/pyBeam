@@ -1,10 +1,10 @@
 /*
- * pyBeam, a Beam Solver
+ * pyBeam, an open-source Beam Solver
  *
- * Copyright (C) 2018 Tim Albring, Ruben Sanchez, Rocco Bombardieri, Rauno Cavallaro 
- * 
- * Developers: Tim Albring, Ruben Sanchez (SciComp, TU Kaiserslautern)
- *             Rocco Bombardieri, Rauno Cavallaro (Carlos III University Madrid)
+ * Copyright (C) 2019 by the authors
+ *
+ * File developers: Ruben Sanchez (SciComp, TU Kaiserslautern)
+ *                  Tim Albring (SciComp, TU Kaiserslautern)
  *
  * This file is part of pyBeam.
  *
@@ -24,21 +24,80 @@
  *
  */
 
-
-
 #ifdef CODI_REVERSE_TYPE
 #include "../include/datatypes/ad_reverse.hpp"
-#elif CODI_FORWARD_TYPE
-#include "../include/datatypes/ad_forward.hpp"
+#include "../include/types.h"
 #else
 #include "../include/datatypes/ad_passive.hpp"
 #endif
 
-namespace AD {
+
 #ifdef CODI_REVERSE_TYPE
+
+namespace AD {
+
+  /*--- Initialization of the external function helper ---*/
+  ExtFuncHelper* FuncHelper;
 
   /*--- Initialization of the tape ---*/
   addouble::TapeType& globalTape = addouble::getGlobalTape();
 
-#endif
+  int adjointVectorPosition = 0;
+
+  std::vector<addouble::GradientData> inputValues;
+
 }
+
+void SolveAdjSys::SolveSys(const codi::RealReverse::Real* x, codi::RealReverse::Real* x_b, size_t m,
+                           const codi::RealReverse::Real* y, const codi::RealReverse::Real* y_b, size_t n,
+                           codi::DataStore* d) {
+
+    int nNode_b;
+    d->getData(nNode_b);
+
+    unsigned short kind_linSol_b;
+    d->getData(kind_linSol_b);
+
+    /*--- Initialize vectors ---*/
+    VectorXdDiff dU_bar;
+    dU_bar = VectorXdDiff::Zero(nNode_b*6);
+
+    VectorXdDiff Residual_bar;
+    Residual_bar = VectorXdDiff::Zero(nNode_b*6);
+
+    MatrixXdDiff Ksys_b;
+    d->getData(Ksys_b);
+
+    /*--- Initialize the right-hand side with the gradient of the solution of the primal linear system ---*/
+
+    for (unsigned long i = 0; i < n; i ++) {
+      dU_bar(i) = y_b[i];
+    }
+
+    switch(kind_linSol_b){
+    case PartialPivLu:
+      Residual_bar = Ksys_b.transpose().partialPivLu().solve(dU_bar); break;
+    case FullPivLu:
+      Residual_bar = Ksys_b.transpose().fullPivLu().solve(dU_bar); break;
+    case HouseholderQr:
+      Residual_bar = Ksys_b.transpose().householderQr().solve(dU_bar); break;
+    case ColPivHouseholderQr:
+      Residual_bar = Ksys_b.transpose().colPivHouseholderQr().solve(dU_bar); break;
+    case FullPivHouseholderQr:
+      Residual_bar = Ksys_b.transpose().fullPivHouseholderQr().solve(dU_bar); break;
+    case LLT:
+      Residual_bar = Ksys_b.transpose().llt().solve(dU_bar); break;
+    case LDLT:
+      Residual_bar = Ksys_b.transpose().ldlt().solve(dU_bar); break;
+    default:
+      Residual_bar = Ksys_b.transpose().fullPivLu().solve(dU_bar); break;
+    }
+
+    for (unsigned long i = 0; i < n; i ++) {
+      x_b[i] = AD::GetValue(Residual_bar(i));
+    }
+
+
+}
+
+#endif

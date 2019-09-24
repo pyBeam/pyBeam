@@ -2,7 +2,7 @@
 #
 # pyBeam, a Beam Solver
 #
-# Copyright (C) 2018 Ruben Sanchez, Rocco Bombardieri, Rauno Cavallaro
+# Copyright (C) 2019 by the authors
 # 
 # Developers: Ruben Sanchez (SciComp, TU Kaiserslautern)
 #             Rocco Bombardieri, Rauno Cavallaro (Carlos III University Madrid)
@@ -73,19 +73,20 @@ class pyBeamConfig:
 
             for case in switch(this_param):
                 #integer values
-                if case("LOAD_STEPS")	      : pass     
-                if case("N_STRUCT_ITER")	                      : 
+                if case("RESTART"): pass
+                if case("LOAD_STEPS"): pass
+                if case("N_STRUCT_ITER"):
                     self._ConfigContent[this_param] = int(this_value)
                     break
                 #float values
-                if case("W_THICKNESS")         : pass                 
-                if case("W_HEIGHT")        : pass                
-                if case("F_WIDTH")                      : pass
-                if case("Y_MODULUS")                      : pass
-                if case("POISSON")                      : pass
-                if case("RHO")                      : pass
-                if case("LOAD")		      : pass
-                if case("CONV_CRITERIUM")          : 
+                if case("W_THICKNESS"): pass
+                if case("W_HEIGHT"): pass
+                if case("F_WIDTH"): pass
+                if case("Y_MODULUS"): pass
+                if case("POISSON"): pass
+                if case("RHO"): pass
+                if case("LOAD"): pass
+                if case("CONV_CRITERIUM"):
                     self._ConfigContent[this_param] = float(this_value)
                     break
                 #string values  MEMO_GEN_FORCE_OUTPUT
@@ -93,7 +94,7 @@ class pyBeamConfig:
                     self._ConfigContent[this_param] = float(this_value)
                     break
                 if case("KIND_LINSOL"):
-                    print(this_value)
+                    #print(this_value)
                     if this_value == "PartialPivLu":
                         self._ConfigContent[this_param] = 1
                         break
@@ -106,20 +107,20 @@ class pyBeamConfig:
                     elif this_value == "ColPivHouseholderQr":
                         self._ConfigContent[this_param] = 4
                         break
-                    elif this_value == "LLT":
+                    elif this_value == "FullPivHouseholderQr":
                         self._ConfigContent[this_param] = 5
                         break
-                    elif this_value == "LDLT":
+                    elif this_value == "LLT":
                         self._ConfigContent[this_param] = 6
                         break
-                    elif this_value == "FullPivHouseholderQr":
-                        self._ConfigContent[this_param] = 0
+                    elif this_value == "LDLT":
+                        self._ConfigContent[this_param] = 7
                         break
                     else:
-                        self._ConfigContent[this_param] = 0
+                        self._ConfigContent[this_param] = 2
                         break
-                if case("B_MESH")          :       pass
-                if case("B_PROPERTY")                 :               
+                if case("MESH_FILE"): pass
+                if case("PROPERTY_FILE"):
                     self._ConfigContent[this_param] = this_value
                     break
                 if case():

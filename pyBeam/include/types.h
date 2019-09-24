@@ -43,11 +43,19 @@ using namespace std;
 
 #ifdef CODI_REVERSE_TYPE
 #include "./datatypes/ad_reverse.hpp"
-#elif CODI_FORWARD_TYPE
-#include "./datatypes/ad_forward.hpp"
 #else
 #include "./datatypes/ad_passive.hpp"
 #endif
+
+enum KIND_LINEARSOLVER {
+    FullPivHouseholderQr = 0,
+    PartialPivLu = 1,
+    FullPivLu = 2,
+    HouseholderQr = 3,
+    ColPivHouseholderQr = 4,
+    LLT = 5,
+    LDLT = 6
+};
 
 typedef double passivedouble;
 
@@ -57,5 +65,4 @@ typedef Eigen::Matrix<addouble, Eigen::Dynamic, 1> VectorXdDiff;              //
 typedef Eigen::Matrix<addouble, 3, 3> Matrix3dDiff;                           // Matrix3d
 typedef Eigen::Matrix<addouble, 3, 1> Vector3dDiff;                           // Vector3d
 typedef Eigen::Matrix<int, Eigen::Dynamic, 1> VectorXi;                       // VectorXi
-
 

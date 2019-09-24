@@ -1,7 +1,7 @@
 /*
- * pyBeam, a Beam Solver
+ * pyBeam, an open-source Beam Solver
  *
- * Copyright (C) 2018 Tim Albring, Ruben Sanchez, Rocco Bombardieri, Rauno Cavallaro 
+ * Copyright (C) 2019 by the authors
  * 
  * File developers: Rocco Bombardieri (Carlos III University Madrid)
  *                  Rauno Cavallaro (Carlos III University Madrid)
@@ -60,7 +60,7 @@ public:
 
     CNode* nodeA;
     CNode* nodeB;
-    CProperty* property;
+    CProperty* elprop;
     CInput* input;
 
     VectorXdDiff GlobalDOFs; // Global DOFs
@@ -68,6 +68,8 @@ public:
     MatrixXdDiff Rrig;          // Rodriguez Rotation Matrix (local reference system in GCS)
     MatrixXdDiff R;             // Local reference system in GCS
     MatrixXdDiff Rprev;         // m_R previous value
+
+    MatrixXdDiff R0;         // m_R previous value    
 
     Vector3dDiff aux_vector;   // Versor directed from nodeA to nodeB
 
@@ -84,7 +86,7 @@ private:
 public:
     
     // In the constructor we assign to the element its nodes and properties
-    CElement(int element_ID) ; 
+    CElement(int element_ID);
     
     ~CElement(void);
 
@@ -102,19 +104,19 @@ public:
     // Methods to set initial properties to the element
     inline void SetNode_1( CNode* Node1) { nodeA = Node1; }
     inline void SetNode_2( CNode* Node2) { nodeB = Node2;}
-    inline void SetProperty(CProperty* Property) {property = Property;}
+    inline void SetProperty(CProperty* Property) {elprop = Property;}
     inline void SetInput(CInput* Input) {input = Input;}
-    
+
     inline void SetAuxVector(addouble x, addouble y, addouble z) {aux_vector(0) = x; aux_vector(1) = y; aux_vector(2) = z;}
 
-    inline void setElementMass() {m_e = property->GetA()*l_ini* input->GetDensity();}
-    
-    void setGlobalDOFs();    
-    
+    inline void setElementMass() {m_e = elprop->GetA()*l_ini* input->GetDensity();}
+
+    void setGlobalDOFs();
+
     void setLength();
-    
+
     void Initializer(CNode* Node1, CNode* Node2, CProperty* Property, CInput* Input, passivedouble AuxVector_x, passivedouble AuxVector_y, passivedouble AuxVector_z);
-    
+
     // Evaluates FEM element mass matrix
     void ElementMass_Rao();
 
@@ -130,7 +132,14 @@ public:
     // Evaluates FEM element rotation matrix
     void EvalRotMat(VectorXdDiff &dU_AB , VectorXdDiff &X_AB );
 
+    //   Evaluates FEM element rotation matrix startign from undeformed configuration  
+    void EvalRotMat_FP(VectorXdDiff &dU_AB,  VectorXdDiff  &X_AB);
+    
     // Initially rotates the elements
     void InitializeRotMats();
+
+    // Set the element dependencies
+    void SetDependencies(void);
+
 };
 

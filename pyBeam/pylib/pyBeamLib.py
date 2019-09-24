@@ -2,7 +2,7 @@
 #
 # pyBeam, a Beam Solver
 #
-# Copyright (C) 2018 Ruben Sanchez, Rocco Bombardieri, Rauno Cavallaro
+# Copyright (C) 2019 by the authors
 # 
 # File developers: Ruben Sanchez (SciComp, TU Kaiserslautern)
 #                  Rocco Bombardieri (Carlos III University Madrid)
@@ -57,8 +57,8 @@ class pyBeamSolver:
     print("|                                                                         |")
     print("| Copyright 2018-2019 Rocco Bombardieri (Carlos III University Madrid)    |")
     print("|                     Rauno Cavallaro (Carlos III University Madrid)      |")
-    print("|                     Tim Albring (SciComp, TU Kaiserslautern)            |")
     print("|                     Ruben Sanchez (SciComp, TU Kaiserslautern)          |")
+    print("|                     Tim Albring (SciComp, TU Kaiserslautern)            |")
     print("|                                                                         |")
     print("| pyBeam is free software: you can redistribute it and/or                 |")
     print("| modify it under the terms of the GNU Affero General Public License      |")
@@ -75,12 +75,12 @@ class pyBeamSolver:
     print("| If not, see <http://www.gnu.org/licenses/>.                             |")
     print("|                                                                         |")
     print("---------------------------------------------------------------------------\n")
-    
+
     # Parsing config file
     self.Config = pyConfig.pyBeamConfig(self.Config_file)  # Beam configuration file
 
-    self.Mesh_file = self.file_dir + '/' + self.Config['B_MESH']
-    self.Property = self.file_dir + '/' + self.Config['B_PROPERTY']
+    self.Mesh_file = self.file_dir + '/' + self.Config['MESH_FILE']
+    self.Property = self.file_dir + '/' + self.Config['PROPERTY_FILE']
 
     # Parsing mesh file
     self.nDim= pyInput.readDimension(self.Mesh_file)
@@ -107,8 +107,7 @@ class pyBeamSolver:
     for i in range(self.nPoint):
         self.node.append(pyBeam.CNode(self.node_py[i].GetID()))
         for j in range(self.nDim):
-            self.node[i].SetCoordinate(j, float(self.node_py[i].GetCoord()[j][0]))
-            self.node[i].SetCoordinate0(j, float(self.node_py[i].GetCoord0()[j][0]))
+            self.node[i].InitCoordinate(j, float(self.node_py[i].GetCoord()[j][0]))
         self.beam.InitializeNode(self.node[i], i)
 
     # Assigning property values to the property objects in C++
@@ -182,6 +181,14 @@ class pyBeamSolver:
 
     return dispX, dispY, dispZ
 
+  def ComputeObjectiveFunction(self, iNode):
+
+      """ This function computes the objective function (Important to be recorded) """
+      displacement = self.beam.OF_NodeDisplacement(iNode)
+      print("Objective Function - Displacement(", iNode, ") = ", displacement)
+
+      return displacement
+
   def Run(self):
     """ This function runs the solver and stores the results.
         Needs to be run after __SetLoads """
@@ -212,9 +219,44 @@ class pyBeamSolver:
         
         self.displacement_X.append(self.beam.ExtractDisplacements(jNode, 0))
         self.displacement_Y.append(self.beam.ExtractDisplacements(jNode, 1))
-        self.displacement_Z.append(self.beam.ExtractDisplacements(jNode, 2))        
+        self.displacement_Z.append(self.beam.ExtractDisplacements(jNode, 2))
 
-  def PrintDisplacements(self, iVertex):
+  def ReadRestart(self):
+
+      self.beam.ReadRestart()
+
+  def Restart(self):
+      """ This function runs the restart and stores the results.
+          Needs to be run after __SetLoads """
+
+      self.beam.RunRestart(0)
+
+      self.coordinate_X = []
+      self.coordinate_Y = []
+      self.coordinate_Z = []
+
+      self.coordinate_X0 = []
+      self.coordinate_Y0 = []
+      self.coordinate_Z0 = []
+
+      self.displacement_X = []
+      self.displacement_Y = []
+      self.displacement_Z = []
+
+      for jNode in range(0, self.nPoint):
+          self.coordinate_X.append(self.beam.ExtractCoordinate(jNode, 0))
+          self.coordinate_Y.append(self.beam.ExtractCoordinate(jNode, 1))
+          self.coordinate_Z.append(self.beam.ExtractCoordinate(jNode, 2))
+
+          self.coordinate_X0.append(self.beam.ExtractCoordinate0(jNode, 0))
+          self.coordinate_Y0.append(self.beam.ExtractCoordinate0(jNode, 1))
+          self.coordinate_Z0.append(self.beam.ExtractCoordinate0(jNode, 2))
+
+          self.displacement_X.append(self.beam.ExtractDisplacements(jNode, 0))
+          self.displacement_Y.append(self.beam.ExtractDisplacements(jNode, 1))
+          self.displacement_Z.append(self.beam.ExtractDisplacements(jNode, 2))
+
+  def PrintSolution(self, iVertex):
     
     """ This function prints to screen the displacements on the nodes """
     print("\n--> Coord0({}): {:16.12f} {:16.12f} {:16.12f}".format(iVertex, 
@@ -231,25 +273,50 @@ class pyBeamSolver:
                                       self.displacement_X[iVertex], 
                                       self.displacement_Y[iVertex], 
                                       self.displacement_Z[iVertex]))
-                                      
-  def TestNodePosition(self, iVertex, tol, coorX, coorY, coorZ):
+
+    return self.coordinate_X[iVertex], self.coordinate_Y[iVertex], self.coordinate_Z[iVertex]
+
+  def PrintPosition(self, iVertex):
+
+      """ This function prints to screen the displacements on the nodes """
+      print("--> Coord({}) : {:16.12f} {:16.12f} {:16.12f}".format(iVertex,
+                                                                   self.coordinate_X[iVertex],
+                                                                   self.coordinate_Y[iVertex],
+                                                                   self.coordinate_Z[iVertex]))
+
+  def PrintDisplacement(self, iVertex):
+
+      """ This function prints to screen the displacements on the nodes """
+      print("--> Displ({}) : {:16.12f} {:16.12f} {:16.12f}".format(iVertex,
+                                                                   self.displacement_X[iVertex],
+                                                                   self.displacement_Y[iVertex],
+                                                                   self.displacement_Z[iVertex]))
+
+  def Debug_Print(self, iElement):
+      """ This function prints some input information for debugging purposes """
+      self.beam.Debug_Print(iElement)
+
+
+  def TestNodePosition(self, coorX, coorY, coorZ, coorX_ref, coorY_ref, coorZ_ref, tol):
     
-    test_val = np.sqrt((self.coordinate_X[20]-coorX)**2+
-                       (self.coordinate_Y[20]-coorY)**2+
-                       (self.coordinate_Z[20]-coorZ)**2)
-    
-    # Tolerance is set to 1E-8
+    test_val = np.sqrt((coorX-coorX_ref)**2+
+                       (coorY-coorY_ref)**2+
+                       (coorZ-coorZ_ref)**2)
+
     if (test_val < tol):
-      print("--> Tolerance: {:16.12E} (< {:16.12E})".format(test_val, tol))
+      print("--> Test node position differs {:16.12E} from reference (< {:16.12E}) -> PASSED".format(test_val, tol))
       return(0)
     else:
-      print("--> Tolerance: {:16.12E} (> {:16.12E})".format(test_val, tol))      
-      print("--> TEST FAILED")           
+      print("--> Test node position differs {:16.12E} from reference (> {:16.12E}) -> FAILED".format(test_val, tol))
       return(1)
 
+  def SetLowVerbosity(self):
 
+      self.beam.SetLowVerbosity()
 
+  def SetHighVerbosity(self):
 
+      self.beam.SetHighVerbosity()
 
 
 
