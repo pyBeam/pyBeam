@@ -1,5 +1,5 @@
 /*
- * pyBeam, an open-source Beam Solver
+ * pyMLS, an open-source Moving Least Squares library
  *
  * Copyright (C) 2019 by the authors
  *
@@ -25,39 +25,27 @@
  *
  */
 
-#include <iostream>
+
+#include <math.h>
+#include <cmath>
+#include <stdio.h>
+#include <stdlib.h>
+#include <Eigen/Core>
+#include <Eigen/Dense>
+#include <Eigen/SVD>
+#include <iostream> 
+#include <vector>
 #include <fstream>
-#include <chrono>
 
+// External open-source dependencies
+#include "../externals/ann/include/ANN/ANN.h"
+#include "../externals/libigl/include/igl/slice.h"
 
-#include "../include/input.h"
-
-using namespace std;
-
-CInput::CInput(int py_nPoint, int py_nElem) {
-
-    nNodes = py_nPoint;
-    nFEM = py_nElem;
-    nRBE2 = 0;
-
-}
-
-CInput::CInput(int py_nPoint, int py_nElem, int py_nRBE2) {
-
-    nNodes = py_nPoint;
-    nFEM   = py_nElem;
-    nRBE2  = py_nRBE2;
-
-}
-
-void CInput::SetParameters(){
-
-    nDOF = 6;                // To be removed
-    E = E_dimensional/E_dimensional;
-    G = E/(2*(1+Poiss) );	// Shear modulus
-
-}
-
-CInput::~CInput(void) {
-
-}
+void mls_interface (std::vector<double> &interpolation_matrix_std,
+                    std::vector<double> &norm_err_std,
+                    int str_nodenumb,
+                    int aero_nodenumb,
+                    std::vector<double> str_data_std,
+                    std::vector<double> aero_data_std,
+                    int poly, int weight, long int points,
+                    double rmax,double delta,  double toll);

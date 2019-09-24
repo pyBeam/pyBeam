@@ -1,0 +1,68 @@
+# Continous Integration setup for pyBeam.
+# Tests on the develop branch in both serial and parallel.
+
+dist: trusty
+sudo: required
+
+language: python
+
+compiler:
+    - gcc
+
+notifications:
+    email:
+        recipients:
+            - bombardierirocco@gmail.com
+            - ruben.sanchez@scicomp.uni-kl.de
+  
+branches:
+    only:
+        - develop
+
+env:
+    global:
+        CXXFLAGS="" 
+    matrix:
+        # Primal and adjoint builds and tests
+        - CONFIGURE_COMMAND="meson build --prefix=$PWD"
+          MAKE_COMMAND="ninja -j4 -C build install"
+          TEST_BEAM=$TRAVIS_BUILD_DIR/tests/beam/point_load/run.py
+          TEST_ONERA=$TRAVIS_BUILD_DIR/tests/oneram6/fluid_load/run.py
+          TEST_ONERA_ADJ=$TRAVIS_BUILD_DIR/tests/oneram6/adjoint_flow/run.py
+
+before_install:
+    # Temporarily fixes Travis CI issue with paths for Python packages
+    - export PATH=/usr/bin:$PATH
+    - sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 10
+    # Install the necessary packages using apt-get with sudo
+    - sudo apt-get update -qq
+    - sudo apt-get install -qq build-essential python3-numpy python3-scipy swig 
+    # Clone and configure ninja in a subdirectory
+    - git clone --depth=1 -b release https://github.com/ninja-build/ninja.git ./ninja
+    - cd ninja
+    - ./configure.py --bootstrap
+    - export PATH=$PWD:$PATH
+    - cd ..
+    # Install meson
+    - pip install meson
+  
+    # to avoid interference with MPI
+    - test -n $CC  && unset CC  
+    - test -n $CXX && unset CXX
+
+install:
+    # Configure, make, and install pyBeam
+    - $CONFIGURE_COMMAND
+    - $MAKE_COMMAND
+
+    # Add environmental variables according to the configure step
+    - export PYBEAM_LIB=$TRAVIS_BUILD_DIR/lib
+    - export PYTHONPATH=$PYTHONPATH:$PYBEAM_LIB
+    - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$PYBEAM_LIB
+    
+
+script: 
+    # Run the tests via the Python scripts
+    - python $TEST_BEAM  
+    - python $TEST_ONERA
+    - python $TEST_ONERA_ADJ

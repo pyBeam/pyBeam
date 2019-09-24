@@ -1,10 +1,11 @@
 /*
- * pyBeam, a Beam Solver
+ * pyBeam, an open-source Beam Solver
  *
- * Copyright (C) 2018 Tim Albring, Ruben Sanchez, Rauno Cavallaro
+ * Copyright (C) 2019 by the authors
  * 
- * Developers: Tim Albring, Ruben Sanchez (SciComp, TU Kaiserslautern)
- *             Rauno Cavallaro (Carlos III University Madrid)
+ * File developers: Rocco Bombardieri (Carlos III University Madrid)
+ *                  Rauno Cavallaro (Carlos III University Madrid)
+ *                  Ruben Sanchez (SciComp, TU Kaiserslautern)
  *
  * This file is part of pyBeam.
  *
@@ -26,116 +27,155 @@
 
 #pragma once
 #include <math.h>
+#include <map>
+#include <stdio.h>
+#include <stdlib.h>
 
 #include "../include/types.h"
+
 
 class CInput
 {
 
 private:
-	
+
 protected:
 
-	//##################     Numerical Inputs     ###########################
+    //##################     Numerical Inputs     ###########################
 
-	unsigned long nNodes;	// Number of overall nodes along the wing (no collapsed)
-	unsigned long nFEM;		// Number of finite elements
+    int nConstr;                    // Total number of constraints
+    MatrixXdDiff  Constr_matrix;    // COnstraint matrix [ NODE_ID DOF_ID ]
+    
+    unsigned long nNodes;           // Number of overall nodes along the wing (no collapsed)
+    unsigned long nFEM;             // Number of finite elements
+    unsigned long nRBE2;            // Number of RBE2 rigid elements
 
-	unsigned short nDOF; 	// Number of degrees of freedom
-	
-	su2double load; 			// [N];
-	int follower_flag;		// (0) Nonfollower (1) follower (2) approx follower
-	unsigned long loadSteps;			// Number of load steps
-	unsigned long nIter;				// Number of iterations
+    unsigned short nDOF;            // Number of degrees of freedom
 
-	su2double end_time;		// [sec] for SS calculation
-	su2double dt;   			// [sec] time increment for SS calculation
+    unsigned short rigid = 1;       // [0] RBE2 [1] penalty
+    addouble penalty = pow(10,15);  // penalty coefficient
 
-	//##############    Wing Inputs  ###########################
-	// Units Sys: SI
+    addouble load;                  // [N];              // To be removed
+    int follower_flag;              // (0) Nonfollower (1) follower (2) approx follower
+    unsigned long loadSteps;        // Number of load steps
+    unsigned long nIter;            // Number of iterations
 
-	su2double t; 				// web & flange thickness [m]
-	su2double h;				// web height [m]
-	su2double b;				// flange width [m]
-	su2double E; 				// Elastic modulus [GPa]
-	su2double Poiss; 			// Poisson Ratio
-	su2double ro;				// Beam Density [kg/m^3]
-	su2double G;				// Shear modulus
-	su2double l; 				// Wing Length [m]
-	su2double A;				// cross section area
-	su2double As_z; 			// z Effective shear area
-	su2double As_y;			// y Effective shear area
+    addouble end_time;              // [sec] for SS calculation                    // To be removed
+    addouble dt;                    // [sec] time increment for SS calculation     // To be removed
 
-	su2double Iyy, Izz;
-	su2double Jx; 				//Polar Moment of Inertia
+    addouble tol_LinSol;            // Tolerance of the linear solver
+    unsigned short kind_LinSol;     // Tolerance of the linear solver
+    unsigned short WriteRestart;    // Write restart option
+    unsigned short Restart;         // Restart option
+
+    bool discrete_adjoint;
+
+    //##############    Material inputs (only ONE homogeneous material is allowed by now)  ###########################
+    // Units Sys: SI
+    addouble E;                     // Elastic modulus [GPa]
+    addouble E_dimensional;         // Dimensional Elastic modulus [GPa]
+    addouble Poiss;                 // Poisson Ratio
+    addouble ro;                    // Beam Density [kg/m^3]
+    addouble G;                     // Shear modulus
+
+    //################     Convergence Parameters    ###########################
+    addouble convCriteria;
 
 
-	su2double Mwing;			//Wing's mass [kg]
-	su2double EIy, EIz, GJ, AE;
-
-	su2double Clalpha;  		//  recall pi = atan(1)*4;
-	su2double Cldelta;
-
-	//#################    Elements properties    ############################
-
-	su2double le;      	//element length
-	su2double m, m_e; 		//Element's mass
-	su2double m_w, m_f; 	//web and flange mass
-	su2double Ix, Iz; 		//[kg*m^2]
-
-	//################     Convergence Parameters    ###########################
-
-	su2double convCriteria;
-
-	
 public:
 
-  CInput(void);
-  
-  virtual ~CInput(void);
-  
-  void SetParameters(su2double thickness);
-  
-  unsigned long Get_nNodes(void) { return nNodes; }  
     
-  unsigned long Get_nFEM(void) { return nFEM; }
-  
-  unsigned short Get_nDOF(void) { return nDOF; }
-  
-  unsigned short Get_FollowerFlag(void) { return follower_flag; }  
-  
-  unsigned long Get_LoadSteps(void) { return loadSteps;}
-  
-  unsigned long Get_nIter(void) { return nIter;}  
-  
-  su2double Get_Load(void) { return load;}  
-  
-  su2double Get_l(void) { return l; }  
-  
-  su2double Get_le(void) { return le; }
-  
-  su2double Get_Jx(void) { return Jx; }
-  
-  su2double Get_m_e(void) { return m_e; } 
-  
-  su2double Get_A(void) { return A; } 
-      
-  su2double Get_EIz(void) { return EIz; } 
-        
-  su2double Get_EIy(void) { return EIy; } 
-  
-  su2double Get_GJ(void) { return GJ; } 
-  
-  su2double Get_AE(void) { return AE; } 
-  
-  su2double Get_m(void) { return m; }
-  
-  su2double Get_Iyy(void) { return Iyy; }     
-          
-  su2double Get_Izz(void) { return Izz; }  
+    // Double constructor to make it compatible for old cases in which RBE2 were not defined
+    CInput(int py_nPoint, int py_nElem);
     
-  su2double Get_ConvCriteria(void) { return convCriteria; }  
-    
-  
+    CInput(int py_nPoint, int py_nElem, int py_nRBE2);
+
+    virtual ~CInput(void);
+
+    void SetParameters();
+
+    void SetDiscreteAdjoint(void) {discrete_adjoint = true; }
+
+    bool GetDiscreteAdjoint(void) {return discrete_adjoint; }
+
+    void SetYoungModulus(passivedouble YoungModulus) {E_dimensional = YoungModulus;}
+
+    void SetPoisson(passivedouble Poisson) {Poiss = Poisson;}
+
+    void RegisterInput_E(void) {AD::RegisterInput(E_dimensional);}
+
+    void RegisterInput_Nu(void) {AD::RegisterInput(Poiss);}
+
+    passivedouble GetGradient_E(void) {return AD::GetValue(AD::GetDerivative(E_dimensional));}
+
+    passivedouble GetGradient_Nu(void) {return AD::GetValue(AD::GetDerivative(Poiss));}
+
+    void SetDensity(passivedouble Density) {ro = Density; }
+
+    void SetFollowerFlag(int FollowerFlag) {follower_flag = 0; /*Forced to be nonfollower*/ }
+
+    void SetLoadSteps(unsigned long LoadSteps) { loadSteps = LoadSteps; }
+
+    void SetNStructIter(unsigned long NStructIter) {nIter = NStructIter; }
+
+    void SetTolerance_LinSol(passivedouble tolerance) {tol_LinSol = tolerance; }
+
+    void SetKind_LinSol(unsigned short kind_solver) {kind_LinSol = kind_solver; }
+
+    void Set_WriteRestartFlag(unsigned short WriteRestartFlag) {WriteRestart = WriteRestartFlag; }
+
+    void Set_RestartFlag(unsigned short RestartFlag) {Restart = RestartFlag; }
+
+    void SetConvCriterium(passivedouble ConvCriterium) {convCriteria = ConvCriterium; }
+
+    void SetnConstr(int nconstr) {nConstr = nconstr; Constr_matrix = MatrixXdDiff::Zero(nconstr,2);}
+
+    void SetSingleConstr(int iConstr, int node_id, int DOF_id) {Constr_matrix(iConstr,1 -1) = node_id;
+                                                                Constr_matrix(iConstr,2 -1) = DOF_id;}
+
+    MatrixXdDiff  GetConstrMatrix() {return Constr_matrix;};
+
+    addouble GetYoungModulus() {return E; }
+
+    addouble GetYoungModulus_dimensional() {return E_dimensional; }
+
+    addouble GetPoisson() {return Poiss; }
+
+    void SetShear(addouble val_shear) {G = val_shear;}
+
+    addouble GetShear() {return G; }
+
+    addouble GetDensity() {return ro; }
+
+    addouble GetTolerance_LinSol(void) {return tol_LinSol; }
+
+    unsigned short Get_WriteRestartFlag(void) {return WriteRestart; }
+
+    unsigned short Get_RestartFlag(void) {return Restart; }
+
+    unsigned short GetKind_LinSol(void) {return kind_LinSol; }
+
+    unsigned long Get_nNodes(void) { return nNodes; }
+
+    unsigned long Get_nFEM(void) { return nFEM; }
+
+    unsigned long Get_nRBE2(void) { return nRBE2; }
+
+    unsigned short Get_nDOF(void) { return nDOF; }
+
+    unsigned short Get_FollowerFlag(void) { return follower_flag; }
+
+    unsigned long Get_LoadSteps(void) { return loadSteps;}
+
+    unsigned long Get_nIter(void) { return nIter;}
+
+    addouble Get_ConvCriteria(void) { return convCriteria; }
+
+    unsigned short Get_RigidCriteria(void) { return rigid; }
+
+    addouble GetPenalty(void) { return penalty; }
+
+
 };
+
 

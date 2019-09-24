@@ -2,10 +2,8 @@
  * pyBeam, an open-source Beam Solver
  *
  * Copyright (C) 2019 by the authors
- *
- * File developers: Rocco Bombardieri (Carlos III University Madrid)
- *                  Rauno Cavallaro (Carlos III University Madrid)
- *                  Ruben Sanchez (SciComp, TU Kaiserslautern)
+ * 
+ * File developers: Rauno Cavallaro (Carlos III University Madrid)
  *
  * This file is part of pyBeam.
  *
@@ -25,39 +23,15 @@
  *
  */
 
+
+#pragma once
+
+#include "../include/types.h"
+
+#include <Eigen/Dense>
+
 #include <iostream>
-#include <fstream>
-#include <chrono>
 
+void RotToPseudo(Vector3dDiff& pseudo , Matrix3dDiff R);
 
-#include "../include/input.h"
-
-using namespace std;
-
-CInput::CInput(int py_nPoint, int py_nElem) {
-
-    nNodes = py_nPoint;
-    nFEM = py_nElem;
-    nRBE2 = 0;
-
-}
-
-CInput::CInput(int py_nPoint, int py_nElem, int py_nRBE2) {
-
-    nNodes = py_nPoint;
-    nFEM   = py_nElem;
-    nRBE2  = py_nRBE2;
-
-}
-
-void CInput::SetParameters(){
-
-    nDOF = 6;                // To be removed
-    E = E_dimensional/E_dimensional;
-    G = E/(2*(1+Poiss) );	// Shear modulus
-
-}
-
-CInput::~CInput(void) {
-
-}
+void PseudoToRot(Vector3dDiff pseudo , Matrix3dDiff& R,  int print=0);
