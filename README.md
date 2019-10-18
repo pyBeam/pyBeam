@@ -31,7 +31,7 @@ pip3 install --upgrade meson
 b) Regular (from terminal):
 
 i) For Ubuntu
-sudo apt-get meson
+sudo apt-get install meson
 ii) For Fedora
 sudo dnf meson
 
