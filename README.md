@@ -27,8 +27,13 @@ NOTE: this procedure has been verified for Ubuntu and Fedora
 - Make sure you have meson installed:
 a) Using pip (from terminal):
 pip3 install --upgrade meson
+
 b) Regular (from terminal):
-sudo install meson
+
+i) For Ubuntu
+sudo apt-get meson
+ii) For Fedora
+sudo dnf meson
 
 - Make sure yopu have Swig installed:
 sudo apt-get update
@@ -37,9 +42,6 @@ sudo apt-get install swig
 - Make sure to initialize the external submodules:
 git submodule init
 git submodule update
-
-- From main folder make a build directory:
-mkdir build
 
 - Compile:
 meson build --prefix=$PWD
