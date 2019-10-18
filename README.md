@@ -33,7 +33,7 @@ b) Regular (from terminal):
 i) For Ubuntu
 sudo apt-get install meson
 ii) For Fedora
-sudo dnf meson
+sudo dnf install meson
 
 - Make sure yopu have Swig installed:
 sudo apt-get update
