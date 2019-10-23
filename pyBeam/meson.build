@@ -62,7 +62,7 @@ swig_lib = shared_library(
     name_prefix : '',
 )
 if meson.is_subproject()
-	meson.add_install_script(meson.source_root()+'/subprojects/pyBeam/install.sh', meson.source_root()+'/subprojects/pyBeam/build', 'pyBeam.py')
+	meson.add_install_script(meson.source_root()+'/subprojects/pyBeam/install.sh', meson.build_root()+'/subprojects/pyBeam', 'pyBeam.py')
 else
 	meson.add_install_script(meson.source_root()+'/install.sh', meson.build_root(), 'pyBeam.py')
 endif
@@ -83,7 +83,7 @@ swig_lib = shared_library(
     name_prefix : '',
 )
 if meson.is_subproject()
-	meson.add_install_script(meson.source_root()+'/subprojects/pyBeam/install.sh', meson.source_root()+'/subprojects/pyBeam/build', 'pyBeamAD.py')
+	meson.add_install_script(meson.source_root()+'/subprojects/pyBeam/install.sh', meson.build_root()+'/subprojects/pyBeam', 'pyBeamAD.py')
 else
 	meson.add_install_script(meson.source_root()+'/install.sh', meson.build_root(), 'pyBeamAD.py')
 endif

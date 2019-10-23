@@ -49,7 +49,7 @@ swig_lib = shared_library(
     name_prefix : '',
 )
 if meson.is_subproject()
-	meson.add_install_script(meson.source_root()+'/subprojects/pyBeam/install.sh', meson.source_root()+'/subprojects/pyBeam/build', 'pyMLS.py')
+	meson.add_install_script(meson.source_root()+'/subprojects/pyBeam/install.sh', meson.build_root()+'/subprojects/pyBeam', 'pyMLS.py')
 else
 	meson.add_install_script(meson.source_root()+'/install.sh', meson.build_root(), 'pyMLS.py')
 endif
