@@ -45,7 +45,7 @@ StructNodes, AeroNodes, AeroLoads, AeroAdjoints = pickle.load(f)
 
 # Copy the solution file to the running directory
 solution_file = file_dir + '/solution.pyBeam'
-shutil.copy(solution_file, "solution.pyBeam")
+shutil.move(solution_file, "solution.pyBeam")
 
 config_file = file_dir + '/config.pyMLS'
 MLS = interpolate.pyMLSInterface(config_file, AeroNodes, StructNodes)
