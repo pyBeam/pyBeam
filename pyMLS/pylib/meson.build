@@ -25,7 +25,7 @@
 
 
 install_data(['pyMLSInterface.py'], 
-              install_dir: join_paths('lib'))
+              install_dir: join_paths('bin'))
 
 install_data(['pyMLSIO/pyMLSConfig.py'], 
-              install_dir: join_paths('lib', 'pyMLSIO'))
+              install_dir: join_paths('bin', 'pyMLSIO'))

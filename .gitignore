@@ -34,4 +34,4 @@ tests/regression/mesh2.msh~
 **/restart.pyBeam
 tests/beam/point_load/solution.pyBeam
 **/build
-lib
+bin

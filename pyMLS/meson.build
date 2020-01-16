@@ -44,8 +44,12 @@ swig_lib = shared_library(
     dependencies: [pyMLS_dep, python_dep, eigen_dep, mls_dep],
     install: true,
     include_directories : ['./include/'],
-    install_dir: ['lib'],
+    install_dir: ['bin'],
     cpp_args : ['-Wno-ignored-attributes', '-Wno-deprecated-declarations'],
     name_prefix : '',
 )
-meson.add_install_script(meson.source_root()+'/install.sh', meson.build_root(), 'pyMLS.py')
+if meson.is_subproject()
+	meson.add_install_script(meson.source_root()+'/subprojects/pyBeam/install.sh', meson.build_root()+'/subprojects/pyBeam', 'pyMLS.py')
+else
+	meson.add_install_script(meson.source_root()+'/install.sh', meson.build_root(), 'pyMLS.py')
+endif
