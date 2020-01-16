@@ -3,7 +3,7 @@
 
 pyBeam is a nonlinear beam finite element solver developed with aeronautical design applications in mind.
 
-It incorporates an AD-based adjoint solver for gradient computation, which relies on the AD library [CoDiPack](https://www.scicomp.uni-kl.de/codi/). Its goal aims towards a fully-functional adjoint-based infrastructure for performing gradient-based optimization of aircraft wing configurations, via coupling with the open-source CFD Suite [SU2](https://su2code.github.io)
+It incorporates an AD-based adjoint solver for gradient computation, which relies on the AD library [CoDiPack](https://www.scicomp.uni-kl.de/codi/). Its goal aims towards a fully-functional adjoint-based infrastructure for performing gradient-based optimization of aircraft wing configurations, via coupling with the open-source CFD Suite [SU2](https://su2code.github.io).
 
 For an overview of the technical details in pyBeam, please see the following paper presented at EUROGEN 2019:
 
@@ -15,11 +15,15 @@ Please also kindly cite our paper above if you are using pyBeam in your research
 
 We follow the popular "GitFlow" branching model for scalable development. In this repository, the master branch represents the latest stable major or minor release, and it should only be modified during version releases.
 
-Work that is staged for release is merged into the develop branch via Pull Requests on GitHub from various "feature" branches.
+Work that is staged for release is merged into the develop branch via pull requests from various "feature" branches.
 
-At release time, the work that has been merged into the develop branch is pushed to the master branch and tagged as a release.
+At release time, the develop branch is pushed into the master branch and tagged as a release.
 
 pyBeam is open for development for anyone wishing to contribute. A list of current contributors can be found in the AUTHORS.md file.
+
+Continuous integration of test cases is provided by Travis CI.
+
+[![Build Status](https://travis-ci.com/pyBeam/pyBeam.svg?branch=master)](https://travis-ci.com/pyBeam/pyBeam)
 
 ## Installation tips:
 
