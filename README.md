@@ -3,9 +3,7 @@
 
 pyBeam is a nonlinear beam finite element solver developed with aeronautical design applications in mind.
 
-It incorporates an AD-based adjoint solver for gradient computation, which relies on the AD library [CoDiPack](https://www.scicomp.uni-kl.de/codi/). Its goal aims towards a fully-functional adjoint-based infrastructure for performing gradient-based optimization of aircraft wing configurations, via coupling with the open-source CFD Suite [SU2](https://su2code.github.io).
-
-For an overview of the technical details in pyBeam, please see the following paper presented at EUROGEN 2019:
+It incorporates an AD-based adjoint solver for gradient computation, which relies on the AD library [CoDiPack](https://www.scicomp.uni-kl.de/codi/). Its goal aims towards a fully-functional adjoint-based infrastructure for performing gradient-based optimization of aircraft wing configurations, via coupling with the open-source CFD Suite [SU2](https://su2code.github.io). For an overview of the technical details in pyBeam, please see the following paper presented at EUROGEN 2019:
 
 Bombardieri, R.,_et al_(2019) ["Towards an open-source framework for aero-structural design and optimization within the SU2 suite"](https://www.researchgate.net/publication/335972259_Towards_an_open-source_framework_for_aero-structural_design_and_optimization_within_the_SU2_suite) EUROGEN 2019 Proceedings, Guimarães, Portugal, Sept 12-14
 
@@ -15,9 +13,7 @@ Please also kindly cite our paper above if you are using pyBeam in your research
 
 We follow the popular "GitFlow" branching model for scalable development. In this repository, the master branch represents the latest stable major or minor release, and it should only be modified during version releases.
 
-Work that is staged for release is merged into the develop branch via pull requests from various "feature" branches.
-
-At release time, the develop branch is pushed into the master branch and tagged as a release.
+Work that is staged for release is merged into the develop branch via pull requests from various "feature" branches. At release time, the develop branch is pushed into the master branch and tagged as a release.
 
 pyBeam is open for development for anyone wishing to contribute. A list of current contributors can be found in the AUTHORS.md file.
 
