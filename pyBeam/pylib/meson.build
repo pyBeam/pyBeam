@@ -27,11 +27,11 @@
 install_data(['pyBeamLib.py',
               'pyBeamLibAD.py',
               'pyBeamInterface.py'],
-              install_dir: join_paths('lib'))
+              install_dir: join_paths('bin'))
 
 install_data(['pyBeamIO/pyBeamConfig.py',
               'pyBeamIO/pyBeamInput.py'],
-              install_dir: join_paths('lib', 'pyBeamIO'))
+              install_dir: join_paths('bin', 'pyBeamIO'))
 
 install_data(['util/switch.py'], 
-              install_dir: join_paths('lib', 'util'))
+              install_dir: join_paths('bin', 'util'))
