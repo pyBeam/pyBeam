@@ -29,12 +29,12 @@ NOTE: this procedure has been verified for Ubuntu 18.04
 
  Using pip (from terminal):
 ```
-  pip3 install --upgrade meson
+pip3 install --upgrade meson
 ```
 
 From package manager:
 ```
-    sudo apt-get install meson
+sudo apt-get install meson
 ```
 
 - Make sure you have Swig installed
