@@ -23,7 +23,7 @@ pyBeam is open for development for anyone wishing to contribute. A list of curre
 
 Continuous integration of test cases is provided by Travis CI.
 
-[![Build Status](https://travis-ci.com/pyBeam/pyBeam.svg?branch=master)](https://travis-ci.com/pyBeam/pyBeam)
+[![Build Status](https://travis-ci.com/pyBeam/pyBeam.svg?branch=develop)](https://travis-ci.com/pyBeam/pyBeam)
 
 ## Installation tips:
 
