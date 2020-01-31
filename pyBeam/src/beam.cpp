@@ -102,6 +102,7 @@ void CBeamSolver::InitializeInput(CInput* py_input){   // insert node class and 
         if (verbose){std::cout << "ok!"  <<std::endl;}
         if (verbose){std::cout << "--> Warning: the code works if slave nodes are not connected to beams! "
                                << std::endl;}
+        if (verbose){std::cout << "--> Remember to add a check about this..."  <<std::endl;}
     }
     else {RBE2 = NULL; }
     
@@ -131,7 +132,6 @@ void CBeamSolver::Solve(int FSIIter = 0){
     structure->ReadForces(nTotalDOF, loadVector);
     
     if (nRBE2 != 0){
-        if (verbose){std::cout << "--> Setting RBE2 Matrix for Rigid Constraints" << std::endl;}
         structure->AddRBE2(input, RBE2);
     }
 
@@ -192,7 +192,7 @@ void CBeamSolver::Solve(int FSIIter = 0){
             structure->UpdateExtForces(lambda);
 
             // Evaluate the Residual
-            structure->EvalResidual(input->Get_RigidCriteria());
+            structure->EvalResidual();
 
             if (verbose){std::cout.width(17); std::cout << log10(structure->Residual.norm());}
 
@@ -204,19 +204,14 @@ void CBeamSolver::Solve(int FSIIter = 0){
             structure->AssemblyTang(1);
             
             // Solve Linear System   K*dU = Res = Fext - Fin
-            if (nRBE2 != 0 and input->Get_RigidCriteria() == 0) {
-                if (verbose){std::cout << "-->  Update KRBE matrix "  << std::endl;}
-                structure->AssemblyRigidConstr();
-                structure->SolveLinearStaticSystem_RBE2(iIter);
-            }
-            else if (nRBE2 != 0 and input->Get_RigidCriteria() == 1) {
-                if (verbose){std::cout << "-->  Update penalty matrix for RBEs "  << std::endl;}
+            if (nRBE2 != 0 ) {
+                if (verbose){std::cout << "-->  Update residual and tangent matrix for RBEs "  << std::endl;}
+                structure->RigidResidual(input->GetPenalty());
                 structure->AssemblyRigidPenalty(input->GetPenalty());
-                structure->SolveLinearStaticSystem_RBE2_penalty(iIter);
             }
-            else {
-                structure->SolveLinearStaticSystem(iIter);
-            }
+
+            structure->SolveLinearStaticSystem(iIter);
+
 
             if (verbose){std::cout.width(17); std::cout << log10(structure->dU.norm());}
 

@@ -78,10 +78,6 @@ public:
     MatrixXdDiff Ksys;
     MatrixXdDiff Ksys_red;      // [relative to masters in case of RBE2]
     MatrixXdDiff K_penal;       // penalty matrix for rigid elements
-    VectorXdDiff V_penal;       // penalty vector for rigid elements
-    
-    MatrixXdDiff KRBE;          // Kinematic constraint matrix due to the RBE2 elements   [totalDOFs, BossDOFs]
-    MatrixXdDiff KRBE_ext;      // Kinematic constraint matrix due to the RBE2 elements   [totalDOFs, BossDOFs]
     
     MatrixXdDiff  Constr_matrix;// COnstraint matrix [ NODE_ID DOF_ID ]
     
@@ -93,7 +89,6 @@ public:
 
     VectorXdDiff U_adj;         // Adjoint of the displacement array (cumulative)
     
-    VectorXdDiff Fpenal;        // Array of internal forces
     VectorXdDiff Fint;          // Array of internal forces
     VectorXdDiff Fext;          // Array of External Forces
     VectorXdDiff Residual;      // Array of Unbalanced Forces
@@ -132,6 +127,8 @@ public:
 
     inline void AddRBE2(CInput *input, CRBE2** container_RBE2) {nRBE2 = input->Get_nRBE2(); RBE2 = container_RBE2;}
 
+    void RigidResidual();
+    
     void AssemblyRigidConstr();
 
     void AssemblyRigidPenalty(addouble penalty);
