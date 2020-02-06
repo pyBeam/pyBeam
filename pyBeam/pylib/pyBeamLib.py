@@ -51,7 +51,7 @@ class pyBeamSolver:
     print("\n---------------------------------------------------------------------------")
     print("|                                                                         |")
     print("| pyBeam, a Beam Solver - Release 0.1 (beta)                              |")
-    print("|                       - https://github.com/rsanfer/pyBeam               |")
+    print("|                       - https://github.com/pyBeam/pyBeam               |")
     print("|                                                                         |")
     print("---------------------------------------------------------------------------")
     print("|                                                                         |")
@@ -76,6 +76,7 @@ class pyBeamSolver:
     print("|                                                                         |")
     print("---------------------------------------------------------------------------\n")
 
+
     # Parsing config file
     self.Config = pyConfig.pyBeamConfig(self.Config_file)  # Beam configuration file
 
@@ -90,7 +91,6 @@ class pyBeamSolver:
     self.RBE2_py, self.nRBE2 = pyInput.readRBE2(self.Mesh_file)
     # Parsing Property file
     self.Prop, self.nProp = pyInput.readProp(self.Property)
-
     # Initializing objects
     self.beam = pyBeam.CBeamSolver()
     self.inputs = pyBeam.CInput(self.nPoint, self.nElem, self.nRBE2)

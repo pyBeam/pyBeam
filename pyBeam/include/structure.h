@@ -97,6 +97,7 @@ public:
     VectorXdDiff Fnom;          // Array of nominal forces
     
     addouble YoungModulus;
+    addouble penalty;
     
     CStructure(CInput *input, CElement **container_element, CNode **container_node);
     
@@ -104,7 +105,7 @@ public:
     
     /*##############################################################
      *
-     *         External Forces, Residual, Intenral Forces
+     *         External Forces, Residual, Internal Forces
      *
      *###############################################################*/
     
@@ -117,7 +118,7 @@ public:
     // External forces are normalized by the Young Modulus
     inline void UpdateExtForces(addouble lambda){ Fext = lambda* Fnom / YoungModulus; }
 
-    void EvalResidual(unsigned short rigid);
+    void EvalResidual();
 
     void EvalPenaltyForces(addouble penalty);
 
@@ -127,12 +128,15 @@ public:
 
     inline void AddRBE2(CInput *input, CRBE2** container_RBE2) {nRBE2 = input->Get_nRBE2(); RBE2 = container_RBE2;}
 
-    void RigidResidual();
+    void SetPenalty() {  penalty = 10*Ksys.diagonal().maxCoeff(); };
     
+    void RigidResidual();
+
+    void AssemblyRigidPenalty();
+
+    //To be removed
     void AssemblyRigidConstr();
-
-    void AssemblyRigidPenalty(addouble penalty);
-
+    
     void UpdateRigidConstr(int iIter);
 
     //===================================================
@@ -151,10 +155,6 @@ public:
     // Assembles LHS and RHS and solves the linear static problem
 
     void SolveLinearStaticSystem(int iIter);
-
-    void SolveLinearStaticSystem_RBE2(int iIter);
-
-    void SolveLinearStaticSystem_RBE2_penalty(int iIter);
 
     //===================================================
     //      Update Coordinates

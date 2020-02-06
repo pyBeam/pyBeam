@@ -318,7 +318,7 @@ def Check_RBE2(RBE2, nRBE2):
 def readRBE2(Mesh_file):	
 
     RBE2 = []
-          
+    nRBE2 = 0
     with open(Mesh_file, 'r') as meshfile:
       #print('Opened mesh file ' + Mesh_file + '.')
       while 1:
@@ -346,9 +346,7 @@ def readRBE2(Mesh_file):
 
           continue
         else:
-          nRBE2 = 0
           continue	
-      
     Check_RBE2(RBE2, nRBE2)    
     
     return RBE2, nRBE2	

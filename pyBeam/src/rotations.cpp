@@ -75,6 +75,79 @@ void RotToPseudo(Vector3dDiff& pseudo , Matrix3dDiff R) {
 
 /**********************************
  *
+ *        RotToPseudo
+ *
+ **********************************  */
+/* This routine, given a rotation matrix,
+transforms it in its pseudo-vector form */
+/*
+void RotToPseudo2(Vector3dDiff& pseudo , Matrix3dDiff R) {
+    
+    addouble norm_rho= 0.0 ;
+    addouble sin = 0.0;               // Angle of Rotation
+    addouble cos = 0.0;               // Angle of Rotation
+    addouble theta = 0.0;               // Angle of Rotation
+    addouble rho[3] = {0.0,0.0,0.0};
+    addouble K[3] = {0.0,0.0,0.0};
+    
+    
+    
+    // Sin and cos of the angle can be calculated
+    cos = (R.trace()  - 1.0)/2.0;
+    
+    rho[0] = R(3-1,2-1) - R(2-1,3-1);
+    rho[1] = R(1-1,3-1) - R(3-1,1-1);
+    rho[2] = R(2-1,1-1) - R(1-1,2-1);    
+    
+    rho = rho/2.0;
+    
+    norm_rho = sqrt( pow(rho[0], 2.0) + pow(rho[1], 2.0) + pow(rho[2], 2.0));    
+    for(unsigned short iVar = 0; iVar < 3; iVar++)
+                K[iVar] = rho[iVar]/norm_rho;
+    
+    sin = rho[0]/K[0];
+    
+    
+    if (abs(sin) <=1.0e-20) {
+       theta = 0.0; 
+    }
+    else if (abs(sin) > 1.0e-20 and sin > 0 )
+    
+    
+    
+    if (abs(fraction) >= 1 - 5e-16)   // (FRACTION >= ONE)
+        theta = 0.0;
+    else
+        theta = acos(fraction);
+
+    if (theta>0.0) {
+        rho[0] = R(3-1,2-1) - R(2-1,3-1);
+        rho[1] = R(1-1,3-1) - R(3-1,1-1);
+        rho[2] = R(2-1,1-1) - R(1-1,2-1);
+
+
+
+        if (norm_rho <= 1.0e-20)
+
+            pseudo  = Vector3dDiff::Zero(3);
+        else
+
+            for(unsigned short iVar = 0; iVar < 3; iVar++)
+                pseudo(iVar) = theta * rho[iVar]/norm_rho;
+
+        pseudo(2-1) = (pseudo(2-1));  // tan(pseudo(2-1));
+        pseudo(3-1) = (pseudo(3-1));  // tan(pseudo(3-1));
+
+    }
+    else {
+        pseudo  = VectorXdDiff::Zero(3);
+    }
+
+}
+*/
+
+/**********************************
+ *
  *      PseudotoRot
  *
  **********************************  */

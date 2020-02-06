@@ -35,8 +35,8 @@ CRBE2::CRBE2(int RBE2_ID) {
 void CRBE2::Initializer(CNode* Node_mast, CNode* Node_slv) {
 
     // Associate the nodes object
-    SetNode_1(Node_mast);
-    SetNode_2(Node_slv);
+    SetNodeMaster(Node_mast);
+    SetNodeSlave(Node_slv);
     // Calculate element DOFs
     setGlobalDOFs();
     // set rigid element length
@@ -101,17 +101,16 @@ void CRBE2::InitializeJacobian( ) {
             -axis_vector0(3 - 1), 0, axis_vector0(1 - 1),
             axis_vector0(2 - 1), -axis_vector0(1 - 1), 0;
     
-    MStrans0 = MStrans;
-    
     G.block(0,0, 3 , 3) =  -MatrixXdDiff::Identity(3,3);
     G.block(3,3, 3 , 3) =  -MatrixXdDiff::Identity(3,3);
     
     G.block(0,6, 3 , 3) =  MatrixXdDiff::Identity(3,3);
     G.block(3,9, 3 , 3) =  MatrixXdDiff::Identity(3,3);    
     
-    G.block(0,3, 3 , 3) =  MStrans;  
+    G.block(0,3, 3 , 3) =  -MStrans;  
     
-    
+
+    //std::cout << "G " <<  " = \n" << G  <<std::endl;    
 };
 
 void CRBE2::InitializeHessian() {
@@ -122,7 +121,7 @@ void CRBE2::InitializeHessian() {
             axis_vector0(2 - 1), -2*axis_vector0(1 - 1),0,
             axis_vector0(3 - 1), 0, -2*axis_vector0(1 - 1);
     
-    H_0.block(9,9,3,3) = H_0_red/2;
+    H_0.block(4-1,4-1,3,3) = H_0_red/2;
     
     // H_1
     MatrixXdDiff H_1_red = MatrixXdDiff::Zero(3,3);
@@ -130,27 +129,47 @@ void CRBE2::InitializeHessian() {
             axis_vector0(1 - 1), 0,axis_vector0(3 - 1),
             0, axis_vector0(3 - 1), -2*axis_vector0(2 - 1);
     
-    H_1.block(9,9,3,3) = H_1_red/2;    
+    H_1.block(4-1,4-1,3,3) = H_1_red/2;    
     
     // H_2
     MatrixXdDiff H_2_red = MatrixXdDiff::Zero(3,3);
-    H_2_red << -2*axis_vector0(2 - 1), axis_vector0(1 - 1), 0,
-            axis_vector0(1 - 1), 0,axis_vector0(3 - 1),
-            0, axis_vector0(3 - 1), -2*axis_vector0(2 - 1);
+    H_2_red << -2*axis_vector0(3 - 1), 0, axis_vector0(1 - 1),
+            0, -2*axis_vector0(3 - 1),axis_vector0(2 - 1),
+            axis_vector0(1 - 1), axis_vector0(2 - 1), 0;
     
-    H_2.block(9,9,3,3) = H_2_red/2;     
+    H_2.block(4-1,4-1,3,3) = H_2_red/2;     
+    /*
+    std::cout << "H_0 " <<  " = \n" << H_0  <<std::endl;  
+    std::cout << "H_1 " <<  " = \n" << H_1  <<std::endl;
+    std::cout << "H_2 " <<  " = \n" << H_2  <<std::endl;
+    */
 };
 
 void CRBE2::EvalConstraintEquation(VectorXdDiff Um, VectorXdDiff Us) {
     
     Vector3dDiff U_M_rot= Vector3dDiff::Zero();
     Matrix3dDiff R= Matrix3dDiff::Zero();
-    
+    VectorXdDiff Us_p = VectorXdDiff::Zero(3);
+    g = VectorXdDiff::Zero(6);
     U_M_rot = Um.segment(4-1,3);      // Rotation at triad A
+    //std::cout << "U_M_rot " <<  " = \n" << U_M_rot  <<std::endl;
     PseudoToRot(U_M_rot, R);
+        
+    R = R - MatrixXdDiff::Identity(3,3);
     
     g = Us - Um;
-    g.segment(0,3) += R*axis_vector0;
-    
-    
+    g.segment(0,3) += -R*axis_vector0;
+    //Us_p = Um.segment(1-1,3) + R*axis_vector0;
+    //std::cout << "g " <<  " = \n" << g  <<std::endl;
+    //std::cout << "R " <<  " = \n" << R  <<std::endl;
+    //std::cout << "axis_vector0 " <<  " = \n" << axis_vector0  <<std::endl;
+    //std::cout << "Us_constraint " <<  " = \n" << Us_p  <<std::endl;
+    std::ofstream myfile;
+    myfile.open ("g.pyBeam", fstream::in | fstream::out | fstream::app);
+    myfile << "g = "; myfile << g ; myfile << "\n ";
+    myfile.close();
+};
+
+CRBE2::~CRBE2(void) {
+
 };

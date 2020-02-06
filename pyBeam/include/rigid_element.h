@@ -62,16 +62,16 @@ private:
 
 public:
 
-    // In the constructor we assign to the RBE2 its nodes 
+    // In the constructor we assign the id
     CRBE2(int RBE2_ID) ;
 
     ~CRBE2(void);
 
     void  Initializer(CNode* Node_mast, CNode* Node_slv);
 
-    inline void SetNodeMaster( CNode* Node_mast) { node_master = Node_mast;}
+    inline void SetNodeMaster( CNode* Node_mast) { node_master = Node_mast;};
 
-    inline void SetNodeSlave( CNode* Node_slv) { node_slave = Node_slv;}
+    inline void SetNodeSlave( CNode* Node_slv) { node_slave = Node_slv;};
 
     void setGlobalDOFs();
 
@@ -80,9 +80,7 @@ public:
     void InitializeAxisVector();
     
     void EvalConstraintEquation( VectorXdDiff Um,VectorXdDiff Us);
-
-    void InitializeKinemMatrix();    
-    
+      
     void InitializeJacobian( );
 
     void InitializeHessian();    

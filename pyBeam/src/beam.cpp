@@ -194,6 +194,7 @@ void CBeamSolver::Solve(int FSIIter = 0){
             // Evaluate the Residual
             structure->EvalResidual();
 
+            
             if (verbose){std::cout.width(17); std::cout << log10(structure->Residual.norm());}
 
             /*--------------------------------------------------
@@ -205,9 +206,9 @@ void CBeamSolver::Solve(int FSIIter = 0){
             
             // Solve Linear System   K*dU = Res = Fext - Fin
             if (nRBE2 != 0 ) {
-                if (verbose){std::cout << "-->  Update residual and tangent matrix for RBEs "  << std::endl;}
-                structure->RigidResidual(input->GetPenalty());
-                structure->AssemblyRigidPenalty(input->GetPenalty());
+                structure->SetPenalty();
+                structure->RigidResidual();
+                structure->AssemblyRigidPenalty();
             }
 
             structure->SolveLinearStaticSystem(iIter);
@@ -232,16 +233,7 @@ void CBeamSolver::Solve(int FSIIter = 0){
             // Now, X, R, l are updated
             //structure->UpdateInternalForces();
             structure-> UpdateInternalForces_FP();
-            /*--------------------------------------------------
-             *   Update Penalty Forces
-             *----------------------------------------------------*/
-            
-            if (nRBE2 != 0 and input->Get_RigidCriteria() == 1)
-            {
-                //structure->UpdateAxvector_RBE2();
-                //structure->EvalPenaltyForces(input->GetPenalty());
-                //structure->UpdateRigidConstr(iIter);
-            }
+
             /*--------------------------------------------------
              *    Check Convergence
              *----------------------------------------------------*/
@@ -323,7 +315,7 @@ void CBeamSolver::RunRestart(int FSIIter = 0){
     structure->UpdateExtForces(1);
 
     // Evaluate the Residual
-    structure->EvalResidual(input->Get_RigidCriteria());
+    structure->EvalResidual();
 
     if (verbose){std::cout.width(16); std::cout << log10(structure->Residual.norm());}
 
@@ -335,19 +327,15 @@ void CBeamSolver::RunRestart(int FSIIter = 0){
     structure->AssemblyTang(1);
 
     // Solve Linear System   K*dU = Res = Fext - Fin
-    if (nRBE2 != 0 and input->Get_RigidCriteria() == 0) {
-        if (verbose){std::cout << "-->  Update KRBE matrix "  << std::endl;}
-        structure->AssemblyRigidConstr();
-        structure->SolveLinearStaticSystem_RBE2(1);
-    }
-    else if (nRBE2 != 0 and input->Get_RigidCriteria() == 1) {
+
+    if (nRBE2 != 0) {
         if (verbose){std::cout << "-->  Update penalty matrix for RBEs "  << std::endl;}
-        structure->AssemblyRigidPenalty(input->GetPenalty());
-        structure->SolveLinearStaticSystem_RBE2_penalty(1);
+        structure->SetPenalty();
+        structure->RigidResidual();
+        structure->AssemblyRigidPenalty();
     }
-    else {
         structure->SolveLinearStaticSystem(1);
-    }
+
 
     if (verbose){std::cout.width(16); std::cout << log10(structure->dU.norm());}
 
