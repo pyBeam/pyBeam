@@ -122,6 +122,9 @@ void CBeamSolver::InitializeInput(CInput* py_input){   // insert node class and 
 
 void CBeamSolver::Solve(int FSIIter = 0){
     
+    std::ofstream history;
+    history.open ("History.pyBeam");
+    
     // Beam total length
     addouble TotalLength = 0;
     for  ( unsigned long iFEM = 0; iFEM < nFEM; iFEM++) {
@@ -147,6 +150,7 @@ void CBeamSolver::Solve(int FSIIter = 0){
 
     unsigned long loadStep = 1;
     cout.setf(ios::fixed, ios::floatfield);
+    history.setf(ios::fixed, ios::floatfield);
     
     // This function set the current initial coordinates and memorizes them as the old one before the converging procedure starts
     structure->InitialCoord();
@@ -154,23 +158,42 @@ void CBeamSolver::Solve(int FSIIter = 0){
     structure->UpdateRotationMatrix_FP();  // based on the rotational displacements
     structure->UpdateLength();
     structure->UpdateInternalForces_FP();
-
+    
     totalIter = 0;
     for  ( loadStep = 0; loadStep < input->Get_LoadSteps(); loadStep++) {
-
+        
         lambda = dlambda*(loadStep+1);
         if (verbose){
-        std::cout << "===========================================================================" << std::endl;
-        std::cout << "==       LOAD STEP     " << loadStep << std::endl;
-        std::cout.precision(8);
-        std::cout << "==       Lambda        " << lambda << std::endl;
-        std::cout << "===========================================================================" << std::endl;
-
-        std::cout.width(6); std::cout << "Iter";
-        std::cout.width(17); std::cout << "Log10(Norm_Res)";
-        std::cout.width(17); std::cout << "Log10(Lin_Sol)";
-        std::cout.width(17); std::cout << "Log10(Norm_Disp)";
-        std::cout.width(17); std::cout << "Log10(Disp_Fact)" << std::endl;
+            std::cout << "===========================================================================" << std::endl;
+            std::cout << "==       LOAD STEP     " << loadStep << std::endl;
+            std::cout.precision(8);
+            std::cout << "==       Lambda        " << lambda << std::endl;
+            std::cout << "===========================================================================" << std::endl;
+            
+            std::cout.width(6); std::cout << "Iter";
+            std::cout.width(17); std::cout << "Log10(Norm_Res)";
+            if (nRBE2 != 0 ) {
+                std::cout.width(17); std::cout << " Log10(Norm[Res+Constr])";    
+            }
+            std::cout.width(17); std::cout << "Log10(Lin_Sol)";
+            std::cout.width(17); std::cout << "Log10(Norm_Disp)";
+            std::cout.width(17); std::cout << "Log10(Disp_Fact)" << std::endl;
+            
+            // WRITE HISTORY FILE
+            history << "===========================================================================" << std::endl;
+            history << "==       LOAD STEP     " << loadStep << std::endl ;
+            history.precision(8);
+            history << "==       Lambda        " << lambda << std::endl ;
+            history << "===========================================================================" << std::endl;
+            
+            history.width(6); history << "Iter";
+            history.width(17); history << "Log10(Norm_Res)";
+            if (nRBE2 != 0 ) {
+                history.width(17); history << " Log10(Norm[Res+Constr])";    
+            }
+            history.width(17); history << "Log10(Lin_Sol)";
+            history.width(17); history << "Log10(Norm_Disp)";
+            history.width(17); history << "Log10(Disp_Fact)" << std::endl;        
         }
         
         //===============================================
@@ -180,7 +203,8 @@ void CBeamSolver::Solve(int FSIIter = 0){
         
         for (iIter = 0; iIter < input->Get_nIter(); iIter++) {
 
-            if (verbose){std::cout.width(6); std::cout << iIter;}
+            if (verbose){std::cout.width(6); std::cout << iIter;
+                         history.width(6); history << iIter;}
 
             //std::cout << "   ----- ITERATION  -----" << iIter << std::endl;
             
@@ -195,7 +219,10 @@ void CBeamSolver::Solve(int FSIIter = 0){
             structure->EvalResidual();
 
             
-            if (verbose){std::cout.width(17); std::cout << log10(structure->Residual.norm());}
+            if (verbose){
+                std::cout.width(17); std::cout << log10(structure->Residual.norm());
+                history.width(17); history << log10(structure->Residual.norm());
+            }
 
             /*--------------------------------------------------
              *   Assembly Ktang, Solve System
@@ -208,13 +235,20 @@ void CBeamSolver::Solve(int FSIIter = 0){
             if (nRBE2 != 0 ) {
                 structure->SetPenalty();
                 structure->RigidResidual();
+                if (verbose){
+                    std::cout.width(17); std::cout << log10(structure->Residual.norm());
+                    history.width(17); history << log10(structure->Residual.norm());
+                }
                 structure->AssemblyRigidPenalty();
             }
 
-            structure->SolveLinearStaticSystem(iIter);
+            structure->SolveLinearStaticSystem(iIter,history,1);
 
 
-            if (verbose){std::cout.width(17); std::cout << log10(structure->dU.norm());}
+            if (verbose){
+                std::cout.width(17); std::cout << log10(structure->dU.norm());
+                history.width(17); history << log10(structure->dU.norm());
+            }
 
             /*--------------------------------------------------
              *   Updates Coordinates, Updates Rotation Matrices
@@ -240,8 +274,11 @@ void CBeamSolver::Solve(int FSIIter = 0){
             
             addouble disp_factor =   structure->dU.norm()/TotalLength;
 
-            if (verbose){std::cout.width(17); std::cout << log10(disp_factor);}
-            if (verbose){std::cout << std::endl;}
+            if (verbose){
+                std::cout.width(17); std::cout << log10(disp_factor);
+                history.width(17); history << log10(disp_factor);
+            }
+            if (verbose){std::cout << std::endl;  history << std::endl;}
             
             if (disp_factor <= input->Get_ConvCriteria()) {
                 converged = true;
@@ -254,19 +291,22 @@ void CBeamSolver::Solve(int FSIIter = 0){
     
     if (verbose){
     std::cout << "===========================================================================" << std::endl;
+    history << "==========================================================================="<< std::endl;
     std::cout << std::endl << "--> Writing Restart file (restart.pyBeam)." << std::endl;
     }
     WriteRestart();
     if (verbose){std::cout << std::endl << "--> Exiting Iterative Sequence." << std::endl;}
 
-    
+    history.close();
     
 }
 
 void CBeamSolver::RunRestart(int FSIIter = 0){
 
+    std::ofstream history;
+    
     // This function set the current initial coordinates and memorizes them as the old one before the converging procedure starts
-
+    
     // Beam total length
     addouble TotalLength = 0;
     for  ( unsigned long iFEM = 0; iFEM < nFEM; iFEM++) {
@@ -294,6 +334,8 @@ void CBeamSolver::RunRestart(int FSIIter = 0){
     std::cout << "===========================================================================" << std::endl;
 
     cout.setf(ios::fixed, ios::floatfield);
+    history.setf(ios::fixed, ios::floatfield);
+    
     std::cout.width(8); std::cout << "Iter";
     std::cout.width(16); std::cout << "Log10(Res)";
     std::cout.width(17); std::cout << "Log10(Lin_Sol)";
@@ -334,7 +376,7 @@ void CBeamSolver::RunRestart(int FSIIter = 0){
         structure->RigidResidual();
         structure->AssemblyRigidPenalty();
     }
-        structure->SolveLinearStaticSystem(1);
+        structure->SolveLinearStaticSystem(1, history, 0);
 
 
     if (verbose){std::cout.width(16); std::cout << log10(structure->dU.norm());}

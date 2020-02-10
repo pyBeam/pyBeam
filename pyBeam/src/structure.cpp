@@ -229,10 +229,10 @@ void CStructure::RigidResidual()
         
         //Evaluating the rigid component of the residual 
         residual_rigid = penalty*RBE2[iRBE2]->G.transpose()*RBE2[iRBE2]->g;
-        //cout << "residual_rigid = \n" <<residual_rigid << endl;
-        //cout << "Residual = \n" <<Residual << endl;
-        Residual.segment(RBE2[iRBE2]->MasterDOFs(1 - 1) - 1,6) += -residual_rigid.segment(1 -1,6);
-        Residual.segment(RBE2[iRBE2]->SlaveDOFs(1 - 1) - 1,6) += -residual_rigid.segment(7 -1,6);
+        cout << "residual_rigid = \n" <<setprecision(20)<<residual_rigid << endl;
+        cout << "Residual = \n" <<setprecision(20)<<Residual << endl;
+        Residual.segment(RBE2[iRBE2]->MasterDOFs(1 - 1) - 1,6) = Residual.segment(RBE2[iRBE2]->MasterDOFs(1 - 1) - 1,6) +residual_rigid.segment(1 -1,6);
+        Residual.segment(RBE2[iRBE2]->SlaveDOFs(1 - 1) - 1,6) = Residual.segment(RBE2[iRBE2]->SlaveDOFs(1 - 1) - 1,6) +residual_rigid.segment(7 -1,6);
         
     }
     
@@ -242,7 +242,7 @@ void CStructure::RigidResidual()
         constr_dof_id = round(AD::GetValue((Constr_matrix(iii-1,1-1) -1) *6 + Constr_matrix(iii-1,2-1)));
         Residual(constr_dof_id-1) = 0.0;
     }
-    //cout << "Residual2 = \n" <<Residual << endl;
+    cout << "Residual+RBE = \n" <<setprecision(20)<<Residual << endl;
 }
 
 
@@ -281,7 +281,7 @@ void CStructure::AssemblyRigidPenalty()
         Krbe1 = RBE2[iRBE2]->G.transpose()*RBE2[iRBE2]->G;
         // sum_i g_i*H_i (from the Hessian of the constraint set of equations)
         // Eye here: we have a minus for this   
-        //Krbe2 = - RBE2[iRBE2]->g(0)*RBE2[iRBE2]->H_0 - RBE2[iRBE2]->g(1)*RBE2[iRBE2]->H_1 - RBE2[iRBE2]->g(2)*RBE2[iRBE2]->H_2 - RBE2[iRBE2]->g(3)*RBE2[iRBE2]->H_3 - RBE2[iRBE2]->g(4)*RBE2[iRBE2]->H_4 - RBE2[iRBE2]->g(5)*RBE2[iRBE2]->H_5;
+        Krbe2 =  RBE2[iRBE2]->g(0)*RBE2[iRBE2]->H_0 + RBE2[iRBE2]->g(1)*RBE2[iRBE2]->H_1 + RBE2[iRBE2]->g(2)*RBE2[iRBE2]->H_2 + RBE2[iRBE2]->g(3)*RBE2[iRBE2]->H_3 + RBE2[iRBE2]->g(4)*RBE2[iRBE2]->H_4 + RBE2[iRBE2]->g(5)*RBE2[iRBE2]->H_5;
         
         // Expansion in to the system's tangent matrix
         K_penal.block(RBE2[iRBE2]->MasterDOFs(1 -1) -1,RBE2[iRBE2]->MasterDOFs(1 -1) -1, 6 , 6) = Krbe1.block(1 -1, 1 -1, 6, 6) + Krbe2.block(1 -1, 1 -1, 6, 6);
@@ -297,7 +297,7 @@ void CStructure::AssemblyRigidPenalty()
     }
     
     // Penalty application
-    Ksys  +=     K_penal*penalty;
+    Ksys  +=   - K_penal*penalty;
        
     //cout << "K_penal = \n" <<K_penal << endl;
     //cout << "V_penal = \n" <<V_penal << endl;
@@ -558,8 +558,6 @@ void CStructure::EvalSensRot(){
         
         gamma = I - (e1_star- E3*e1_star)*(- e1_star + E2*e1_star);
         
-        // dU = Ksys.fullPivHouseholderQr().solve(Residual);
-        //de3 = gamma.fullPivHouseholderQr().solve( (e1_star - E3*e1_star)*beta + alpha );
         
         de3 = alpha;
         
@@ -602,6 +600,7 @@ void CStructure::EvalSensRot(){
  WARNING: (Fext and Fint need to be updated before)    */
 
 void CStructure::EvalResidual() {
+    Residual =  VectorXdDiff::Zero(nNode*6);
     Residual = Fext - Fint;
 
     int iii = 0; int constr_dof_id = 0;
@@ -622,7 +621,7 @@ void CStructure::EvalResidual() {
  Solves the linear static problem.
  It needs Ksys and Residual updated*/
 
-void CStructure::SolveLinearStaticSystem(int iIter) {
+void CStructure::SolveLinearStaticSystem(int iIter, std::ofstream &history, int print) {
 
     bool TapeActive = false;
 
@@ -684,7 +683,10 @@ void CStructure::SolveLinearStaticSystem(int iIter) {
 
     addouble relative_error = (Ksys*dU -Residual).norm() / Residual.norm(); // norm() is L2 norm
 
-    if (verbose){std::cout.width(17); std::cout << log10(relative_error);}
+    if (verbose){
+        std::cout.width(17); std::cout << log10(relative_error);
+        if (print=1) {history.width(17); history << log10(relative_error); };
+    }
 
     if (relative_error > tol_LinSol)
     {
@@ -692,7 +694,7 @@ void CStructure::SolveLinearStaticSystem(int iIter) {
         std::cout << "Use Keyword TOLERANCE_LINSOL" << std:: endl;
         throw std::exception();
     }
-
+    
     //	Decomposition  	                   Method     Requirements          Speed   Accuracy
     //	PartialPivLU 	             partialPivLu()  Invertible             ++      +
     //	FullPivLU 	                    fullPivLu() 	None                -       +++
@@ -702,6 +704,10 @@ void CStructure::SolveLinearStaticSystem(int iIter) {
     //	LLT 	                          llt() 	Positive definite       +++ 	+
     //	LDLT 	                         ldlt() Positive or negative semidefinite 	+++ 	++
     //std::cout << "U " <<  " = \n" << setprecision(15)<< U  <<std::endl;
+    std::ofstream myfile;
+    myfile.open ("Residual.pyBeam", fstream::in | fstream::out | fstream::app);
+    myfile << "Residual= "; myfile <<setprecision(15)<<  Residual ; myfile << "\n ";
+    myfile.close();
 }
 
 /*===================================================

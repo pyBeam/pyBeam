@@ -128,7 +128,7 @@ public:
 
     inline void AddRBE2(CInput *input, CRBE2** container_RBE2) {nRBE2 = input->Get_nRBE2(); RBE2 = container_RBE2;}
 
-    void SetPenalty() {  penalty = 10*Ksys.diagonal().maxCoeff(); };
+    void SetPenalty() {  penalty = 100*Ksys.diagonal().maxCoeff(); };
     
     void RigidResidual();
 
@@ -154,7 +154,7 @@ public:
     //===================================================
     // Assembles LHS and RHS and solves the linear static problem
 
-    void SolveLinearStaticSystem(int iIter);
+    void SolveLinearStaticSystem(int iIter, std::ofstream &history , int print);
 
     //===================================================
     //      Update Coordinates
