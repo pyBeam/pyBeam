@@ -42,7 +42,7 @@ public:
     int RBE2dofs = 12;   // RBE2 DOFs
 
     addouble l_rigid;                    // Rigid Length  
-    VectorXdDiff axis_vector0;           // axis vector master --> slave (non unitary)
+    VectorXdDiff ax;           // axis vector master --> slave (non unitary)
 
     VectorXi MasterDOFs  =  VectorXi::Zero(6); // Master DOFs
     VectorXi SlaveDOFs  =  VectorXi::Zero(6); // Slave DOFs  
@@ -82,6 +82,8 @@ public:
     void EvalConstraintEquation( VectorXdDiff Um,VectorXdDiff Us);
       
     void InitializeJacobian( );
+    
+    void EvalJacobian(VectorXdDiff Um );
 
     void InitializeHessian();    
     
