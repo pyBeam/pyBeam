@@ -284,16 +284,21 @@ void CStructure::RigidResidual_FD()
     myfile << "residual_rigid= "; myfile <<setprecision(15)<<  residual_rigid/penalty ; myfile << "\n ";
     myfile.close();    
     //debug
-    /*
+    
     Um = U.segment(RBE2[0]->MasterDOFs(1 - 1) - 1, 6);
     Us = U.segment(RBE2[0]->SlaveDOFs(1 - 1) - 1, 6);
     RBE2[0]->EvalConstraintEquation( Um,  Us);
+    /*
     std::cout << "g  = " << RBE2[0]->g(0)  << " " << RBE2[0]->g(1)  << " " << RBE2[0]->g(2)  << " " << RBE2[0]->g(3)  << " " << RBE2[0]->g(4)  << " " << RBE2[0]->g(5)  << " " << std::endl;            
     RBE2[0]->EvalJacobian( Um);
     cout << "G = \n" <<RBE2[0]->G.transpose() << endl;  
     residual_rigid = RBE2[0]->G.transpose()*RBE2[0]->g;
     cout << "residual_rigid/penalty = \n" <<residual_rigid << endl;    
     */
+    
+    myfile.open ("g.pyBeam", fstream::in | fstream::out | fstream::app);
+    ; myfile << RBE2[0]->g ; myfile << "\n "; myfile << "\n ";
+    myfile.close();
 }
 
 
@@ -315,14 +320,14 @@ void CStructure::RigidResidual()
         VectorXdDiff Us = U.segment(RBE2[iRBE2]->SlaveDOFs(1 - 1) - 1, 6);
         
         RBE2[iRBE2]->EvalConstraintEquation( Um,  Us);
-        RBE2[0]->EvalJacobian( Um);
+        RBE2[iRBE2]->EvalJacobian( Um);
         
         //Evaluating the rigid component of the residual 
         residual_rigid = penalty*RBE2[iRBE2]->G.transpose()*RBE2[iRBE2]->g;
         //cout << "residual_rigid = \n" <<setprecision(20)<<residual_rigid << endl;
         //cout << "Residual = \n" <<setprecision(20)<<Residual << endl;
-        Residual.segment(RBE2[iRBE2]->MasterDOFs(1 - 1) - 1,6) = Residual.segment(RBE2[iRBE2]->MasterDOFs(1 - 1) - 1,6) +residual_rigid.segment(1 -1,6);
-        Residual.segment(RBE2[iRBE2]->SlaveDOFs(1 - 1) - 1,6) = Residual.segment(RBE2[iRBE2]->SlaveDOFs(1 - 1) - 1,6) +residual_rigid.segment(7 -1,6);
+        Residual.segment(RBE2[iRBE2]->MasterDOFs(1 - 1) - 1,6) = Residual.segment(RBE2[iRBE2]->MasterDOFs(1 - 1) - 1,6) -residual_rigid.segment(1 -1,6);
+        Residual.segment(RBE2[iRBE2]->SlaveDOFs(1 - 1) - 1,6) = Residual.segment(RBE2[iRBE2]->SlaveDOFs(1 - 1) - 1,6) -residual_rigid.segment(7 -1,6);
         
     }
     
@@ -552,15 +557,17 @@ void CStructure::AssemblyRigidPenalty()
         Um = U.segment(RBE2[iRBE2]->MasterDOFs(1 - 1) - 1, 6);
         Us = U.segment(RBE2[iRBE2]->SlaveDOFs(1 - 1) - 1, 6);
 
-        
+        RBE2[iRBE2]->EvalConstraintEquation( Um,  Us);
+        RBE2[iRBE2]->EvalJacobian( Um);
+        RBE2[iRBE2]->EvalHessian( Um);
         //// Penalty matrix has 2 contributions:
         
         // G^T*G (the Jacobian of the constraint set of equations)
         Krbe1 =  MatrixXdDiff::Zero(12,12);
+        Krbe2 =  MatrixXdDiff::Zero(12,12);
         Krbe1 = RBE2[iRBE2]->G.transpose()*RBE2[iRBE2]->G;
         // sum_i g_i*H_i (from the Hessian of the constraint set of equations)
-         
-        Krbe2 =  RBE2[iRBE2]->g(0)*RBE2[iRBE2]->H_0 + RBE2[iRBE2]->g(1)*RBE2[iRBE2]->H_1 + RBE2[iRBE2]->g(2)*RBE2[iRBE2]->H_2 + RBE2[iRBE2]->g(3)*RBE2[iRBE2]->H_3 + RBE2[iRBE2]->g(4)*RBE2[iRBE2]->H_4 + RBE2[iRBE2]->g(5)*RBE2[iRBE2]->H_5;
+        //Krbe2 =  RBE2[iRBE2]->g(0)*RBE2[iRBE2]->H_0 + RBE2[iRBE2]->g(1)*RBE2[iRBE2]->H_1 + RBE2[iRBE2]->g(2)*RBE2[iRBE2]->H_2;// + RBE2[iRBE2]->g(3)*RBE2[iRBE2]->H_3 + RBE2[iRBE2]->g(4)*RBE2[iRBE2]->H_4 + RBE2[iRBE2]->g(5)*RBE2[iRBE2]->H_5;
         
         // Expansion in to the system's tangent matrix
         K_penal.block(RBE2[iRBE2]->MasterDOFs(1 -1) -1,RBE2[iRBE2]->MasterDOFs(1 -1) -1, 6 , 6) = Krbe1.block(1 -1, 1 -1, 6, 6) + Krbe2.block(1 -1, 1 -1, 6, 6);
@@ -576,7 +583,7 @@ void CStructure::AssemblyRigidPenalty()
     }
     
     // Penalty application
-    Ksys  +=   - K_penal*penalty;
+    Ksys  +=   K_penal*penalty;
            
     
     // We need to impose again the boundary conditions
@@ -1022,7 +1029,7 @@ void CStructure::UpdateCoord() {
     VectorXdDiff DX;
     DX = VectorXdDiff::Zero(nNode*3);
 
-
+ 
     // Browsing all the nodes of the current segment
     for (int id_node=1-1; id_node<=nNode-1 ; id_node++) {
         
@@ -1052,7 +1059,7 @@ void CStructure::UpdateCoord() {
         U_rot_new = Vector3dDiff::Zero();
         RotToPseudo(U_rot_new , R_U_new);
         U.segment(posU+3 -1,3) = U_rot_new;
-
+                  
         // Updating the node's coordinates
         for (int iDim=0; iDim < 3; iDim++) {
             node[id_node]->SetCoordinate(iDim, X(posX+iDim-1)) ;
@@ -1112,7 +1119,7 @@ void CStructure::SetCoord0()
     X0 = VectorXdDiff::Zero(nNode*3);
 
     int posX = 1;    // current  position in the X array
-    int count = 0;   // number of fe upstream the node
+    int count = 0;   // number of fem upstream the node
 
     //Browse the nodes    (again this is not related to the number of fem elements)
     for (int id_node=1-1; id_node<= nNode -1; id_node++) {

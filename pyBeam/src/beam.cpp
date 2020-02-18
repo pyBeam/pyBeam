@@ -234,14 +234,14 @@ void CBeamSolver::Solve(int FSIIter = 0){
             // Solve Linear System   K*dU = Res = Fext - Fin
             if (nRBE2 != 0 ) {
                 structure->SetPenalty();
-                //structure->RigidResidual();
-                structure->RigidResidual_FD();
+                structure->RigidResidual();
+                //structure->RigidResidual_FD();
                 if (verbose){
                     std::cout.width(17); std::cout << log10(structure->Residual.norm());
                     history.width(17); history << log10(structure->Residual.norm());
                 }
-                //structure->AssemblyRigidPenalty();
-                structure->AssemblyRigidPenalty_FD();
+                structure->AssemblyRigidPenalty();
+                //structure->AssemblyRigidPenalty_FD();
             }
 
             structure->SolveLinearStaticSystem(iIter,history,1);

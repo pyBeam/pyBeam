@@ -84,8 +84,12 @@ public:
     void InitializeJacobian( );
     
     void EvalJacobian(VectorXdDiff Um );
+    
+    void EvalJacobian_2(VectorXdDiff Um );
 
     void InitializeHessian();    
+    
+    void EvalHessian(VectorXdDiff Um);
     
     };
     
