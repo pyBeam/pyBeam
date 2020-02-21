@@ -178,18 +178,18 @@ void CRBE2::EvalJacobian_2(VectorXdDiff Um ) {
     // 4
     L = L + ccsth*D;
     
-    G = MatrixXdDiff::Zero(6,12);       // Jacobian of the constraint equations on LHS    
+    MatrixXdDiff G_old = MatrixXdDiff::Zero(6,12);       // Jacobian of the constraint equations on LHS    
     
-    G.block(0,0, 3 , 3) =  -MatrixXdDiff::Identity(3,3);
-    G.block(3,3, 3 , 3) =  -MatrixXdDiff::Identity(3,3);
+    G_old.block(0,0, 3 , 3) =  -MatrixXdDiff::Identity(3,3);
+    G_old.block(3,3, 3 , 3) =  -MatrixXdDiff::Identity(3,3);
     
-    G.block(0,6, 3 , 3) =  MatrixXdDiff::Identity(3,3);
-    G.block(3,9, 3 , 3) =  MatrixXdDiff::Identity(3,3); 
+    G_old.block(0,6, 3 , 3) =  MatrixXdDiff::Identity(3,3);
+    G_old.block(3,9, 3 , 3) =  MatrixXdDiff::Identity(3,3); 
 
 
-    G.block(0,3, 3 , 3) =  -L;  
+    G_old.block(0,3, 3 , 3) =  -L;  
     
-    //std::cout << "G " <<  " = \n" << G  <<std::endl;    
+    std::cout << "G_old " <<  " = \n" << G_old  <<std::endl;    
     //std::cout << "G^T*G " <<  " = \n" << G.transpose()*G  <<std::endl;     
     
 }
@@ -204,7 +204,7 @@ void CRBE2::EvalJacobian(VectorXdDiff Um ) {
     addouble theta_sq = ( pow(Umrx,2) + pow(Umry,2) + pow(Umrz,2) );
     if (theta < 1.0e-16 ) {theta = 1.0e-16; };  //to avoid singularities 
     if (theta_sq < 1.0e-16 ) {theta_sq = 1.0e-16; };  //to avoid singularities     
-
+       
        G(0,0) = -1.0;
        G(0,3) = ((ax(1)*Umry+ax(2)*Umrz)*(cos(theta)-1.0))/(theta_sq)+(Umrx*cos(theta)*(ax(1)*Umrz-ax(2)*Umry))/(theta_sq)-Umrx*sin(theta)*(ax(1)*Umrz-ax(2)*Umry)*1.0/pow(theta_sq,3.0/2.0)-Umrx*sin(theta)*(-ax(0)*(Umry*Umry+Umrz*Umrz)+ax(1)*Umrx*Umry+ax(2)*Umrx*Umrz)*1.0/pow(theta_sq,3.0/2.0)-Umrx*(cos(theta)-1.0)*(-ax(0)*(Umry*Umry+Umrz*Umrz)+ax(1)*Umrx*Umry+ax(2)*Umrx*Umrz)*1.0/pow(theta_sq,2.0)*2.0;
        G(0,4) = -((ax(0)*Umry*2.0-ax(1)*Umrx)*(cos(theta)-1.0))/(theta_sq)-ax(2)*sin(theta)*1.0/theta+(Umry*cos(theta)*(ax(1)*Umrz-ax(2)*Umry))/(theta_sq)-Umry*sin(theta)*(ax(1)*Umrz-ax(2)*Umry)*1.0/pow(theta_sq,3.0/2.0)-Umry*sin(theta)*(-ax(0)*(Umry*Umry+Umrz*Umrz)+ax(1)*Umrx*Umry+ax(2)*Umrx*Umrz)*1.0/pow(theta_sq,3.0/2.0)-Umry*(cos(theta)-1.0)*(-ax(0)*(Umry*Umry+Umrz*Umrz)+ax(1)*Umrx*Umry+ax(2)*Umrx*Umrz)*1.0/pow(theta_sq,2.0)*2.0;
@@ -213,18 +213,21 @@ void CRBE2::EvalJacobian(VectorXdDiff Um ) {
        G(1,1) = -1.0;
        G(1,3) = ((ax(0)*Umry-ax(1)*Umrx*2.0)*(cos(theta)-1.0))/(theta_sq)+ax(2)*sin(theta)*1.0/theta-(Umrx*cos(theta)*(ax(0)*Umrz-ax(2)*Umrx))/(theta_sq)+Umrx*sin(theta)*(ax(0)*Umrz-ax(2)*Umrx)*1.0/pow(theta_sq,3.0/2.0)-Umrx*sin(theta)*(-ax(1)*(Umrx*Umrx+Umrz*Umrz)+ax(0)*Umrx*Umry+ax(2)*Umry*Umrz)*1.0/pow(theta_sq,3.0/2.0)-Umrx*(cos(theta)-1.0)*(-ax(1)*(Umrx*Umrx+Umrz*Umrz)+ax(0)*Umrx*Umry+ax(2)*Umry*Umrz)*1.0/pow(theta_sq,2.0)*2.0;
        G(1,4) = ((ax(0)*Umrx+ax(2)*Umrz)*(cos(theta)-1.0))/(theta_sq)-(Umry*cos(theta)*(ax(0)*Umrz-ax(2)*Umrx))/(theta_sq)+Umry*sin(theta)*(ax(0)*Umrz-ax(2)*Umrx)*1.0/pow(theta_sq,3.0/2.0)-Umry*sin(theta)*(-ax(1)*(Umrx*Umrx+Umrz*Umrz)+ax(0)*Umrx*Umry+ax(2)*Umry*Umrz)*1.0/pow(theta_sq,3.0/2.0)-Umry*(cos(theta)-1.0)*(-ax(1)*(Umrx*Umrx+Umrz*Umrz)+ax(0)*Umrx*Umry+ax(2)*Umry*Umrz)*1.0/pow(theta_sq,2.0)*2.0;
-       G(1,5) = -((ax(1)*Umrz*2.0-ax(2)*Umry)*(cos(theta)-1.0))/(theta_sq)-ax(0)*sin(theta)*1.0/theta-(Umrz*cos(theta)*(ax(0)*Umrz-ax(2)*Umrx))/(theta_sq)+Umrz*sin(theta)*(ax(0)*Umrz-ax(2)*Umrx)*1.0/pow(theta_sq,3.0/2.0)-Umrz*sin(theta)*(-ax(1)*(Umrx*Umrx+Umrz*Umrz)+ax(0)*Umrx*Umry+ax(2)*Umry*Umrz)*1.0/pow(theta_sq,3.0/2.0)-Umrz*(cos(theta)-1.0)*(-ax(1)*(Umrx*Umrx+Umrz*Umrz)+ax(0)*Umrx*Umry+ax(2)*Umry*Umrz)*1.0/pow(theta_sq,2.0)*2.0;
-       G(1,7) = 1.0;
-       G(2,2) = -1.0;
-       G(2,3) = ((ax(0)*Umrz-ax(2)*Umrx*2.0)*(cos(theta)-1.0))/(theta_sq)-ax(1)*sin(theta)*1.0/theta+(Umrx*cos(theta)*(ax(0)*Umry-ax(1)*Umrx))/(theta_sq)-Umrx*sin(theta)*(ax(0)*Umry-ax(1)*Umrx)*1.0/pow(theta_sq,3.0/2.0)-Umrx*sin(theta)*(-ax(2)*(Umrx*Umrx+Umry*Umry)+ax(0)*Umrx*Umrz+ax(1)*Umry*Umrz)*1.0/pow(theta_sq,3.0/2.0)-Umrx*(cos(theta)-1.0)*(-ax(2)*(Umrx*Umrx+Umry*Umry)+ax(0)*Umrx*Umrz+ax(1)*Umry*Umrz)*1.0/pow(theta_sq,2.0)*2.0;
-       G(2,4) = ((ax(1)*Umrz-ax(2)*Umry*2.0)*(cos(theta)-1.0))/(theta_sq)+ax(0)*sin(theta)*1.0/theta+(Umry*cos(theta)*(ax(0)*Umry-ax(1)*Umrx))/(theta_sq)-Umry*sin(theta)*(ax(0)*Umry-ax(1)*Umrx)*1.0/pow(theta_sq,3.0/2.0)-Umry*sin(theta)*(-ax(2)*(Umrx*Umrx+Umry*Umry)+ax(0)*Umrx*Umrz+ax(1)*Umry*Umrz)*1.0/pow(theta_sq,3.0/2.0)-Umry*(cos(theta)-1.0)*(-ax(2)*(Umrx*Umrx+Umry*Umry)+ax(0)*Umrx*Umrz+ax(1)*Umry*Umrz)*1.0/pow(theta_sq,2.0)*2.0;
-       G(2,5) = ((ax(0)*Umrx+ax(1)*Umry)*(cos(theta)-1.0))/(theta_sq)+(Umrz*cos(theta)*(ax(0)*Umry-ax(1)*Umrx))/(theta_sq)-Umrz*sin(theta)*(ax(0)*Umry-ax(1)*Umrx)*1.0/pow(theta_sq,3.0/2.0)-Umrz*sin(theta)*(-ax(2)*(Umrx*Umrx+Umry*Umry)+ax(0)*Umrx*Umrz+ax(1)*Umry*Umrz)*1.0/pow(theta_sq,3.0/2.0)-Umrz*(cos(theta)-1.0)*(-ax(2)*(Umrx*Umrx+Umry*Umry)+ax(0)*Umrx*Umrz+ax(1)*Umry*Umrz)*1.0/pow(theta_sq,2.0)*2.0;
-       G(2,8) = 1.0; 
-       
-       G.block(3,3, 3 , 3) =  -MatrixXdDiff::Identity(3,3);
-       G.block(3,9, 3 , 3) =  MatrixXdDiff::Identity(3,3); 
-       
-    //std::cout << "G " <<  " = \n" << G  <<std::endl;    
+        G(1,5) = -((ax(1)*Umrz*2.0-ax(2)*Umry)*(cos(theta)-1.0))/(theta_sq)-ax(0)*sin(theta)*1.0/theta-(Umrz*cos(theta)*(ax(0)*Umrz-ax(2)*Umrx))/(theta_sq)+Umrz*sin(theta)*(ax(0)*Umrz-ax(2)*Umrx)*1.0/pow(theta_sq,3.0/2.0)-Umrz*sin(theta)*(-ax(1)*(Umrx*Umrx+Umrz*Umrz)+ax(0)*Umrx*Umry+ax(2)*Umry*Umrz)*1.0/pow(theta_sq,3.0/2.0)-Umrz*(cos(theta)-1.0)*(-ax(1)*(Umrx*Umrx+Umrz*Umrz)+ax(0)*Umrx*Umry+ax(2)*Umry*Umrz)*1.0/pow(theta_sq,2.0)*2.0;
+        G(1,7) = 1.0;
+        G(2,2) = -1.0;
+        G(2,3) = ((ax(0)*Umrz-ax(2)*Umrx*2.0)*(cos(theta)-1.0))/(theta_sq)-ax(1)*sin(theta)*1.0/theta+(Umrx*cos(theta)*(ax(0)*Umry-ax(1)*Umrx))/(theta_sq)-Umrx*sin(theta)*(ax(0)*Umry-ax(1)*Umrx)*1.0/pow(theta_sq,3.0/2.0)-Umrx*sin(theta)*(-ax(2)*(Umrx*Umrx+Umry*Umry)+ax(0)*Umrx*Umrz+ax(1)*Umry*Umrz)*1.0/pow(theta_sq,3.0/2.0)-Umrx*(cos(theta)-1.0)*(-ax(2)*(Umrx*Umrx+Umry*Umry)+ax(0)*Umrx*Umrz+ax(1)*Umry*Umrz)*1.0/pow(theta_sq,2.0)*2.0;
+        G(2,4) = ((ax(1)*Umrz-ax(2)*Umry*2.0)*(cos(theta)-1.0))/(theta_sq)+ax(0)*sin(theta)*1.0/theta+(Umry*cos(theta)*(ax(0)*Umry-ax(1)*Umrx))/(theta_sq)-Umry*sin(theta)*(ax(0)*Umry-ax(1)*Umrx)*1.0/pow(theta_sq,3.0/2.0)-Umry*sin(theta)*(-ax(2)*(Umrx*Umrx+Umry*Umry)+ax(0)*Umrx*Umrz+ax(1)*Umry*Umrz)*1.0/pow(theta_sq,3.0/2.0)-Umry*(cos(theta)-1.0)*(-ax(2)*(Umrx*Umrx+Umry*Umry)+ax(0)*Umrx*Umrz+ax(1)*Umry*Umrz)*1.0/pow(theta_sq,2.0)*2.0;       
+        G(2,5) = ((ax(0)*Umrx+ax(1)*Umry)*(cos(theta)-1.0))/(theta_sq)+(Umrz*cos(theta)*(ax(0)*Umry-ax(1)*Umrx))/(theta_sq)-Umrz*sin(theta)*(ax(0)*Umry-ax(1)*Umrx)*1.0/pow(theta_sq,3.0/2.0)-Umrz*sin(theta)*(-ax(2)*(Umrx*Umrx+Umry*Umry)+ax(0)*Umrx*Umrz+ax(1)*Umry*Umrz)*1.0/pow(theta_sq,3.0/2.0)-Umrz*(cos(theta)-1.0)*(-ax(2)*(Umrx*Umrx+Umry*Umry)+ax(0)*Umrx*Umrz+ax(1)*Umry*Umrz)*1.0/pow(theta_sq,2.0)*2.0;
+        G(2,8) = 1.0; 
+        
+    
+   
+    
+    G.block(3,3, 3 , 3) =  -MatrixXdDiff::Identity(3,3);
+    G.block(3,9, 3 , 3) =  MatrixXdDiff::Identity(3,3); 
+    
+    std::cout << "G " <<  " = \n" << G  <<std::endl;    
     //std::cout << "G^T*G " <<  " = \n" << G.transpose()*G  <<std::endl;        
 }
 void CRBE2::EvalHessian(VectorXdDiff Um){
@@ -324,20 +327,29 @@ void CRBE2::InitializeHessian() {
     */
 };
 
-void CRBE2::EvalConstraintEquation(VectorXdDiff Um, VectorXdDiff Us) {
+void CRBE2::EvalConstraintEquation_2(VectorXdDiff Um, VectorXdDiff Us) {
     
     Vector3dDiff U_M_rot= Vector3dDiff::Zero();
     Matrix3dDiff R= Matrix3dDiff::Zero();
     VectorXdDiff Us_p = VectorXdDiff::Zero(3);
     
-    g = VectorXdDiff::Zero(6);
+    VectorXdDiff g_old = VectorXdDiff::Zero(6);
     U_M_rot = Um.segment(4-1,3);      // Rotation at master
     //std::cout << "U_M_rot " <<  " = \n" << U_M_rot  <<std::endl;
     PseudoToRot(U_M_rot, R);
         
     R = R - MatrixXdDiff::Identity(3,3);
-    g = Us - Um;
-    g.segment(0,3) = g.segment(0,3) -R*ax;
+    //std::cout << R << "\n" << std::endl;
+    g_old = Us - Um;
+    //std::cout << "g_old = " << g_old(0) <<" " << g_old(1) <<" " << g_old(2) <<" " << g_old(3) <<" " << g_old(4) <<" " << g_old(5) << "\n" << std::endl;  
+    
+    g_old.segment(0,3) = g_old.segment(0,3) -R*ax;
+    
+    //std::cout <<"R*ax"<<  R*ax << "\n" << std::endl;
+    //std::cout << "Um = " <<setprecision(20)<< Um(0) <<" " << Um(1) <<" " << Um(2) <<" " << Um(3) <<" " << Um(4) <<" " << Um(5) << "\n" << std::endl;  
+    //std::cout << "Us = " << Us(0) <<" " << Us(1) <<" " << Us(2) <<" " << Us(3) <<" " << Us(4) <<" " << Us(5) << "\n" << std::endl;  
+    
+    std::cout << "g_old = " << g_old(0) <<" " << g_old(1) <<" " << g_old(2) <<" " << g_old(3) <<" " << g_old(4) <<" " << g_old(5) << "\n" << std::endl;  
     /*
     Us_p = Um.segment(1-1,3) + R*ax;
     std::cout << "U_M_rot " <<  " = \n" << U_M_rot  <<std::endl;
@@ -351,7 +363,40 @@ void CRBE2::EvalConstraintEquation(VectorXdDiff Um, VectorXdDiff Us) {
     myfile << "g = "; myfile << g ; myfile << "\n ";
     myfile.close();
     */
-};
+ };
+ 
+
+void CRBE2::EvalConstraintEquation(VectorXdDiff Um, VectorXdDiff Us) {
+    
+    addouble Umrx = Um(4-1); addouble Umry = Um(5-1); addouble Umrz = Um(6-1);
+    //U_M_rot = Um.segment(4-1,3);      // Rotation at triad A
+    
+    addouble theta = sqrt(pow(Umrx,2) + pow(Umry,2) + pow(Umrz,2)); 
+    addouble theta_sq = ( pow(Umrx,2) + pow(Umry,2) + pow(Umrz,2) );
+    if (theta < 1.0e-16 ) {theta = 1.0e-16; };  //to avoid singularities 
+    if (theta_sq < 1.0e-16 ) {theta_sq = 1.0e-16; };  //to avoid singularities 
+    
+    g = VectorXdDiff::Zero(6);
+    //VectorXdDiff gb = VectorXdDiff::Zero(6);
+    g(0) = -Um(0)+Us(0)+((cos(theta)-1.0)*(-ax(0)*(Umry*Umry+Umrz*Umrz)+ax(1)*Umrx*Umry+ax(2)*Umrx*Umrz))/(theta_sq)+sin(theta)*(ax(1)*Umrz-ax(2)*Umry)*1.0/theta;
+    g(1) = -Um(1)+Us(1)+((cos(theta)-1.0)*(-ax(1)*(Umrx*Umrx+Umrz*Umrz)+ax(0)*Umrx*Umry+ax(2)*Umry*Umrz))/(theta_sq)-sin(theta)*(ax(0)*Umrz-ax(2)*Umrx)*1.0/theta;
+    g(2) = -Um(2)+Us(2)+((cos(theta)-1.0)*(-ax(2)*(Umrx*Umrx+Umry*Umry)+ax(0)*Umrx*Umrz+ax(1)*Umry*Umrz))/(theta_sq)+sin(theta)*(ax(0)*Umry-ax(1)*Umrx)*1.0/theta;
+    g(3) = Us(3) - Um(3);
+    g(4) = Us(4) - Um(4);
+    g(5) = Us(5) - Um(5);
+    //std::cout << "Um = " <<setprecision(20)<< Um(0) <<" " << Um(1) <<" " << Um(2) <<" " << Um(3) <<" " << Um(4) <<" " << Um(5) << "\n" << std::endl;  
+    //std::cout << "Us = " << Us(0) <<" " << Us(1) <<" " << Us(2) <<" " << Us(3) <<" " << Us(4) <<" " << Us(5) << "\n" << std::endl; 
+    std::cout << "\ng = " << g(0) <<" " << g(1) <<" " << g(2) <<" " << g(3) <<" " << g(4) <<" " << g(5) << "\n" << std::endl; 
+    
+    //gb(0) = -Um(0)+Us(0)+ax(1)*(Umrz*sin(theta)*1.0/theta+(Umrx*Umry*(cos(theta)-1.0))/(theta_sq))-ax(2)*(Umry*sin(theta)*1.0/theta-(Umrx*Umrz*(cos(theta)-1.0))/(theta_sq))-(ax(0)*(cos(theta)-1.0)*(Umry*Umry+Umrz*Umrz))/(theta_sq);
+    //gb(1) = -Um(1)+Us(1)-ax(0)*(Umrz*sin(theta)*1.0/theta-(Umrx*Umry*(cos(theta)-1.0))/(theta_sq))+ax(2)*(Umrx*sin(theta)*1.0/theta+(Umry*Umrz*(cos(theta)-1.0))/(theta_sq))-(ax(1)*(cos(theta)-1.0)*(Umrx*Umrx+Umrz*Umrz))/(theta_sq);
+    //gb(2) = -Um(2)+Us(2)+ax(0)*(Umry*sin(theta)*1.0/theta+(Umrx*Umrz*(cos(theta)-1.0))/(theta_sq))-ax(1)*(Umrx*sin(theta)*1.0/theta-(Umry*Umrz*(cos(theta)-1.0))/(theta_sq))-(ax(2)*(cos(theta)-1.0)*(Umrx*Umrx+Umry*Umry))/(theta_sq);    
+    //gb(3) = Us(3) - Um(3);
+    //gb(4) = Us(4) - Um(4);
+    //gb(5) = Us(5) - Um(5);   
+    //std::cout << "gb = " << gb(0) <<" " << gb(1) <<" " << gb(2) <<" " << gb(3) <<" " << gb(4) <<" " << gb(5) << "\n" << std::endl; 
+}
+
 
 CRBE2::~CRBE2(void) {
 

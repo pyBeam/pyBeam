@@ -80,6 +80,8 @@ public:
     void InitializeAxisVector();
     
     void EvalConstraintEquation( VectorXdDiff Um,VectorXdDiff Us);
+    
+    void EvalConstraintEquation_2( VectorXdDiff Um,VectorXdDiff Us);
       
     void InitializeJacobian( );
     

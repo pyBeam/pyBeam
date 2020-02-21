@@ -132,8 +132,8 @@ class RBE2_elem:  # for boundary elements
 
   def SetConnectivity(self,val_Conn): # line element
     node1, node2, = val_Conn
-    self.Conn[0] = node1
-    self.Conn[1] = node2
+    self.Conn[0,0] = node1
+    self.Conn[1,0] = node2
     
   def GetNodes(self):
     return self.Conn
