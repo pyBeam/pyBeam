@@ -309,15 +309,15 @@ void CStructure::RigidResidual_FD()
 void CStructure::RigidResidual()
 {
     
-    VectorXdDiff Um = VectorXdDiff::Zero(6);
+    VectorXdDiff Um = VectorXdDiff::Zero(6); // REVISE
     VectorXdDiff Us = VectorXdDiff::Zero(6);
     VectorXdDiff residual_rigid = VectorXdDiff::Zero(12);
     int constr_dof_id = 0;
     for (int iRBE2 = 0; iRBE2 < nRBE2; iRBE2++) {
         
         // Evaluating constraint equation
-        VectorXdDiff Um = U.segment(RBE2[iRBE2]->MasterDOFs(1 - 1) - 1, 6);
-        VectorXdDiff Us = U.segment(RBE2[iRBE2]->SlaveDOFs(1 - 1) - 1, 6);
+        Um = U.segment(RBE2[iRBE2]->MasterDOFs(1 - 1) - 1, 6);
+        Us = U.segment(RBE2[iRBE2]->SlaveDOFs(1 - 1) - 1, 6);
         
         RBE2[iRBE2]->EvalConstraintEquation( Um,  Us);
         RBE2[iRBE2]->EvalConstraintEquation_2( Um,  Us);
@@ -1284,8 +1284,8 @@ void CStructure::UpdateRotationMatrix_FP() {
         X_AB.tail(3) = X.segment((nodeB_id-1)*3+1 -1,3);
         
         // Displacements of the A and B (initial and final) nodes of the element
-        // They are already in the global CS (but not the updated final one).
-        dU_AB.head(6) = U.segment((nodeA_id-1)*6+1 -1,6);
+        // They are already in the global CS (but not the updated final one). 
+        dU_AB.head(6) = U.segment((nodeA_id-1)*6+1 -1,6);  // REVISE change name dU -> U
         dU_AB.tail(6) = U.segment((nodeB_id-1)*6+1 -1,6);
         
         // Calling the coordinate update routine

@@ -501,6 +501,7 @@ void CElement::EvalRotMat_FP(VectorXdDiff &dU_AB,  VectorXdDiff  &X_AB)
  *         EvalInitialRotMat
  *
  ************************************************************/
+// REVISE DESCRIPTION 
 /*
  * This routine, given the auxiliary vector of the finite element in the undeformed configuration
  * (a) Initializes the Rotation matrix R
@@ -517,7 +518,7 @@ void CElement::InitializeRotMats()
     Rprev = MatrixXdDiff::Identity(6,6);    // ROtation from global to rigid in old deformed conf
     R0     = MatrixXdDiff::Identity(6,6);    // ROtation from global to rigid in  undeformed conf
 
-    // New versor in old local coord system
+    // New versor in old local coord system:  TO REVISE
     Vector3dDiff e1 = Vector3dDiff::Zero();
     Vector3dDiff e2 = Vector3dDiff::Zero();
     Vector3dDiff e3 = Vector3dDiff::Zero();
@@ -556,7 +557,7 @@ void CElement::InitializeRotMats()
     Rprev = R;
     R0 = R;
 
-    Rrig = Rprev.transpose() * R;
+    Rrig = Rprev.transpose() * R; // REVISE: comment unuseful line
 
 }
 
