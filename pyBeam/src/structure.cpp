@@ -220,6 +220,48 @@ void CStructure::RigidResidual()
 }
 
 //===================================================
+//      Add rigid penalty contribution to residual
+//===================================================
+void CStructure::RigidResidualLagrange()
+{
+    
+    VectorXdDiff Um = VectorXdDiff::Zero(6); 
+    VectorXdDiff lambda = VectorXdDiff::Zero(6); 
+    VectorXdDiff Us = VectorXdDiff::Zero(6);
+    VectorXdDiff residual_rigid = VectorXdDiff::Zero(12);
+
+    //Residual_lam = {Residual + G^T*lambda; g}
+    // First we assign the residual corresponding to the nodes' dof entries
+    Residual_lam.segment(0,nNode*6) = Residual;
+    for (int iRBE2 = 0; iRBE2 < nRBE2; iRBE2++) {
+        
+        // Evaluating constraint equations and derivative
+        Um = U.segment(RBE2[iRBE2]->MasterDOFs(1 - 1) - 1, 6);
+        Us = U.segment(RBE2[iRBE2]->SlaveDOFs(1 - 1) - 1, 6);       
+        RBE2[iRBE2]->EvalConstraintEquation( Um,  Us);
+        RBE2[iRBE2]->EvalJacobian( Um);
+        // Getting lagrange multiplier
+        lambda = VectorXdDiff::Zero(6);
+        lambda = U_lam.segment(nNode*6 -1 + (iRBE2)*6+1 ,6);
+
+        //Evaluating the rigid component of the residual 
+        residual_rigid = penalty*RBE2[iRBE2]->G.transpose()*lambda;
+        //cout << "residual_rigid = \n" <<setprecision(20)<<residual_rigid << endl;
+        //cout << "Residual = \n" <<setprecision(20)<<Residual << endl;
+        
+        Residual_lam.segment(RBE2[iRBE2]->MasterDOFs(1 - 1) - 1,6) = Residual_lam.segment(RBE2[iRBE2]->MasterDOFs(1 - 1) - 1,6) - residual_rigid.segment(1 -1,6);
+        Residual_lam.segment(RBE2[iRBE2]->SlaveDOFs(1 - 1) - 1,6) = Residual_lam.segment(RBE2[iRBE2]->SlaveDOFs(1 - 1) - 1,6)  - residual_rigid.segment(7 -1,6);
+        Residual_lam.segment(nNode*6 -1 + (iRBE2)*6+1 ,6) = - RBE2[iRBE2]->g;
+    }
+    
+    std::ofstream myfile;
+    myfile.open ("Residual_lam.pyBeam");
+        myfile << "Residual_lam= "; myfile <<setprecision(15)<<  Residual_lam ; myfile << "\n ";
+    myfile.close();
+}
+
+
+//===================================================
 //      Assembly penalty matrix and vector for rigid constraints (using centered Finite Differences )
 //===================================================
 void CStructure::AssemblyRigidPenalty_FD()
@@ -418,7 +460,7 @@ void CStructure::AssemblyRigidPenalty()
 
 
     for (int iRBE2 = 0; iRBE2 < nRBE2; iRBE2++) {
-        // EYE here: only in this case DOFS start from 1 instead than from 0. Explained in function AssemblyRigidConstraint
+        // EYE here: only in this case DOFS start from 1 instead than from 0.
 
         //Master and slave cumulative displacements
         Um = U.segment(RBE2[iRBE2]->MasterDOFs(1 - 1) - 1, 6);
@@ -457,11 +499,91 @@ void CStructure::AssemblyRigidPenalty()
     //cout << "penalty = \n" <<penalty << endl;
     
             std::ofstream myfile;
-    myfile.open ("Krbe.pyBeam", fstream::in | fstream::out | fstream::app);
+    myfile.open ("Krbe.pyBeam");
     myfile << "Krbe= "; myfile <<setprecision(15)<<  Krbe1+Krbe2 ; myfile << "\n ";
     myfile.close();
     
 }
+
+
+//===================================================
+//      Assembly penalty matrix and vector for rigid constraints 
+//===================================================
+void CStructure::AssemblyRigidLagrange()
+{
+    
+    VectorXdDiff Um;
+    VectorXdDiff Us ;  
+    VectorXdDiff lambda = VectorXdDiff::Zero(6);
+    MatrixXdDiff Ksys_rbe =MatrixXdDiff::Zero((nNode+nRBE2)*6,(nNode+nRBE2)*6);
+    // Setting to Zero the SYSTEM penalty matrix and residual vector
+    Ksys_lam =MatrixXdDiff::Zero((nNode+nRBE2)*6,(nNode+nRBE2)*6);
+    
+  
+    MatrixXdDiff Krbe =  MatrixXdDiff::Zero(12,12); // second contribution to the tangent matrix: sum_i lambda_i*H_i (single element)
+
+
+    // First we assign the residual corresponding to the nodes' dof entries
+    Ksys_lam.block(0,0,nNode*6,nNode*6) = Ksys;    
+    
+
+    for (int iRBE2 = 0; iRBE2 < nRBE2; iRBE2++) {
+        // EYE here: only in this case DOFS start from 1 instead than from 0. 
+        
+        //Master and slave cumulative displacements
+        Um = U.segment(RBE2[iRBE2]->MasterDOFs(1 - 1) - 1, 6);
+        Us = U.segment(RBE2[iRBE2]->SlaveDOFs(1 - 1) - 1, 6);
+        
+        RBE2[iRBE2]->EvalConstraintEquation( Um,  Us);
+        RBE2[iRBE2]->EvalJacobian( Um);
+        RBE2[iRBE2]->EvalHessian( Um);
+        // Getting lagrange multiplier
+        lambda = VectorXdDiff::Zero(6);
+        lambda = U_lam.segment(nNode*6 -1 + (iRBE2)*6+1 ,6);
+        
+        //// Penalty matrix has 2 contributions:
+        
+        Krbe =  MatrixXdDiff::Zero(12,12);
+        // sum_i lambda_i*H_i (from the Hessian of the constraint set of equations)
+        Krbe =  lambda(0)*RBE2[iRBE2]->H_0 + lambda(1)*RBE2[iRBE2]->H_1 + lambda(2)*RBE2[iRBE2]->H_2;
+        
+        // Expansion in to the system's tangent matrix
+        Ksys_rbe.block(RBE2[iRBE2]->MasterDOFs(1 -1) -1,RBE2[iRBE2]->MasterDOFs(1 -1) -1, 6 , 6) = Krbe.block(1 -1, 1 -1, 6, 6);
+        Ksys_rbe.block(RBE2[iRBE2]->MasterDOFs(1 -1) -1,RBE2[iRBE2]->SlaveDOFs(1 -1) -1, 6 , 6) =  Krbe.block(1 -1, 7 -1, 6, 6);
+        Ksys_rbe.block(RBE2[iRBE2]->SlaveDOFs(1 -1) -1,RBE2[iRBE2]->MasterDOFs(1 -1) -1, 6 , 6) =  Krbe.block(7 -1, 1 -1, 6, 6);
+        Ksys_rbe.block(RBE2[iRBE2]->SlaveDOFs(1 -1) -1,RBE2[iRBE2]->SlaveDOFs(1 -1) -1, 6 , 6) =   Krbe.block(7 -1, 7 -1, 6, 6);
+        
+        // Adding the contribution to the equations of the lagrangian G ang G^T
+        //first the row (G)
+        Ksys_rbe.block(nNode*6 -1 + (iRBE2)*6+1,RBE2[iRBE2]->MasterDOFs(1 -1) -1, 6 , 6) = RBE2[iRBE2]->G.block(1 -1,1 -1,6,6);
+        Ksys_rbe.block(nNode*6 -1 + (iRBE2)*6+1,RBE2[iRBE2]->SlaveDOFs(1 -1) -1, 6 , 6)  = RBE2[iRBE2]->G.block(1 -1,7 -1,6,6);   
+        
+        //and then the column G^T
+        Ksys_rbe.block(RBE2[iRBE2]->MasterDOFs(1 -1) -1,nNode*6 -1 + (iRBE2)*6+1, 6 , 6) = RBE2[iRBE2]->G.block(1 -1,1 -1,6,6).transpose();
+        Ksys_rbe.block(RBE2[iRBE2]->SlaveDOFs(1 -1) -1,nNode*6 -1 + (iRBE2)*6+1, 6 , 6)  = RBE2[iRBE2]->G.block(1 -1,7 -1,6,6).transpose();   
+
+        
+        //cout << "Krbe1 = \n" <<Krbe1 << endl;
+        //cout << "Krbe2 = \n" <<Krbe2 << endl;
+        //cout << "g = \n" <<RBE2[iRBE2]->g << endl;
+        
+        
+    }
+    
+    // Penalty application
+    Ksys_lam  +=  Ksys_rbe;
+           
+    
+    //cout << "RBE2[iRBE2]->G.transpose()*RBE2[iRBE2]->G = \n" <<RBE2[iRBE2]->G.transpose()*RBE2[iRBE2]->G << endl;  
+    //cout << "penalty = \n" <<penalty << endl;
+    
+            std::ofstream myfile;
+    myfile.open ("Krbe.pyBeam");
+    myfile << "Krbe= "; myfile <<setprecision(15)<<  Ksys_rbe ; myfile << "\n ";
+    myfile.close();
+    
+}
+
 
 
 //===================================================
@@ -565,7 +687,30 @@ void  CStructure::ImposeBC(){
     
 }
 
-
+/*------------------------------------
+ *    Imposing  B.C. for Rigid Lagrangian Multiplier approach
+ *------------------------------------*/
+void  CStructure::ImposeBC_RigidLagrangian(){
+    
+    int iii = 0; int constr_dof_id = 0;
+        
+    // Imposing BC
+    for (iii =1; iii<= Constr_matrix.rows(); iii++) {
+        constr_dof_id = round(AD::GetValue((Constr_matrix(iii-1,1-1) -1) *6 + Constr_matrix(iii-1,2-1)));
+        Ksys_lam.row(constr_dof_id-1) = VectorXdDiff::Zero((nNode+nRBE2)*6);
+        Ksys_lam.col(constr_dof_id-1) = VectorXdDiff::Zero((nNode+nRBE2)*6);
+        Ksys_lam(constr_dof_id-1,constr_dof_id-1) = 1.0;
+    }    
+    
+    
+    // BC on the residuals
+    for (iii =1; iii<= Constr_matrix.rows(); iii++) {
+        constr_dof_id = round(AD::GetValue((Constr_matrix(iii-1,1-1) -1) *6 + Constr_matrix(iii-1,2-1)));
+        Residual_lam(constr_dof_id-1) = 0.0;
+    }    
+    
+    
+}
 
 /*===================================================
  *        Evaluate the Sensitivity of Rotation Matrix
@@ -859,9 +1004,104 @@ void CStructure::SolveLinearStaticSystem(int iIter, std::ofstream &history, int 
     //	LLT 	                          llt() 	Positive definite       +++ 	+
     //	LDLT 	                         ldlt() Positive or negative semidefinite 	+++ 	++
     std::ofstream myfile;
-    myfile.open ("Residual.pyBeam", fstream::in | fstream::out | fstream::app);
+    myfile.open ("Residual.pyBeam");
     myfile << "Residual= "; myfile <<setprecision(15)<<  Residual ; myfile << "\n ";
     myfile.close();
+}
+
+
+/*===================================================
+ /      Solve linear static system
+ /===================================================
+ Solves the linear static problem.
+ It needs Ksys and Residual updated*/
+
+void CStructure::SolveLinearStaticSystem_RigidLagrangian(int iIter, std::ofstream &history, int print) {
+
+    bool TapeActive = false;
+
+#ifdef CODI_REVERSE_TYPE
+
+    TapeActive = AD::globalTape.isActive();
+
+    AD::StartExtFunc(false, false);
+    unsigned long index = 0;
+
+    for (unsigned long iRes = 0; iRes < Residual.size(); iRes++){
+        AD::SetExtFuncIn(Residual(iRes));
+    }
+
+    /*--- Stop the recording for the linear solver ---*/
+
+    AD::StopRecording();
+#endif
+    
+    switch(kind_linSol){
+        case PartialPivLu:
+            dU_lam = Ksys_lam.partialPivLu().solve(Residual_lam); break;
+        case FullPivLu:
+            dU_lam = Ksys_lam.fullPivLu().solve(Residual_lam); break;
+        case HouseholderQr:
+            dU_lam = Ksys_lam.householderQr().solve(Residual_lam); break;
+        case ColPivHouseholderQr:
+            dU_lam = Ksys_lam.colPivHouseholderQr().solve(Residual_lam); break;
+        case FullPivHouseholderQr:
+            dU_lam = Ksys_lam.fullPivHouseholderQr().solve(Residual_lam); break;
+        case LLT:
+            dU_lam = Ksys_lam.llt().solve(Residual_lam); break;
+        case LDLT:
+            dU_lam = Ksys_lam.ldlt().solve(Residual_lam); break;
+        default:
+            dU_lam = Ksys_lam.fullPivLu().solve(Residual_lam); break;
+    }
+
+    if(TapeActive) {
+
+        /*--- Start recording if it was stopped for the linear solver ---*/
+
+        AD::StartRecording();
+
+        for (unsigned long iRes = 0; iRes < Residual_lam.size(); iRes++)
+            AD::SetExtFuncOut(dU_lam(iRes));
+
+#ifdef CODI_REVERSE_TYPE
+        AD::FuncHelper->addUserData(nNode);
+        AD::FuncHelper->addUserData(kind_linSol);
+        //     AD::FuncHelper->addUserData(Residual);
+        AD::FuncHelper->addUserData(Ksys);
+
+        AD::FuncHelper->addToTape(SolveAdjSys::SolveSys);
+#endif
+
+        AD::EndExtFunc();
+    }
+
+    addouble relative_error = (Ksys_lam*dU_lam -Residual_lam).norm() / Residual_lam.norm(); // norm() is L2 norm
+
+    if (verbose){
+        std::cout.width(17); std::cout << log10(relative_error);
+        if (print=1) {history.width(17); history << log10(relative_error); };
+    }
+
+    if (relative_error > tol_LinSol)
+    {
+        std::cout << std:: endl << "Solution of Linear System not precise enough!" << std:: endl;
+        std::cout << "Use Keyword TOLERANCE_LINSOL" << std:: endl;
+        throw std::exception();
+    }
+    
+    //	Decomposition  	                   Method     Requirements          Speed   Accuracy
+    //	PartialPivLU 	             partialPivLu()  Invertible             ++      +
+    //	FullPivLU 	                    fullPivLu() 	None                -       +++
+    //	HouseholderQR 	             householderQr() 	None                ++      +
+    //	ColPivHouseholderQR 	colPivHouseholderQr() 	None                + 	++
+    //	FullPivHouseholderQR 	fullPivHouseholderQr() 	None                - 	+++
+    //	LLT 	                          llt() 	Positive definite       +++ 	+
+    //	LDLT 	                         ldlt() Positive or negative semidefinite 	+++ 	++
+
+    //Extgraction of dU  
+    dU = VectorXdDiff::Zero(nNode*6);
+    dU = dU_lam.segment(0,nNode*6);
 }
 
 /*===================================================
@@ -872,7 +1112,7 @@ void CStructure::SolveLinearStaticSystem(int iIter, std::ofstream &history, int 
  
  */
 
-void CStructure::UpdateCoord() {
+void CStructure::UpdateCoord(int nRBE2,int iRigid) {
 
     //std::cout << "-->  Update Global Coordinates "  << std::endl;
     
@@ -902,9 +1142,7 @@ void CStructure::UpdateCoord() {
 
         // Update displacements
         U.segment(posU-1,3) += dU.segment(posU-1,3);
-
-        // Update the rotations TODO: check
-        
+       
         //The rotation matrix is extracted from the rotational degrees of freedom of each node
         U_rot = U.segment(posU+3 -1,3);
         R_U = Matrix3dDiff::Zero();
@@ -918,21 +1156,34 @@ void CStructure::UpdateCoord() {
         //Rotation is updated
         R_U_new = Matrix3dDiff::Zero();
         R_U_new = R_dU*R_U;
-
+        
         //and into the vector
         U_rot_new = Vector3dDiff::Zero();
         RotToPseudo(U_rot_new , R_U_new);
         U.segment(posU+3 -1,3) = U_rot_new;
-                  
+        
         // Updating the node's coordinates
         for (int iDim=0; iDim < 3; iDim++) {
             node[id_node]->SetCoordinate(iDim, X(posX+iDim-1)) ;
         }
-
+        
         posX += 3;
         posU += 6;
     }
-
+    // Update expanded solution in case of Lagrange multiplier approach for rigid elements U_lam = {U; lambda}
+    if (nRBE2 != 0 and iRigid == 1){
+        U_lam.segment(0,nNode*6) = U;
+        for (int iRBE2 = 0; iRBE2 < nRBE2; iRBE2++) {  
+            U_lam.segment(nNode*6 -1 + (iRBE2)*6+1 ,6) = U_lam.segment(nNode*6 -1 + (iRBE2)*6+1 ,6) + dU_lam.segment(nNode*6 -1 + (iRBE2)*6+1 ,6) ;    
+        }
+        
+        std::ofstream myfile;
+        myfile.open ("U_lam.pyBeam");
+        myfile << "U_lam= "; myfile <<setprecision(15)<<  U_lam ; myfile << "\n ";
+        myfile.close();    
+        
+    }
+    
 }
 
 /*===================================================

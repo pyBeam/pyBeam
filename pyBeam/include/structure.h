@@ -79,6 +79,12 @@ public:
     MatrixXdDiff Ksys_red;      // [relative to masters in case of RBE2]
     MatrixXdDiff K_penal;       // penalty matrix for rigid elements
     
+    // In case Rigid with Lagrangian multiplier method
+    MatrixXdDiff Ksys_lam;  // Aumented matrix [6*(nNode+nRBE)x6*(nNode+nRBE)]
+    VectorXdDiff U_lam;     // Aumented Displacement array [6*(nNode+nRBE)]
+    VectorXdDiff Residual_lam; //  // Aumented Residual array [6*(nNode+nRBE)]
+    VectorXdDiff dU_lam;           // Aumented Displacement array (increment)[6*(nNode+nRBE)]  
+    
     MatrixXdDiff  Constr_matrix;// COnstraint matrix [ NODE_ID DOF_ID ]
     
     VectorXdDiff U;             // Displacement array
@@ -92,7 +98,6 @@ public:
     VectorXdDiff Fint;          // Array of internal forces
     VectorXdDiff Fext;          // Array of External Forces
     VectorXdDiff Residual;      // Array of Unbalanced Forces
-    VectorXdDiff Residual_red;  // Array of Unbalanced Forces   [relative to masters in case of RBE2]
     
     VectorXdDiff Fnom;          // Array of nominal forces
     
@@ -126,6 +131,8 @@ public:
 
     inline void AddRBE2(CInput *input, CRBE2** container_RBE2) {nRBE2 = input->Get_nRBE2(); RBE2 = container_RBE2;}
 
+    
+    // Penalty strategy
     void SetPenalty() {  penalty = 100*Ksys.diagonal().maxCoeff(); };
     
     void RigidResidual();
@@ -136,6 +143,16 @@ public:
     
     void RigidResidual_FD();
 
+    // Lagrange Multiplier strategy
+    inline void SetRigidLagrangeDimensions() {U_lam = VectorXdDiff::Zero((nNode+nRBE2)*6); dU_lam = VectorXdDiff::Zero((nNode+nRBE2)*6); Residual_lam = VectorXdDiff::Zero((nNode+nRBE2)*6); Ksys_lam =MatrixXdDiff::Zero((nNode+nRBE2)*6,(nNode+nRBE2)*6);  };
+    
+    void RigidResidualLagrange();
+    
+    void AssemblyRigidLagrange();
+    
+    void ImposeBC_RigidLagrangian();
+    
+    void SolveLinearStaticSystem_RigidLagrangian(int iIter, std::ofstream &history , int print); 
     //===================================================
     //      Assembly System Stiffness Matrix
     //===================================================
@@ -162,7 +179,7 @@ public:
      * are based on the displacements.
      */
 
-    void UpdateCoord();
+    void UpdateCoord(int nRBE2, int iRigid);
 
     void RestartCoord();
 
