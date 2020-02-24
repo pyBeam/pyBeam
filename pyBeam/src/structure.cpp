@@ -309,7 +309,7 @@ void CStructure::RigidResidual_FD()
 void CStructure::RigidResidual()
 {
     
-    VectorXdDiff Um = VectorXdDiff::Zero(6); // REVISE
+    VectorXdDiff Um = VectorXdDiff::Zero(6); 
     VectorXdDiff Us = VectorXdDiff::Zero(6);
     VectorXdDiff residual_rigid = VectorXdDiff::Zero(12);
     int constr_dof_id = 0;
@@ -1215,7 +1215,7 @@ void CStructure::UpdateLength()
  (b)  incremental rotation matrix is updated
  */
 
-void CStructure::UpdateRotationMatrix() {
+void CStructure::UpdateRotationMatrix() {  // Obsolete: to be removed in future release
 
     //=============   Updating Rotation Matrix   ======================
     
@@ -1267,7 +1267,7 @@ void CStructure::UpdateRotationMatrix_FP() {
     
     //std::cout << "-->  Updating Rotation Matrix "  << std::endl;
     
-    VectorXdDiff dU_AB = VectorXdDiff::Zero(12);
+    VectorXdDiff U_AB = VectorXdDiff::Zero(12);
     VectorXdDiff  X_AB = VectorXdDiff::Zero(6);
     
     int nodeA_id = 0;
@@ -1285,11 +1285,11 @@ void CStructure::UpdateRotationMatrix_FP() {
         
         // Displacements of the A and B (initial and final) nodes of the element
         // They are already in the global CS (but not the updated final one). 
-        dU_AB.head(6) = U.segment((nodeA_id-1)*6+1 -1,6);  // REVISE change name dU -> U
-        dU_AB.tail(6) = U.segment((nodeB_id-1)*6+1 -1,6);
+        U_AB.head(6) = U.segment((nodeA_id-1)*6+1 -1,6);  // REVISE change name dU -> U
+        U_AB.tail(6) = U.segment((nodeB_id-1)*6+1 -1,6);
         
         // Calling the coordinate update routine
-        element[i_fe-1]->EvalRotMat_FP(dU_AB,X_AB);
+        element[i_fe-1]->EvalRotMat_FP(U_AB,X_AB);
         
     }
     i_fe = i_fe -1;

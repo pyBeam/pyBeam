@@ -153,7 +153,7 @@ void CBeamSolver::Solve(int FSIIter = 0){
     history.setf(ios::fixed, ios::floatfield);
     
     // This function set the current initial coordinates and memorizes them as the old one 
-    // before the converging procedure starts
+    // before the converging procedure starts (necessary in case of FSI)
     structure->InitialCoord();
     structure->RestartCoord();
     structure->UpdateRotationMatrix_FP();  // based on the rotational displacements

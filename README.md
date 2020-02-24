@@ -27,11 +27,6 @@ NOTE: this procedure has been verified for Ubuntu 18.04
 
 - Make sure you have meson installed
 
- Using pip (from terminal):
-```
-pip3 install --upgrade meson
-```
-
 From package manager:
 ```
 sudo apt-get install meson
@@ -62,11 +57,6 @@ ninja -C build install
 IMPORTANT: If compilation fails check your meson version. Compiling only works for version 0.52.0 (verified) and above. 
 If compiling returns error it may be due to an old version of meson.
 
-- Upload meson (via pip)
-```
-pip3 install --upgrade meson
-```
-
 - Check meson version
 ```
 meson -v
@@ -75,10 +65,6 @@ meson -v
 If uninstall is necessary
 ```
 sudo apt-get remove meson
-```
-or, via pip,
-```
-pip uninstall meson
 ```
 and install it again.
 
