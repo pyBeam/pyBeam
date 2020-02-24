@@ -232,7 +232,7 @@ void CBeamSolver::Solve(int FSIIter = 0){
             // Reassembling Stiffness Matrix + Applying Boundary Conditions
             structure->AssemblyTang(1);
             
-            // Solve Linear System   K*dU = Res = Fext - Fin
+            
             if (nRBE2 != 0 ) {
                 structure->SetPenalty();
                 structure->RigidResidual();
@@ -244,7 +244,9 @@ void CBeamSolver::Solve(int FSIIter = 0){
                 structure->AssemblyRigidPenalty();
                 //structure->AssemblyRigidPenalty_FD();
             }
-
+            
+            structure->ImposeBC(); 
+            // Solve Linear System   K*dU = Res = Fext - Fin
             structure->SolveLinearStaticSystem(iIter,history,1);
 
 

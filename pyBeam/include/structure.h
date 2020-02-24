@@ -120,8 +120,6 @@ public:
 
     void EvalResidual();
 
-    void EvalPenaltyForces(addouble penalty);
-
     //===================================================
     //      Assembly RBE2 rigid constraint matrix
     //===================================================
@@ -138,11 +136,6 @@ public:
     
     void RigidResidual_FD();
 
-    //To be removed
-    void AssemblyRigidConstr();
-    
-    void UpdateRigidConstr(int iIter);
-
     //===================================================
     //      Assembly System Stiffness Matrix
     //===================================================
@@ -151,7 +144,7 @@ public:
 
     void EvalSensRot();    // Evaluate the sensitivity of Rotation Matrix - need for Jacobian
 
-    //void EvalSensRotFiniteDifferences();    // Evaluate the sensitivity of Rotation Matrix - need for Jacobian
+    void ImposeBC();  // Impose the boundary condition on the stiffness matrix and Residual
 
     //===================================================
     //      Solve linear static system
@@ -172,10 +165,6 @@ public:
     void UpdateCoord();
 
     void RestartCoord();
-
-    void UpdateAxvector_RBE2();
-
-    void UpdateCoord_RBE2(int iIter);
 
     void InitialCoord();
 

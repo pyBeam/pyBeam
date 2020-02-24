@@ -98,117 +98,7 @@ CStructure::~CStructure(void)
  * @body It's necessary to finalize and verify the implementation of rigid elements. Before opening a PR, cleanup
  *       debug comments.
  */
-/*
-//===================================================
-//      Assembly RBE2 rigid constraint matrix
-//===================================================
-void CStructure::AssemblyRigidConstr() 
-{
 
-    int i; int j; int iRBE2;
-    // Identification of the master DOFS and SLAVE DOFS
-    std::vector<int> dofs_all(6*nNode) ;
-    for(int i = 0; i < 6*nNode; i++)  { dofs_all[i] = i+1; }   // here dofs go form 1 to 6 differently than for beams (just a convention)
-    
-    
-    std::vector<int> master;
-    std::vector<int> master_all(6*nNode);   // full initialization (this vector is going to be for sure smaller)
-    master.resize(RBE2[0]->MasterDOFs.size());
-    std::vector<int> slave;
-    std::vector<int> slave_all;
-    slave.resize(RBE2[0]->SlaveDOFs.size());
-    //
-    std::vector<int>::iterator it;
-    
-    //finding master dofs and slave dofs
-    // EYE here: only in this case DOFS start from 1 instead than from 0. Explained below
-    for(iRBE2 = 0; iRBE2 < nRBE2; iRBE2++)
-    {
-        //std::vector<int> master;
-        //master.resize(RBE2[iRBE2]->MasterDOFs.size());
-        //VectorXi::Map(&master[0], RBE2[iRBE2]->MasterDOFs.size()) = RBE2[iRBE2]->MasterDOFs;
-        //vector1.insert( vector1.end(), vector2.begin(), vector2.end() );
-        //master_all.insert( master_all.end(), master.begin(), master.end() );
-
-        VectorXi::Map(&slave[0], RBE2[iRBE2]->SlaveDOFs.size()) = RBE2[iRBE2]->SlaveDOFs;
-        slave_all.insert( slave_all.end(), slave.begin(), slave.end() );
-        
-        
-    }
-    // all unique slave Dofs for the system (from 1 to 6 for each node )
-    //sort( master_all.begin(), master_all.end() );     //master_all.erase( unique( master_all.begin(), master_all.end() ), master_all.end() );
-    sort( slave_all.begin(), slave_all.end() ); slave_all.erase( unique( slave_all.begin(), slave_all.end() ), slave_all.end() );
-    //Here I do the difference between all the DOFs and the slave DOFS to get only the master Dofs (in the sense all the not slave Dofs)
-    it= std::set_difference (dofs_all.begin(), dofs_all.end(), slave_all.begin(), slave_all.end(), master_all.begin());
-
-    // all the master DOFs (from 1 to 6 for each node)
-    master_all.resize(it-master_all.begin());
-    
-    
-    // transform the std vector into Eigen matrices occupying the same memory location
-    Eigen::Map< VectorXi > master_all_eig(&master_all[0],master_all.size());
-    Eigen::Map< VectorXi > slave_all_eig(&slave_all[0],slave_all.size());
-
-    // Evaluation of the full_to_red and red_to_full
-    // that's the reason i need dofs from 1 to 6 as 0 represents the slave dofs position
-    VectorXi red_to_full = master_all_eig;
-    VectorXi full_to_red = VectorXi::Zero(6*nNode);
-    // Evaluation of the master_all_eig_red so: the DOF of the master element ordered in the reduced coordinate vector
-    VectorXi master_all_eig_red = VectorXi::Zero(master_all.size());
-    for (i = 0; i < master_all.size(); i++)
-    {
-        full_to_red(master_all_eig(i) -1) = i+1 ;
-        master_all_eig_red(i) = i+1 ;
-    }
-
-    // Initialization of the KRBE matrix and KRBE_ext
-    KRBE = MatrixXdDiff::Zero(6*nNode,master_all.size());
-    KRBE_ext = MatrixXdDiff::Zero(master_all.size(),master_all.size());
-    
-
-    // KRBE assembly
-    for (i = 0; i < master_all_eig.size(); i++)
-    {
-        for (j = 0; j < master_all_eig_red.size(); j++)
-        {
-            KRBE(master_all_eig(i) -1,master_all_eig_red(i) -1) = 1;
-        }
-    }
-
-    for(int iRBE2 = 0; iRBE2 < nRBE2; iRBE2++)
-    {
-        for (i = 0; i < DOF ; i++)
-        {
-            for (j = 0; j < DOF ; j++)
-            {
-                KRBE((RBE2[iRBE2]->node_slave-> GeID() -1)*6 +i ,full_to_red((RBE2[iRBE2]->node_master-> GeID()-1)*6+j ) -1 ) = RBE2[iRBE2]->Kinem_matrix(i,j);
-
-            }
-        }
-        
-        /*KRBE_ext = [-Vz*z-Vy*y,       Vy*x,             Vz*x
-         *               Vx*y,      -Vz*z - Vx*x,         Vz*y
-         *              Vx*z,           Vy*z,          -Vy*y -Vx*x]
-         
-        //cout << "Axis vector = " << RBE2[iRBE2]->axis_vector.transpose() << endl;
-        KRBE_ext.block(full_to_red((RBE2[iRBE2]->node_master-> GeID()-1)*6+3 ) -1,full_to_red((RBE2[iRBE2]->node_master-> GeID()-1)*6+3 ) -1,3,3) <<
-                                                                                                                                                     - Fext((RBE2[iRBE2]->node_slave-> GeID()-1)*6+3 -1)*RBE2[iRBE2]->axis_vector(3 -1) - Fext((RBE2[iRBE2]->node_slave-> GeID()-1)*6+2 -1)*RBE2[iRBE2]->axis_vector(2 -1) ,
-                Fext((RBE2[iRBE2]->node_slave-> GeID()-1)*6+2 -1)*RBE2[iRBE2]->axis_vector(1 -1) ,
-                Fext((RBE2[iRBE2]->node_slave-> GeID()-1)*6+3 -1)*RBE2[iRBE2]->axis_vector(1 -1) ,
-                Fext((RBE2[iRBE2]->node_slave-> GeID()-1)*6+1 -1)*RBE2[iRBE2]->axis_vector(2 -1) ,
-                - Fext((RBE2[iRBE2]->node_slave-> GeID()-1)*6+3 -1)*RBE2[iRBE2]->axis_vector(3 -1) - Fext((RBE2[iRBE2]->node_slave-> GeID()-1)*6+1 -1)*RBE2[iRBE2]->axis_vector(1 -1),
-                Fext((RBE2[iRBE2]->node_slave-> GeID()-1)*6+3 -1)*RBE2[iRBE2]->axis_vector(2 -1),
-                Fext((RBE2[iRBE2]->node_slave-> GeID()-1)*6+1 -1)*RBE2[iRBE2]->axis_vector(3 -1),
-                Fext((RBE2[iRBE2]->node_slave-> GeID()-1)*6+2 -1)*RBE2[iRBE2]->axis_vector(3 -1),
-                - Fext((RBE2[iRBE2]->node_slave-> GeID()-1)*6+2 -1)*RBE2[iRBE2]->axis_vector(2 -1) - Fext((RBE2[iRBE2]->node_slave-> GeID()-1)*6+1 -1)*RBE2[iRBE2]->axis_vector(1 -1);
-        
-        //cout << "KRBE_ext = \n" << KRBE_ext.block(full_to_red((RBE2[iRBE2]->node_master-> GeID()-1)*6+3 ) -1,full_to_red((RBE2[iRBE2]->node_master-> GeID()-1)*6+3 ) -1,3,3) << endl;
-
-
-    }
-    // cout << "KRBE = \n" <<KRBE << endl;
-}
-*/
 //===================================================
 //      Add rigid penalty contribution to residual
 //===================================================
@@ -222,7 +112,7 @@ void CStructure::RigidResidual_FD()
     VectorXdDiff step;
     VectorXdDiff g;
     addouble delta = pow(10,-3);
-    int constr_dof_id = 0;
+
     for (int iRBE2 = 0; iRBE2 < nRBE2; iRBE2++) {
         RBE2[iRBE2]->EvalConstraintEquation( Um,  Us);
         //std::cout << "g  = " << RBE2[iRBE2]->g(0)  << " " << RBE2[iRBE2]->g(1)  << " " << RBE2[iRBE2]->g(2)  << " " << RBE2[iRBE2]->g(3)  << " " << RBE2[iRBE2]->g(4)  << " " << RBE2[iRBE2]->g(5)  << " " << std::endl;
@@ -271,14 +161,7 @@ void CStructure::RigidResidual_FD()
         Residual.segment(RBE2[iRBE2]->SlaveDOFs(1 - 1) - 1,6) = Residual.segment(RBE2[iRBE2]->SlaveDOFs(1 - 1) - 1,6) -residual_rigid.segment(7 -1,6);
 
     }    
-    
-    // We need to impose again the BC on the residual
-    // BC on the residuals
-    for (int iii =1; iii<= Constr_matrix.rows(); iii++) {
-        constr_dof_id = round(AD::GetValue((Constr_matrix(iii-1,1-1) -1) *6 + Constr_matrix(iii-1,2-1)));
-        Residual(constr_dof_id-1) = 0.0;
-    }   
-    
+        
     std::ofstream myfile;
     myfile.open ("residual_rigid.pyBeam");
     myfile << "residual_rigid= "; myfile <<setprecision(15)<<  residual_rigid/penalty ; myfile << "\n ";
@@ -312,7 +195,7 @@ void CStructure::RigidResidual()
     VectorXdDiff Um = VectorXdDiff::Zero(6); 
     VectorXdDiff Us = VectorXdDiff::Zero(6);
     VectorXdDiff residual_rigid = VectorXdDiff::Zero(12);
-    int constr_dof_id = 0;
+
     for (int iRBE2 = 0; iRBE2 < nRBE2; iRBE2++) {
         
         // Evaluating constraint equation
@@ -333,12 +216,6 @@ void CStructure::RigidResidual()
         
     }
     
-    // We need to impose again the BC on the residual
-    // BC on the residuals
-    for (int iii =1; iii<= Constr_matrix.rows(); iii++) {
-        constr_dof_id = round(AD::GetValue((Constr_matrix(iii-1,1-1) -1) *6 + Constr_matrix(iii-1,2-1)));
-        Residual(constr_dof_id-1) = 0.0;
-    }
     //cout << "Residual+RBE = \n" <<setprecision(20)<<Residual << endl;
 }
 
@@ -347,9 +224,7 @@ void CStructure::RigidResidual()
 //===================================================
 void CStructure::AssemblyRigidPenalty_FD()
 {
-    int n_eq = 6;
-    int n_RBEdofs =12;
-    int constr_dof_id = 0;
+
     VectorXdDiff Um;
     VectorXdDiff Us ;    
     VectorXdDiff gplusplus ;
@@ -507,15 +382,6 @@ void CStructure::AssemblyRigidPenalty_FD()
         
     } 
     
-    // We need to impose again the boundary conditions
-    // Imposing BC
-    for (int iii = 1; iii <= Constr_matrix.rows(); iii++) {
-        constr_dof_id = round(AD::GetValue((Constr_matrix(iii - 1, 1 - 1) - 1) *6 + Constr_matrix(iii - 1, 2 - 1)));
-        Ksys.row(constr_dof_id - 1) = VectorXdDiff::Zero(nNode * 6);
-        Ksys.col(constr_dof_id - 1) = VectorXdDiff::Zero(nNode * 6);
-        Ksys(constr_dof_id - 1, constr_dof_id - 1) = 1;
-    }
-    
     //cout << "K_penal = \n" <<K_penal << endl; 
     
     std::ofstream myfile;
@@ -540,9 +406,6 @@ void CStructure::AssemblyRigidPenalty_FD()
 void CStructure::AssemblyRigidPenalty()
 {
     
-    int n_eq = 6;
-    int n_RBEdofs =12;
-     int constr_dof_id = 0;
     VectorXdDiff Um;
     VectorXdDiff Us ;    
     // Setting to Zero the SYSTEM penalty matrix and residual vector
@@ -590,15 +453,6 @@ void CStructure::AssemblyRigidPenalty()
     Ksys  +=  - K_penal*penalty;
            
     
-    // We need to impose again the boundary conditions
-    // Imposing BC
-    for (int iii = 1; iii <= Constr_matrix.rows(); iii++) {
-        constr_dof_id = round(AD::GetValue((Constr_matrix(iii - 1, 1 - 1) - 1) *6 + Constr_matrix(iii - 1, 2 - 1)));
-        Ksys.row(constr_dof_id - 1) = VectorXdDiff::Zero(nNode * 6);
-        Ksys.col(constr_dof_id - 1) = VectorXdDiff::Zero(nNode * 6);
-        Ksys(constr_dof_id - 1, constr_dof_id - 1) = penalty;
-    }
-    
     //cout << "RBE2[iRBE2]->G.transpose()*RBE2[iRBE2]->G = \n" <<RBE2[iRBE2]->G.transpose()*RBE2[iRBE2]->G << endl;  
     //cout << "penalty = \n" <<penalty << endl;
     
@@ -626,8 +480,7 @@ void CStructure::AssemblyTang(int iIter)
 
     //std::cout  << " Assembly Tangent Matrix"  << std::endl;
     
-    int iii = 0; int dof = 0;   int dof_jjj = 0;   int dof_kkk = 0;
-    int constr_dof_id;
+    int dof_jjj = 0;   int dof_kkk = 0;
     int nodeA_id = 0; int nodeB_id = 0;
 
     // Intermediate rotation matrix
@@ -685,20 +538,34 @@ void CStructure::AssemblyTang(int iIter)
         //EvalSensRotFiniteDifferences();
         EvalSensRot();
     }
-    /*------------------------------------
-     *    Imposing  B.C.
-     *------------------------------------*/
+}
+
+/*------------------------------------
+ *    Imposing  B.C.
+ *------------------------------------*/
+void  CStructure::ImposeBC(){
     
+    int iii = 0; int constr_dof_id = 0;
+        
     // Imposing BC
     for (iii =1; iii<= Constr_matrix.rows(); iii++) {
         constr_dof_id = round(AD::GetValue((Constr_matrix(iii-1,1-1) -1) *6 + Constr_matrix(iii-1,2-1)));
         Ksys.row(constr_dof_id-1) = VectorXdDiff::Zero(nNode*6);
         Ksys.col(constr_dof_id-1) = VectorXdDiff::Zero(nNode*6);
         Ksys(constr_dof_id-1,constr_dof_id-1) = 1.0;
-    }
+    }    
+    
+    
+    // BC on the residuals
+    for (iii =1; iii<= Constr_matrix.rows(); iii++) {
+        constr_dof_id = round(AD::GetValue((Constr_matrix(iii-1,1-1) -1) *6 + Constr_matrix(iii-1,2-1)));
+        Residual(constr_dof_id-1) = 0.0;
+    }    
     
     
 }
+
+
 
 /*===================================================
  *        Evaluate the Sensitivity of Rotation Matrix
@@ -898,13 +765,6 @@ void CStructure::EvalResidual() {
     Residual =  VectorXdDiff::Zero(nNode*6);
     Residual = Fext - Fint;
 
-    int iii = 0; int constr_dof_id = 0;
-    
-    // BC on the residuals
-    for (iii =1; iii<= Constr_matrix.rows(); iii++) {
-        constr_dof_id = round(AD::GetValue((Constr_matrix(iii-1,1-1) -1) *6 + Constr_matrix(iii-1,2-1)));
-        Residual(constr_dof_id-1) = 0.0;
-    }
     
 }
 
