@@ -54,12 +54,16 @@ CStructure::CStructure(CInput *input, CElement **container_element, CNode **cont
     YoungModulus = input->GetYoungModulus_dimensional();
     
     // Resizes and zeros the K matrices
-    Ksys.resize(nNode*6,nNode*6);
-    Ksys = MatrixXdDiff::Zero(nNode*6,nNode*6);
+    Ksys.resize(nNode*6+nNode*6,nNode*6+nNode*6);
+    Ksys = MatrixXdDiff::Zero(nNode*6+nNode*6,nNode*6+nNode*6);  //system enlarged for Lagrangian
 
 
-    U   = VectorXdDiff::Zero(nNode*6);         // Whole system displacements (Cumulative)
-    dU  = VectorXdDiff::Zero(nNode*6);         // Incremental system displacements
+    Ud  = VectorXdDiff::Zero(nNode*6);            // Whole system displacements (Cumulative)
+    LM = VectorXdDiff::Zero(nNode*6);                   //Lagrangian multiplyer 
+    U  =                                               // composition of Ud and LM
+    dLM   = VectorXdDiff::Zero(nNode*6);
+    dUd   = VectorXdDiff::Zero(nNode*6);         // Incremental system displacements +Incremental Lagrange mulplyer
+    dU  =                                               // composition of dUd and dLM
 
     U_adj = VectorXdDiff::Zero(nNode*6);       // Whole system displacement adjoint
     
@@ -220,14 +224,18 @@ void CStructure::AssemblyRigidPenalty(addouble penalty)
     //double n_dof;
     
     // Setting to Zero the SYSTEM penalty matrix and residual vector
-    K_penal = MatrixXdDiff::Zero(nNode*6,nNode*6);
+    K_lagr = MatrixXdDiff::Zero(nNode*6+nNode*6,nNode*6+nNode*6);
     
-    V_penal = VectorXdDiff::Zero(nNode*6);
+    V_lagr = VectorXdDiff::Zero(nNode*6+nNode*6);
 
-    
-    MatrixXdDiff Krbe1 =  MatrixXdDiff::Zero(12,12); // first contribution to the tangent matrix: G^T*G  (single element)
-    MatrixXdDiff Krbe2 =  MatrixXdDiff::Zero(12,12); // second contribution to the tangent matrix: sum_i g_i*H_i (single element)
-    VectorXdDiff Vrbe2 =  VectorXdDiff::Zero(12); // contribution to the residual (single element)
+    //contribution Lagrange: G^T,G,A+LM*H,-Residual-LM^T*G,-g
+
+   
+    MatrixXdDiff Krbe1 =  MatrixXdDiff::Zero(12,12); // first contribution to the tangent matrix: A + LM_i*H_i (single element)
+    MatrixXdDiff Krbe2 =  MatrixXdDiff::Zero(12,6); // second contribution to the tangent matrix: G^T (single element)
+    MatrixXdDiff Krbe3 =  MatrixXdDiff::Zero(6,12); // third contribution to the tangent matrix: G (single element)
+    VectorXdDiff Vrbe1 =  VectorXdDiff::Zero(12);   //  first contribution to the RHS : -Residual-LM^T*G (single element)
+    VectorXdDiff Vrbe2 =  VectorXdDiff::Zero(6);   //  first contribution to the RHS : -Residual-LM^T*G (single element)
 
 
     for (int iRBE2 = 0; iRBE2 < nRBE2; iRBE2++) {

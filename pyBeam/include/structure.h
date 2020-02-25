@@ -66,7 +66,7 @@ public:
     int nNode;                  // Number of structural nodes
     int nfem;                   // number of finite elements   // has to be assigned in the constructor
     int nRBE2;                  // number of finite elements
-    
+    MatrixXdDiff
     int DOF;                    // In space, 6
     
     CRBE2 **RBE2;               // Pointer to the first RBE2 element

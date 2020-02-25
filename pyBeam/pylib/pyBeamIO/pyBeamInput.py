@@ -64,7 +64,7 @@ class Point:
     self.Coord0[0] = x
     self.Coord0[1] = y
     self.Coord0[2] = z
-  
+
 
   def SetCoord(self, val_Coord):
     x, y, z = val_Coord
