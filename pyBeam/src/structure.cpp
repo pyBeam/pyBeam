@@ -203,16 +203,15 @@ void CStructure::RigidResidual()
         Us = U.segment(RBE2[iRBE2]->SlaveDOFs(1 - 1) - 1, 6);
         
         RBE2[iRBE2]->EvalConstraintEquation( Um,  Us);
-        RBE2[iRBE2]->EvalConstraintEquation_2( Um,  Us);
         RBE2[iRBE2]->EvalJacobian( Um);
-        RBE2[iRBE2]->EvalJacobian_2( Um);
         
         //Evaluating the rigid component of the residual 
-        residual_rigid = penalty*RBE2[iRBE2]->G.transpose()*RBE2[iRBE2]->g;
+        residual_rigid = VectorXdDiff::Zero(12);
+        residual_rigid = -penalty*RBE2[iRBE2]->G.transpose()*RBE2[iRBE2]->g;
         //cout << "residual_rigid = \n" <<setprecision(20)<<residual_rigid << endl;
         //cout << "Residual = \n" <<setprecision(20)<<Residual << endl;
-        Residual.segment(RBE2[iRBE2]->MasterDOFs(1 - 1) - 1,6) = Residual.segment(RBE2[iRBE2]->MasterDOFs(1 - 1) - 1,6) +residual_rigid.segment(1 -1,6);
-        Residual.segment(RBE2[iRBE2]->SlaveDOFs(1 - 1) - 1,6) = Residual.segment(RBE2[iRBE2]->SlaveDOFs(1 - 1) - 1,6) +residual_rigid.segment(7 -1,6);
+        Residual.segment(RBE2[iRBE2]->MasterDOFs(1 - 1) - 1,6) +=  residual_rigid.segment(1 -1,6);
+        Residual.segment(RBE2[iRBE2]->SlaveDOFs(1 - 1) - 1,6) += residual_rigid.segment(7 -1,6);
         
     }
     
@@ -220,7 +219,7 @@ void CStructure::RigidResidual()
 }
 
 //===================================================
-//      Add rigid penalty contribution to residual
+//      Add rigid  contribution to residual
 //===================================================
 void CStructure::RigidResidualLagrange()
 {
@@ -232,32 +231,66 @@ void CStructure::RigidResidualLagrange()
 
     //Residual_lam = {Residual + G^T*lambda; g}
     // First we assign the residual corresponding to the nodes' dof entries
+    Residual_lam = VectorXdDiff::Zero((nNode+nRBE2)*6);
     Residual_lam.segment(0,nNode*6) = Residual;
     for (int iRBE2 = 0; iRBE2 < nRBE2; iRBE2++) {
         
         // Evaluating constraint equations and derivative
         Um = U.segment(RBE2[iRBE2]->MasterDOFs(1 - 1) - 1, 6);
+        //std::cout << "Um = " <<setprecision(20)<< Um(0) <<" " << Um(1) <<" " << Um(2) <<" " << Um(3) <<" " << Um(4) <<" " << Um(5) << "\n" << std::endl; 
         Us = U.segment(RBE2[iRBE2]->SlaveDOFs(1 - 1) - 1, 6);       
         RBE2[iRBE2]->EvalConstraintEquation( Um,  Us);
         RBE2[iRBE2]->EvalJacobian( Um);
+        //std::cout <<  RBE2[0]->G << "\n" <<std::endl;        
         // Getting lagrange multiplier
         lambda = VectorXdDiff::Zero(6);
         lambda = U_lam.segment(nNode*6 -1 + (iRBE2)*6+1 ,6);
 
         //Evaluating the rigid component of the residual 
-        residual_rigid = penalty*RBE2[iRBE2]->G.transpose()*lambda;
+        residual_rigid = RBE2[iRBE2]->G.transpose()*lambda;
         //cout << "residual_rigid = \n" <<setprecision(20)<<residual_rigid << endl;
         //cout << "Residual = \n" <<setprecision(20)<<Residual << endl;
         
-        Residual_lam.segment(RBE2[iRBE2]->MasterDOFs(1 - 1) - 1,6) = Residual_lam.segment(RBE2[iRBE2]->MasterDOFs(1 - 1) - 1,6) - residual_rigid.segment(1 -1,6);
-        Residual_lam.segment(RBE2[iRBE2]->SlaveDOFs(1 - 1) - 1,6) = Residual_lam.segment(RBE2[iRBE2]->SlaveDOFs(1 - 1) - 1,6)  - residual_rigid.segment(7 -1,6);
+        Residual_lam.segment(RBE2[iRBE2]->MasterDOFs(1 - 1) - 1,6) +=  - residual_rigid.segment(1 -1,6);
+        Residual_lam.segment(RBE2[iRBE2]->SlaveDOFs(1 - 1) - 1,6) +=   - residual_rigid.segment(7 -1,6);
         Residual_lam.segment(nNode*6 -1 + (iRBE2)*6+1 ,6) = - RBE2[iRBE2]->g;
     }
+
+    std::ofstream myfile5;
+    myfile5.open ("G.dat");
+         myfile5 <<setprecision(15)<<  RBE2[0]->G; 
+    myfile5.close();      
+    
+    std::ofstream myfile4;
+    myfile4.open ("Residual.dat");
+         myfile4 <<setprecision(15)<<  Residual ; 
+    myfile4.close();    
+    
+    std::ofstream myfile3;
+    myfile3.open ("g.dat");
+        myfile3 <<setprecision(15)<<  RBE2[0]->g ; 
+    myfile3.close();   
+
+    
+    std::ofstream myfile2;
+    myfile2.open ("residual_rigid.dat");
+       myfile2 <<setprecision(15)<<  residual_rigid ; 
+    myfile2.close();    
     
     std::ofstream myfile;
-    myfile.open ("Residual_lam.pyBeam");
-        myfile << "Residual_lam= "; myfile <<setprecision(15)<<  Residual_lam ; myfile << "\n ";
+    myfile.open ("Residual_lam.dat");
+      myfile <<setprecision(15)<<  Residual_lam ;
     myfile.close();
+    
+    std::ofstream myfile6;
+    myfile6.open ("U_lam.dat");
+      myfile6 <<setprecision(15)<<  U_lam ; 
+    myfile6.close();    
+    
+    std::ofstream myfile7;
+    myfile7.open ("lambda.dat");
+      myfile7 <<setprecision(15)<<  lambda ; 
+    myfile7.close();       
 }
 
 
@@ -479,10 +512,10 @@ void CStructure::AssemblyRigidPenalty()
         //Krbe2 =  RBE2[iRBE2]->g(0)*RBE2[iRBE2]->H_0 + RBE2[iRBE2]->g(1)*RBE2[iRBE2]->H_1 + RBE2[iRBE2]->g(2)*RBE2[iRBE2]->H_2;// + RBE2[iRBE2]->g(3)*RBE2[iRBE2]->H_3 + RBE2[iRBE2]->g(4)*RBE2[iRBE2]->H_4 + RBE2[iRBE2]->g(5)*RBE2[iRBE2]->H_5;
         
         // Expansion in to the system's tangent matrix
-        K_penal.block(RBE2[iRBE2]->MasterDOFs(1 -1) -1,RBE2[iRBE2]->MasterDOFs(1 -1) -1, 6 , 6) = Krbe1.block(1 -1, 1 -1, 6, 6) + Krbe2.block(1 -1, 1 -1, 6, 6);
-        K_penal.block(RBE2[iRBE2]->MasterDOFs(1 -1) -1,RBE2[iRBE2]->SlaveDOFs(1 -1) -1, 6 , 6) =  Krbe1.block(1 -1, 7 -1, 6, 6) + Krbe2.block(1 -1, 7 -1, 6, 6);
-        K_penal.block(RBE2[iRBE2]->SlaveDOFs(1 -1) -1,RBE2[iRBE2]->MasterDOFs(1 -1) -1, 6 , 6) =  Krbe1.block(7 -1, 1 -1, 6, 6) + Krbe2.block(7 -1, 1 -1, 6, 6);
-        K_penal.block(RBE2[iRBE2]->SlaveDOFs(1 -1) -1,RBE2[iRBE2]->SlaveDOFs(1 -1) -1, 6 , 6) =   Krbe1.block(7 -1, 7 -1, 6, 6) + Krbe2.block(7 -1, 7 -1, 6, 6);
+        K_penal.block(RBE2[iRBE2]->MasterDOFs(1 -1) -1,RBE2[iRBE2]->MasterDOFs(1 -1) -1, 6 , 6) += Krbe1.block(1 -1, 1 -1, 6, 6) + Krbe2.block(1 -1, 1 -1, 6, 6);
+        K_penal.block(RBE2[iRBE2]->MasterDOFs(1 -1) -1,RBE2[iRBE2]->SlaveDOFs(1 -1) -1, 6 , 6) +=  Krbe1.block(1 -1, 7 -1, 6, 6) + Krbe2.block(1 -1, 7 -1, 6, 6);
+        K_penal.block(RBE2[iRBE2]->SlaveDOFs(1 -1) -1,RBE2[iRBE2]->MasterDOFs(1 -1) -1, 6 , 6) +=  Krbe1.block(7 -1, 1 -1, 6, 6) + Krbe2.block(7 -1, 1 -1, 6, 6);
+        K_penal.block(RBE2[iRBE2]->SlaveDOFs(1 -1) -1,RBE2[iRBE2]->SlaveDOFs(1 -1) -1, 6 , 6) +=   Krbe1.block(7 -1, 7 -1, 6, 6) + Krbe2.block(7 -1, 7 -1, 6, 6);
         
                 //cout << "Krbe1 = \n" <<Krbe1 << endl;
                 //cout << "Krbe2 = \n" <<Krbe2 << endl;
@@ -492,15 +525,15 @@ void CStructure::AssemblyRigidPenalty()
     }
     
     // Penalty application
-    Ksys  +=  - K_penal*penalty;
+    Ksys  +=   K_penal*penalty;
            
     
     //cout << "RBE2[iRBE2]->G.transpose()*RBE2[iRBE2]->G = \n" <<RBE2[iRBE2]->G.transpose()*RBE2[iRBE2]->G << endl;  
     //cout << "penalty = \n" <<penalty << endl;
     
             std::ofstream myfile;
-    myfile.open ("Krbe.pyBeam");
-    myfile << "Krbe= "; myfile <<setprecision(15)<<  Krbe1+Krbe2 ; myfile << "\n ";
+    myfile.open ("K_penal.pyBeam");
+    myfile << "K_penal= "; myfile <<setprecision(15)<<  K_penal ; myfile << "\n ";
     myfile.close();
     
 }
@@ -531,6 +564,8 @@ void CStructure::AssemblyRigidLagrange()
         // EYE here: only in this case DOFS start from 1 instead than from 0. 
         
         //Master and slave cumulative displacements
+        Um = VectorXdDiff::Zero(6);
+        Us = VectorXdDiff::Zero(6);
         Um = U.segment(RBE2[iRBE2]->MasterDOFs(1 - 1) - 1, 6);
         Us = U.segment(RBE2[iRBE2]->SlaveDOFs(1 - 1) - 1, 6);
         
@@ -541,26 +576,26 @@ void CStructure::AssemblyRigidLagrange()
         lambda = VectorXdDiff::Zero(6);
         lambda = U_lam.segment(nNode*6 -1 + (iRBE2)*6+1 ,6);
         
-        //// Penalty matrix has 2 contributions:
+        ////  matrix has 2 contributions:
         
         Krbe =  MatrixXdDiff::Zero(12,12);
         // sum_i lambda_i*H_i (from the Hessian of the constraint set of equations)
         Krbe =  lambda(0)*RBE2[iRBE2]->H_0 + lambda(1)*RBE2[iRBE2]->H_1 + lambda(2)*RBE2[iRBE2]->H_2;
-        
+
         // Expansion in to the system's tangent matrix
-        Ksys_rbe.block(RBE2[iRBE2]->MasterDOFs(1 -1) -1,RBE2[iRBE2]->MasterDOFs(1 -1) -1, 6 , 6) = Krbe.block(1 -1, 1 -1, 6, 6);
-        Ksys_rbe.block(RBE2[iRBE2]->MasterDOFs(1 -1) -1,RBE2[iRBE2]->SlaveDOFs(1 -1) -1, 6 , 6) =  Krbe.block(1 -1, 7 -1, 6, 6);
-        Ksys_rbe.block(RBE2[iRBE2]->SlaveDOFs(1 -1) -1,RBE2[iRBE2]->MasterDOFs(1 -1) -1, 6 , 6) =  Krbe.block(7 -1, 1 -1, 6, 6);
-        Ksys_rbe.block(RBE2[iRBE2]->SlaveDOFs(1 -1) -1,RBE2[iRBE2]->SlaveDOFs(1 -1) -1, 6 , 6) =   Krbe.block(7 -1, 7 -1, 6, 6);
+        Ksys_rbe.block(RBE2[iRBE2]->MasterDOFs(1 -1) -1,RBE2[iRBE2]->MasterDOFs(1 -1) -1, 6 , 6) += Krbe.block(1 -1, 1 -1, 6, 6);
+        Ksys_rbe.block(RBE2[iRBE2]->MasterDOFs(1 -1) -1,RBE2[iRBE2]->SlaveDOFs(1 -1) -1, 6 , 6) +=  Krbe.block(1 -1, 7 -1, 6, 6);
+        Ksys_rbe.block(RBE2[iRBE2]->SlaveDOFs(1 -1) -1,RBE2[iRBE2]->MasterDOFs(1 -1) -1, 6 , 6) +=  Krbe.block(7 -1, 1 -1, 6, 6);
+        Ksys_rbe.block(RBE2[iRBE2]->SlaveDOFs(1 -1) -1,RBE2[iRBE2]->SlaveDOFs(1 -1) -1, 6 , 6) +=   Krbe.block(7 -1, 7 -1, 6, 6);
         
         // Adding the contribution to the equations of the lagrangian G ang G^T
         //first the row (G)
-        Ksys_rbe.block(nNode*6 -1 + (iRBE2)*6+1,RBE2[iRBE2]->MasterDOFs(1 -1) -1, 6 , 6) = RBE2[iRBE2]->G.block(1 -1,1 -1,6,6);
-        Ksys_rbe.block(nNode*6 -1 + (iRBE2)*6+1,RBE2[iRBE2]->SlaveDOFs(1 -1) -1, 6 , 6)  = RBE2[iRBE2]->G.block(1 -1,7 -1,6,6);   
+        Ksys_rbe.block(nNode*6 -1 + (iRBE2)*6+1,RBE2[iRBE2]->MasterDOFs(1 -1) -1, 6 , 6) += RBE2[iRBE2]->G.block(1 -1,1 -1,6,6);
+        Ksys_rbe.block(nNode*6 -1 + (iRBE2)*6+1,RBE2[iRBE2]->SlaveDOFs(1 -1) -1, 6 , 6)  += RBE2[iRBE2]->G.block(1 -1,7 -1,6,6);   
         
         //and then the column G^T
-        Ksys_rbe.block(RBE2[iRBE2]->MasterDOFs(1 -1) -1,nNode*6 -1 + (iRBE2)*6+1, 6 , 6) = RBE2[iRBE2]->G.block(1 -1,1 -1,6,6).transpose();
-        Ksys_rbe.block(RBE2[iRBE2]->SlaveDOFs(1 -1) -1,nNode*6 -1 + (iRBE2)*6+1, 6 , 6)  = RBE2[iRBE2]->G.block(1 -1,7 -1,6,6).transpose();   
+        Ksys_rbe.block(RBE2[iRBE2]->MasterDOFs(1 -1) -1,nNode*6 -1 + (iRBE2)*6+1, 6 , 6) += RBE2[iRBE2]->G.block(1 -1,1 -1,6,6).transpose();
+        Ksys_rbe.block(RBE2[iRBE2]->SlaveDOFs(1 -1) -1,nNode*6 -1 + (iRBE2)*6+1, 6 , 6)  += RBE2[iRBE2]->G.block(1 -1,7 -1,6,6).transpose();   
 
         
         //cout << "Krbe1 = \n" <<Krbe1 << endl;
@@ -570,17 +605,27 @@ void CStructure::AssemblyRigidLagrange()
         
     }
     
-    // Penalty application
+    //  application
     Ksys_lam  +=  Ksys_rbe;
-           
+    
     
     //cout << "RBE2[iRBE2]->G.transpose()*RBE2[iRBE2]->G = \n" <<RBE2[iRBE2]->G.transpose()*RBE2[iRBE2]->G << endl;  
     //cout << "penalty = \n" <<penalty << endl;
     
-            std::ofstream myfile;
-    myfile.open ("Krbe.pyBeam");
-    myfile << "Krbe= "; myfile <<setprecision(15)<<  Ksys_rbe ; myfile << "\n ";
+    std::ofstream myfile2;
+    myfile2.open ("Ksys_lam.dat");
+    myfile2 <<setprecision(15)<<  Ksys_lam ; 
+    myfile2.close();
+    
+    std::ofstream myfile;
+    myfile.open ("Krbe.dat");
+    myfile <<setprecision(15)<<  Ksys_rbe ;
     myfile.close();
+    
+    std::ofstream myfile5;
+    myfile5.open ("G_K.dat");
+         myfile5 <<setprecision(15)<<  RBE2[0]->G ;
+    myfile5.close();      
     
 }
 
@@ -644,8 +689,15 @@ void CStructure::AssemblyTang(int iIter)
                 
                 // Contribution to the appropriate location of the global matrix
                 Ksys.block(dof_jjj-1,dof_kkk-1,6,6) += Krotated;
-                
-            }
+                               
+            }            
+        }
+        
+        if (id_el==2){
+            std::ofstream myfile;
+            myfile.open ("Ktang.pyBeam");
+            myfile << "Ktang= "; myfile <<setprecision(15)<<  Ktang ; myfile << "\n ";
+            myfile.close(); 
         }
         
     }
@@ -1007,6 +1059,11 @@ void CStructure::SolveLinearStaticSystem(int iIter, std::ofstream &history, int 
     myfile.open ("Residual.pyBeam");
     myfile << "Residual= "; myfile <<setprecision(15)<<  Residual ; myfile << "\n ";
     myfile.close();
+    
+    std::ofstream myfile2;
+    myfile2.open ("Ksys.pyBeam");
+    myfile2 << "Ksys= "; myfile2 <<setprecision(15)<<  Ksys ; myfile2 << "\n ";
+    myfile2.close();
 }
 
 
@@ -1099,7 +1156,7 @@ void CStructure::SolveLinearStaticSystem_RigidLagrangian(int iIter, std::ofstrea
     //	LLT 	                          llt() 	Positive definite       +++ 	+
     //	LDLT 	                         ldlt() Positive or negative semidefinite 	+++ 	++
 
-    //Extgraction of dU  
+    //Extraction of dU  
     dU = VectorXdDiff::Zero(nNode*6);
     dU = dU_lam.segment(0,nNode*6);
 }
@@ -1174,7 +1231,7 @@ void CStructure::UpdateCoord(int nRBE2,int iRigid) {
     if (nRBE2 != 0 and iRigid == 1){
         U_lam.segment(0,nNode*6) = U;
         for (int iRBE2 = 0; iRBE2 < nRBE2; iRBE2++) {  
-            U_lam.segment(nNode*6 -1 + (iRBE2)*6+1 ,6) = U_lam.segment(nNode*6 -1 + (iRBE2)*6+1 ,6) + dU_lam.segment(nNode*6 -1 + (iRBE2)*6+1 ,6) ;    
+            U_lam.segment(nNode*6 -1 + (iRBE2)*6+1 ,6) +=  dU_lam.segment(nNode*6 -1 + (iRBE2)*6+1 ,6) ;    
         }
         
         std::ofstream myfile;

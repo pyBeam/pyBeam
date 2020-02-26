@@ -61,7 +61,7 @@ private:
     CStructure* structure;                /*!< \brief Pointer which the defines the structure. */
 
     int nDOF, nTotalDOF, nRBE2, nDim;
-    int iRigid = 1;     // iRigid = 0: Penalty method iRigid = 1: Lagrange Multiplier method
+    int iRigid = 0;     // iRigid = 0: Penalty method iRigid = 1: Lagrange Multiplier method
     unsigned long nFEM;
 
     unsigned long totalIter;

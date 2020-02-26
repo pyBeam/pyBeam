@@ -147,7 +147,7 @@ void CBeamSolver::Solve(int FSIIter = 0){
     addouble  lambda = 1.0;
     addouble dlambda =  1.0/input->Get_LoadSteps() ;
     unsigned long iIter;
-
+    
     unsigned long loadStep = 1;
     cout.setf(ios::fixed, ios::floatfield);
     history.setf(ios::fixed, ios::floatfield);
@@ -160,6 +160,8 @@ void CBeamSolver::Solve(int FSIIter = 0){
     structure->UpdateLength();
     structure->UpdateInternalForces_FP();
     
+    if (nRBE2 != 0 and iRigid == 1){ structure->SetRigidLagrangeDimensions();}
+
     totalIter = 0;
     for  ( loadStep = 0; loadStep < input->Get_LoadSteps(); loadStep++) {
         
@@ -235,14 +237,14 @@ void CBeamSolver::Solve(int FSIIter = 0){
             
             if (nRBE2 != 0 ) {
                 if (iRigid == 0 ) {
-                structure->SetPenalty();
+                 if (iIter == 0 ) {structure->SetPenalty();}
                 structure->RigidResidual();
                 //structure->RigidResidual_FD();
                 structure->AssemblyRigidPenalty();
                 //structure->AssemblyRigidPenalty_FD();
                 }
                 else{
-                structure->SetRigidLagrangeDimensions(); 
+                
                 structure->RigidResidualLagrange();
                 structure->AssemblyRigidLagrange();
                 }
@@ -316,7 +318,7 @@ void CBeamSolver::Solve(int FSIIter = 0){
     if (verbose){std::cout << std::endl << "--> Exiting Iterative Sequence." << std::endl;}
     
     history.close();
-    
+    std::cout << structure->U << std::endl;
 }
 
 void CBeamSolver::RunRestart(int FSIIter = 0){
