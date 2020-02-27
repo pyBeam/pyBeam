@@ -944,6 +944,11 @@ void CStructure::UpdateCoord() {
         // Update displacements
         U.segment(posU-1,3) += dU.segment(posU-1,3);
 
+       // Update the lagrange multiplier
+       LM=U.segment(posU+6 -1,posU+6 -1 + n_RBE2*6);
+       dLM=U.segment(posU+6 -1,posU+6 -1 + n_RBE2*6);
+        LM += dLM;
+
         // Update the rotations TODO: check
         
         //The rotation matrix is extracted from the rotational degrees of freedom of each node
@@ -951,9 +956,7 @@ void CStructure::UpdateCoord() {
         R_U = Matrix3dDiff::Zero();
         PseudoToRot(U_rot, R_U);
 
-       // Update the lagrange multiplier
        
-       LM.segment(posU+6 -1,n_RBE2*6) += dLM.segment(posU+6 -1,n_RBE2*6);
 
         //same things is done for the new rotation
         dU_rot = dU.segment(posU+3 -1,3);
