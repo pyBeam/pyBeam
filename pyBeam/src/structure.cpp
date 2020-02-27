@@ -47,6 +47,7 @@ CStructure::CStructure(CInput *input, CElement **container_element, CNode **cont
 
     nNode = input->Get_nNodes();
     nfem = input->Get_nFEM();
+    n_RBE2  = input->Get_nRBE2();
     
     // Get the constrain matrix [NODE_ID DOF_ID]
     Constr_matrix = input->GetConstrMatrix();
@@ -54,21 +55,27 @@ CStructure::CStructure(CInput *input, CElement **container_element, CNode **cont
     YoungModulus = input->GetYoungModulus_dimensional();
     
     // Resizes and zeros the K matrices
-    Ksys.resize(nNode*6+nNode*6,nNode*6+nNode*6);
-    Ksys = MatrixXdDiff::Zero(nNode*6+nNode*6,nNode*6+nNode*6);  //system enlarged for Lagrangian
+    Ksys.resize(nNode*6,nNode*6);
+    Ksys = MatrixXdDiff::Zero(nNode*6,nNode*6);  
 
 
-    Ud  = VectorXdDiff::Zero(nNode*6);            // Whole system displacements (Cumulative)
-    LM = VectorXdDiff::Zero(nNode*6);                   //Lagrangian multiplyer 
-    U  =                                               // composition of Ud and LM
-    dLM   = VectorXdDiff::Zero(nNode*6);
-    dUd   = VectorXdDiff::Zero(nNode*6);         // Incremental system displacements +Incremental Lagrange mulplyer
-    dU  =                                               // composition of dUd and dLM
-
-    U_adj = VectorXdDiff::Zero(nNode*6);       // Whole system displacement adjoint
     
-    X  = VectorXdDiff::Zero(nNode*3);          // Current coordinates of the system
-    X0 = VectorXdDiff::Zero(nNode*3);          // Initial coordinates of the system
+    Ud  = VectorXdDiff::Zero(nNode*6);                    // Whole system displacements (Cumulative)
+    LM = VectorXdDiff::Zero(n_RBE2 *6);                  //Lagrangian multiplyer 
+    U  = VectorXdDiff::Zero(nNode*6+n_RBE2 *6);           
+    U.segment(1-1,nNode*6)  = Ud.segment()              // composition of Ud and LM
+    U.segment(nNode*6,nNode*6+n_RBE2 *6)  = LM.segment(1-1,n_RBE2 *6) 
+            
+    dLM   = VectorXdDiff::Zero( n_RBE2 *6);
+    dUd   = VectorXdDiff::Zero(nNode*6);              // Incremental system displacements +Incremental Lagrange mulplyer
+    dU  = VectorXdDiff::Zero(nNode*6+n_RBE2 *6)
+    dU.segment(1-1,nNode*6)  = dUd.segment(1-1,nNode*6)                                      // composition of Ud and LM
+    dU.segment(nNode*6,nNode*6+n_RBE2 *6)  = dLM.segment(1-1,n_RBE2 *6)                     // composition of dUd and dLM
+
+    U_adj = VectorXdDiff::Zero(nNode*6);           // Whole system displacement adjoint
+    
+    X  = VectorXdDiff::Zero(nNode*3);            // Current coordinates of the system
+    X0 = VectorXdDiff::Zero(nNode*3);           // Initial coordinates of the system
 
 
     cross_term = VectorXdDiff::Zero(nNode*6);    // Displacement adjoint cross-term storage
@@ -224,9 +231,9 @@ void CStructure::AssemblyRigidPenalty(addouble penalty)
     //double n_dof;
     
     // Setting to Zero the SYSTEM penalty matrix and residual vector
-    K_lagr = MatrixXdDiff::Zero(nNode*6+nNode*6,nNode*6+nNode*6);
+    K_lagr = MatrixXdDiff::Zero(nNode*6+  n_RBE2 *6,nNode*6+  n_RBE2 *6);
     
-    V_lagr = VectorXdDiff::Zero(nNode*6+nNode*6);
+    V_lagr = VectorXdDiff::Zero(nNode*6+  n_RBE2 *6);
 
     //contribution Lagrange: G^T,G,A+LM*H,-Residual-LM^T*G,-g
 
@@ -234,8 +241,8 @@ void CStructure::AssemblyRigidPenalty(addouble penalty)
     MatrixXdDiff Krbe1 =  MatrixXdDiff::Zero(12,12); // first contribution to the tangent matrix: A + LM_i*H_i (single element)
     MatrixXdDiff Krbe2 =  MatrixXdDiff::Zero(12,6); // second contribution to the tangent matrix: G^T (single element)
     MatrixXdDiff Krbe3 =  MatrixXdDiff::Zero(6,12); // third contribution to the tangent matrix: G (single element)
-    VectorXdDiff Vrbe1 =  VectorXdDiff::Zero(12);   //  first contribution to the RHS : -Residual-LM^T*G (single element)
-    VectorXdDiff Vrbe2 =  VectorXdDiff::Zero(6);   //  first contribution to the RHS : -Residual-LM^T*G (single element)
+    VectorXdDiff Vrbe1 =  VectorXdDiff::Zero(12);   //  first contribution to the RHS : -Residual-LM_i^T*G (single element)
+    VectorXdDiff Vrbe2 =  VectorXdDiff::Zero(6);   //  first contribution to the RHS : g_i (single element)
 
 
     for (int iRBE2 = 0; iRBE2 < nRBE2; iRBE2++) {
@@ -265,48 +272,94 @@ void CStructure::AssemblyRigidPenalty(addouble penalty)
         */
         
         
-        //// Penalty matrix has 2 contributions:
+        //// Penalty matrix has 3 contributions:
         
-        // J^T*J (the Jacobian of the constraint set of equations)
-        RBE2[iRBE2]->EvalJacobian( Um, Us);
-        Krbe1 =  MatrixXdDiff::Zero(12,12);
-        Krbe1 = RBE2[iRBE2]->J.transpose()*RBE2[iRBE2]->J;
-        // sum_i g_i*H_i (from the Hessian of the constraint set of equations)
-        RBE2[iRBE2]->EvalConstraintEquation( Um, Us);
+        
+       /// Ktang+ LM_i*H_i (from the Hessian of the constraint set of equations)
+        // Element's contribution to Ktang
+         Ktg=MatrixXdDiff Ktang(12,12);
+    
+       
         RBE2[iRBE2]->EvalHessian( Um, Us);
 
-        Krbe2 = RBE2[iRBE2]->g(0)*RBE2[iRBE2]->H_0.transpose() + RBE2[iRBE2]->g(1)*RBE2[iRBE2]->H_1.transpose() + RBE2[iRBE2]->g(2)*RBE2[iRBE2]->H_2.transpose() + RBE2[iRBE2]->g(3)*RBE2[iRBE2]->H_3.transpose() + RBE2[iRBE2]->g(4)*RBE2[iRBE2]->H_4.transpose() + RBE2[iRBE2]->g(5)*RBE2[iRBE2]->H_5.transpose();
+        Krbe1p = RBE2[iRBE2]->LM(0)*RBE2[iRBE2]->H_0.transpose() + RBE2[iRBE2]->LM(1)*RBE2[iRBE2]->H_1.transpose() + RBE2[iRBE2]->LM(2)*RBE2[iRBE2]->H_2.transpose() + RBE2[iRBE2]->LM(3)*RBE2[iRBE2]->H_3.transpose() + RBE2[iRBE2]->LM(4)*RBE2[iRBE2]->H_4.transpose() + RBE2[iRBE2]->LM(5)*RBE2[iRBE2]->H_5.transpose();
+        Krbe1=krbe1p + Ktg;
+        
+        // J (the Jacobian of the constraint set of equations)
+        RBE2[iRBE2]->EvalJacobian( Um, Us);
+        Krbe2 =  MatrixXdDiff::Zero(6,12);
+        Krbe2 = RBE2[iRBE2]->J;
+
+       // J^T (the Transpose of the  Jacobian of the constraint set of equations)
+        Krbe3 =  MatrixXdDiff::Zero(12,6);
+        Krbe3 = RBE2[iRBE2]->J.transpose();
+        
+         
+       
+       
         
         // Expansion in to the system's tangent matrix
+        /*
         K_penal.block(RBE2[iRBE2]->MasterDOFs(1 -1) -1,RBE2[iRBE2]->MasterDOFs(1 -1) -1, 6 , 6) = Krbe1.block(1 -1, 1 -1, 6, 6) + Krbe2.block(1 -1, 1 -1, 6, 6);
         K_penal.block(RBE2[iRBE2]->MasterDOFs(1 -1) -1,RBE2[iRBE2]->SlaveDOFs(1 -1) -1, 6 , 6) = Krbe1.block(1 -1, 7 -1, 6, 6) + Krbe2.block(1 -1, 7 -1, 6, 6);
         K_penal.block(RBE2[iRBE2]->SlaveDOFs(1 -1) -1,RBE2[iRBE2]->MasterDOFs(1 -1) -1, 6 , 6) = Krbe1.block(7 -1, 1 -1, 6, 6) + Krbe2.block(7 -1, 1 -1, 6, 6);
         K_penal.block(RBE2[iRBE2]->SlaveDOFs(1 -1) -1,RBE2[iRBE2]->SlaveDOFs(1 -1) -1, 6 , 6) = Krbe1.block(7 -1, 7 -1, 6, 6) + Krbe2.block(7 -1, 7 -1, 6, 6);
+        */
+        
+        
+        
+        
+        
+        // ??????????
+        K_lagr.block(RBE2[iRBE2]->MasterDOFs(1 -1) -1,RBE2[iRBE2]->MasterDOFs(1 -1) -1, 6 , 6) = Krbe1.block(1 -1, 1 -1, 6, 6);
+        K_lagr.block(RBE2[iRBE2]->MasterDOFs(1 -1) -1,RBE2[iRBE2]->SlaveDOFs(1 -1) -1, 6 , 6) = Krbe1.block(1 -1, 7 -1, 6, 6) ;
+        K_lagr.block(RBE2[iRBE2]->SlaveDOFs(1 -1) -1,RBE2[iRBE2]->MasterDOFs(1 -1) -1, 6 , 6) = Krbe1.block(7 -1, 1 -1, 6, 6) ;
+        K_lagr.block(RBE2[iRBE2]->SlaveDOFs(1 -1) -1,RBE2[iRBE2]->SlaveDOFs(1 -1) -1, 6 , 6) = Krbe1.block(7 -1, 7 -1, 6, 6) ;
+        
+        
+        K_lagr.block( ,   , 12 , 6) = Krbe2.block(1 -1, 13, 12, 6);
+        K_lagr.block( ,   , 6 , 6) = Krbe2.block(1 -1, 7 -1, 1, 6) ;
+        K_lagr.block( ,  , 6 , 6) = Krbe2.block(7 -1, 1 -1, 6, 6) ;
+        K_lagr.block( ,  , 6 , 6) = Krbe2.block(7 -1, 7 -1, 6, 6) ;
+        
+        
+        K_lagr.block( , , 6 , 6) = Krbe2.block(1 -1, 13, 6, 6);
+        K_lagr.block( , , 6 , 6) = Krbe2.block(1 -1, 7 -1, 6, 6) ;
+        K_lagr.block( , , 6 , 6) = Krbe2.block(7 -1, 1 -1, 6, 6) ;
+        K_lagr.block( , , 6 , 6) = Krbe2.block(7 -1, 7 -1, 6, 6) ;
+        //?????????
+        
+        
+        
+        
         
         //        cout << "Krbe1 = \n" <<Krbe1 << endl;
         //        cout << "Krbe2 = \n" <<Krbe2 << endl;
         //        cout << "g = \n" <<RBE2[iRBE2]->g << endl;
-        // sum_i g_i*H_i (from the Hessian of the constraint set of equations)
+
         
         
         //// Residual has one contribution
         // Constraint equation set
         RBE2[iRBE2]->EvalConstraintEquation( Um, Us);
-
-        Vrbe2 = RBE2[iRBE2]->J.transpose()*RBE2[iRBE2]->g;
         
-        V_penal.segment(RBE2[iRBE2]->MasterDOFs(1 -1) -1, 6) = Vrbe2.segment(1 - 1, 6);
-        V_penal.segment(RBE2[iRBE2]->SlaveDOFs(1 -1) -1, 6) = Vrbe2.segment(7 - 1, 6);
+        Vrbe1p= LM.traspose()* RBE2[iRBE2]->J
+        Vrbe1 = -Residual - Vrbe1p;
+        Vrbe2=  -RBE2[iRBE2]->g;
+        
+        V_lagr.segment(RBE2[iRBE2]->MasterDOFs(1 -1) -1, 6) = Vrbe1.segment(1 - 1, 6);
+        V_lagr.segment(RBE2[iRBE2]->SlaveDOFs(1 -1) -1, 6) = Vrbe1.segment(7 - 1, 6);
+        V_lagr.segment( ) = Vrbe2.segment(1 - 1, 6); // ????
         
         
     }
     
     // Penalty application
-    K_penal =     K_penal*penalty;
+    //K_penal =     K_penal*penalty;
     
     // Penalty vector for residual
 
-    V_penal = V_penal*penalty;
+    //V_penal = V_penal*penalty;
     
     //cout << "K_penal = \n" <<K_penal << endl;
     //cout << "V_penal = \n" <<V_penal << endl;
@@ -340,9 +393,7 @@ void CStructure::AssemblyTang(int iIter)
     // Setting to Zero the stiffness matrix
     Ksys = MatrixXdDiff::Zero(nNode*6,nNode*6);
     
-    // Element's contribution to Ktang
-    MatrixXdDiff Ktang(12,12);
-
+   
     /*------------------------------------
      * Elastic contribution to the stiffness matrix
      * Linear elastic + stretch part
@@ -831,13 +882,13 @@ void CStructure::SolveLinearStaticSystem_RBE2(int iIter)
     
 }
 
-void CStructure::SolveLinearStaticSystem_RBE2_penalty(int iIter)
+void CStructure::SolveLinearStaticSystem_RBE2_lagrange(int iIter)
 {
     //std::cout << "-->  Solving Linear System with penalty method for rigid constraints, "  << std::endl;
     //    cout << "Ksys = \n" <<Ksys << endl;
     //cout << "K_penal = \n" <<K_penal << endl;
-    Ksys = Ksys + K_penal;
-    Residual = Residual - V_penal;
+    Ksys = Ksys + K_penal;  // ???
+    Residual = V_lagr;      // ????
     //    cout << "Ktot = \n" <<Ksys << endl;
     dU = Ksys.fullPivHouseholderQr().solve(Residual);
     //    std::cout << "dU (after) = \n" << dU << std::endl;
