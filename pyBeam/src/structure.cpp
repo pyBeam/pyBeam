@@ -314,11 +314,12 @@ void CStructure::AssemblyRigidPenalty(addouble penalty)
         K_lagr.block(RBE2[iRBE2]->SlaveDOFs(1 -1) -1,RBE2[iRBE2]->SlaveDOFs(1 -1) -1, 6 , 6) = Krbe1.block(7 -1, 7 -1, 6, 6) ;
         
         
-        K_lagr.block( 1-1,(nNode*6-5)+[iRBE2]*6, 12, 6) = Krbe2.block(1 -1, 1-1, 12, 6);
-      
+        K_lagr.block( RBE2[iRBE2]->MasterDOFs(1 -1) -1,(6*nNodi-1)+([iRBE2]-1)*6+1, 6, 6) = Krbe2.block(7 -1, 1-1, 6, 6);
+        K_lagr.block( RBE2[iRBE2]->SlaveDOFs(1 -1) -1,(6*nNodi-1)+([iRBE2]-1)*6+1, 6, 6) = Krbe2.block(7-1, 1-1, 6, 6);
         
-        K_lagr.block( (nNode*6-5)+[iRBE2]*6,1-1, 6 , 12) = Krbe3.block(1 -1, 1-1, 6, 12);
-       
+        K_lagr.block( (6*nNodi-1)+([iRBE2]-1)*6+1,RBE2[iRBE2]->MasterDOFs(1 -1) -1, 6 , 6) = Krbe3.block(1 -1, 1-1, 6, 6);
+        K_lagr.block( (6*nNodi-1)+([iRBE2]-1)*6+1,RBE2[iRBE2]->SlaveDOFs(1 -1) -1, 6 , 6) = Krbe3.block(1 -1, 7-1, 6, 6);
+        
        
         
         
@@ -341,7 +342,7 @@ void CStructure::AssemblyRigidPenalty(addouble penalty)
         
         V_lagr.segment(RBE2[iRBE2]->MasterDOFs(1 -1) -1, 6) = Vrbe1.segment(1 - 1, 6);
         V_lagr.segment(RBE2[iRBE2]->SlaveDOFs(1 -1) -1, 6) = Vrbe1.segment(7 - 1, 6);
-        V_lagr.segment((nNode*6-5)+[iRBE2]*6,6) = Vrbe2.segment(1 - 1, 6); 
+        V_lagr.segment((6*nNodi-1)+([iRBE2]-1)*6+1,6) = Vrbe2.segment(1 - 1, 6); 
         
         
     }
@@ -945,9 +946,7 @@ void CStructure::UpdateCoord() {
         U.segment(posU-1,3) += dU.segment(posU-1,3);
 
        // Update the lagrange multiplier
-       LM=U.segment(posU+6 -1,posU+6 -1 + n_RBE2*6);
-       dLM=U.segment(posU+6 -1,posU+6 -1 + n_RBE2*6);
-        LM += dLM;
+       
 
         // Update the rotations TODO: check
         
@@ -980,8 +979,11 @@ void CStructure::UpdateCoord() {
         posX += 3;
         posU += 6;
     }
-
+  
+       U.segment(nNode*6+1,n_RBE2*6) += dU.segment(nNode*6+1 ,n_RBE2*6);       
+      
 }
+
 
 /*===================================================
  *            Restart Coordinates
