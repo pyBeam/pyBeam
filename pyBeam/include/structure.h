@@ -65,8 +65,9 @@ public:
     
     int nNode;                  // Number of structural nodes
     int nfem;                   // number of finite elements   // has to be assigned in the constructor
-    int nRBE2;                  // number of finite elements
-    MatrixXdDiff
+    int nRBE2 ;                      // number of finite elements
+    //nRBE2=input->Get_nRBE2();
+     
     int DOF;                    // In space, 6
     
     CRBE2 **RBE2;               // Pointer to the first RBE2 element
@@ -79,6 +80,8 @@ public:
     MatrixXdDiff Ksys_red;      // [relative to masters in case of RBE2]
     MatrixXdDiff K_penal;       // penalty matrix for rigid elements
     VectorXdDiff V_penal;       // penalty vector for rigid elements
+    MatrixXdDiff K_lagr;       // Lagrange matrix for rigid elements
+    VectorXdDiff V_lagr;       // Lagrange vector for rigid elements
     
     MatrixXdDiff KRBE;          // Kinematic constraint matrix due to the RBE2 elements   [totalDOFs, BossDOFs]
     MatrixXdDiff KRBE_ext;      // Kinematic constraint matrix due to the RBE2 elements   [totalDOFs, BossDOFs]
@@ -86,7 +89,11 @@ public:
     MatrixXdDiff  Constr_matrix;// COnstraint matrix [ NODE_ID DOF_ID ]
     
     VectorXdDiff U;             // Displacement array
+    //VectorXdDiff Um;             // master Displacement array
+    //VectorXdDiff Us;             // slave Displacement array
+    VectorXdDiff LM;            // Lagrange Multiplier array
     VectorXdDiff dU;            // Displacement array (increment)
+    VectorXdDiff dLM;           // Lagrange Multiplier array (increment)
     VectorXdDiff dU_red;        // Displacement array (increment) [relative to masters in case of RBE2]
     VectorXdDiff X;             // Position of the fem nodes in global coordinate system
     VectorXdDiff X0;            // Position of the fem nodes in global coordinate system
@@ -97,6 +104,7 @@ public:
     VectorXdDiff Fint;          // Array of internal forces
     VectorXdDiff Fext;          // Array of External Forces
     VectorXdDiff Residual;      // Array of Unbalanced Forces
+    VectorXdDiff residual;      // empty vector [6*nNode+6*nRBE2] to allocate the Residual 
     VectorXdDiff Residual_red;  // Array of Unbalanced Forces   [relative to masters in case of RBE2]
     
     VectorXdDiff Fnom;          // Array of nominal forces
@@ -134,7 +142,8 @@ public:
 
     void AssemblyRigidConstr();
 
-    void AssemblyRigidPenalty(addouble penalty);
+    
+    void AssemblyRigidLagrange();
 
     void UpdateRigidConstr(int iIter);
 
@@ -157,7 +166,7 @@ public:
 
     void SolveLinearStaticSystem_RBE2(int iIter);
 
-    void SolveLinearStaticSystem_RBE2_penalty(int iIter);
+    void SolveLinearStaticSystem_RBE2_lagrange(int iIter);
 
     //===================================================
     //      Update Coordinates

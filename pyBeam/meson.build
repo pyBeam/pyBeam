@@ -40,14 +40,14 @@ pyBeam = static_library('pyBeam',
                         dependencies : eigen_dep, 
                         cpp_args : ['-Wno-ignored-attributes', '-Wno-deprecated-declarations'])
                         
-pyBeamAD = static_library('pyBeamAD', 
-                           beam_src,
-                           install : false, 
-                           dependencies : [eigen_dep, codi_dep],
-                           cpp_args : ['-Wno-ignored-attributes', '-Wno-deprecated-declarations', codi_rev_args])                        
+#pyBeamAD = static_library('pyBeamAD', 
+#                           beam_src,
+#                          install : false, 
+#                      dependencies : [eigen_dep, codi_dep],
+#                      cpp_args : ['-Wno-ignored-attributes', '-Wno-deprecated-declarations', codi_rev_args])                        
 
 pyBeam_dep = [declare_dependency(link_with: pyBeam)]
-pyBeamAD_dep = [declare_dependency(link_with: pyBeamAD)]
+#pyBeamAD_dep = [declare_dependency(link_with: pyBeamAD)]
 
 cpp_source = swig_gen.process('./swig/pyBeam.i')
 swig_lib = shared_library(
@@ -67,23 +67,23 @@ else
 	meson.add_install_script(meson.source_root()+'/install.sh', meson.build_root(), 'pyBeam.py')
 endif
 
-cpp_source = swig_gen.process('./swig/pyBeamAD.i')
-swig_lib = shared_library(
-    '_pyBeamAD',
-    cpp_source,
-    dependencies: [pyBeamAD_dep, python_dep, codi_dep, eigen_dep],
-    link_args: [],
-    install: true,
-    install_dir: ['bin'],
-    include_directories : ['./include/'],
-    cpp_args : ['-Wno-ignored-attributes', 
-                '-Wno-deprecated-declarations', 
-                '-DSWIG_TYPE_TABLE=pyBeamAD', 
-                codi_rev_args],
-    name_prefix : '',
-)
-if meson.is_subproject()
-	meson.add_install_script(meson.source_root()+'/subprojects/pyBeam/install.sh', meson.build_root()+'/subprojects/pyBeam', 'pyBeamAD.py')
-else
-	meson.add_install_script(meson.source_root()+'/install.sh', meson.build_root(), 'pyBeamAD.py')
-endif
+#cpp_source = swig_gen.process('./swig/pyBeamAD.i')
+#swig_lib = shared_library(
+#    '_pyBeamAD',
+#    cpp_source,
+#    dependencies: [pyBeamAD_dep, python_dep, codi_dep, eigen_dep],
+#    link_args: [],
+#    install: true,
+#    install_dir: ['bin'],
+#    include_directories : ['./include/'],
+#    cpp_args : ['-Wno-ignored-attributes', 
+#                '-Wno-deprecated-declarations', 
+ #               '-DSWIG_TYPE_TABLE=pyBeamAD', 
+#                codi_rev_args],
+ #   name_prefix : '',
+#)
+#if meson.is_subproject()
+#	meson.add_install_script(meson.source_root()+'/subprojects/pyBeam/install.sh', meson.build_root()+'/subprojects/pyBeam', 'pyBeamAD.py')
+#else
+#	meson.add_install_script(meson.source_root()+'/install.sh', meson.build_root(), 'pyBeamAD.py')
+#endif

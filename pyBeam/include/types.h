@@ -29,6 +29,7 @@
 
 #include <math.h>     
 #include <cmath> 
+
 #include <Eigen/Dense>
 #include <Eigen/Eigenvalues>
 #include <Eigen/LU>
@@ -36,6 +37,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
+
 
 #include "../externals/CoDiPack/include/codi.hpp"
 

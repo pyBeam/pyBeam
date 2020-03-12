@@ -66,8 +66,8 @@ void CBeamSolver::InitializeInput(CInput* py_input){   // insert node class and 
     nDOF = input->Get_nDOF();
     nFEM = input->Get_nFEM();
     nTotalDOF = input->Get_nNodes() * input->Get_nDOF();
-    nRBE2 = input->Get_nRBE2();
     
+    //nRBE2=input->Get_nRBE2();
     //==============================================================
     //      Load Vector initialization
     //==============================================================
@@ -195,13 +195,20 @@ void CBeamSolver::Solve(int FSIIter = 0){
             structure->EvalResidual(input->Get_RigidCriteria());
 
             if (verbose){std::cout.width(17); std::cout << log10(structure->Residual.norm());}
-
+            
+            
+           
             /*--------------------------------------------------
              *   Assembly Ktang, Solve System
              *----------------------------------------------------*/
             
             // Reassembling Stiffness Matrix + Applying Boundary Conditions
+           // Ksys.resize(nNode*6+nRBE2*6,nNode*6+nRBE2*6);
+            //Ksys = MatrixXdDiff::Zero(nNode*6+nRBE2*6,nNode*6+nRBE2*6);
             structure->AssemblyTang(1);
+            
+           
+           //cout  << " Assembly Tangent Matrix="  << Ksys <<endl;
             
             // Solve Linear System   K*dU = Res = Fext - Fin
             if (nRBE2 != 0 and input->Get_RigidCriteria() == 0) {
@@ -210,9 +217,9 @@ void CBeamSolver::Solve(int FSIIter = 0){
                 structure->SolveLinearStaticSystem_RBE2(iIter);
             }
             else if (nRBE2 != 0 and input->Get_RigidCriteria() == 1) {
-                if (verbose){std::cout << "-->  Update penalty matrix for RBEs "  << std::endl;}
-                structure->AssemblyRigidPenalty(input->GetPenalty());
-                structure->SolveLinearStaticSystem_RBE2_penalty(iIter);
+                if (verbose){std::cout << "-->  Update Lagrangian matrix for RBEs "  << std::endl;}
+                structure->AssemblyRigidLagrange();
+                structure->SolveLinearStaticSystem_RBE2_lagrange(iIter);
             }
             else {
                 structure->SolveLinearStaticSystem(iIter);
@@ -347,8 +354,9 @@ void CBeamSolver::RunRestart(int FSIIter = 0){
     }
     else if (nRBE2 != 0 and input->Get_RigidCriteria() == 1) {
         if (verbose){std::cout << "-->  Update penalty matrix for RBEs "  << std::endl;}
-        structure->AssemblyRigidPenalty(input->GetPenalty());
-        structure->SolveLinearStaticSystem_RBE2_penalty(1);
+        // structure->AssemblyRigidPenalty(input->GetPenalty());
+        structure->AssemblyRigidLagrange();
+        structure->SolveLinearStaticSystem_RBE2_lagrange(1);
     }
     else {
         structure->SolveLinearStaticSystem(1);

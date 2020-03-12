@@ -66,6 +66,7 @@ public:
     MatrixXdDiff H_4;     // Jacobian of the constraint equations on LHS
     MatrixXdDiff H_5;     // Jacobian of the constraint equations on LHS
 
+  
 private:
 
 public:
