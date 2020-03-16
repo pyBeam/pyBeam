@@ -66,8 +66,7 @@ void CBeamSolver::InitializeInput(CInput* py_input){   // insert node class and 
     nDOF = input->Get_nDOF();
     nFEM = input->Get_nFEM();
     nTotalDOF = input->Get_nNodes() * input->Get_nDOF();
-    
-    //nRBE2=input->Get_nRBE2();
+    nRBE2=input->Get_nRBE2();
     //==============================================================
     //      Load Vector initialization
     //==============================================================
@@ -105,7 +104,6 @@ void CBeamSolver::InitializeInput(CInput* py_input){   // insert node class and 
     }
     else {RBE2 = NULL; }
     
-    
     //===============================================
     //  Initialize structural solver
     //===============================================
@@ -134,7 +132,7 @@ void CBeamSolver::Solve(int FSIIter = 0){
         if (verbose){std::cout << "--> Setting RBE2 Matrix for Rigid Constraints" << std::endl;}
         structure->AddRBE2(input, RBE2);
     }
-
+ 
     //===============================================
     // LOAD STEPPING
     //===============================================
@@ -172,7 +170,7 @@ void CBeamSolver::Solve(int FSIIter = 0){
         std::cout.width(17); std::cout << "Log10(Norm_Disp)";
         std::cout.width(17); std::cout << "Log10(Disp_Fact)" << std::endl;
         }
-        
+
         //===============================================
         //               ITERATIVE SEQUENCE
         //===============================================
@@ -197,7 +195,7 @@ void CBeamSolver::Solve(int FSIIter = 0){
             if (verbose){std::cout.width(17); std::cout << log10(structure->Residual.norm());}
             
             
-           
+                 
             /*--------------------------------------------------
              *   Assembly Ktang, Solve System
              *----------------------------------------------------*/
@@ -205,19 +203,26 @@ void CBeamSolver::Solve(int FSIIter = 0){
             // Reassembling Stiffness Matrix + Applying Boundary Conditions
            // Ksys.resize(nNode*6+nRBE2*6,nNode*6+nRBE2*6);
             //Ksys = MatrixXdDiff::Zero(nNode*6+nRBE2*6,nNode*6+nRBE2*6);
-            structure->AssemblyTang(1);
+       
             
+            structure->AssemblyTang(iIter);
+            //cout << "   ----- number RBE2 ----->" << nRBE2 << endl;
+            
+                     
            
-           //cout  << " Assembly Tangent Matrix="  << Ksys <<endl;
+           
             
             // Solve Linear System   K*dU = Res = Fext - Fin
+          
             if (nRBE2 != 0 and input->Get_RigidCriteria() == 0) {
                 if (verbose){std::cout << "-->  Update KRBE matrix "  << std::endl;}
+                
                 structure->AssemblyRigidConstr();
                 structure->SolveLinearStaticSystem_RBE2(iIter);
             }
             else if (nRBE2 != 0 and input->Get_RigidCriteria() == 1) {
                 if (verbose){std::cout << "-->  Update Lagrangian matrix for RBEs "  << std::endl;}
+                
                 structure->AssemblyRigidLagrange();
                 structure->SolveLinearStaticSystem_RBE2_lagrange(iIter);
             }
@@ -355,6 +360,8 @@ void CBeamSolver::RunRestart(int FSIIter = 0){
     else if (nRBE2 != 0 and input->Get_RigidCriteria() == 1) {
         if (verbose){std::cout << "-->  Update penalty matrix for RBEs "  << std::endl;}
         // structure->AssemblyRigidPenalty(input->GetPenalty());
+       
+    
         structure->AssemblyRigidLagrange();
         structure->SolveLinearStaticSystem_RBE2_lagrange(1);
     }
@@ -367,9 +374,9 @@ void CBeamSolver::RunRestart(int FSIIter = 0){
     /*--------------------------------------------------
     *   Updates Coordinates, Updates Rotation Matrices
     *----------------------------------------------------*/
-
+  
     structure->UpdateCoord();
-
+  
     /*--------------------------------------------------
     *    Check Convergence
     *----------------------------------------------------*/

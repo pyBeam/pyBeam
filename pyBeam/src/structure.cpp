@@ -49,7 +49,7 @@ CStructure::CStructure(CInput *input, CElement **container_element, CNode **cont
     nfem = input->Get_nFEM();
     
     
-    //NRBE2= input->Get_nRBE2();
+    
     
     
     // Get the constrain matrix [NODE_ID DOF_ID]
@@ -59,6 +59,8 @@ CStructure::CStructure(CInput *input, CElement **container_element, CNode **cont
 
     YoungModulus = input->GetYoungModulus_dimensional();
     
+    
+    
     // Resizes and zeros the K matrices
     Ksys.resize(nNode*6+nRBE2*6,nNode*6+nRBE2*6);
     Ksys = MatrixXdDiff::Zero(nNode*6+nRBE2*6,nNode*6+nRBE2*6);
@@ -67,21 +69,10 @@ CStructure::CStructure(CInput *input, CElement **container_element, CNode **cont
     
     
                                                         
-    U  = VectorXdDiff::Zero(nNode*6+nRBE2 *6);                // whole vector solution 
-    //cout << "U = \n" <<U << endl;
-   
-   
-    
-    
-   VectorXdDiff LM= U.segment(nNode*6,nRBE2 *6) ;                      //Lagrangian multiplyer  
-  // cout << "LM = \n" <<LM<< endl;
-   
-    
-          
+    U  = VectorXdDiff::Zero(nNode*6+nRBE2 *6);                // whole vector solution
+   VectorXdDiff LM= U.segment(nNode*6,nRBE2 *6) ;             //Lagrangian multiplier    
     dU  = VectorXdDiff::Zero(nNode*6+nRBE2 *6);
      //cout << "dU = \n" <<dU<< endl;
-    
-    
     VectorXdDiff dLM  = dU.segment(nNode*6,nRBE2 *6);
      //cout << "dLM = \n" <<dLM<< endl;
     
@@ -242,15 +233,45 @@ void CStructure::AssemblyRigidConstr()
 //void CStructure::AssemblyRigidPenalty(addouble penalty)
 void CStructure::AssemblyRigidLagrange()
 {
-  
+    
     int n_eq = 6;
     int n_RBEdofs =12;
     //double n_dof;
     
+    
+    
+    // Resizes and zeros the K matrices
+    Ksys.resize(nNode*6+nRBE2*6,nNode*6+nRBE2*6);
+    Ksys = MatrixXdDiff::Zero(nNode*6+nRBE2*6,nNode*6+nRBE2*6);
+    //cout << "Ksys = \n" <<Ksys << endl;
+    //cout << "number of RBE2= \n" <<nRBE2 << endl;
+    
+    
+                                                        
+    U  = VectorXdDiff::Zero(nNode*6+nRBE2 *6);                // whole vector solution 
+    //cout << "U = \n" <<U << endl;
+   
+   
+    
+    
+   VectorXdDiff LM= U.segment(nNode*6,nRBE2 *6) ;                      //Lagrangian multiplyer  
+   //cout << "LM = \n" <<LM<< endl;
+
+    
+          
+    dU  = VectorXdDiff::Zero(nNode*6+nRBE2 *6);
+     //cout << "dU = \n" <<dU<< endl;
+    
+    
+    VectorXdDiff dLM  = dU.segment(nNode*6,nRBE2 *6);
+     //cout << "dLM = \n" <<dLM<< endl;
+    
+    
     // Setting to Zero the SYSTEM penalty matrix and residual vector
     K_lagr = MatrixXdDiff::Zero(nNode*6+  nRBE2 *6,nNode*6+  nRBE2 *6);
      //cout << "K_lagr= \n" <<K_lagr<< endl;
-    
+       
+
     V_lagr = VectorXdDiff::Zero(nNode*6+ nRBE2*6);
      //cout << "V_lagr= \n" <<V_lagr<< endl;
     
@@ -270,18 +291,17 @@ void CStructure::AssemblyRigidLagrange()
 
         //Master and slave cumulative displacements
         
-        /*
-         int a=RBE2[iRBE2]->MasterDOFs(1-1)-1;
-        cout << "Um= \n" <<a<< endl;
-         */
+    
+       
+         
         
           
         VectorXdDiff Um = U.segment(RBE2[iRBE2]->MasterDOFs(1 - 1) -1 , 6);
-        cout << "Um= \n" <<Um<< endl;
+        //cout << "Um= \n" <<Um<< endl;
  
         
         VectorXdDiff Us = U.segment(RBE2[iRBE2]->SlaveDOFs(1 - 1) -1, 6);
-        
+      
        
         
        
@@ -315,21 +335,27 @@ void CStructure::AssemblyRigidLagrange()
        ///  LM_i*H_i (from the Hessian of the constraint set of equations)
        
         RBE2[iRBE2]->EvalHessian( Um, Us);
+        Krbe1 =  MatrixXdDiff::Zero(12,12);
 
         Krbe1 = LM(0)*RBE2[iRBE2]->H_0.transpose() + LM(1)*RBE2[iRBE2]->H_1.transpose() +
                 LM(2)*RBE2[iRBE2]->H_2.transpose() + LM(3)*RBE2[iRBE2]->H_3.transpose() + 
                 LM(4)*RBE2[iRBE2]->H_4.transpose() + LM(5)*RBE2[iRBE2]->H_5.transpose();
        
-         cout << "Krbe1= \n" <<Krbe1<< endl;
-       // J^T (the Transpose of the  Jacobian of the constraint set of equations)
-        Krbe2 =  MatrixXdDiff::Zero(12,6);
-        Krbe2 = RBE2[iRBE2]->J.transpose();
-
+         //cout << "Krbe1= \n" <<Krbe1<< endl;
+         
+        
+       
+       
       // J (the Jacobian of the constraint set of equations)
         RBE2[iRBE2]->EvalJacobian( Um, Us);
         Krbe3 =  MatrixXdDiff::Zero(6,12);
         Krbe3 = RBE2[iRBE2]->J;
-
+        //cout << "Krbe3= \n" <<Krbe3<< endl;
+        
+        // J^T (the Transpose of the  Jacobian of the constraint set of equations)
+        Krbe2 =  MatrixXdDiff::Zero(12,6);
+        Krbe2 = RBE2[iRBE2]->J.transpose();
+        //cout << "Krbe2= \n" <<Krbe2<< endl;
         
          
        
@@ -360,6 +386,8 @@ void CStructure::AssemblyRigidLagrange()
         K_lagr.block( (6*nNode-1)+(iRBE2-1)*6+1,RBE2[iRBE2]->MasterDOFs(1 -1) -1, 6 , 6) = Krbe3.block(1 -1, 1-1, 6, 6);
         K_lagr.block( (6*nNode-1)+(iRBE2-1)*6+1,RBE2[iRBE2]->SlaveDOFs(1 -1) -1, 6 , 6) = Krbe3.block(1 -1, 7-1, 6, 6);
         
+        
+        //cout << "K_lagr= \n" <<K_lagr<< endl;
        
         
         
@@ -376,14 +404,17 @@ void CStructure::AssemblyRigidLagrange()
         // Constraint equation set
         RBE2[iRBE2]->EvalConstraintEquation( Um, Us);
         
-        Vrbe1= LM.transpose()* RBE2[iRBE2]->J;
+        Vrbe1 =  VectorXdDiff::Zero(12);
+       
+        Vrbe1=  Krbe2*LM;
+        
       
         Vrbe2= RBE2[iRBE2]->g;
         
         V_lagr.segment(RBE2[iRBE2]->MasterDOFs(1 -1) -1, 6) = Vrbe1.segment(1 - 1, 6);
         V_lagr.segment(RBE2[iRBE2]->SlaveDOFs(1 -1) -1, 6) = Vrbe1.segment(7 - 1, 6);
         V_lagr.segment((6*nNode-1)+(iRBE2-1)*6+1,6) = Vrbe2.segment(1 - 1, 6); 
-        
+        //cout << "V_lagr= \n" <<V_lagr<< endl;
         
     }
     
@@ -415,6 +446,7 @@ void CStructure::AssemblyRigidLagrange()
 
 void CStructure::AssemblyTang(int iIter)
 {
+   
     MatrixXdDiff Ktang(12,12);
 
     //std::cout  << " Assembly Tangent Matrix"  << std::endl;
@@ -428,7 +460,7 @@ void CStructure::AssemblyTang(int iIter)
     
     // Setting to Zero the stiffness matrix
     Ksys = MatrixXdDiff::Zero(nNode*6+nRBE2*6,nNode*6+nRBE2*6);
-    
+ 
    
     /*------------------------------------
      * Elastic contribution to the stiffness matrix
@@ -465,6 +497,9 @@ void CStructure::AssemblyTang(int iIter)
         }
        
         //cout  << " Assembly Tangent Matrix"  << Ksys<<endl;
+     
+            
+          
     }
     
     /*--------------------------------------------------------
@@ -480,16 +515,22 @@ void CStructure::AssemblyTang(int iIter)
     /*------------------------------------
      *    Imposing  B.C.
      *------------------------------------*/
-    
+  
     // Imposing BC
     for (iii =1; iii<= Constr_matrix.rows(); iii++) {
+          
         constr_dof_id = round(AD::GetValue((Constr_matrix(iii-1,1-1) -1) *6 + Constr_matrix(iii-1,2-1)));
-        Ksys.row(constr_dof_id-1) = VectorXdDiff::Zero(nNode*6);
-        Ksys.col(constr_dof_id-1) = VectorXdDiff::Zero(nNode*6);
+        
+//////////////////////////// ERROR   ////////////////////////////////////////////
+        Ksys.row(constr_dof_id-1) = VectorXdDiff::Zero(nNode*6+nRBE2*6);
+      
+        Ksys.col(constr_dof_id-1) = VectorXdDiff::Zero(nNode*6+nRBE2*6);
         Ksys(constr_dof_id-1,constr_dof_id-1) = 1.0;
+      
+///////////////////////////////////////////////////////////////////////        
     }
     
-    
+      
 }
 
 /*===================================================
@@ -924,21 +965,26 @@ void CStructure::SolveLinearStaticSystem_RBE2_lagrange(int iIter)
     //std::cout << "-->  Solving Linear System with penalty method for rigid constraints, "  << std::endl;
     //    cout << "Ksys = \n" <<Ksys << endl;   
     //cout << "K_penal = \n" <<K_penal << endl;
-    Ksys = Ksys + K_lagr;  // ???
+    Ksys = Ksys + K_lagr; 
+       //cout << "Ktot= \n" <<Ksys<< endl;
     residual=VectorXdDiff::Zero(nNode*6+nRBE2*6); 
     residual.segment(1-1,nNode*6)=Residual.segment(1-1,nNode*6);
     
     
     Residual = -residual-V_lagr;  
-
+       //cout << "Residual= \n" <<Residual<< endl;
     
     //    cout << "Ktot = \n" <<Ksys << endl;
     dU = Ksys.fullPivHouseholderQr().solve(Residual);
+           //cout << "dU= \n" <<dU<< endl;
+
     //    std::cout << "dU (after) = \n" << dU << std::endl;
     addouble relative_error = (Ksys*dU -Residual).norm() / Residual.norm(); // norm() is L2 norm
     //std::cout<< "Ksys = \n" << Ksys << std::endl;
     //    std::cout<< "Residual = \n" << Residual << std::endl;
     //    std::cout << "The relative error is:\n" << relative_error << std:: endl;
+           //cout << "Relative error= \n" <<Residual<< endl;
+
     if (relative_error > 1.0e-7)
     {
         std::cout << "Solution of Linear System not precise enough!" << std:: endl;
@@ -1020,7 +1066,9 @@ void CStructure::UpdateCoord() {
         posU += 6;
     }
   
-       U.segment(nNode*6+1,nRBE2*6) += dU.segment(nNode*6+1 ,nRBE2*6);       
+       U.segment(nNode*6,nRBE2*6) += dU.segment(nNode*6 ,nRBE2*6); 
+             // cout << "U= \n" <<U<< endl;
+
       
 }
 
