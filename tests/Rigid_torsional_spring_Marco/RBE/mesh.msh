@@ -5,7 +5,7 @@ NDIM = 3
 NPOIN=	3
          0         0         0
     0.3000         0         0
-    0.3000         0.3         0
+    0.3000         0.3       0
 
 
 % Element type: 1 = line, 5 = triangular

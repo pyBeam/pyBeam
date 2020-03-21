@@ -77,9 +77,9 @@ public:
     MatrixXdDiff Ksys;
     MatrixXdDiff Ksys_red;      // [relative to masters in case of RBE2]
     MatrixXdDiff K_penal;       // penalty matrix for rigid elements
-    VectorXdDiff V_penal;       // penalty vector for rigid elements
-    MatrixXdDiff K_lagr; 
-    VectorXdDiff V_lagr; 
+    VectorXdDiff V_penal;      // penalty vector for rigid elements
+    MatrixXdDiff K_lagr;       // Lagrangian matrix for rigid elements
+    VectorXdDiff V_lagr;       // Lagrangian vector for rigid elements
     
     MatrixXdDiff KRBE;          // Kinematic constraint matrix due to the RBE2 elements   [totalDOFs, BossDOFs]
     MatrixXdDiff KRBE_ext;      // Kinematic constraint matrix due to the RBE2 elements   [totalDOFs, BossDOFs]
@@ -88,9 +88,9 @@ public:
     
     VectorXdDiff U;             // Displacement array
     VectorXdDiff dU;            // Displacement array (increment)
-    VectorXdDiff LM; 
-    VectorXdDiff dLM; 
-    VectorXdDiff residual; 
+    VectorXdDiff LM;            // Lagrangian Multipliers
+    VectorXdDiff dLM;           // Lagrangian Multipliers(increments)
+    VectorXdDiff residual;      // empty array  to allocate the Total Residual [nNode*6+nRBE2*6] 
     VectorXdDiff dU_red;        // Displacement array (increment) [relative to masters in case of RBE2]
     VectorXdDiff X;             // Position of the fem nodes in global coordinate system
     VectorXdDiff X0;            // Position of the fem nodes in global coordinate system
@@ -151,7 +151,8 @@ public:
     void EvalSensRot();    // Evaluate the sensitivity of Rotation Matrix - need for Jacobian
 
     //void EvalSensRotFiniteDifferences();    // Evaluate the sensitivity of Rotation Matrix - need for Jacobian
-
+    
+   
     //===================================================
     //      Solve linear static system
     //===================================================

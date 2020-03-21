@@ -47,7 +47,7 @@ CStructure::CStructure(CInput *input, CElement **container_element, CNode **cont
 
     nNode = input->Get_nNodes();
     nfem = input->Get_nFEM();
-    
+  
     
     
     
@@ -406,7 +406,7 @@ void CStructure::AssemblyRigidLagrange()
         
         Vrbe1 =  VectorXdDiff::Zero(12);
        
-        Vrbe1=  Krbe2*LM;
+        Vrbe1=  LM.transpose()*Krbe3;
         
       
         Vrbe2= RBE2[iRBE2]->g;
@@ -514,7 +514,7 @@ void CStructure::AssemblyTang(int iIter)
     }
     /*------------------------------------
      *    Imposing  B.C.
-     *------------------------------------*/
+     *------------------------------------
   
     // Imposing BC
     for (iii =1; iii<= Constr_matrix.rows(); iii++) {
@@ -529,9 +529,15 @@ void CStructure::AssemblyTang(int iIter)
       
 ///////////////////////////////////////////////////////////////////////        
     }
-    
+  */  
       
 }
+
+
+
+
+
+
 
 /*===================================================
  *        Evaluate the Sensitivity of Rotation Matrix
@@ -731,16 +737,7 @@ void CStructure::EvalSensRot(){
 
 void CStructure::EvalResidual(unsigned short irigid) {
     Residual = Fext - Fint;
-
-    int iii = 0; int constr_dof_id = 0;
-    
-    // BC on the residuals
-    for (iii =1; iii<= Constr_matrix.rows(); iii++) {
-        constr_dof_id = round(AD::GetValue((Constr_matrix(iii-1,1-1) -1) *6 + Constr_matrix(iii-1,2-1)));
-        Residual(constr_dof_id-1) = 0.0;
-    }
-    //cout<<"Residual= \n"<<Residual<<endl;
-   
+     // cout<<"Residual= \n"<<Residual<<endl;  
 }
 
 
@@ -754,6 +751,31 @@ void CStructure::EvalResidual(unsigned short irigid) {
 void CStructure::SolveLinearStaticSystem(int iIter) {
 
     bool TapeActive = false;
+    int iii = 0; int dof = 0;   int dof_jjj = 0;   int dof_kkk = 0;
+    int constr_dof_id;
+    int nodeA_id = 0; int nodeB_id = 0;
+    
+    // Imposing BC on Ksys
+    for (iii =1; iii<= Constr_matrix.rows(); iii++) {
+          
+        constr_dof_id = round(AD::GetValue((Constr_matrix(iii-1,1-1) -1) *6 + Constr_matrix(iii-1,2-1)));
+        
+//////////////////////////// ERROR   ////////////////////////////////////////////
+        Ksys.row(constr_dof_id-1) = VectorXdDiff::Zero(nNode*6+nRBE2*6);
+      
+        Ksys.col(constr_dof_id-1) = VectorXdDiff::Zero(nNode*6+nRBE2*6);
+        Ksys(constr_dof_id-1,constr_dof_id-1) = 1.0;
+    }
+///////////////////////////////////////////////////////////////////////    
+        
+        // BC on the residuals
+    for (iii =1; iii<= Constr_matrix.rows(); iii++) {
+        constr_dof_id = round(AD::GetValue((Constr_matrix(iii-1,1-1) -1) *6 + Constr_matrix(iii-1,2-1)));
+        Residual(constr_dof_id-1) = 0.0;
+    }
+        
+    
+       //cout << "Ktot= \n" <<Ksys<< endl;
 
 #ifdef CODI_REVERSE_TYPE
 
@@ -966,13 +988,40 @@ void CStructure::SolveLinearStaticSystem_RBE2_lagrange(int iIter)
     //    cout << "Ksys = \n" <<Ksys << endl;   
     //cout << "K_penal = \n" <<K_penal << endl;
     Ksys = Ksys + K_lagr; 
+    int iii = 0; int dof = 0;   int dof_jjj = 0;   int dof_kkk = 0;
+    int constr_dof_id;
+    int nodeA_id = 0; int nodeB_id = 0;
+
+    
+ // Imposing BC
+    for (iii =1; iii<= Constr_matrix.rows(); iii++) {
+          
+        constr_dof_id = round(AD::GetValue((Constr_matrix(iii-1,1-1) -1) *6 + Constr_matrix(iii-1,2-1)));
+        
+//////////////////////////// ERROR   ////////////////////////////////////////////
+        Ksys.row(constr_dof_id-1) = VectorXdDiff::Zero(nNode*6+nRBE2*6);
+      
+        Ksys.col(constr_dof_id-1) = VectorXdDiff::Zero(nNode*6+nRBE2*6);
+        Ksys(constr_dof_id-1,constr_dof_id-1) = 1.0;
+      
+///////////////////////////////////////////////////////////////////////        
+    }   
        //cout << "Ktot= \n" <<Ksys<< endl;
+    
+    
+    
     residual=VectorXdDiff::Zero(nNode*6+nRBE2*6); 
     residual.segment(1-1,nNode*6)=Residual.segment(1-1,nNode*6);
+    Residual = residual+V_lagr;  
+      
+  
     
-    
-    Residual = -residual-V_lagr;  
-       //cout << "Residual= \n" <<Residual<< endl;
+    // BC on the residuals
+    for (iii =1; iii<= Constr_matrix.rows(); iii++) {
+        constr_dof_id = round(AD::GetValue((Constr_matrix(iii-1,1-1) -1) *6 + Constr_matrix(iii-1,2-1)));
+        Residual(constr_dof_id-1) = 0.0;
+    }
+       cout << "Residualtot= \n" <<Residual<< endl;
     
     //    cout << "Ktot = \n" <<Ksys << endl;
     dU = Ksys.fullPivHouseholderQr().solve(Residual);
@@ -1067,7 +1116,11 @@ void CStructure::UpdateCoord() {
     }
   
        U.segment(nNode*6,nRBE2*6) += dU.segment(nNode*6 ,nRBE2*6); 
-             // cout << "U= \n" <<U<< endl;
+       LM=U.segment(nNode*6,nRBE2*6);
+       
+ //cout << "U= \n" <<U<< endl;
+ //cout << "LM= \n" <<LM<< endl;
+
 
       
 }

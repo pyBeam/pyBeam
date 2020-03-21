@@ -35,7 +35,7 @@ file_dir = os.path.dirname(os.path.realpath(__file__))
 
 beam = pyBeamSolver(file_dir ,'config_NL.cfg')
 
-beam.SetLoads(2 , 0, 0 , 500000000) #
+beam.SetLoads(2 , 0 ,0, 500000000) #
 #beam.SetLoads(19 , 0, 0 , 7.8e-02)
 #beam.SetLoads(19 , 0.78005, 0 , 0)
 

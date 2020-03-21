@@ -224,10 +224,15 @@ void CBeamSolver::Solve(int FSIIter = 0){
                 if (verbose){std::cout << "-->  Update Lagrangian matrix for RBEs "  << std::endl;}
                 
                 structure->AssemblyRigidLagrange();
+                
+                 // Boundary conditions+resolution 
                 structure->SolveLinearStaticSystem_RBE2_lagrange(iIter);
             }
             else {
+                
+               // Boundary conditions+resolution (no RBE2)
                 structure->SolveLinearStaticSystem(iIter);
+                
             }
 
             if (verbose){std::cout.width(17); std::cout << log10(structure->dU.norm());}
@@ -358,14 +363,17 @@ void CBeamSolver::RunRestart(int FSIIter = 0){
         structure->SolveLinearStaticSystem_RBE2(1);
     }
     else if (nRBE2 != 0 and input->Get_RigidCriteria() == 1) {
-        if (verbose){std::cout << "-->  Update penalty matrix for RBEs "  << std::endl;}
+        if (verbose){std::cout << "-->  Update Lagrangian matrix for RBEs "  << std::endl;}
         // structure->AssemblyRigidPenalty(input->GetPenalty());
        
     
         structure->AssemblyRigidLagrange();
+        
+        // Boundary conditions+solve 
         structure->SolveLinearStaticSystem_RBE2_lagrange(1);
     }
     else {
+        // Boundary conditions+solve 
         structure->SolveLinearStaticSystem(1);
     }
 
