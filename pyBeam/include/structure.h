@@ -130,7 +130,6 @@ public:
     //===================================================
 
     inline void AddRBE2(CInput *input, CRBE2** container_RBE2) {nRBE2 = input->Get_nRBE2(); RBE2 = container_RBE2;}
-
     
     // Penalty strategy
     void SetPenalty() {  penalty = 100*Ksys.diagonal().maxCoeff(); };
@@ -139,10 +138,6 @@ public:
 
     void AssemblyRigidPenalty();
     
-    void AssemblyRigidPenalty_FD();
-    
-    void RigidResidual_FD();
-
     // Lagrange Multiplier strategy
     inline void SetRigidLagrangeDimensions() {U_lam = VectorXdDiff::Zero((nNode+nRBE2)*6); dU_lam = VectorXdDiff::Zero((nNode+nRBE2)*6); Residual_lam = VectorXdDiff::Zero((nNode+nRBE2)*6); Ksys_lam =MatrixXdDiff::Zero((nNode+nRBE2)*6,(nNode+nRBE2)*6);  };
     

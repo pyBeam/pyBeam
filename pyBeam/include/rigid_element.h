@@ -80,17 +80,9 @@ public:
     void InitializeAxisVector();
     
     void EvalConstraintEquation( VectorXdDiff Um,VectorXdDiff Us);
-    
-    void EvalConstraintEquation_2( VectorXdDiff Um,VectorXdDiff Us);
-      
-    void InitializeJacobian( );
-    
+           
     void EvalJacobian(VectorXdDiff Um );
-    
-    void EvalJacobian_2(VectorXdDiff Um );
-
-    void InitializeHessian();    
-    
+          
     void EvalHessian(VectorXdDiff Um);
     
     };

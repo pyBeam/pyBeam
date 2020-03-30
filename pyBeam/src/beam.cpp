@@ -278,7 +278,6 @@ void CBeamSolver::Solve(int FSIIter = 0){
             
             // Now only X is updated
             //structure->UpdateRotationMatrix();  // based on the rotational displacements
-            //std::cout << "\nWaring update rotation matrix updated lagraginain style" << std::endl;
             structure->UpdateRotationMatrix_FP();  // based on the rotational displacements
             structure->UpdateLength();          // Updating length, important
 
@@ -319,7 +318,7 @@ void CBeamSolver::Solve(int FSIIter = 0){
     if (verbose){std::cout << std::endl << "--> Exiting Iterative Sequence." << std::endl;}
     
     history.close();
-    std::cout << structure->U << std::endl;
+
 }
 
 void CBeamSolver::RunRestart(int FSIIter = 0){

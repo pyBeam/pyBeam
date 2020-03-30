@@ -99,92 +99,6 @@ CStructure::~CStructure(void)
  *       debug comments.
  */
 
-//===================================================
-//      Add rigid penalty contribution to residual
-//===================================================
-void CStructure::RigidResidual_FD()
-{
-    VectorXdDiff Um = VectorXdDiff::Zero(6);
-    VectorXdDiff Us = VectorXdDiff::Zero(6);
-    VectorXdDiff residual_rigid = VectorXdDiff::Zero(12);
-    VectorXdDiff gplus ;
-    VectorXdDiff gminus ;
-    VectorXdDiff step;
-    VectorXdDiff g;
-    addouble delta = pow(10,-3);
-
-    for (int iRBE2 = 0; iRBE2 < nRBE2; iRBE2++) {
-        RBE2[iRBE2]->EvalConstraintEquation( Um,  Us);
-        //std::cout << "g  = " << RBE2[iRBE2]->g(0)  << " " << RBE2[iRBE2]->g(1)  << " " << RBE2[iRBE2]->g(2)  << " " << RBE2[iRBE2]->g(3)  << " " << RBE2[iRBE2]->g(4)  << " " << RBE2[iRBE2]->g(5)  << " " << std::endl;
-        
-        for  (int i = 0; i < 12; i++) {
-            //std::cout << "i  = " << i << "\n"<<std::endl; 
-            // Plus  
-            Um = VectorXdDiff::Zero(6);
-            Us = VectorXdDiff::Zero(6);
-            step = VectorXdDiff::Zero(12);
-            step(i) = delta;
-            //Master and slave cumulative displacements
-            Um = U.segment(RBE2[iRBE2]->MasterDOFs(1 - 1) - 1, 6);
-            Us = U.segment(RBE2[iRBE2]->SlaveDOFs(1 - 1) - 1, 6);
-            Um = Um + step.segment(0,6);
-            Us = Us + step.segment(7-1,6);
-            //std::cout << "Um  = " << Um(0)  << " " << Um(1)  << " " << Um(2)  << " " << Um(3)  << " " << Um(4)  << " " << Um(5)  << " " << std::endl;
-            //std::cout << "Us  = " << Us(0)  << " " << Us(1)  << " " << Us(2)  << " " << Us(3)  << " " << Us(4)  << " " << Us(5)  << " " << std::endl;             
-            RBE2[iRBE2]->EvalConstraintEquation( Um,  Us);
-            gplus = RBE2[iRBE2]->g; 
-            //std::cout << "gplus  = " << RBE2[iRBE2]->g(0)  << " " << RBE2[iRBE2]->g(1)  << " " << RBE2[iRBE2]->g(2)  << " " << RBE2[iRBE2]->g(3)  << " " << RBE2[iRBE2]->g(4)  << " " << RBE2[iRBE2]->g(5)  << " " << std::endl;
-
-            
-            // minus  
-            Um = VectorXdDiff::Zero(6);
-            Us = VectorXdDiff::Zero(6);
-            step = VectorXdDiff::Zero(12);
-            step(i) = -delta;
-            //Master and slave cumulative displacements
-            Um = U.segment(RBE2[iRBE2]->MasterDOFs(1 - 1) - 1, 6);
-            Us = U.segment(RBE2[iRBE2]->SlaveDOFs(1 - 1) - 1, 6);
-            Um = Um + step.segment(0,6);
-            Us = Us + step.segment(7-1,6);
-            //std::cout << "Um  = " << Um(0)  << " " << Um(1)  << " " << Um(2)  << " " << Um(3)  << " " << Um(4)  << " " << Um(5)  << " " << std::endl;
-            //std::cout << "Us  = " << Us(0)  << " " << Us(1)  << " " << Us(2)  << " " << Us(3)  << " " << Us(4)  << " " << Us(5)  << " " << std::endl;             
-            
-            RBE2[iRBE2]->EvalConstraintEquation( Um,  Us);
-            gminus = RBE2[iRBE2]->g;             
-            //std::cout << "gminus  = " << RBE2[iRBE2]->g(0)  << " " << RBE2[iRBE2]->g(1)  << " " << RBE2[iRBE2]->g(2)  << " " << RBE2[iRBE2]->g(3)  << " " << RBE2[iRBE2]->g(4)  << " " << RBE2[iRBE2]->g(5)  << " " << std::endl;            
-            
-            residual_rigid(i) = penalty*( gplus.dot(gplus)*0.5 - gminus.dot(gminus)*0.5)/ (delta*2);
-            
-        }
-            
-        Residual.segment(RBE2[iRBE2]->MasterDOFs(1 - 1) - 1,6) = Residual.segment(RBE2[iRBE2]->MasterDOFs(1 - 1) - 1,6) -residual_rigid.segment(1 -1,6);
-        Residual.segment(RBE2[iRBE2]->SlaveDOFs(1 - 1) - 1,6) = Residual.segment(RBE2[iRBE2]->SlaveDOFs(1 - 1) - 1,6) -residual_rigid.segment(7 -1,6);
-
-    }    
-        
-    std::ofstream myfile;
-    myfile.open ("residual_rigid.pyBeam");
-    myfile << "residual_rigid= "; myfile <<setprecision(15)<<  residual_rigid/penalty ; myfile << "\n ";
-    myfile.close();    
-    //debug
-    
-    //Um = U.segment(RBE2[0]->MasterDOFs(1 - 1) - 1, 6);
-    //Us = U.segment(RBE2[0]->SlaveDOFs(1 - 1) - 1, 6);
-    //RBE2[0]->EvalConstraintEquation( Um,  Us);
-    /*
-    std::cout << "g  = " << RBE2[0]->g(0)  << " " << RBE2[0]->g(1)  << " " << RBE2[0]->g(2)  << " " << RBE2[0]->g(3)  << " " << RBE2[0]->g(4)  << " " << RBE2[0]->g(5)  << " " << std::endl;            
-    RBE2[0]->EvalJacobian( Um);
-    cout << "G = \n" <<RBE2[0]->G.transpose() << endl;  
-    residual_rigid = RBE2[0]->G.transpose()*RBE2[0]->g;
-    cout << "residual_rigid/penalty = \n" <<residual_rigid << endl;    
-    */
-    
-    //myfile.open ("g.pyBeam", fstream::in | fstream::out | fstream::app);
-    //; myfile << RBE2[0]->g ; myfile << "\n "; myfile << "\n ";
-    //myfile.close();
-}
-
-
 
 //===================================================
 //      Add rigid penalty contribution to residual
@@ -208,31 +122,11 @@ void CStructure::RigidResidual()
         //Evaluating the rigid component of the residual 
         residual_rigid = VectorXdDiff::Zero(12);
         residual_rigid = -penalty*RBE2[iRBE2]->G.transpose()*RBE2[iRBE2]->g;
-        //cout << "residual_rigid = \n" <<setprecision(20)<<residual_rigid << endl;
-        //cout << "Residual = \n" <<setprecision(20)<<Residual << endl;
+
         Residual.segment(RBE2[iRBE2]->MasterDOFs(1 - 1) - 1,6) +=  residual_rigid.segment(1 -1,6);
         Residual.segment(RBE2[iRBE2]->SlaveDOFs(1 - 1) - 1,6) += residual_rigid.segment(7 -1,6);
-    
-    /*
-    std::ofstream myfile2;
-    myfile2.open ("Ksys.pyBeam");
-    myfile2 << "Ksys= "; myfile2 <<setprecision(15)<<  Ksys ; myfile2 << "\n ";
-    myfile2.close(); */
-     
-        std::cout << "g = \n" << RBE2[iRBE2]->g << std::endl;
-    std::ofstream myfile3;
-    myfile3.open ("Residual_penalty.pyBeam");
-    myfile3 << "Residual_penalty= "; myfile3 <<setprecision(15)<<  -penalty*RBE2[0]->G.transpose()*RBE2[0]->g ; myfile3 << "\n ";
-    myfile3.close();     
-    
-    std::ofstream myfile4;
-    myfile4.open ("Fint.pyBeam");
-    myfile4 << "Fint= "; myfile4 <<setprecision(15)<<  Fint ; myfile4 << "\n ";
-    myfile4.close();            
-        
+                
     }
-    
-    //cout << "Residual+RBE = \n" <<setprecision(20)<<Residual << endl;
 }
 
 //===================================================
@@ -254,243 +148,23 @@ void CStructure::RigidResidualLagrange()
         
         // Evaluating constraint equations and derivative
         Um = U.segment(RBE2[iRBE2]->MasterDOFs(1 - 1) - 1, 6);
-        //std::cout << "Um = " <<setprecision(20)<< Um(0) <<" " << Um(1) <<" " << Um(2) <<" " << Um(3) <<" " << Um(4) <<" " << Um(5) << "\n" << std::endl; 
         Us = U.segment(RBE2[iRBE2]->SlaveDOFs(1 - 1) - 1, 6);       
         RBE2[iRBE2]->EvalConstraintEquation( Um,  Us);
         RBE2[iRBE2]->EvalJacobian( Um);
-        //std::cout <<  RBE2[0]->G << "\n" <<std::endl;        
+   
         // Getting lagrange multiplier
         lambda = VectorXdDiff::Zero(6);
         lambda = U_lam.segment(nNode*6 -1 + (iRBE2)*6+1 ,6);
 
         //Evaluating the rigid component of the residual 
         residual_rigid = RBE2[iRBE2]->G.transpose()*lambda;
-        //cout << "residual_rigid = \n" <<setprecision(20)<<residual_rigid << endl;
-        //cout << "Residual = \n" <<setprecision(20)<<Residual << endl;
-        
+      
         Residual_lam.segment(RBE2[iRBE2]->MasterDOFs(1 - 1) - 1,6) +=  - residual_rigid.segment(1 -1,6);
         Residual_lam.segment(RBE2[iRBE2]->SlaveDOFs(1 - 1) - 1,6) +=   - residual_rigid.segment(7 -1,6);
         Residual_lam.segment(nNode*6 -1 + (iRBE2)*6+1 ,6) = - RBE2[iRBE2]->g;
     }
 
-    std::ofstream myfile5;
-    myfile5.open ("G.dat");
-         myfile5 <<setprecision(15)<<  RBE2[0]->G; 
-    myfile5.close();      
-    
-    std::ofstream myfile4;
-    myfile4.open ("Residual.dat");
-         myfile4 <<setprecision(15)<<  Residual ; 
-    myfile4.close();    
-    
-    std::ofstream myfile3;
-    myfile3.open ("g.dat");
-        myfile3 <<setprecision(15)<<  RBE2[0]->g ; 
-    myfile3.close();   
-
-    
-    std::ofstream myfile2;
-    myfile2.open ("residual_rigid.dat");
-       myfile2 <<setprecision(15)<<  residual_rigid ; 
-    myfile2.close();    
-    
-    std::ofstream myfile;
-    myfile.open ("Residual_lam.dat");
-      myfile <<setprecision(15)<<  Residual_lam ;
-    myfile.close();
-    
-    std::ofstream myfile6;
-    myfile6.open ("U_lam.dat");
-      myfile6 <<setprecision(15)<<  U_lam ; 
-    myfile6.close();    
-    
-    std::ofstream myfile7;
-    myfile7.open ("lambda.dat");
-      myfile7 <<setprecision(15)<<  lambda ; 
-    myfile7.close();       
 }
-
-
-//===================================================
-//      Assembly penalty matrix and vector for rigid constraints (using centered Finite Differences )
-//===================================================
-void CStructure::AssemblyRigidPenalty_FD()
-{
-
-    VectorXdDiff Um;
-    VectorXdDiff Us ;    
-    VectorXdDiff gplusplus ;
-    VectorXdDiff gminusminus ;
-    VectorXdDiff gplusminus ;
-    VectorXdDiff gminusplus ;
-    VectorXdDiff step;
-    VectorXdDiff g;
-    addouble delta = pow(10,-3);
-    
-    // Setting to Zero the SYSTEM penalty matrix and residual vector
-    K_penal = MatrixXdDiff::Zero(nNode*6,nNode*6);
-    MatrixXdDiff Krbe =  MatrixXdDiff::Zero(12,12);
-    MatrixXdDiff Krbe2 =  MatrixXdDiff::Zero(12,12);
-    //std::cout << "U " <<  " = \n" << setprecision(15)<< U  <<std::endl;
-    for (int iRBE2 = 0; iRBE2 < nRBE2; iRBE2++) {   
-        Um = U.segment(RBE2[iRBE2]->MasterDOFs(1 - 1) - 1, 6);
-        Us = U.segment(RBE2[iRBE2]->SlaveDOFs(1 - 1) - 1, 6);
-        RBE2[iRBE2]->EvalConstraintEquation( Um,  Us);
-        g = RBE2[iRBE2]->g;
-        for  (int i = 0; i < 12; i++) {
-            for  (int j = 0; j < 12; j++) { 
-                //std::cout << "i , j = " << i  << " " << j  <<"\n" << std::endl;
-                if (i == j)
-                {
-                    // Plus  
-                    Um = VectorXdDiff::Zero(6);
-                    Us = VectorXdDiff::Zero(6);
-                    step = VectorXdDiff::Zero(12);
-                    step(i) = delta;
-                    step(j) = delta;
-                    //Master and slave cumulative displacements
-                    Um = U.segment(RBE2[iRBE2]->MasterDOFs(1 - 1) - 1, 6);
-                    Us = U.segment(RBE2[iRBE2]->SlaveDOFs(1 - 1) - 1, 6);
-                    Um = Um + step.segment(0,6);
-                    Us = Us + step.segment(7-1,6);
-                    //std::cout << "Um  = " << Um(0)  << " " << Um(1)  << " " << Um(2)  << " " << Um(3)  << " " << Um(4)  << " " << Um(5)  << " " << std::endl;
-                    //std::cout << "Us  = " << Us(0)  << " " << Us(1)  << " " << Us(2)  << " " << Us(3)  << " " << Us(4)  << " " << Us(5)  << " " << std::endl;             
-                    RBE2[iRBE2]->EvalConstraintEquation( Um,  Us);
-                    gplusplus = RBE2[iRBE2]->g;
-                    //std::cout << "gPlus  = " << RBE2[iRBE2]->g(0)  << " " << RBE2[iRBE2]->g(1)  << " " << RBE2[iRBE2]->g(2)  << " " << RBE2[iRBE2]->g(3)  << " " << RBE2[iRBE2]->g(4)  << " " << RBE2[iRBE2]->g(5)  << " " << std::endl;
-                    
-                    // Minus  
-                    Um = VectorXdDiff::Zero(6);
-                    Us = VectorXdDiff::Zero(6);
-                    step = VectorXdDiff::Zero(12);
-                    step(i) = -delta;
-                    step(j) = -delta;
-                    //Master and slave cumulative displacements
-                    Um = U.segment(RBE2[iRBE2]->MasterDOFs(1 - 1) - 1, 6);
-                    Us = U.segment(RBE2[iRBE2]->SlaveDOFs(1 - 1) - 1, 6);
-                    Um = Um + step.segment(0,6);
-                    Us = Us + step.segment(7-1,6);
-                    //std::cout << "Um  = " << Um(0)  << " " << Um(1)  << " " << Um(2)  << " " << Um(3)  << " " << Um(4)  << " " << Um(5)  << " " << std::endl;
-                    //std::cout << "Us  = " << Us(0)  << " " << Us(1)  << " " << Us(2)  << " " << Us(3)  << " " << Us(4)  << " " << Us(5)  << " " << std::endl;             
-                    
-                    RBE2[iRBE2]->EvalConstraintEquation( Um,  Us);
-                    gminusminus = RBE2[iRBE2]->g;    
-                    //std::cout << "gMinus  = " << RBE2[iRBE2]->g(0)  << " " << RBE2[iRBE2]->g(1)  << " " << RBE2[iRBE2]->g(2)  << " " << RBE2[iRBE2]->g(3)  << " " << RBE2[iRBE2]->g(4)  << " " << RBE2[iRBE2]->g(5)  << " " << std::endl;                    
-                    
-                    Krbe(i,j) =  penalty*0.5*( gplusplus.dot(gplusplus) + gminusminus.dot(gminusminus) - 2*g.dot(g))/ (pow(delta,2)); 
-                    
-                    
-                }
-                else
-                {
-                    // PlusPlus  
-                    Um = VectorXdDiff::Zero(6);
-                    Us = VectorXdDiff::Zero(6);
-                    step = VectorXdDiff::Zero(12);
-                    step(i) = delta;
-                    step(j) = delta;
-                    //Master and slave cumulative displacements
-                    Um = U.segment(RBE2[iRBE2]->MasterDOFs(1 - 1) - 1, 6);
-                    Us = U.segment(RBE2[iRBE2]->SlaveDOFs(1 - 1) - 1, 6);
-                    Um = Um + step.segment(0,6);
-                    Us = Us + step.segment(7-1,6);
-                    //std::cout << "Um  = " << Um(0)  << " " << Um(1)  << " " << Um(2)  << " " << Um(3)  << " " << Um(4)  << " " << Um(5)  << " " << std::endl;
-                    //std::cout << "Us  = " << Us(0)  << " " << Us(1)  << " " << Us(2)  << " " << Us(3)  << " " << Us(4)  << " " << Us(5)  << " " << std::endl;             
-                    
-                    RBE2[iRBE2]->EvalConstraintEquation( Um,  Us);
-                    gplusplus = RBE2[iRBE2]->g;                 
-                    //std::cout << "gPlusPlus  = " << RBE2[iRBE2]->g(0)  << " " << RBE2[iRBE2]->g(1)  << " " << RBE2[iRBE2]->g(2)  << " " << RBE2[iRBE2]->g(3)  << " " << RBE2[iRBE2]->g(4)  << " " << RBE2[iRBE2]->g(5)  << " " << std::endl;
-                    
-                    // Minus  
-                    Um = VectorXdDiff::Zero(6);
-                    Us = VectorXdDiff::Zero(6);
-                    step = VectorXdDiff::Zero(12);
-                    step(i) = -delta;
-                    step(j) = -delta;
-                    //Master and slave cumulative displacements
-                    Um = U.segment(RBE2[iRBE2]->MasterDOFs(1 - 1) - 1, 6);
-                    Us = U.segment(RBE2[iRBE2]->SlaveDOFs(1 - 1) - 1, 6);
-                    Um = Um + step.segment(0,6);
-                    Us = Us + step.segment(7-1,6);
-                    //std::cout << "Um  = " << Um(0)  << " " << Um(1)  << " " << Um(2)  << " " << Um(3)  << " " << Um(4)  << " " << Um(5)  << " " << std::endl;
-                    //std::cout << "Us  = " << Us(0)  << " " << Us(1)  << " " << Us(2)  << " " << Us(3)  << " " << Us(4)  << " " << Us(5)  << " " << std::endl;             
-                    
-                    RBE2[iRBE2]->EvalConstraintEquation( Um,  Us);
-                    gminusminus = RBE2[iRBE2]->g;     
-                    //std::cout << "gMinusMinus  = " << RBE2[iRBE2]->g(0)  << " " << RBE2[iRBE2]->g(1)  << " " << RBE2[iRBE2]->g(2)  << " " << RBE2[iRBE2]->g(3)  << " " << RBE2[iRBE2]->g(4)  << " " << RBE2[iRBE2]->g(5)  << " " << std::endl;
-                    
-                    // Plus minus  
-                    Um = VectorXdDiff::Zero(6);
-                    Us = VectorXdDiff::Zero(6);
-                    step = VectorXdDiff::Zero(12);
-                    step(i) = delta;
-                    step(j) = -delta;
-                    //Master and slave cumulative displacements
-                    Um = U.segment(RBE2[iRBE2]->MasterDOFs(1 - 1) - 1, 6);
-                    Us = U.segment(RBE2[iRBE2]->SlaveDOFs(1 - 1) - 1, 6);
-                    Um = Um + step.segment(0,6);
-                    Us = Us + step.segment(7-1,6);
-                    //std::cout << "Um  = " << Um(0)  << " " << Um(1)  << " " << Um(2)  << " " << Um(3)  << " " << Um(4)  << " " << Um(5)  << " " << std::endl;
-                    //std::cout << "Us  = " << Us(0)  << " " << Us(1)  << " " << Us(2)  << " " << Us(3)  << " " << Us(4)  << " " << Us(5)  << " " << std::endl;             
-                    
-                    RBE2[iRBE2]->EvalConstraintEquation( Um,  Us);
-                    gplusminus = RBE2[iRBE2]->g; 
-                    //std::cout << "gPlusminus  = " << RBE2[iRBE2]->g(0)  << " " << RBE2[iRBE2]->g(1)  << " " << RBE2[iRBE2]->g(2)  << " " << RBE2[iRBE2]->g(3)  << " " << RBE2[iRBE2]->g(4)  << " " << RBE2[iRBE2]->g(5)  << " " << std::endl;
-                    
-                    // minus plus  
-                    Um = VectorXdDiff::Zero(6);
-                    Us = VectorXdDiff::Zero(6);
-                    step = VectorXdDiff::Zero(12);
-                    step(i) = -delta;
-                    step(j) = delta;
-                    //Master and slave cumulative displacements
-                    Um = U.segment(RBE2[iRBE2]->MasterDOFs(1 - 1) - 1, 6);
-                    Us = U.segment(RBE2[iRBE2]->SlaveDOFs(1 - 1) - 1, 6);
-                    Um = Um + step.segment(0,6);
-                    Us = Us + step.segment(7-1,6);
-                    //std::cout << "Um  = " << Um(0)  << " " << Um(1)  << " " << Um(2)  << " " << Um(3)  << " " << Um(4)  << " " << Um(5)  << " " << std::endl;
-                    //std::cout << "Us  = " << Us(0)  << " " << Us(1)  << " " << Us(2)  << " " << Us(3)  << " " << Us(4)  << " " << Us(5)  << " " << std::endl;             
-                    
-                    RBE2[iRBE2]->EvalConstraintEquation( Um,  Us);
-                    gminusplus = RBE2[iRBE2]->g;                    
-                    //std::cout << "gminusplus  = " << RBE2[iRBE2]->g(0)  << " " << RBE2[iRBE2]->g(1)  << " " << RBE2[iRBE2]->g(2)  << " " << RBE2[iRBE2]->g(3)  << " " << RBE2[iRBE2]->g(4)  << " " << RBE2[iRBE2]->g(5)  << " " << std::endl;
-                    
-                    Krbe(i,j) =  penalty*( gplusplus.dot(gplusplus) + gminusminus.dot(gminusminus) - gplusminus.dot(gplusminus) - gminusplus.dot(gminusplus) )*0.5/ (4*pow(delta,2));
-                }
-                
-                
-                
-                
-            }
-        }
-        
-        // Expansion in to the system's tangent matrix
-        K_penal.block(RBE2[iRBE2]->MasterDOFs(1 -1) -1,RBE2[iRBE2]->MasterDOFs(1 -1) -1, 6 , 6) = Krbe.block(1 -1, 1 -1, 6, 6) ;
-        K_penal.block(RBE2[iRBE2]->MasterDOFs(1 -1) -1,RBE2[iRBE2]->SlaveDOFs(1 -1) -1, 6 , 6) = Krbe.block(1 -1, 7 -1, 6, 6) ;
-        K_penal.block(RBE2[iRBE2]->SlaveDOFs(1 -1) -1,RBE2[iRBE2]->MasterDOFs(1 -1) -1, 6 , 6) = Krbe.block(7 -1, 1 -1, 6, 6) ;
-        K_penal.block(RBE2[iRBE2]->SlaveDOFs(1 -1) -1,RBE2[iRBE2]->SlaveDOFs(1 -1) -1, 6 , 6) = Krbe.block(7 -1, 7 -1, 6, 6) ;
-        
-        Ksys  +=    K_penal;
-        
-    } 
-    
-    //cout << "K_penal = \n" <<K_penal << endl; 
-    
-    std::ofstream myfile;
-    myfile.open ("Krbe.pyBeam");
-    myfile <<setprecision(15)<<  Krbe/penalty ; myfile << "\n ";
-    myfile.close();
-    
-    //debug
-    
-    //Um = U.segment(RBE2[0]->MasterDOFs(1 - 1) - 1, 6);
-    //Us = U.segment(RBE2[0]->SlaveDOFs(1 - 1) - 1, 6);
-    //RBE2[0]->EvalConstraintEquation( Um,  Us);
-    //RBE2[0]->EvalJacobian( Um);
-    //Krbe2 =  RBE2[0]->g(0)*RBE2[0]->H_0 + RBE2[0]->g(1)*RBE2[0]->H_1 + RBE2[0]->g(2)*RBE2[0]->H_2 + RBE2[0]->g(3)*RBE2[0]->H_3 + RBE2[0]->g(4)*RBE2[0]->H_4 + RBE2[0]->g(5)*RBE2[0]->H_5;
-    //cout << "Krbe2 = \n" <<Krbe2 << endl;
-    
-      }
 
 //===================================================
 //      Assembly penalty matrix and vector for rigid constraints 
@@ -516,8 +190,8 @@ void CStructure::AssemblyRigidPenalty()
         Um = U.segment(RBE2[iRBE2]->MasterDOFs(1 - 1) - 1, 6);
         Us = U.segment(RBE2[iRBE2]->SlaveDOFs(1 - 1) - 1, 6);
 
-        RBE2[iRBE2]->EvalConstraintEquation( Um,  Us);
-        RBE2[iRBE2]->EvalJacobian( Um);
+        //RBE2[iRBE2]->EvalConstraintEquation( Um,  Us);
+        //RBE2[iRBE2]->EvalJacobian( Um);
         RBE2[iRBE2]->EvalHessian( Um);
         //// Penalty matrix has 2 contributions:
         
@@ -533,26 +207,12 @@ void CStructure::AssemblyRigidPenalty()
         K_penal.block(RBE2[iRBE2]->MasterDOFs(1 -1) -1,RBE2[iRBE2]->SlaveDOFs(1 -1) -1, 6 , 6) +=  Krbe1.block(1 -1, 7 -1, 6, 6) + Krbe2.block(1 -1, 7 -1, 6, 6);
         K_penal.block(RBE2[iRBE2]->SlaveDOFs(1 -1) -1,RBE2[iRBE2]->MasterDOFs(1 -1) -1, 6 , 6) +=  Krbe1.block(7 -1, 1 -1, 6, 6) + Krbe2.block(7 -1, 1 -1, 6, 6);
         K_penal.block(RBE2[iRBE2]->SlaveDOFs(1 -1) -1,RBE2[iRBE2]->SlaveDOFs(1 -1) -1, 6 , 6) +=   Krbe1.block(7 -1, 7 -1, 6, 6) + Krbe2.block(7 -1, 7 -1, 6, 6);
-        
-        //cout << "Krbe1 = \n" <<Krbe1 << endl;
-        //cout << "Krbe2 = \n" <<Krbe2 << endl;
-        //cout << "g = \n" <<RBE2[iRBE2]->g << endl;
-        
-        
+             
     }
     
     // Penalty application
     Ksys  +=   K_penal*penalty;
-           
-    
-    //cout << "RBE2[iRBE2]->G.transpose()*RBE2[iRBE2]->G = \n" <<RBE2[iRBE2]->G.transpose()*RBE2[iRBE2]->G << endl;  
-    //cout << "penalty = \n" <<penalty << endl;
-    
-            std::ofstream myfile;
-    myfile.open ("K_penal.pyBeam");
-    myfile << "K_penal= "; myfile <<setprecision(15)<<  K_penal ; myfile << "\n ";
-    myfile.close();
-    
+               
 }
 
 
@@ -569,9 +229,7 @@ void CStructure::AssemblyRigidLagrange()
     // Setting to Zero the SYSTEM penalty matrix and residual vector
     Ksys_lam =MatrixXdDiff::Zero((nNode+nRBE2)*6,(nNode+nRBE2)*6);
     
-  
     MatrixXdDiff Krbe =  MatrixXdDiff::Zero(12,12); // second contribution to the tangent matrix: sum_i lambda_i*H_i (single element)
-
 
     // First we assign the residual corresponding to the nodes' dof entries
     Ksys_lam.block(0,0,nNode*6,nNode*6) = Ksys;    
@@ -586,8 +244,8 @@ void CStructure::AssemblyRigidLagrange()
         Um = U.segment(RBE2[iRBE2]->MasterDOFs(1 - 1) - 1, 6);
         Us = U.segment(RBE2[iRBE2]->SlaveDOFs(1 - 1) - 1, 6);
                
-        RBE2[iRBE2]->EvalConstraintEquation( Um,  Us);
-        RBE2[iRBE2]->EvalJacobian( Um);
+        //RBE2[iRBE2]->EvalConstraintEquation( Um,  Us);
+        //RBE2[iRBE2]->EvalJacobian( Um);
         RBE2[iRBE2]->EvalHessian( Um);
         // Getting lagrange multiplier
         lambda = VectorXdDiff::Zero(6);
@@ -613,37 +271,12 @@ void CStructure::AssemblyRigidLagrange()
         //and then the column G^T
         Ksys_rbe.block(RBE2[iRBE2]->MasterDOFs(1 -1) -1,nNode*6 -1 + (iRBE2)*6+1, 6 , 6) += RBE2[iRBE2]->G.block(1 -1,1 -1,6,6).transpose();
         Ksys_rbe.block(RBE2[iRBE2]->SlaveDOFs(1 -1) -1,nNode*6 -1 + (iRBE2)*6+1, 6 , 6)  += RBE2[iRBE2]->G.block(1 -1,7 -1,6,6).transpose();   
-
-        
-        //cout << "Krbe1 = \n" <<Krbe1 << endl;
-        //cout << "Krbe2 = \n" <<Krbe2 << endl;
-        //cout << "g = \n" <<RBE2[iRBE2]->g << endl;
-        
-        
+     
     }
     
     //  application
     Ksys_lam  +=  Ksys_rbe;
-    
-    
-    //cout << "RBE2[iRBE2]->G.transpose()*RBE2[iRBE2]->G = \n" <<RBE2[iRBE2]->G.transpose()*RBE2[iRBE2]->G << endl;  
-    //cout << "penalty = \n" <<penalty << endl;
-    
-    std::ofstream myfile2;
-    myfile2.open ("Ksys_lam.dat");
-    myfile2 <<setprecision(15)<<  Ksys_lam ; 
-    myfile2.close();
-    
-    std::ofstream myfile;
-    myfile.open ("Krbe.dat");
-    myfile <<setprecision(15)<<  Ksys_rbe ;
-    myfile.close();
-    
-    std::ofstream myfile5;
-    myfile5.open ("G_K.dat");
-         myfile5 <<setprecision(15)<<  RBE2[0]->G ;
-    myfile5.close();      
-    
+       
 }
 
 
@@ -709,14 +342,7 @@ void CStructure::AssemblyTang(int iIter)
                                
             }            
         }
-        
-        if (id_el==2){
-            std::ofstream myfile;
-            myfile.open ("Ktang.pyBeam");
-            myfile << "Ktang= "; myfile <<setprecision(15)<<  Ktang ; myfile << "\n ";
-            myfile.close(); 
-        }
-        
+               
     }
     
     /*--------------------------------------------------------
@@ -1072,32 +698,11 @@ void CStructure::SolveLinearStaticSystem(int iIter, std::ofstream &history, int 
     //	FullPivHouseholderQR 	fullPivHouseholderQr() 	None                - 	+++
     //	LLT 	                          llt() 	Positive definite       +++ 	+
     //	LDLT 	                         ldlt() Positive or negative semidefinite 	+++ 	++
-    /*
-    std::ofstream myfile;
-    myfile.open ("Residual.pyBeam");
-    myfile << "Residual= "; myfile <<setprecision(15)<<  Residual ; myfile << "\n ";
-    myfile.close();
     
-    /*
-    std::ofstream myfile2;
-    myfile2.open ("Ksys.pyBeam");
-    myfile2 << "Ksys= "; myfile2 <<setprecision(15)<<  Ksys ; myfile2 << "\n ";
-    myfile2.close();
-     
 
-    std::ofstream myfile3;
-    myfile3.open ("Residual_penalty.pyBeam");
-    myfile3 << "Residual_penalty= "; myfile3 <<setprecision(15)<<  -penalty*RBE2[0]->G.transpose()*RBE2[0]->g ; myfile3 << "\n ";
-    myfile3.close();     
-    
-    std::ofstream myfile4;
-    myfile4.open ("Fint.pyBeam");
-    myfile4 << "Fint= "; myfile4 <<setprecision(15)<<  Fint ; myfile4 << "\n ";
-    myfile4.close();    
-    */
 }
 
-
+  
 /*===================================================
  /      Solve linear static system
  /===================================================
@@ -1264,12 +869,7 @@ void CStructure::UpdateCoord(int nRBE2,int iRigid) {
         for (int iRBE2 = 0; iRBE2 < nRBE2; iRBE2++) {  
             U_lam.segment(nNode*6 -1 + (iRBE2)*6+1 ,6) +=  dU_lam.segment(nNode*6 -1 + (iRBE2)*6+1 ,6) ;    
         }
-        
-        std::ofstream myfile;
-        myfile.open ("U_lam.pyBeam");
-        myfile << "U_lam= "; myfile <<setprecision(15)<<  U_lam ; myfile << "\n ";
-        myfile.close();    
-        
+             
     }
     
 }
