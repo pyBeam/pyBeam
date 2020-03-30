@@ -43,14 +43,24 @@ void CProperty::SetSectionProperties2()
     addouble t_sp=5*pow(10,-3);
     addouble h=0.7;
     addouble A_stiff=5*pow(10,-4);
+    addouble A_fl=12*pow(10,-4);
     addouble b=(C_wb)/((n_stiff/2)-1);  //distance within stiffeners
-    cout<<"b=\n"<<b<<endl
-    addouble a=0;   
-    int r= (n_stiff/2)%2;
-    cout<<"r=\n"<<r<<endl;
+    addouble a=0;  
+    addouble summ_ys=0;
+    
+    
+    
+  
+    if (n_stiff=0 ){
+        
+        summ_ys=0;                    //stiffeners moment of inertia respect vertical axis = 0
+                                        
+    } else
+    {
+    int r= ((n_stiff)/2)%2;
     if (r==0)
     {
-       for (int j=0;j<=((n_stiff/4)-1);j+=1)
+       for (int j=0;j<=(n_stiff/4)-1;j+=1)
        {
            
            a=a + pow(0.5+j,2);
@@ -62,22 +72,23 @@ void CProperty::SetSectionProperties2()
       for (int i=1;i<=(((n_stiff/2)-1)/2);i+=1)
       {
         a=a+pow(i,2);  
-                  cout<<"a="<<a<<endl;
+        cout<<"a="<<a<<endl;
       }
     }
-    
-   addouble summ_ys=4*pow(b,2)*a;
+     addouble summ_ys=4*pow(b,2)*a;
+    }   
+  
    cout<<"summ"<<summ_ys;
 
-    
+   addouble Izz_fl=4*A_fl*pow(C_wb/2,2);
    
     addouble A_skin=C_wb*t_sk;
     addouble A_sp=t_sp*h;
  
-    addouble  A=A_skin+A_sp+n_stiff*A_stiff;
+    addouble  A=A_skin+A_sp+n_stiff*A_stiff+4*A_fl;
   
-    addouble  Iyy=2*(C_wb*(pow(t_sk,3)/12)+(C_wb*t_sk)*(pow(h/2,2)))+2*(t_sp*(pow(h,3)/12))+n_stiff*(A_stiff*pow(h/2,2));
-    addouble  Izz=2*(t_sk*(pow(C_wb,3)/12))+2*(h*(pow(t_sp,3)/12)+A_sp*(pow(C_wb/2,2)))+A_stiff*summ_ys;
+    addouble  Iyy=2*(C_wb*(pow(t_sk,3)/12)+(C_wb*t_sk)*(pow(h/2,2)))+2*(t_sp*(pow(h,3)/12))+n_stiff*((A_stiff+A_fl)*pow(h/2,2));
+    addouble  Izz=2*(t_sk*(pow(C_wb,3)/12))+2*(h*(pow(t_sp,3)/12)+A_sp*(pow(C_wb/2,2)))+(A_stiff*summ_ys+Izz_fl);
     addouble  Jt=(2*t_sp*t_sk*pow(C_wb,2)*pow(h,2))/(C_wb*t_sp+h*t_sk);
     
     

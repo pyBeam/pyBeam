@@ -53,10 +53,11 @@ protected:
     addouble t_sk;             // skin  thickness 
     addouble t_sp;            // spar thickness
     addouble A_stiff;        // stiffener Area
+    addouble A_fl;           // flanges Area 
     addouble h;              //  box height 
     addouble C_wb;          //  box length 
-    int n_stiff;            // number of stiffener 
-    VectorXdDiff ys;
+    int n_stiff;            // number of stiffener (not taking into account the Spar flanges)
+ 
         unsigned long PropertyID;   // ID of the property
 
 public:
@@ -65,6 +66,7 @@ public:
 
     ~CProperty(void){}
      
+   
    
     
    

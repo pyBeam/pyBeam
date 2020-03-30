@@ -1637,7 +1637,7 @@ void CStructure::UpdateInternalForces_FP()
          //      TRANSLATIONAL PART
          * ---------------------------*/
 
-        // Relative displacement of the second node is only along the new axis direction
+        // Relative displacement of the second node is only along the new axis_vectoris direction
         u_el(7-1) = element[id_fe-1]->GetCurrent_Length() - element[id_fe-1]->GetInitial_Length();
 
         
