@@ -195,7 +195,7 @@ void CStructure::RigidResidual()
     VectorXdDiff Um = VectorXdDiff::Zero(6); 
     VectorXdDiff Us = VectorXdDiff::Zero(6);
     VectorXdDiff residual_rigid = VectorXdDiff::Zero(12);
-
+   
     for (int iRBE2 = 0; iRBE2 < nRBE2; iRBE2++) {
         
         // Evaluating constraint equation
@@ -212,6 +212,23 @@ void CStructure::RigidResidual()
         //cout << "Residual = \n" <<setprecision(20)<<Residual << endl;
         Residual.segment(RBE2[iRBE2]->MasterDOFs(1 - 1) - 1,6) +=  residual_rigid.segment(1 -1,6);
         Residual.segment(RBE2[iRBE2]->SlaveDOFs(1 - 1) - 1,6) += residual_rigid.segment(7 -1,6);
+    
+    /*
+    std::ofstream myfile2;
+    myfile2.open ("Ksys.pyBeam");
+    myfile2 << "Ksys= "; myfile2 <<setprecision(15)<<  Ksys ; myfile2 << "\n ";
+    myfile2.close(); */
+     
+        std::cout << "g = \n" << RBE2[iRBE2]->g << std::endl;
+    std::ofstream myfile3;
+    myfile3.open ("Residual_penalty.pyBeam");
+    myfile3 << "Residual_penalty= "; myfile3 <<setprecision(15)<<  -penalty*RBE2[0]->G.transpose()*RBE2[0]->g ; myfile3 << "\n ";
+    myfile3.close();     
+    
+    std::ofstream myfile4;
+    myfile4.open ("Fint.pyBeam");
+    myfile4 << "Fint= "; myfile4 <<setprecision(15)<<  Fint ; myfile4 << "\n ";
+    myfile4.close();            
         
     }
     
@@ -493,7 +510,7 @@ void CStructure::AssemblyRigidPenalty()
 
 
     for (int iRBE2 = 0; iRBE2 < nRBE2; iRBE2++) {
-        // EYE here: only in this case DOFS start from 1 instead than from 0.
+        // EYE here: only in this case DOFS start from 1 instead of 0.
 
         //Master and slave cumulative displacements
         Um = U.segment(RBE2[iRBE2]->MasterDOFs(1 - 1) - 1, 6);
@@ -517,11 +534,11 @@ void CStructure::AssemblyRigidPenalty()
         K_penal.block(RBE2[iRBE2]->SlaveDOFs(1 -1) -1,RBE2[iRBE2]->MasterDOFs(1 -1) -1, 6 , 6) +=  Krbe1.block(7 -1, 1 -1, 6, 6) + Krbe2.block(7 -1, 1 -1, 6, 6);
         K_penal.block(RBE2[iRBE2]->SlaveDOFs(1 -1) -1,RBE2[iRBE2]->SlaveDOFs(1 -1) -1, 6 , 6) +=   Krbe1.block(7 -1, 7 -1, 6, 6) + Krbe2.block(7 -1, 7 -1, 6, 6);
         
-                //cout << "Krbe1 = \n" <<Krbe1 << endl;
-                //cout << "Krbe2 = \n" <<Krbe2 << endl;
-                //cout << "g = \n" <<RBE2[iRBE2]->g << endl;
-
- 
+        //cout << "Krbe1 = \n" <<Krbe1 << endl;
+        //cout << "Krbe2 = \n" <<Krbe2 << endl;
+        //cout << "g = \n" <<RBE2[iRBE2]->g << endl;
+        
+        
     }
     
     // Penalty application
@@ -568,7 +585,7 @@ void CStructure::AssemblyRigidLagrange()
         Us = VectorXdDiff::Zero(6);
         Um = U.segment(RBE2[iRBE2]->MasterDOFs(1 - 1) - 1, 6);
         Us = U.segment(RBE2[iRBE2]->SlaveDOFs(1 - 1) - 1, 6);
-        
+               
         RBE2[iRBE2]->EvalConstraintEquation( Um,  Us);
         RBE2[iRBE2]->EvalJacobian( Um);
         RBE2[iRBE2]->EvalHessian( Um);
@@ -1055,15 +1072,29 @@ void CStructure::SolveLinearStaticSystem(int iIter, std::ofstream &history, int 
     //	FullPivHouseholderQR 	fullPivHouseholderQr() 	None                - 	+++
     //	LLT 	                          llt() 	Positive definite       +++ 	+
     //	LDLT 	                         ldlt() Positive or negative semidefinite 	+++ 	++
+    /*
     std::ofstream myfile;
     myfile.open ("Residual.pyBeam");
     myfile << "Residual= "; myfile <<setprecision(15)<<  Residual ; myfile << "\n ";
     myfile.close();
     
+    /*
     std::ofstream myfile2;
     myfile2.open ("Ksys.pyBeam");
     myfile2 << "Ksys= "; myfile2 <<setprecision(15)<<  Ksys ; myfile2 << "\n ";
     myfile2.close();
+     
+
+    std::ofstream myfile3;
+    myfile3.open ("Residual_penalty.pyBeam");
+    myfile3 << "Residual_penalty= "; myfile3 <<setprecision(15)<<  -penalty*RBE2[0]->G.transpose()*RBE2[0]->g ; myfile3 << "\n ";
+    myfile3.close();     
+    
+    std::ofstream myfile4;
+    myfile4.open ("Fint.pyBeam");
+    myfile4 << "Fint= "; myfile4 <<setprecision(15)<<  Fint ; myfile4 << "\n ";
+    myfile4.close();    
+    */
 }
 
 
@@ -1802,10 +1833,15 @@ void CStructure::UpdateInternalForces_FP()
         // Updating cumulative internal forces
         element[id_fe-1]->fint.segment(1-1,6) =  Na.transpose()*element[id_fe-1]->phi;
         element[id_fe-1]->fint.segment(7-1,6) =  Nb.transpose()*element[id_fe-1]->phi;
-
+        /*
+        if (id_fe == 19){
+            std::cout << "\nInternal forces node 20 due to element (global frame) 19\n" << std::endl;
+            std::cout << setprecision(19)<<element[id_fe-1]->R * element[id_fe-1]->fint.segment(7-1,6)*YoungModulus << '\n'<< std::endl;
+        }
+         */      
         // Contribution to the NODAL Internal Forces ARRAY
         Fint.segment((nodeA_id-1)*6+1 -1,6) +=  element[id_fe-1]->R * element[id_fe-1]->fint.segment(1-1,6);
-        Fint.segment((nodeB_id-1)*6+1 -1,6) +=  element[id_fe-1]->R * element[id_fe-1]->fint.segment(7-1,6);
+        Fint.segment((nodeB_id-1)*6+1 -1,6) +=  element[id_fe-1]->R * element[id_fe-1]->fint.segment(7-1,6);              
     }
 
 }

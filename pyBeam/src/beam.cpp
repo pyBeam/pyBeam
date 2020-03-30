@@ -278,6 +278,7 @@ void CBeamSolver::Solve(int FSIIter = 0){
             
             // Now only X is updated
             //structure->UpdateRotationMatrix();  // based on the rotational displacements
+            //std::cout << "\nWaring update rotation matrix updated lagraginain style" << std::endl;
             structure->UpdateRotationMatrix_FP();  // based on the rotational displacements
             structure->UpdateLength();          // Updating length, important
 
@@ -322,9 +323,11 @@ void CBeamSolver::Solve(int FSIIter = 0){
 }
 
 void CBeamSolver::RunRestart(int FSIIter = 0){
-    
+ 
     std::ofstream history;
+    history.open ("History_restart.pyBeam");    
     
+     std::cout << "==============WARNING: THIS FUNCTION  NEEDS TO BE UPDATED FOR THE RIGID LAGRANGIAN==================" << std::endl;
     // This function set the current initial coordinates and memorizes them as the old one before the converging procedure starts
     
     // Beam total length
@@ -348,26 +351,44 @@ void CBeamSolver::RunRestart(int FSIIter = 0){
     structure->UpdateLength();
     structure->UpdateRotationMatrix_FP();  // based on the rotational displacements
     structure->UpdateInternalForces_FP();
+
+    if (nRBE2 != 0 and iRigid == 1){ structure->SetRigidLagrangeDimensions();}    
     
     if (verbose){
         std::cout << "--> Starting Restart Sequence" << std::endl;
         std::cout << "===========================================================================" << std::endl;
+        
+        history << "===========================================================================" << std::endl;
         
         cout.setf(ios::fixed, ios::floatfield);
         history.setf(ios::fixed, ios::floatfield);
         
         std::cout.width(8); std::cout << "Iter";
         std::cout.width(16); std::cout << "Log10(Res)";
+        if (nRBE2 != 0 ) {
+            std::cout.width(17); std::cout << " Log10(Norm[Res+Constr])";    
+        }        
         std::cout.width(17); std::cout << "Log10(Lin_Sol)";
         std::cout.width(16); std::cout << "Log10(Disp)";
         std::cout.width(17); std::cout << "Log10(Disp_Fact)" << std::endl;
+        
+        // WRITE HISTORY FILE
+        history.width(6); history << "Iter";
+        history.width(17); history << "Log10(Norm_Res)";
+        if (nRBE2 != 0 ) {
+            history.width(17); history << " Log10(Norm[Res+Constr])";    
+        }
+        history.width(17); history << "Log10(Lin_Sol)";
+        history.width(17); history << "Log10(Norm_Disp)";
+        history.width(17); history << "Log10(Disp_Fact)" << std::endl;                
     }
     
     //===============================================
     //               RESTART SEQUENCE
     //===============================================
     
-    if (verbose){std::cout.width(8); std::cout << "RESTART";}
+            if (verbose){std::cout.width(8); std::cout << "RESTART";
+                         history.width(8); history << "RESTART";}
     
     /*--------------------------------------------------
      *   Updates  Fext, Residual,
@@ -379,7 +400,10 @@ void CBeamSolver::RunRestart(int FSIIter = 0){
     // Evaluate the Residual
     structure->EvalResidual();
     
-    if (verbose){std::cout.width(16); std::cout << log10(structure->Residual.norm());}
+    if (verbose){
+        std::cout.width(17); std::cout << log10(structure->Residual.norm());
+        history.width(17); history << log10(structure->Residual.norm());
+    }
     
     /*--------------------------------------------------
      *   Assembly Ktang, Solve System
@@ -387,7 +411,6 @@ void CBeamSolver::RunRestart(int FSIIter = 0){
     
     // Reassembling Stiffness Matrix + Applying Boundary Conditions
     structure->AssemblyTang(1);
-    
     if (nRBE2 != 0 ) {
         if (iRigid == 0 ) {
             structure->SetPenalty();
@@ -397,7 +420,7 @@ void CBeamSolver::RunRestart(int FSIIter = 0){
             //structure->AssemblyRigidPenalty_FD();
         }
         else{
-            structure->SetRigidLagrangeDimensions(); 
+            
             structure->RigidResidualLagrange();
             structure->AssemblyRigidLagrange();
         }
@@ -405,22 +428,23 @@ void CBeamSolver::RunRestart(int FSIIter = 0){
             std::cout.width(17); std::cout << log10(structure->Residual.norm());
             history.width(17); history << log10(structure->Residual.norm());
         }                
-    }
-    
-    if (nRBE2 != 0 and iRigid == 1){
-        structure->ImposeBC_RigidLagrangian(); 
-        // Solve Linear System   Ksys_lam*dU_lam = Res_lam 
-        structure->SolveLinearStaticSystem_RigidLagrangian(0,history,1);                
-    }
-    else{
-        structure->ImposeBC(); 
-        // Solve Linear System   Ksys*dU = Res =
-        structure->SolveLinearStaticSystem(0,history,1);
-    }
-    
-    if (verbose){
-        std::cout.width(17); std::cout << log10(structure->dU.norm());
-        history.width(17); history << log10(structure->dU.norm());
+    }              
+
+
+if (nRBE2 != 0 and iRigid == 1){
+    structure->ImposeBC_RigidLagrangian(); 
+    // Solve Linear System   Ksys_lam*dU_lam = Res_lam 
+    structure->SolveLinearStaticSystem_RigidLagrangian(0,history,1);                
+}
+else{
+    structure->ImposeBC(); 
+    // Solve Linear System   Ksys*dU = Res =
+    structure->SolveLinearStaticSystem(0,history,1);
+}
+
+if (verbose){
+    std::cout.width(17); std::cout << log10(structure->dU.norm());
+    history.width(17); history << log10(structure->dU.norm());
     }
     
     /*--------------------------------------------------
@@ -437,12 +461,16 @@ void CBeamSolver::RunRestart(int FSIIter = 0){
     addouble disp_factor =   structure->dU.norm()/TotalLength;
 
     if (verbose){
-    std::cout.width(17); std::cout << log10(disp_factor);
-    std::cout << std::endl;
+                std::cout.width(17); std::cout << log10(disp_factor);
+                history.width(17); history << log10(disp_factor);
+                std::cout << std::endl;
+                history << std::endl;
 
 
     std::cout << "===========================================================================" << std::endl;
     std::cout << std::endl << "--> Exiting Restart Sequence." << std::endl;
+    history << "===========================================================================" << std::endl;
+    history << std::endl << "--> Exiting Restart Sequence." << std::endl;
     }
     
 }

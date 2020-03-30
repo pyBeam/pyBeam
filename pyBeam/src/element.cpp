@@ -273,7 +273,7 @@ void CElement::ElementElastic_Rao(MatrixXdDiff &Kel) {
     Kel.block(1-1,7-1,6,6) = Na.transpose() * Kprim * Nb;
     Kel.block(7-1,1-1,6,6) = Nb.transpose() * Kprim * Na;
     Kel.block(7-1,7-1,6,6) = Nb.transpose() * Kprim * Nb;
-
+    
 }
 
 /*##############################################

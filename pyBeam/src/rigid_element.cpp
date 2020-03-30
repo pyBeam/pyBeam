@@ -198,10 +198,10 @@ void CRBE2::EvalJacobian(VectorXdDiff Um ) {
     // G
     G = MatrixXdDiff::Zero(6,12);       // Jacobian of the constraint equations on LHS   
     addouble Dx = ax(0); addouble Dy = ax(1); addouble Dz = ax(2);
-    addouble Umtx = Um(1-1); addouble Umty = Um(2-1); addouble Umtz = Um(3-1);
+    //addouble Umtx = Um(1-1); addouble Umty = Um(2-1); addouble Umtz = Um(3-1);
     addouble Umrx = Um(4-1); addouble Umry = Um(5-1); addouble Umrz = Um(6-1);
 
-    if (abs(Umrx) < 1.0e-19 and abs(Umry) < 1.0e-19 and abs(Umrz) < 1.0e-19 ) {Umrx = 1.0e-19; };  //to avoid singularities 
+    if (abs(Umrx) < 1.0e-19 and abs(Umry) < 1.0e-19 and abs(Umrz) < 1.0e-19 ) {Umrz = 1.0e-19; };  //to avoid singularities 
     //if (abs(Umry) < 1.0e-19 ) {Umry = 1.0e-19; };  //to avoid singularities 
     //if (abs(Umrz) < 1.0e-19 ) {Umrz = 1.0e-19; };  //to avoid singularities  
     //std::cout << "Um_rot = " <<setprecision(20)<< Umrx <<" " << Umry <<" " << Umrz << "\n" << std::endl; 
