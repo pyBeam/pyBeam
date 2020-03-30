@@ -74,12 +74,13 @@ public:
 
     VectorXdDiff cross_term;    // Store the displacement vector
     
-    MatrixXdDiff Ksys;
+    MatrixXdDiff Ksys;          //  matrix containing just the tangent matrix with the dimensions of global matrix 
     MatrixXdDiff Ksys_red;      // [relative to masters in case of RBE2]
     MatrixXdDiff K_penal;       // penalty matrix for rigid elements
     VectorXdDiff V_penal;      // penalty vector for rigid elements
     MatrixXdDiff K_lagr;       // Lagrangian matrix for rigid elements
-    VectorXdDiff V_lagr;       // Lagrangian vector for rigid elements
+    VectorXdDiff V_lagr;       // Lagrangian Residual for rigid elements
+    MatrixXdDiff Ksys_lagr;    // global matrix for lagrangian method 
     
     MatrixXdDiff KRBE;          // Kinematic constraint matrix due to the RBE2 elements   [totalDOFs, BossDOFs]
     MatrixXdDiff KRBE_ext;      // Kinematic constraint matrix due to the RBE2 elements   [totalDOFs, BossDOFs]
@@ -90,7 +91,6 @@ public:
     VectorXdDiff dU;            // Displacement array (increment)
     VectorXdDiff LM;            // Lagrangian Multipliers
     VectorXdDiff dLM;           // Lagrangian Multipliers(increments)
-    VectorXdDiff residual;      // empty array  to allocate the Total Residual [nNode*6+nRBE2*6] 
     VectorXdDiff dU_red;        // Displacement array (increment) [relative to masters in case of RBE2]
     VectorXdDiff X;             // Position of the fem nodes in global coordinate system
     VectorXdDiff X0;            // Position of the fem nodes in global coordinate system
@@ -100,8 +100,13 @@ public:
     VectorXdDiff Fpenal;        // Array of internal forces
     VectorXdDiff Fint;          // Array of internal forces
     VectorXdDiff Fext;          // Array of External Forces
-    VectorXdDiff Residual;      // Array of Unbalanced Forces
+    VectorXdDiff Residual;      // Array of Unbalanced Forces (elastic residual)
+    
+                                //                                              
+    VectorXdDiff Residual_lagr;      //global Residual for lagrangian method =Residual-V_lagr
+    
     VectorXdDiff Residual_red;  // Array of Unbalanced Forces   [relative to masters in case of RBE2]
+   
     
     VectorXdDiff Fnom;          // Array of nominal forces
     
@@ -126,16 +131,19 @@ public:
     // External forces are normalized by the Young Modulus
     inline void UpdateExtForces(addouble lambda){ Fext = lambda* Fnom / YoungModulus; }
 
-    void EvalResidual(unsigned short rigid);
+    void EvalResidual();
 
     void EvalPenaltyForces(addouble penalty);
 
+    void RigidResidualLagrange();
     //===================================================
     //      Assembly RBE2 rigid constraint matrix
     //===================================================
 
     inline void AddRBE2(CInput *input, CRBE2** container_RBE2) {nRBE2 = input->Get_nRBE2(); RBE2 = container_RBE2;}
-
+    
+    void InitialLagrange();
+    
     void AssemblyRigidConstr();
 
     void AssemblyRigidLagrange();
@@ -152,6 +160,16 @@ public:
 
     //void EvalSensRotFiniteDifferences();    // Evaluate the sensitivity of Rotation Matrix - need for Jacobian
     
+    
+    
+     //===================================================
+    //      Boundary Conditions
+    //===================================================
+    
+    
+    
+    void BoundaryConditionsLagrange();
+    void BoundaryConditions();
    
     //===================================================
     //      Solve linear static system
@@ -173,7 +191,7 @@ public:
      * are based on the displacements.
      */
 
-    void UpdateCoord();
+    void UpdateCoord( int nRBE2,unsigned short  rigid);
 
     void RestartCoord();
 

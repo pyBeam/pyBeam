@@ -50,6 +50,7 @@ CBeamSolver::CBeamSolver(void) {
     initResNorm   =  1.0;
     initDispNorm  =  1.0;
     
+    
 }
 
 CBeamSolver::~CBeamSolver(void) {
@@ -60,13 +61,17 @@ void CBeamSolver::InitializeInput(CInput* py_input){   // insert node class and 
     
     // I'm memorizing as a member variable the object input passed from outside
     input = py_input;
+   
 
     input->SetParameters();
+    
+    
 
     nDOF = input->Get_nDOF();
     nFEM = input->Get_nFEM();
     nTotalDOF = input->Get_nNodes() * input->Get_nDOF();
     nRBE2=input->Get_nRBE2();
+   
     //==============================================================
     //      Load Vector initialization
     //==============================================================
@@ -89,7 +94,9 @@ void CBeamSolver::InitializeInput(CInput* py_input){   // insert node class and 
     //==============================================================
     
     if (verbose){cout << "--> Finite Element Initialization... ";}
+   
     element = new CElement*[nFEM];
+    
     if (verbose){std::cout << "ok!"  <<std::endl;}
     
     //==============================================================
@@ -103,13 +110,20 @@ void CBeamSolver::InitializeInput(CInput* py_input){   // insert node class and 
                                << std::endl;}
     }
     else {RBE2 = NULL; }
+    Prop->SetSectionProperties2();
+   
     
     //===============================================
     //  Initialize structural solver
     //===============================================
+    
     structure = NULL;
     
+    
 }
+
+
+
 
 /**
  * @todo Remove unused parameters
@@ -129,10 +143,16 @@ void CBeamSolver::Solve(int FSIIter = 0){
     structure->ReadForces(nTotalDOF, loadVector);
     
     if (nRBE2 != 0){
+        
         if (verbose){std::cout << "--> Setting RBE2 Matrix for Rigid Constraints" << std::endl;}
         structure->AddRBE2(input, RBE2);
+        
     }
- 
+    
+    if (nRBE2 != 0 and input->Get_RigidCriteria() == 1) {
+    structure->InitialLagrange();
+    }
+    
     //===============================================
     // LOAD STEPPING
     //===============================================
@@ -145,6 +165,9 @@ void CBeamSolver::Solve(int FSIIter = 0){
 
     unsigned long loadStep = 1;
     cout.setf(ios::fixed, ios::floatfield);
+    
+    
+            
     
     // This function set the current initial coordinates and memorizes them as the old one before the converging procedure starts
     structure->InitialCoord();
@@ -190,7 +213,7 @@ void CBeamSolver::Solve(int FSIIter = 0){
             structure->UpdateExtForces(lambda);
 
             // Evaluate the Residual
-            structure->EvalResidual(input->Get_RigidCriteria());
+            structure->EvalResidual();
 
             if (verbose){std::cout.width(17); std::cout << log10(structure->Residual.norm());}
             
@@ -205,8 +228,8 @@ void CBeamSolver::Solve(int FSIIter = 0){
             //Ksys = MatrixXdDiff::Zero(nNode*6+nRBE2*6,nNode*6+nRBE2*6);
        
             
-            structure->AssemblyTang(iIter);
-            //cout << "   ----- number RBE2 ----->" << nRBE2 << endl;
+            structure->AssemblyTang(1);
+            
             
                      
            
@@ -216,32 +239,36 @@ void CBeamSolver::Solve(int FSIIter = 0){
           
             if (nRBE2 != 0 and input->Get_RigidCriteria() == 0) {
                 if (verbose){std::cout << "-->  Update KRBE matrix "  << std::endl;}
-                
+           
                 structure->AssemblyRigidConstr();
+                structure->BoundaryConditions();
                 structure->SolveLinearStaticSystem_RBE2(iIter);
             }
             else if (nRBE2 != 0 and input->Get_RigidCriteria() == 1) {
-                if (verbose){std::cout << "-->  Update Lagrangian matrix for RBEs "  << std::endl;}
+                //if (verbose){std::cout << "-->  Update Lagrangian matrix for RBEs "  << std::endl;}
                 
                 structure->AssemblyRigidLagrange();
-                
+                structure->BoundaryConditionsLagrange();
                  // Boundary conditions+resolution 
                 structure->SolveLinearStaticSystem_RBE2_lagrange(iIter);
+                //if (verbose){std::cout.width(17); std::cout << log10(structure->Residual_lagr.norm());}
+                
             }
             else {
                 
                // Boundary conditions+resolution (no RBE2)
+                structure->BoundaryConditions();
                 structure->SolveLinearStaticSystem(iIter);
                 
             }
-
+            
             if (verbose){std::cout.width(17); std::cout << log10(structure->dU.norm());}
 
             /*--------------------------------------------------
              *   Updates Coordinates, Updates Rotation Matrices
              *----------------------------------------------------*/
             
-            structure->UpdateCoord();
+            structure->UpdateCoord(nRBE2,input->Get_RigidCriteria() );
             
             // Now only X is updated
             //structure->UpdateRotationMatrix();  // based on the rotational displacements
@@ -345,7 +372,7 @@ void CBeamSolver::RunRestart(int FSIIter = 0){
     structure->UpdateExtForces(1);
 
     // Evaluate the Residual
-    structure->EvalResidual(input->Get_RigidCriteria());
+    structure->EvalResidual();
 
     if (verbose){std::cout.width(16); std::cout << log10(structure->Residual.norm());}
 
@@ -360,20 +387,22 @@ void CBeamSolver::RunRestart(int FSIIter = 0){
     if (nRBE2 != 0 and input->Get_RigidCriteria() == 0) {
         if (verbose){std::cout << "-->  Update KRBE matrix "  << std::endl;}
         structure->AssemblyRigidConstr();
+        structure->BoundaryConditions();
         structure->SolveLinearStaticSystem_RBE2(1);
     }
     else if (nRBE2 != 0 and input->Get_RigidCriteria() == 1) {
-        if (verbose){std::cout << "-->  Update Lagrangian matrix for RBEs "  << std::endl;}
+       // if (verbose){std::cout << "-->  Update Lagrangian matrix for RBEs "  << std::endl;}
         // structure->AssemblyRigidPenalty(input->GetPenalty());
        
-    
+       
         structure->AssemblyRigidLagrange();
+        structure->BoundaryConditionsLagrange();
         
         // Boundary conditions+solve 
         structure->SolveLinearStaticSystem_RBE2_lagrange(1);
     }
     else {
-        // Boundary conditions+solve 
+        structure->BoundaryConditions();
         structure->SolveLinearStaticSystem(1);
     }
 
@@ -383,7 +412,7 @@ void CBeamSolver::RunRestart(int FSIIter = 0){
     *   Updates Coordinates, Updates Rotation Matrices
     *----------------------------------------------------*/
   
-    structure->UpdateCoord();
+    structure->UpdateCoord(nRBE2,input->Get_RigidCriteria() );
   
     /*--------------------------------------------------
     *    Check Convergence

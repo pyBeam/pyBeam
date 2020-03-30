@@ -25,10 +25,12 @@
  */
 
 #pragma once
+
 #include <math.h>
 #include <map>
 #include <stdio.h>
 #include <stdlib.h>
+
 
 #include "../include/types.h"
 
@@ -44,14 +46,29 @@ protected:
     addouble Iyy, Izz;          // Bending Moment of Inertia
     addouble Jt;                // Torsional Moment of Inertia
     addouble J0;                // Polar Moment of Inertia
-    unsigned long PropertyID;   // ID of the property
+    
+    
+    
+    
+    addouble t_sk;             // skin  thickness 
+    addouble t_sp;            // spar thickness
+    addouble A_stiff;        // stiffener Area
+    addouble h;              //  box height 
+    addouble C_wb;          //  box length 
+    int n_stiff;            // number of stiffener 
+    VectorXdDiff ys;
+        unsigned long PropertyID;   // ID of the property
 
 public:
 
     CProperty(int ID) {PropertyID = ID; }
 
     ~CProperty(void){}
-
+     
+   
+    
+   
+    
     inline void SetSectionProperties(passivedouble A_in, passivedouble Iyy_in,
                                      passivedouble Izz_in, passivedouble Jt_in) {
         A = A_in;
@@ -59,8 +76,39 @@ public:
         Izz = Izz_in;
         J0 = Iyy + Izz;
         Jt = Jt_in;
+        
+     
+        
     }
-
+    
+    /*passivedouble tsk_in,passivedouble tsp_in,
+                                        passivedouble Astiff_in,passivedouble h_in,
+                                        passivedouble Cwb_in,passivedouble nstiff_in,passivedouble b_in,VectorXdDiff ys_in
+     */
+    void SetSectionProperties2();
+ 
+/*
+    inline addouble Get_t_sk(void){return t_sk;}
+    
+    inline addouble Get_t_sp(void){return t_sp;}
+    
+    inline addouble GetA_stiff(void){return A_stiff;}
+    
+    inline addouble Get_h(void){return h;}
+    
+    inline addouble GetC_wb(void){return C_wb;}
+    
+    inline addouble Get_n_stiff(void){return n_stiff;}
+    
+    inline addouble Get_b(void){return b;}
+    
+    inline VectorXdDiff Get_ys(void){return ys;}
+    */
+    
+    
+    
+    
+    
     inline addouble GetIyy(void) { return Iyy; }
 
     inline addouble GetIzz(void) { return Izz; }

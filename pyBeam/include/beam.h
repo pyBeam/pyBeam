@@ -31,6 +31,7 @@
 
 #include "../include/types.h"
 
+#include "../include/property.h"
 #include "../include/element.h"
 #include "../include/rigid_element.h"
 #include "../include/structure.h"
@@ -51,7 +52,10 @@ private:
 
     CNode **node;                         /*!< \brief Vector which stores the node initial coordinates. */
     //CConnectivity **connectivity;       /*!< \brief Vector which stores the connectivity. */
-
+     
+     
+     CProperty* Prop;
+      
     CInput* input;
 
     CElement** element;                   /*!< \brief Vector which the define the elements. */
@@ -59,6 +63,8 @@ private:
     CRBE2** RBE2;                         /*!< \brief Vector which the define the elements. */
 
     CStructure* structure;                /*!< \brief Pointer which the defines the structure. */
+    
+  
 
     int nDOF, nTotalDOF, nRBE2, nDim;
     unsigned long nFEM;
@@ -68,6 +74,11 @@ private:
     addouble initResNorm;
     addouble *loadVector;
     addouble thickness;
+    
+
+    
+
+  
 
 protected:
 
@@ -76,8 +87,10 @@ public:
     CBeamSolver(void);
 
     virtual ~CBeamSolver(void);
-
+   
+    
     void InitializeInput(CInput *py_input);
+    
 
     inline void InitializeNode(CNode *py_node, unsigned long iNode) {node[iNode] = py_node;}
 

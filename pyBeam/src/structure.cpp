@@ -25,7 +25,7 @@
  *
  */
 
-
+/////////////////////////
 #include "../include/structure.h"
 
 CStructure::CStructure(CInput *input, CElement **container_element, CNode **container_node)
@@ -40,14 +40,14 @@ CStructure::CStructure(CInput *input, CElement **container_element, CNode **cont
     kind_linSol = input->GetKind_LinSol();
 
     DOF = input->Get_nDOF();
-
+    
     // Links to the finite-element object
     element = container_element;
     node = container_node;
 
     nNode = input->Get_nNodes();
     nfem = input->Get_nFEM();
-  
+    
     
     
     
@@ -62,19 +62,17 @@ CStructure::CStructure(CInput *input, CElement **container_element, CNode **cont
     
     
     // Resizes and zeros the K matrices
-    Ksys.resize(nNode*6+nRBE2*6,nNode*6+nRBE2*6);
-    Ksys = MatrixXdDiff::Zero(nNode*6+nRBE2*6,nNode*6+nRBE2*6);
-    //cout << "Ksys = \n" <<Ksys << endl;
-    cout << "nrbe= \n" <<nRBE2 << endl;
+    Ksys.resize(nNode*6,nNode*6);
+    Ksys = MatrixXdDiff::Zero(nNode*6,nNode*6);
+   
+    
     
     
                                                         
-    U  = VectorXdDiff::Zero(nNode*6+nRBE2 *6);                // whole vector solution
-   VectorXdDiff LM= U.segment(nNode*6,nRBE2 *6) ;             //Lagrangian multiplier    
-    dU  = VectorXdDiff::Zero(nNode*6+nRBE2 *6);
-     //cout << "dU = \n" <<dU<< endl;
-    VectorXdDiff dLM  = dU.segment(nNode*6,nRBE2 *6);
-     //cout << "dLM = \n" <<dLM<< endl;
+    U  = VectorXdDiff::Zero(nNode*6);                // whole vector solution   
+    dU  = VectorXdDiff::Zero(nNode*6);
+    
+   
     
    
     
@@ -93,7 +91,7 @@ CStructure::CStructure(CInput *input, CElement **container_element, CNode **cont
     Fpenal   =  VectorXdDiff::Zero(nNode*6);
     Fint     =  VectorXdDiff::Zero(nNode*6);
     Residual =  VectorXdDiff::Zero(nNode*6);
-   
+    
 }
 
 CStructure::~CStructure(void)
@@ -109,7 +107,7 @@ CStructure::~CStructure(void)
             if (node[iNode] != nullptr) delete [] node[iNode];
         delete [] node;
     }
-cout << "Ksys = \n" <<Ksys << endl;
+//cout << "Ksys = \n" <<Ksys << endl;
 }
 
 /**
@@ -117,6 +115,10 @@ cout << "Ksys = \n" <<Ksys << endl;
  * @body It's necessary to finalize and verify the implementation of rigid elements. Before opening a PR, cleanup
  *       debug comments.
  */
+
+
+
+
 //===================================================
 //      Assembly RBE2 rigid constraint matrix
 //===================================================
@@ -224,212 +226,112 @@ void CStructure::AssemblyRigidConstr()
 
 
     }
-     //cout << "KRBE = \n" <<KRBE << endl;
+     
 }
 
 //===================================================
 //      Assembly penalty matrix and vector for rigid constraints 
 //===================================================
 //void CStructure::AssemblyRigidPenalty(addouble penalty)
-void CStructure::AssemblyRigidLagrange()
+
+void CStructure::InitialLagrange()
+{
+   // Resizes and zeros the K matrices and vectors for Lagrange method
+    Ksys = MatrixXdDiff::Zero(nNode*6+nRBE2*6,nNode*6+nRBE2*6);     
+    Ksys_lagr = MatrixXdDiff::Zero(nNode*6+nRBE2*6,nNode*6+nRBE2*6);                                                    
+    U  = VectorXdDiff::Zero(nNode*6+nRBE2 *6);                // whole vector solution   
+    dU  = VectorXdDiff::Zero(nNode*6+nRBE2 *6);   
+    LM  = VectorXdDiff::Zero(nRBE2 *6); 
+    dLM  = VectorXdDiff::Zero(nRBE2 *6); 
+    Residual_lagr=VectorXdDiff::Zero(nNode*6+nRBE2*6); 
+    K_lagr = MatrixXdDiff::Zero(nNode*6+  nRBE2 *6,nNode*6+  nRBE2 *6);
+    V_lagr = VectorXdDiff::Zero(nNode*6+ nRBE2*6);
+    //cout << "numbero elementi rigidi = \n" <<nRBE2 << endl;
+}
+
+ void CStructure::AssemblyRigidLagrange()
 {
     
     int n_eq = 6;
     int n_RBEdofs =12;
-    //double n_dof;
-    
-    
-    
-    // Resizes and zeros the K matrices
-    Ksys.resize(nNode*6+nRBE2*6,nNode*6+nRBE2*6);
-    Ksys = MatrixXdDiff::Zero(nNode*6+nRBE2*6,nNode*6+nRBE2*6);
-    //cout << "Ksys = \n" <<Ksys << endl;
-    //cout << "number of RBE2= \n" <<nRBE2 << endl;
-    
-    
-                                                        
-    U  = VectorXdDiff::Zero(nNode*6+nRBE2 *6);                // whole vector solution 
-    //cout << "U = \n" <<U << endl;
+    VectorXdDiff Um;
+    VectorXdDiff Us ;  
    
-   
-    
-    
-   VectorXdDiff LM= U.segment(nNode*6,nRBE2 *6) ;                      //Lagrangian multiplyer  
-   //cout << "LM = \n" <<LM<< endl;
 
-    
-          
-    dU  = VectorXdDiff::Zero(nNode*6+nRBE2 *6);
-     //cout << "dU = \n" <<dU<< endl;
-    
-    
-    VectorXdDiff dLM  = dU.segment(nNode*6,nRBE2 *6);
-     //cout << "dLM = \n" <<dLM<< endl;
-    
-    
-    // Setting to Zero the SYSTEM penalty matrix and residual vector
-    K_lagr = MatrixXdDiff::Zero(nNode*6+  nRBE2 *6,nNode*6+  nRBE2 *6);
-     //cout << "K_lagr= \n" <<K_lagr<< endl;
-       
-
-    V_lagr = VectorXdDiff::Zero(nNode*6+ nRBE2*6);
-     //cout << "V_lagr= \n" <<V_lagr<< endl;
-    
-
-    //contribution Lagrange: G^T,G,LM*H,LM^T*G,-g
-
-   
+    //VectorXdDiff LM = VectorXdDiff::Zero(6);             //Lagrangian multiplier 
     MatrixXdDiff Krbe1 =  MatrixXdDiff::Zero(12,12); // first contribution to the tangent matrix: LM_i*H_i (single element)
-    MatrixXdDiff Krbe2 =  MatrixXdDiff::Zero(12,6); // second contribution to the tangent matrix: G^T (single element)
-    MatrixXdDiff Krbe3 =  MatrixXdDiff::Zero(6,12); // third contribution to the tangent matrix: G (single element)
-    VectorXdDiff Vrbe1 =  VectorXdDiff::Zero(12);   //  first contribution to the RHS : LM_i^T*G (single element)
-    VectorXdDiff Vrbe2 =  VectorXdDiff::Zero(6);   //  first contribution to the RHS : g_i (single element)
-//cout << "K_rbe1= \n" <<Krbe1<< endl;
+    MatrixXdDiff Krbe2 =  MatrixXdDiff::Zero(6,12); // third contribution to the tangent matrix: G (single element)
+    VectorXdDiff Vrl = VectorXdDiff::Zero(12);     //first contribute to V_lagr :  [LM^T*G]
 
+    
+
+    
     for (int iRBE2 = 0; iRBE2 < nRBE2; iRBE2++) {
         // EYE here: only in this case DOFS start from 1 instead than from 0. Explained in function AssemblyRigidConstraint
-
+        
         //Master and slave cumulative displacements
-        
-    
-       
-         
-        
-          
+   
         VectorXdDiff Um = U.segment(RBE2[iRBE2]->MasterDOFs(1 - 1) -1 , 6);
-        //cout << "Um= \n" <<Um<< endl;
- 
         
         VectorXdDiff Us = U.segment(RBE2[iRBE2]->SlaveDOFs(1 - 1) -1, 6);
-      
+        
+        //Lagrange multiplier
        
-        
+        LM = U.segment(nNode*6 -1 + (iRBE2)*6+1 ,6);
        
-       
-       
-
-        /*
-        K_penal.block(RBE2[iRBE2]->MasterDOFs(1 -1) -1,RBE2[iRBE2]->MasterDOFs(1 -1) -1, 3 , 3) =  MatrixXdDiff::Identity(3,3);
-        K_penal.block(RBE2[iRBE2]->MasterDOFs(1 -1) -1,RBE2[iRBE2]->MasterDOFs(4 -1) -1, 3 , 3) =    RBE2[iRBE2]->MStrans;
-        K_penal.block(RBE2[iRBE2]->MasterDOFs(1 -1) -1,RBE2[iRBE2]->SlaveDOFs(1 -1) -1, 3 , 3) =   -MatrixXdDiff::Identity(3,3);
-
-        
-        K_penal.block(RBE2[iRBE2]->MasterDOFs(4 -1) -1,RBE2[iRBE2]->MasterDOFs(1 -1) -1, 3 , 3) =   RBE2[iRBE2]->MStrans.transpose();
-        K_penal.block(RBE2[iRBE2]->MasterDOFs(4 -1) -1,RBE2[iRBE2]->MasterDOFs(4 -1) -1, 3 , 3) =    RBE2[iRBE2]->MStrans.transpose() * RBE2[iRBE2]->MStrans + MatrixXdDiff::Identity(3,3);
-        K_penal.block(RBE2[iRBE2]->MasterDOFs(4 -1) -1,RBE2[iRBE2]->SlaveDOFs(1 -1) -1, 3 , 3) =     - RBE2[iRBE2]->MStrans.transpose();
-        K_penal.block(RBE2[iRBE2]->MasterDOFs(4 -1) -1,RBE2[iRBE2]->SlaveDOFs(4 -1) -1, 3 , 3) =   -MatrixXdDiff::Identity(3,3);
-
-        K_penal.block(RBE2[iRBE2]->SlaveDOFs(1 -1) -1,RBE2[iRBE2]->MasterDOFs(1 -1) -1, 3 , 3) =    - MatrixXdDiff::Identity(3,3);
-        K_penal.block(RBE2[iRBE2]->SlaveDOFs(1 -1) -1,RBE2[iRBE2]->MasterDOFs(4 -1) -1, 3 , 3) =    - RBE2[iRBE2]->MStrans;
-        K_penal.block(RBE2[iRBE2]->SlaveDOFs(1 -1) -1,RBE2[iRBE2]->SlaveDOFs(1 -1) -1, 3 , 3) =     MatrixXdDiff::Identity(3,3);
-          // sig n change
-        K_penal.block(RBE2[iRBE2]->SlaveDOFs(4 -1) -1,RBE2[iRBE2]->MasterDOFs(4 -1) -1, 3 , 3) =  - MatrixXdDiff::Identity(3,3);
-        K_penal.block(RBE2[iRBE2]->SlaveDOFs(4 -1) -1,RBE2[iRBE2]->SlaveDOFs(4 -1) -1, 3 , 3) =    MatrixXdDiff::Identity(3,3);
-        */
-        
-      
-        
-        //// Penalty matrix has 3 contributions:
-        
+        //constrain,Jacobian and Hessian evaluation 
+        RBE2[iRBE2]->EvalConstraintEquation( Um,  Us);
+        RBE2[iRBE2]->EvalJacobian( Um);
+        RBE2[iRBE2]->EvalHessian( Um);
         
        ///  LM_i*H_i (from the Hessian of the constraint set of equations)
        
-        RBE2[iRBE2]->EvalHessian( Um, Us);
-        Krbe1 =  MatrixXdDiff::Zero(12,12);
-
-        Krbe1 = LM(0)*RBE2[iRBE2]->H_0.transpose() + LM(1)*RBE2[iRBE2]->H_1.transpose() +
-                LM(2)*RBE2[iRBE2]->H_2.transpose() + LM(3)*RBE2[iRBE2]->H_3.transpose() + 
-                LM(4)*RBE2[iRBE2]->H_4.transpose() + LM(5)*RBE2[iRBE2]->H_5.transpose();
-       
-         //cout << "Krbe1= \n" <<Krbe1<< endl;
+       Krbe1 =  MatrixXdDiff::Zero(12,12);
+       Krbe1 = LM(0)*RBE2[iRBE2]->H_0 + LM(1)*RBE2[iRBE2]->H_1 +
+               LM(2)*RBE2[iRBE2]->H_2;
+      
          
-        
-       
-       
-      // J (the Jacobian of the constraint set of equations)
-        RBE2[iRBE2]->EvalJacobian( Um, Us);
-        Krbe3 =  MatrixXdDiff::Zero(6,12);
-        Krbe3 = RBE2[iRBE2]->J;
+         
+      // G (the Jacobian of the constraint set of equations)
+        Krbe2 =  MatrixXdDiff::Zero(6,12);
+        Krbe2 = RBE2[iRBE2]->G;
         //cout << "Krbe3= \n" <<Krbe3<< endl;
         
-        // J^T (the Transpose of the  Jacobian of the constraint set of equations)
-        Krbe2 =  MatrixXdDiff::Zero(12,6);
-        Krbe2 = RBE2[iRBE2]->J.transpose();
-        //cout << "Krbe2= \n" <<Krbe2<< endl;
-        
-         
-       
-       
-        
-        // Expansion in to the system's tangent matrix
-        /*
-        K_penal.block(RBE2[iRBE2]->MasterDOFs(1 -1) -1,RBE2[iRBE2]->MasterDOFs(1 -1) -1, 6 , 6) = Krbe1.block(1 -1, 1 -1, 6, 6) + Krbe2.block(1 -1, 1 -1, 6, 6);
-        K_penal.block(RBE2[iRBE2]->MasterDOFs(1 -1) -1,RBE2[iRBE2]->SlaveDOFs(1 -1) -1, 6 , 6) = Krbe1.block(1 -1, 7 -1, 6, 6) + Krbe2.block(1 -1, 7 -1, 6, 6);
-        K_penal.block(RBE2[iRBE2]->SlaveDOFs(1 -1) -1,RBE2[iRBE2]->MasterDOFs(1 -1) -1, 6 , 6) = Krbe1.block(7 -1, 1 -1, 6, 6) + Krbe2.block(7 -1, 1 -1, 6, 6);
-        K_penal.block(RBE2[iRBE2]->SlaveDOFs(1 -1) -1,RBE2[iRBE2]->SlaveDOFs(1 -1) -1, 6 , 6) = Krbe1.block(7 -1, 7 -1, 6, 6) + Krbe2.block(7 -1, 7 -1, 6, 6);
-        */
-        
-        
-        
-        
-        
-        
+      
+
         K_lagr.block(RBE2[iRBE2]->MasterDOFs(1 -1) -1,RBE2[iRBE2]->MasterDOFs(1 -1) -1, 6 , 6) = Krbe1.block(1 -1, 1 -1, 6, 6);
         K_lagr.block(RBE2[iRBE2]->MasterDOFs(1 -1) -1,RBE2[iRBE2]->SlaveDOFs(1 -1) -1, 6 , 6) = Krbe1.block(1 -1, 7 -1, 6, 6) ;
         K_lagr.block(RBE2[iRBE2]->SlaveDOFs(1 -1) -1,RBE2[iRBE2]->MasterDOFs(1 -1) -1, 6 , 6) = Krbe1.block(7 -1, 1 -1, 6, 6) ;
         K_lagr.block(RBE2[iRBE2]->SlaveDOFs(1 -1) -1,RBE2[iRBE2]->SlaveDOFs(1 -1) -1, 6 , 6) = Krbe1.block(7 -1, 7 -1, 6, 6) ;
         
+        //G^T allocation
+        K_lagr.block( RBE2[iRBE2]->MasterDOFs(1 -1) -1,(6*nNode-1)+(iRBE2)*6+1, 6, 6) = Krbe2.block(1 -1, 1-1, 6, 6).transpose();
+        K_lagr.block( RBE2[iRBE2]->SlaveDOFs(1 -1) -1,(6*nNode-1)+(iRBE2)*6+1, 6, 6) = Krbe2.block(1 -1, 7-1, 6, 6).transpose();
         
-        K_lagr.block( RBE2[iRBE2]->MasterDOFs(1 -1) -1,(6*nNode-1)+(iRBE2-1)*6+1, 6, 6) = Krbe2.block(7 -1, 1-1, 6, 6);
-        K_lagr.block( RBE2[iRBE2]->SlaveDOFs(1 -1) -1,(6*nNode-1)+(iRBE2-1)*6+1, 6, 6) = Krbe2.block(7-1, 1-1, 6, 6);
-        
-        K_lagr.block( (6*nNode-1)+(iRBE2-1)*6+1,RBE2[iRBE2]->MasterDOFs(1 -1) -1, 6 , 6) = Krbe3.block(1 -1, 1-1, 6, 6);
-        K_lagr.block( (6*nNode-1)+(iRBE2-1)*6+1,RBE2[iRBE2]->SlaveDOFs(1 -1) -1, 6 , 6) = Krbe3.block(1 -1, 7-1, 6, 6);
-        
-        
-        //cout << "K_lagr= \n" <<K_lagr<< endl;
-       
-        
-        
-        
-        
-        
-        //        cout << "Krbe1 = \n" <<Krbe1 << endl;
-        //        cout << "Krbe2 = \n" <<Krbe2 << endl;
-        //        cout << "g = \n" <<RBE2[iRBE2]->g << endl;
-
-        
-        
-        //// Residual has one contribution
-        // Constraint equation set
-        RBE2[iRBE2]->EvalConstraintEquation( Um, Us);
-        
-        Vrbe1 =  VectorXdDiff::Zero(12);
-       
-        Vrbe1=  LM.transpose()*Krbe3;
+        // G allocation
+        K_lagr.block( (6*nNode-1)+(iRBE2)*6+1,RBE2[iRBE2]->MasterDOFs(1 -1) -1, 6 , 6) = Krbe2.block(1 -1, 1-1, 6, 6);
+        K_lagr.block( (6*nNode-1)+(iRBE2)*6+1,RBE2[iRBE2]->SlaveDOFs(1 -1) -1, 6 , 6) = Krbe2.block(1 -1, 7-1, 6, 6);
         
       
-        Vrbe2= RBE2[iRBE2]->g;
+        ///Evaluating the rigid component of the residual 
         
-        V_lagr.segment(RBE2[iRBE2]->MasterDOFs(1 -1) -1, 6) = Vrbe1.segment(1 - 1, 6);
-        V_lagr.segment(RBE2[iRBE2]->SlaveDOFs(1 -1) -1, 6) = Vrbe1.segment(7 - 1, 6);
-        V_lagr.segment((6*nNode-1)+(iRBE2-1)*6+1,6) = Vrbe2.segment(1 - 1, 6); 
-        //cout << "V_lagr= \n" <<V_lagr<< endl;
         
-    }
-    
-    // Penalty application
-    //K_penal =     K_penal*penalty;
-    
-    // Penalty vector for residual
-
-    //V_penal = V_penal*penalty;
-    
-    //cout << "K_penal = \n" <<K_penal << endl;
-    //cout << "V_penal = \n" <<V_penal << endl;
-    
+        Vrl = RBE2[iRBE2]->G.transpose()*LM;
+        
+        //cout << "residual_rigid = \n" <<setprecision(20)<<residual_rigid << endl;
+        //cout << "Residual = \n" <<setprecision(20)<<Residual << endl;
+        
+        V_lagr.segment(RBE2[iRBE2]->MasterDOFs(1 - 1) - 1,6) =   Vrl.segment(1 -1,6);
+        V_lagr.segment(RBE2[iRBE2]->SlaveDOFs(1 - 1) - 1,6) =    Vrl.segment(7 -1,6);
+        V_lagr.segment(nNode*6 -1 + (iRBE2)*6+1 ,6) =   RBE2[iRBE2]->g;
+           
 }
-
+    
+      Ksys_lagr = Ksys + K_lagr;
+      Residual_lagr.segment(1-1,nNode*6)=Residual.segment(1-1,nNode*6);
+      Residual_lagr = Residual_lagr-V_lagr; 
+      
+}
 
 //===================================================
 //      Assembly System Tangent Matrix
@@ -446,6 +348,7 @@ void CStructure::AssemblyRigidLagrange()
 
 void CStructure::AssemblyTang(int iIter)
 {
+    //cout  << " nRBE2"  << nRBE2<<endl;
    
     MatrixXdDiff Ktang(12,12);
 
@@ -454,12 +357,12 @@ void CStructure::AssemblyTang(int iIter)
     int iii = 0; int dof = 0;   int dof_jjj = 0;   int dof_kkk = 0;
     int constr_dof_id;
     int nodeA_id = 0; int nodeB_id = 0;
-
+   
     // Intermediate rotation matrix
     MatrixXdDiff Krotated = MatrixXdDiff::Zero(6,6);
     
     // Setting to Zero the stiffness matrix
-    Ksys = MatrixXdDiff::Zero(nNode*6+nRBE2*6,nNode*6+nRBE2*6);
+    //Ksys = MatrixXdDiff::Zero(nNode*6+nRBE2*6,nNode*6+nRBE2*6);
  
    
     /*------------------------------------
@@ -512,24 +415,6 @@ void CStructure::AssemblyTang(int iIter)
         //EvalSensRotFiniteDifferences();
         EvalSensRot();
     }
-    /*------------------------------------
-     *    Imposing  B.C.
-     *------------------------------------
-  
-    // Imposing BC
-    for (iii =1; iii<= Constr_matrix.rows(); iii++) {
-          
-        constr_dof_id = round(AD::GetValue((Constr_matrix(iii-1,1-1) -1) *6 + Constr_matrix(iii-1,2-1)));
-        
-//////////////////////////// ERROR   ////////////////////////////////////////////
-        Ksys.row(constr_dof_id-1) = VectorXdDiff::Zero(nNode*6+nRBE2*6);
-      
-        Ksys.col(constr_dof_id-1) = VectorXdDiff::Zero(nNode*6+nRBE2*6);
-        Ksys(constr_dof_id-1,constr_dof_id-1) = 1.0;
-      
-///////////////////////////////////////////////////////////////////////        
-    }
-  */  
       
 }
 
@@ -735,12 +620,11 @@ void CStructure::EvalSensRot(){
  (b) applies the B.C.
  WARNING: (Fext and Fint need to be updated before)    */
 
-void CStructure::EvalResidual(unsigned short irigid) {
+void CStructure::EvalResidual() {
+    Residual =  VectorXdDiff::Zero(nNode*6);
     Residual = Fext - Fint;
-     // cout<<"Residual= \n"<<Residual<<endl;  
+      //cout<<"Forze interne= \n"<<Fint<<endl;  
 }
-
-
 
 /*===================================================
  /      Solve linear static system
@@ -751,31 +635,6 @@ void CStructure::EvalResidual(unsigned short irigid) {
 void CStructure::SolveLinearStaticSystem(int iIter) {
 
     bool TapeActive = false;
-    int iii = 0; int dof = 0;   int dof_jjj = 0;   int dof_kkk = 0;
-    int constr_dof_id;
-    int nodeA_id = 0; int nodeB_id = 0;
-    
-    // Imposing BC on Ksys
-    for (iii =1; iii<= Constr_matrix.rows(); iii++) {
-          
-        constr_dof_id = round(AD::GetValue((Constr_matrix(iii-1,1-1) -1) *6 + Constr_matrix(iii-1,2-1)));
-        
-//////////////////////////// ERROR   ////////////////////////////////////////////
-        Ksys.row(constr_dof_id-1) = VectorXdDiff::Zero(nNode*6+nRBE2*6);
-      
-        Ksys.col(constr_dof_id-1) = VectorXdDiff::Zero(nNode*6+nRBE2*6);
-        Ksys(constr_dof_id-1,constr_dof_id-1) = 1.0;
-    }
-///////////////////////////////////////////////////////////////////////    
-        
-        // BC on the residuals
-    for (iii =1; iii<= Constr_matrix.rows(); iii++) {
-        constr_dof_id = round(AD::GetValue((Constr_matrix(iii-1,1-1) -1) *6 + Constr_matrix(iii-1,2-1)));
-        Residual(constr_dof_id-1) = 0.0;
-    }
-        
-    
-       //cout << "Ktot= \n" <<Ksys<< endl;
 
 #ifdef CODI_REVERSE_TYPE
 
@@ -834,7 +693,7 @@ void CStructure::SolveLinearStaticSystem(int iIter) {
     }
 
     addouble relative_error = (Ksys*dU -Residual).norm() / Residual.norm(); // norm() is L2 norm
-
+    //std::cout << "The relative error is:\n" << relative_error << std:: endl;
     if (verbose){std::cout.width(17); std::cout << log10(relative_error);}
 
     if (relative_error > tol_LinSol)
@@ -857,18 +716,16 @@ void CStructure::SolveLinearStaticSystem(int iIter) {
 
 void CStructure::SolveLinearStaticSystem_RBE2(int iIter)
 { 
-    // Debug
-    //    cout << "Ksys = \n" <<Ksys << endl;    
-    
-    
+   
     
     //    std::cout << "-->  Reducing Linear System (RBE2...), "  << std::endl;
     Ksys_red = KRBE.transpose()*Ksys*KRBE - KRBE_ext;
-    //    cout << "Ksys_red = \n" <<Ksys_red << endl;
+        
+        
     Residual_red = KRBE.transpose()* Residual;
     if (verbose){std::cout << "-->  Solving Linear System, "  << std::endl;}
     
-    //    std::cout << "Residual red = \n" << Residual_red << endl;
+       // std::cout << "Residual red = \n" << Residual_red << endl;
     
     dU_red = Ksys_red.fullPivHouseholderQr().solve(Residual_red);
     //std::cout << "dU_red (after) = \n" << dU_red << std::endl;
@@ -887,7 +744,7 @@ void CStructure::SolveLinearStaticSystem_RBE2(int iIter)
     dU = KRBE*dU_red;
     //    std::cout << "KRBE.transpose() = \n" << KRBE.transpose() << std::endl;
     //    std::cout << "KRBE_ext = \n" << KRBE_ext << std::endl;
-    //    std::cout << "dU (after) = \n" << dU << std::endl;
+    //   std::cout << "dU (after) = \n" << dU << std::endl;
     //    std::cout << "dU_red (after) = \n" << dU_red << std::endl;
     /*
     // Debug
@@ -982,12 +839,8 @@ void CStructure::SolveLinearStaticSystem_RBE2(int iIter)
     
 }
 
-void CStructure::SolveLinearStaticSystem_RBE2_lagrange(int iIter)
+void CStructure::BoundaryConditionsLagrange()
 {
-    //std::cout << "-->  Solving Linear System with penalty method for rigid constraints, "  << std::endl;
-    //    cout << "Ksys = \n" <<Ksys << endl;   
-    //cout << "K_penal = \n" <<K_penal << endl;
-    Ksys = Ksys + K_lagr; 
     int iii = 0; int dof = 0;   int dof_jjj = 0;   int dof_kkk = 0;
     int constr_dof_id;
     int nodeA_id = 0; int nodeB_id = 0;
@@ -998,47 +851,91 @@ void CStructure::SolveLinearStaticSystem_RBE2_lagrange(int iIter)
           
         constr_dof_id = round(AD::GetValue((Constr_matrix(iii-1,1-1) -1) *6 + Constr_matrix(iii-1,2-1)));
         
-//////////////////////////// ERROR   ////////////////////////////////////////////
-        Ksys.row(constr_dof_id-1) = VectorXdDiff::Zero(nNode*6+nRBE2*6);
+
+        Ksys_lagr.row(constr_dof_id-1) = VectorXdDiff::Zero(nNode*6+nRBE2*6);
       
-        Ksys.col(constr_dof_id-1) = VectorXdDiff::Zero(nNode*6+nRBE2*6);
-        Ksys(constr_dof_id-1,constr_dof_id-1) = 1.0;
-      
-///////////////////////////////////////////////////////////////////////        
+        Ksys_lagr.col(constr_dof_id-1) = VectorXdDiff::Zero(nNode*6+nRBE2*6);
+        Ksys_lagr(constr_dof_id-1,constr_dof_id-1) = 1.0;
+        
     }   
-       //cout << "Ktot= \n" <<Ksys<< endl;
     
     
+         // BC on the residuals
+    for (iii =1; iii<= Constr_matrix.rows(); iii++) {
+        constr_dof_id = round(AD::GetValue((Constr_matrix(iii-1,1-1) -1) *6 + Constr_matrix(iii-1,2-1)));
+        Residual_lagr(constr_dof_id-1) = 0.0;
+    }
+          
+}
+
+
+void CStructure::BoundaryConditions()
+{
+    int iii = 0; int dof = 0;   int dof_jjj = 0;   int dof_kkk = 0;
+    int constr_dof_id;
+    int nodeA_id = 0; int nodeB_id = 0;
+
     
-    residual=VectorXdDiff::Zero(nNode*6+nRBE2*6); 
-    residual.segment(1-1,nNode*6)=Residual.segment(1-1,nNode*6);
-    Residual = residual+V_lagr;  
+ // Imposing BC
+    for (iii =1; iii<= Constr_matrix.rows(); iii++) {
+          
+        constr_dof_id = round(AD::GetValue((Constr_matrix(iii-1,1-1) -1) *6 + Constr_matrix(iii-1,2-1)));
+        
+
+        Ksys.row(constr_dof_id-1) = VectorXdDiff::Zero(nNode*6);
       
-  
+        Ksys.col(constr_dof_id-1) = VectorXdDiff::Zero(nNode*6);
+        Ksys(constr_dof_id-1,constr_dof_id-1) = 1.0;
+        
+    }   
     
-    // BC on the residuals
+    
+         // BC on the residuals
     for (iii =1; iii<= Constr_matrix.rows(); iii++) {
         constr_dof_id = round(AD::GetValue((Constr_matrix(iii-1,1-1) -1) *6 + Constr_matrix(iii-1,2-1)));
         Residual(constr_dof_id-1) = 0.0;
-    }
-       cout << "Residualtot= \n" <<Residual<< endl;
+    }  
     
-    //    cout << "Ktot = \n" <<Ksys << endl;
-    dU = Ksys.fullPivHouseholderQr().solve(Residual);
-           //cout << "dU= \n" <<dU<< endl;
+}
 
-    //    std::cout << "dU (after) = \n" << dU << std::endl;
-    addouble relative_error = (Ksys*dU -Residual).norm() / Residual.norm(); // norm() is L2 norm
-    //std::cout<< "Ksys = \n" << Ksys << std::endl;
-    //    std::cout<< "Residual = \n" << Residual << std::endl;
-    //    std::cout << "The relative error is:\n" << relative_error << std:: endl;
-           //cout << "Relative error= \n" <<Residual<< endl;
+
+
+
+
+
+
+void CStructure::SolveLinearStaticSystem_RBE2_lagrange(int iIter)
+{
+    //std::cout << "-->  Solving Linear System with penalty method for rigid constraints, "  << std::endl;
+    //cout << "Ksys = \n" <<Ksys << endl;   
+    //cout << "K_penal = \n" <<K_penal << endl;
+    dU = Ksys_lagr.fullPivHouseholderQr().solve(Residual_lagr);
+    dLM =dU.segment(nNode*6,nRBE2*6);
+    //std::cout<< "Residual = \n" << Residual_lagr << std::endl;
+    //std::cout << "dU= \n" << dU << std::endl;
+    addouble relative_error = (Ksys_lagr*dU -Residual_lagr).norm() / Residual_lagr.norm(); // norm() is L2 norm
 
     if (relative_error > 1.0e-7)
     {
         std::cout << "Solution of Linear System not precise enough!" << std:: endl;
         throw std::exception();
     }
+    
+    
+    
+    if (iIter ==1)
+    {
+    std::ofstream file5("./Residual_lagr.dat");
+    if (file5.is_open())
+    {
+
+        file5  <<  Residual_lagr << endl;
+    }
+    
+    }
+    
+    
+    
 
 }
 
@@ -1050,7 +947,7 @@ void CStructure::SolveLinearStaticSystem_RBE2_lagrange(int iIter)
  
  */
 
-void CStructure::UpdateCoord() {
+void CStructure::UpdateCoord(int nRBE2, unsigned short rigid) {
 
     //std::cout << "-->  Update Global Coordinates "  << std::endl;
     
@@ -1113,17 +1010,30 @@ void CStructure::UpdateCoord() {
 
         posX += 3;
         posU += 6;
+        //uptading lagrange multiplier
+      
     }
-  
-       U.segment(nNode*6,nRBE2*6) += dU.segment(nNode*6 ,nRBE2*6); 
-       LM=U.segment(nNode*6,nRBE2*6);
+    
+    if (nRBE2 != 0 and  rigid == 1){
+        for (int iRBE2 = 0; iRBE2 < nRBE2; iRBE2++) {  
+            U.segment(nNode*6 -1 + (iRBE2)*6+1 ,6) +=  dU.segment(nNode*6 -1 + (iRBE2)*6+1 ,6) ;    
+        }
+     
+        LM=U.segment(nNode*6,nRBE2*6);
+         
+    }
+   
+    //cout<<"LM=\n"<<LM<<endl; 
+    //cout<<"U=\n"<<U<<endl; 
+}
+      
        
- //cout << "U= \n" <<U<< endl;
- //cout << "LM= \n" <<LM<< endl;
+   
+ 
 
 
       
-}
+
 
 /*===================================================
  *            Restart Coordinates
@@ -1591,7 +1501,7 @@ void CStructure::UpdateInternalForces()
         Fint.segment((nodeB_id-1)*6+1 -1,6) +=  element[id_fe-1]->R * element[id_fe-1]->fint.segment(7-1,6);
 
     }
-
+    cout<<"internal forces=\n"<<Fint<<endl;
 }
 
 void CStructure::InitializeInternalForces()
@@ -1796,6 +1706,7 @@ void CStructure::UpdateInternalForces_FP()
 
 }
 
+
 /*
 /*===================================================
  *        Evaluate the Sensitivty of Rotation Matrix with finite differences
@@ -1912,5 +1823,10 @@ void CStructure::EvalSensRotFiniteDifferences(){
     file.close();
 }
 */
+
+
+
+
+
 
 

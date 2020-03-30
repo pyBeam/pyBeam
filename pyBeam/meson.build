@@ -29,7 +29,8 @@ beam_src =files(['./src/ad.cpp',
                 './src/rigid_element.cpp',
                 './src/structure.cpp',
                 './src/rotations.cpp',
-                './src/beam.cpp'])
+                './src/beam.cpp',
+                './src/property.cpp'])
                 
 codi_dep = [declare_dependency(include_directories: 'externals/CoDiPack/include')]
 codi_rev_args = '-DCODI_REVERSE_TYPE'
