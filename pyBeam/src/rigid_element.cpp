@@ -39,15 +39,28 @@ void CRBE2::Initializer(CNode* Node_mast, CNode* Node_slv) {
     SetNodeSlave(Node_slv);
     // Calculate element DOFs
     setGlobalDOFs();
-    // set rigid element length
-    setLength();
     // Initialize dimensional axis vector
     InitializeAxisVector();
 
 
 }
 
+void CRBE2::SetDependencies(void) {
 
+    g = VectorXdDiff::Zero(6); // constraint equations on LHS
+    G = MatrixXdDiff::Zero(6, 12); // Jacobian of the constraint equations on LHS
+    H_0 = MatrixXdDiff::Zero(12, 12); // Jacobian of the constraint equations on LHS
+    H_1 = MatrixXdDiff::Zero(12, 12); // Jacobian of the constraint equations on LHS
+    H_2 = MatrixXdDiff::Zero(12, 12); // Jacobian of the constraint equations on LHS
+    H_3 = MatrixXdDiff::Zero(12, 12); // Jacobian of the constraint equations on LHS
+    H_4 = MatrixXdDiff::Zero(12, 12); // Jacobian of the constraint equations on LHS
+    H_5 = MatrixXdDiff::Zero(12, 12); // Jacobian of the constraint equations on LHS    
+
+    // Calculate element DOFs
+    setGlobalDOFs();
+    // Initialize dimensional axis vector
+    InitializeAxisVector();
+}
 
 void CRBE2::setGlobalDOFs() {
     
@@ -61,7 +74,7 @@ void CRBE2::setGlobalDOFs() {
     };
     
 };
-
+/*
 void CRBE2::setLength() {
     addouble a = node_slave->GetCoordinate0(0) - node_master->GetCoordinate0(0);
     addouble b = node_slave->GetCoordinate0(1) - node_master->GetCoordinate0(1);
@@ -70,7 +83,7 @@ void CRBE2::setLength() {
     l_rigid = sqrt(intermediate);
     
 };
-
+*/
 void CRBE2::InitializeAxisVector() {
     
     addouble a = node_slave->GetCoordinate0(0) - node_master->GetCoordinate0(0);

@@ -41,13 +41,11 @@ public:
     
     int RBE2dofs = 12;   // RBE2 DOFs
 
-    addouble l_rigid;                    // Rigid Length  
+ 
     VectorXdDiff ax;           // axis vector master --> slave (non unitary)
 
     VectorXi MasterDOFs  =  VectorXi::Zero(6); // Master DOFs
     VectorXi SlaveDOFs  =  VectorXi::Zero(6); // Slave DOFs  
-
-    MatrixXdDiff MStrans;
 
     VectorXdDiff g = VectorXdDiff::Zero(6);       // constraint equations on LHS
     MatrixXdDiff G = MatrixXdDiff::Zero(6,12);       // Jacobian of the constraint equations on LHS
@@ -75,8 +73,6 @@ public:
 
     void setGlobalDOFs();
 
-    void setLength();
-
     void InitializeAxisVector();
     
     void EvalConstraintEquation( VectorXdDiff Um,VectorXdDiff Us);
@@ -84,6 +80,9 @@ public:
     void EvalJacobian(VectorXdDiff Um );
           
     void EvalHessian(VectorXdDiff Um);
+    
+    // Set the element dependencies (AD )
+    void SetDependencies(void);    
     
     };
     

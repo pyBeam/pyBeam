@@ -76,7 +76,6 @@ class pyBeamSolver:
     print("|                                                                         |")
     print("---------------------------------------------------------------------------\n")
 
-
     # Parsing config file
     self.Config = pyConfig.pyBeamConfig(self.Config_file)  # Beam configuration file
 
@@ -95,6 +94,8 @@ class pyBeamSolver:
     self.beam = pyBeam.CBeamSolver()
     self.inputs = pyBeam.CInput(self.nPoint, self.nElem, self.nRBE2)
 
+
+    print("--> Initialization successful")
     # Sending to CInput object
     pyConfig.parseInput(self.Config, self.inputs, self.Constr, self.nConstr)
     # Assigning input values to the input object in C++

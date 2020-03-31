@@ -135,6 +135,7 @@ void CBeamSolver::Solve(int FSIIter = 0){
     structure->ReadForces(nTotalDOF, loadVector);
     
     if (nRBE2 != 0){
+        if (verbose){std::cout << "--> Setting RBE2 Matrix for Rigid Constraints" << std::endl;}        
         structure->AddRBE2(input, RBE2);
     }
 
@@ -154,10 +155,10 @@ void CBeamSolver::Solve(int FSIIter = 0){
     
     // This function set the current initial coordinates and memorizes them as the old one 
     // before the converging procedure starts (necessary in case of FSI)
-    structure->InitialCoord();
-    structure->RestartCoord();
-    structure->UpdateRotationMatrix_FP();  // based on the rotational displacements
+    structure->InitialCoord(); //sets the Coordinates 0 of the configuration (as given in the mesh)
+    structure->RestartCoord(); //sets the current Coordinates of the configuration (as given in restart or from the previous iter of FSI)
     structure->UpdateLength();
+    structure->UpdateRotationMatrix_FP();  // based on the rotational displacements
     structure->UpdateInternalForces_FP();
     
     if (nRBE2 != 0 and iRigid == 1){ structure->SetRigidLagrangeDimensions();}
@@ -239,9 +240,7 @@ void CBeamSolver::Solve(int FSIIter = 0){
                 if (iRigid == 0 ) {
                  if (iIter == 0 ) {structure->SetPenalty();}
                 structure->RigidResidual();
-                //structure->RigidResidual_FD();
                 structure->AssemblyRigidPenalty();
-                //structure->AssemblyRigidPenalty_FD();
                 }
                 else{
                 
@@ -326,7 +325,6 @@ void CBeamSolver::RunRestart(int FSIIter = 0){
     std::ofstream history;
     history.open ("History_restart.pyBeam");    
     
-     std::cout << "==============WARNING: THIS FUNCTION  NEEDS TO BE UPDATED FOR THE RIGID LAGRANGIAN==================" << std::endl;
     // This function set the current initial coordinates and memorizes them as the old one before the converging procedure starts
     
     // Beam total length
@@ -345,8 +343,8 @@ void CBeamSolver::RunRestart(int FSIIter = 0){
     
     /*--- Restart the internal forces ---*/
     if (verbose){std::cout << "--> Initializing from restart file" << std::endl;}
-    structure->InitialCoord();
-    structure->RestartCoord();
+    structure->InitialCoord(); //sets the Coordinates 0 of the configuration (as given in the mesh)
+    structure->RestartCoord(); //sets the current Coordinates of the configuration (as given in restart or from the previous iter of FSI)
     structure->UpdateLength();
     structure->UpdateRotationMatrix_FP();  // based on the rotational displacements
     structure->UpdateInternalForces_FP();
@@ -414,9 +412,7 @@ void CBeamSolver::RunRestart(int FSIIter = 0){
         if (iRigid == 0 ) {
             structure->SetPenalty();
             structure->RigidResidual();
-            //structure->RigidResidual_FD();
             structure->AssemblyRigidPenalty();
-            //structure->AssemblyRigidPenalty_FD();
         }
         else{
             
@@ -494,7 +490,7 @@ void CBeamSolver::SetDependencies(void){
     structure->RegisterSolutionInput();
 
     addouble E, E_dim, Nu, G;
-    unsigned long iFEM, iLoad;
+    unsigned long iFEM,iRBE2, iLoad;
 
     input->RegisterInput_E();
     input->RegisterInput_Nu();
@@ -512,6 +508,11 @@ void CBeamSolver::SetDependencies(void){
         element[iFEM]->SetDependencies();
     }
 
+    if (nRBE2 != 0){
+    for (iRBE2 = 0; iRBE2 < nRBE2; iRBE2++) {    
+        RBE2[iRBE2]->SetDependencies();    
+    }
+    }
     /*--- Initialize vector to store the gradient ---*/
     loadGradient = new passivedouble[nTotalDOF];
 
@@ -531,20 +532,21 @@ void CBeamSolver::ComputeAdjoint(void){
     unsigned long iLoad;
 
     for (unsigned short iTer = 0; iTer < input->Get_nIter(); iTer++){
-
+        std::cout << " Check 1" << std::endl;
         AD::SetDerivative(objective_function, 1.0);
-
+        std::cout << " Check 2" << std::endl;
         structure->SetSolutionAdjoint();
-
+        std::cout << " Check 3" << std::endl;
         AD::ComputeAdjoint();
-
+        std::cout << " Check 4" << std::endl;
         structure->ExtractSolutionAdjoint();
-
+        std::cout << " Check 5" << std::endl;
         E_grad = input->GetGradient_E();
         Nu_grad = input->GetGradient_Nu();
-
+        std::cout << " Check 6" << std::endl;
         for (iLoad = 0; iLoad < nTotalDOF; iLoad++){
             loadGradient[iLoad] = AD::GetValue(AD::GetDerivative(loadVector[iLoad]));
+            std::cout << " Check 7" << std::endl;
         }
 
         AD::ClearAdjoints();

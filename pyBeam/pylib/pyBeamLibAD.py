@@ -90,7 +90,6 @@ class pyBeamSolverAD:
     self.RBE2_py, self.nRBE2 = pyInput.readRBE2(self.Mesh_file)
     # Parsing Property file
     self.Prop, self.nProp = pyInput.readProp(self.Property)
-
     # Initializing objects
     self.beam = pyBeamAD.CBeamSolver()
     self.inputs = pyBeamAD.CInput(self.nPoint, self.nElem, self.nRBE2)
