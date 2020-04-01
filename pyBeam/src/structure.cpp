@@ -620,7 +620,7 @@ void CStructure::EvalSensRot(){
  (b) applies the B.C.
  WARNING: (Fext and Fint need to be updated before)    */
 
-void CStructure::EvalResidual() {
+void CStructure::EvalResidual(unsigned long irigid) {
     Residual =  VectorXdDiff::Zero(nNode*6);
     Residual = Fext - Fint;
       //cout<<"Forze interne= \n"<<Fint<<endl;  

@@ -131,7 +131,7 @@ public:
     // External forces are normalized by the Young Modulus
     inline void UpdateExtForces(addouble lambda){ Fext = lambda* Fnom / YoungModulus; }
 
-    void EvalResidual();
+    void EvalResidual(unsigned long rigid);
 
     void EvalPenaltyForces(addouble penalty);
 
