@@ -213,7 +213,7 @@ void CBeamSolver::Solve(int FSIIter = 0){
             structure->UpdateExtForces(lambda);
 
             // Evaluate the Residual
-            structure->EvalResidual(input->Get_RigidCriteria());
+            structure->EvalResidual();
 
             if (verbose){std::cout.width(17); std::cout << log10(structure->Residual.norm());}
             
@@ -372,7 +372,7 @@ void CBeamSolver::RunRestart(int FSIIter = 0){
     structure->UpdateExtForces(1);
 
     // Evaluate the Residual
-    structure->EvalResidual(input->Get_RigidCriteria());
+    structure->EvalResidual();
 
     if (verbose){std::cout.width(16); std::cout << log10(structure->Residual.norm());}
 

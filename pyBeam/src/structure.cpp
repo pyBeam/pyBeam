@@ -350,7 +350,7 @@ void CStructure::AssemblyTang(int iIter)
 {
     //cout  << " nRBE2"  << nRBE2<<endl;
    
-    MatrixXdDiff Ktang(12,12);
+    
 
     //std::cout  << " Assembly Tangent Matrix"  << std::endl;
     
@@ -360,6 +360,7 @@ void CStructure::AssemblyTang(int iIter)
    
     // Intermediate rotation matrix
     MatrixXdDiff Krotated = MatrixXdDiff::Zero(6,6);
+    MatrixXdDiff Ktang(12,12);
     
     // Setting to Zero the stiffness matrix
     //Ksys = MatrixXdDiff::Zero(nNode*6+nRBE2*6,nNode*6+nRBE2*6);
@@ -620,7 +621,7 @@ void CStructure::EvalSensRot(){
  (b) applies the B.C.
  WARNING: (Fext and Fint need to be updated before)    */
 
-void CStructure::EvalResidual(unsigned long irigid) {
+void CStructure::EvalResidual() {
     Residual =  VectorXdDiff::Zero(nNode*6);
     Residual = Fext - Fint;
       //cout<<"Forze interne= \n"<<Fint<<endl;  
@@ -868,24 +869,32 @@ void CStructure::BoundaryConditionsLagrange()
 
 void CStructure::BoundaryConditions()
 {
-   int iii = 0; int constr_dof_id = 0;
-        
-    // Imposing BC
+    int iii = 0; int dof = 0;   int dof_jjj = 0;   int dof_kkk = 0;
+    int constr_dof_id;
+    int nodeA_id = 0; int nodeB_id = 0;
+    
+     // Imposing BC
     for (iii =1; iii<= Constr_matrix.rows(); iii++) {
         constr_dof_id = round(AD::GetValue((Constr_matrix(iii-1,1-1) -1) *6 + Constr_matrix(iii-1,2-1)));
         Ksys.row(constr_dof_id-1) = VectorXdDiff::Zero(nNode*6);
         Ksys.col(constr_dof_id-1) = VectorXdDiff::Zero(nNode*6);
         Ksys(constr_dof_id-1,constr_dof_id-1) = 1.0;
-    }    
+        
+        
+    }
+    
+    
     
     
     // BC on the residuals
     for (iii =1; iii<= Constr_matrix.rows(); iii++) {
         constr_dof_id = round(AD::GetValue((Constr_matrix(iii-1,1-1) -1) *6 + Constr_matrix(iii-1,2-1)));
         Residual(constr_dof_id-1) = 0.0;
-    }    
+    }
+    
     
 }
+
 
 
 
