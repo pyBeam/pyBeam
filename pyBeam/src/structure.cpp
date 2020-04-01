@@ -841,11 +841,8 @@ void CStructure::SolveLinearStaticSystem_RBE2(int iIter)
 
 void CStructure::BoundaryConditionsLagrange()
 {
-    int iii = 0; int dof = 0;   int dof_jjj = 0;   int dof_kkk = 0;
-    int constr_dof_id;
-    int nodeA_id = 0; int nodeB_id = 0;
-
-    
+    int iii = 0; int dof = 0;   int constr_dof_id=0;
+   
  // Imposing BC
     for (iii =1; iii<= Constr_matrix.rows(); iii++) {
           
@@ -871,30 +868,22 @@ void CStructure::BoundaryConditionsLagrange()
 
 void CStructure::BoundaryConditions()
 {
-    int iii = 0; int dof = 0;   int dof_jjj = 0;   int dof_kkk = 0;
-    int constr_dof_id;
-    int nodeA_id = 0; int nodeB_id = 0;
-
-    
- // Imposing BC
-    for (iii =1; iii<= Constr_matrix.rows(); iii++) {
-          
-        constr_dof_id = round(AD::GetValue((Constr_matrix(iii-1,1-1) -1) *6 + Constr_matrix(iii-1,2-1)));
+   int iii = 0; int constr_dof_id = 0;
         
-
+    // Imposing BC
+    for (iii =1; iii<= Constr_matrix.rows(); iii++) {
+        constr_dof_id = round(AD::GetValue((Constr_matrix(iii-1,1-1) -1) *6 + Constr_matrix(iii-1,2-1)));
         Ksys.row(constr_dof_id-1) = VectorXdDiff::Zero(nNode*6);
-      
         Ksys.col(constr_dof_id-1) = VectorXdDiff::Zero(nNode*6);
         Ksys(constr_dof_id-1,constr_dof_id-1) = 1.0;
-        
-    }   
+    }    
     
     
-         // BC on the residuals
+    // BC on the residuals
     for (iii =1; iii<= Constr_matrix.rows(); iii++) {
         constr_dof_id = round(AD::GetValue((Constr_matrix(iii-1,1-1) -1) *6 + Constr_matrix(iii-1,2-1)));
         Residual(constr_dof_id-1) = 0.0;
-    }  
+    }    
     
 }
 
@@ -930,6 +919,16 @@ void CStructure::SolveLinearStaticSystem_RBE2_lagrange(int iIter)
     {
 
         file5  <<  Residual_lagr << endl;
+    }
+    
+    }
+    if (iIter ==1)
+    {
+    std::ofstream file4("./Residual_lagr_norm.dat");
+    if (file4.is_open())
+    {
+
+        file4  <<  Residual_lagr.norm()  << endl;
     }
     
     }
@@ -1013,7 +1012,7 @@ void CStructure::UpdateCoord(int nRBE2, unsigned short rigid) {
         //uptading lagrange multiplier
       
     }
-    
+    /*
     if (nRBE2 != 0 and  rigid == 1){
         for (int iRBE2 = 0; iRBE2 < nRBE2; iRBE2++) {  
             U.segment(nNode*6 -1 + (iRBE2)*6+1 ,6) +=  dU.segment(nNode*6 -1 + (iRBE2)*6+1 ,6) ;    
@@ -1022,7 +1021,7 @@ void CStructure::UpdateCoord(int nRBE2, unsigned short rigid) {
         LM=U.segment(nNode*6,nRBE2*6);
          
     }
-   
+   */
     //cout<<"LM=\n"<<LM<<endl; 
     //cout<<"U=\n"<<U<<endl; 
 }

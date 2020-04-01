@@ -110,7 +110,7 @@ void CBeamSolver::InitializeInput(CInput* py_input){   // insert node class and 
                                << std::endl;}
     }
     else {RBE2 = NULL; }
-    Prop->SetSectionProperties2();
+    //Prop->SetSectionProperties2();
    
     
     //===============================================
@@ -229,7 +229,7 @@ void CBeamSolver::Solve(int FSIIter = 0){
        
             
             structure->AssemblyTang(1);
-            
+                            
             
                      
            
@@ -239,14 +239,14 @@ void CBeamSolver::Solve(int FSIIter = 0){
           
             if (nRBE2 != 0 and input->Get_RigidCriteria() == 0) {
                 if (verbose){std::cout << "-->  Update KRBE matrix "  << std::endl;}
-           
+                  
                 structure->AssemblyRigidConstr();
                 structure->BoundaryConditions();
                 structure->SolveLinearStaticSystem_RBE2(iIter);
             }
             else if (nRBE2 != 0 and input->Get_RigidCriteria() == 1) {
                 //if (verbose){std::cout << "-->  Update Lagrangian matrix for RBEs "  << std::endl;}
-                
+             
                 structure->AssemblyRigidLagrange();
                 structure->BoundaryConditionsLagrange();
                  // Boundary conditions+resolution 
@@ -255,7 +255,7 @@ void CBeamSolver::Solve(int FSIIter = 0){
                 
             }
             else {
-                
+       
                // Boundary conditions+resolution (no RBE2)
                 structure->BoundaryConditions();
                 structure->SolveLinearStaticSystem(iIter);
