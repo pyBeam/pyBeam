@@ -200,6 +200,7 @@ void CStructure::AssemblyRigidPenalty()
         // G^T*G (the Jacobian of the constraint set of equations)
         Krbe1 = RBE2[iRBE2]->G.transpose()*RBE2[iRBE2]->G;
         // sum_i g_i*H_i (from the Hessian of the constraint set of equations)
+        // this coefficient proves to increase chances of divergence or, at least, weaken the convergence 
         //Krbe2 =  RBE2[iRBE2]->g(0)*RBE2[iRBE2]->H_0 + RBE2[iRBE2]->g(1)*RBE2[iRBE2]->H_1 + RBE2[iRBE2]->g(2)*RBE2[iRBE2]->H_2;// + RBE2[iRBE2]->g(3)*RBE2[iRBE2]->H_3 + RBE2[iRBE2]->g(4)*RBE2[iRBE2]->H_4 + RBE2[iRBE2]->g(5)*RBE2[iRBE2]->H_5;
         
         // Expansion in to the system's tangent matrix
@@ -680,7 +681,7 @@ void CStructure::SolveLinearStaticSystem(int iIter, std::ofstream &history, int 
 
     if (verbose){
         std::cout.width(17); std::cout << log10(relative_error);
-        if (print=1) {history.width(17); history << log10(relative_error); };
+        if (print==1) {history.width(17); history << log10(relative_error); };
     }
 
     if (relative_error > tol_LinSol)
@@ -720,8 +721,8 @@ void CStructure::SolveLinearStaticSystem_RigidLagrangian(int iIter, std::ofstrea
     AD::StartExtFunc(false, false);
     unsigned long index = 0;
 
-    for (unsigned long iRes = 0; iRes < Residual.size(); iRes++){
-        AD::SetExtFuncIn(Residual(iRes));
+    for (unsigned long iRes = 0; iRes < Residual_lam.size(); iRes++){
+        AD::SetExtFuncIn(Residual_lam(iRes));
     }
 
     /*--- Stop the recording for the linear solver ---*/
@@ -758,10 +759,10 @@ void CStructure::SolveLinearStaticSystem_RigidLagrangian(int iIter, std::ofstrea
             AD::SetExtFuncOut(dU_lam(iRes));
 
 #ifdef CODI_REVERSE_TYPE
-        AD::FuncHelper->addUserData(nNode);
+        AD::FuncHelper->addUserData(nNode +nRBE2);
         AD::FuncHelper->addUserData(kind_linSol);
-        //     AD::FuncHelper->addUserData(Residual);
-        AD::FuncHelper->addUserData(Ksys);
+        //     AD::FuncHelper->addUserData(Residual_lam);
+        AD::FuncHelper->addUserData(Ksys_lam);
 
         AD::FuncHelper->addToTape(SolveAdjSys::SolveSys);
 #endif
@@ -773,7 +774,7 @@ void CStructure::SolveLinearStaticSystem_RigidLagrangian(int iIter, std::ofstrea
 
     if (verbose){
         std::cout.width(17); std::cout << log10(relative_error);
-        if (print=1) {history.width(17); history << log10(relative_error); };
+        if (print==1) {history.width(17); history << log10(relative_error); };
     }
 
     if (relative_error > tol_LinSol)

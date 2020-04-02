@@ -84,6 +84,7 @@ public:
     VectorXdDiff U_lam;     // Aumented Displacement array [6*(nNode+nRBE)]
     VectorXdDiff Residual_lam; //  // Aumented Residual array [6*(nNode+nRBE)]
     VectorXdDiff dU_lam;           // Aumented Displacement array (increment)[6*(nNode+nRBE)]  
+    VectorXdDiff U_lam_adj;     // Aumented Displacement array [6*(nNode+nRBE)]
     
     MatrixXdDiff  Constr_matrix;// COnstraint matrix [ NODE_ID DOF_ID ]
     
@@ -139,7 +140,7 @@ public:
     void AssemblyRigidPenalty();
     
     // Lagrange Multiplier strategy
-    inline void SetRigidLagrangeDimensions() {U_lam = VectorXdDiff::Zero((nNode+nRBE2)*6); dU_lam = VectorXdDiff::Zero((nNode+nRBE2)*6); Residual_lam = VectorXdDiff::Zero((nNode+nRBE2)*6); Ksys_lam =MatrixXdDiff::Zero((nNode+nRBE2)*6,(nNode+nRBE2)*6);  };
+    inline void SetRigidLagrangeDimensions() {U_lam = VectorXdDiff::Zero((nNode+nRBE2)*6); dU_lam = VectorXdDiff::Zero((nNode+nRBE2)*6); Residual_lam = VectorXdDiff::Zero((nNode+nRBE2)*6); Ksys_lam =MatrixXdDiff::Zero((nNode+nRBE2)*6,(nNode+nRBE2)*6); U_lam_adj = VectorXdDiff::Zero((nNode+nRBE2)*6); };
     
     void RigidResidualLagrange();
     
@@ -199,28 +200,55 @@ public:
     void InitializeInternalForces();
 
     addouble GetDisplacement(int iNode, int iDim) {
-        return U(6*iNode+iDim);
+        return U(6 * iNode + iDim);
     }
 
-    inline void RegisterSolutionInput(void) {
-        for (unsigned long i = 0; i < nNode * 6; i++)
-            AD::RegisterInput(U(i));
-    }
-
-    inline void RegisterSolutionOutput(void) {
-        for (unsigned long i = 0; i < nNode * 6; i++)
-            AD::RegisterOutput(U(i));
-    }
-
-    inline void ExtractSolutionAdjoint(void) {
-        for (unsigned long i = 0; i < nNode * 6; i++){
-            U_adj(i) = AD::GetDerivative(U(i));
+    inline void RegisterSolutionInput(int iRigid) {
+        if (nRBE2 != 0 and iRigid == 1) {
+            for (unsigned long i = 0; i < (nNode + nRBE2)*6; i++){
+                AD::RegisterInput(U_lam(i)); }
+        } 
+        else {
+            for (unsigned long i = 0; i < nNode * 6; i++){
+                AD::RegisterInput(U(i));}
         }
     }
 
-    inline void SetSolutionAdjoint(void) {
-        for (unsigned long i = 0; i < nNode * 6; i++)
-            AD::SetDerivative(U(i), AD::GetValue(U_adj(i) + cross_term(i)));
+    inline void RegisterSolutionOutput(int iRigid) {
+        if (nRBE2 != 0 and iRigid == 1) {
+            for (unsigned long i = 0; i < (nNode + nRBE2)*6; i++){
+                AD::RegisterOutput(U_lam(i)); }
+        } 
+        else {
+            for (unsigned long i = 0; i < nNode * 6; i++){
+                AD::RegisterOutput(U(i));}
+        }
+    }
+
+    inline void ExtractSolutionAdjoint(int iRigid) {
+        if (nRBE2 != 0 and iRigid == 1) {
+           for (unsigned long i = 0; i < (nNode + nRBE2)*6; i++){
+               U_lam_adj(i) = AD::GetDerivative(U_lam(i));}
+        }
+        else{
+        for (unsigned long i = 0; i < nNode * 6; i++){
+            U_adj(i) = AD::GetDerivative(U(i));}
+        }
+    }
+
+    inline void SetSolutionAdjoint(int iRigid) {
+        if (nRBE2 != 0 and iRigid == 1) {
+        for (unsigned long i = 0; i < nNode * 6; i++){
+            AD::SetDerivative(U_lam(i), AD::GetValue(U_lam_adj(i) + cross_term(i))); 
+        }    
+        for (unsigned long i = nNode * 6; i < (nNode + nRBE2)*6; i++){
+            AD::SetDerivative(U_lam(i), AD::GetValue( U_lam_adj(i) ));
+        }
+        }
+        else{
+        for (unsigned long i = 0; i < nNode * 6; i++){
+            AD::SetDerivative(U(i), AD::GetValue(U_adj(i) + cross_term(i)));}
+        }
     }
 
     inline void StoreDisplacementAdjoint(int iNode, int iDim, passivedouble val_adj) {

@@ -134,11 +134,6 @@ void CBeamSolver::Solve(int FSIIter = 0){
     if (verbose){std::cout << "--> Setting External Forces" << std::endl;}
     structure->ReadForces(nTotalDOF, loadVector);
     
-    if (nRBE2 != 0){
-        if (verbose){std::cout << "--> Setting RBE2 Matrix for Rigid Constraints" << std::endl;}        
-        structure->AddRBE2(input, RBE2);
-    }
-
     //===============================================
     // LOAD STEPPING
     //===============================================
@@ -161,8 +156,6 @@ void CBeamSolver::Solve(int FSIIter = 0){
     structure->UpdateRotationMatrix_FP();  // based on the rotational displacements
     structure->UpdateInternalForces_FP();
     
-    if (nRBE2 != 0 and iRigid == 1){ structure->SetRigidLagrangeDimensions();}
-
     totalIter = 0;
     for  ( loadStep = 0; loadStep < input->Get_LoadSteps(); loadStep++) {
         
@@ -336,10 +329,6 @@ void CBeamSolver::RunRestart(int FSIIter = 0){
     if (verbose){std::cout << "--> Setting External Forces" << std::endl;}
     structure->ReadForces(nTotalDOF, loadVector);
     
-    if (nRBE2 != 0){
-        if (verbose){std::cout << "--> Setting RBE2 Matrix for Rigid Constraints" << std::endl;}
-        structure->AddRBE2(input, RBE2);
-    }
     
     /*--- Restart the internal forces ---*/
     if (verbose){std::cout << "--> Initializing from restart file" << std::endl;}
@@ -348,8 +337,6 @@ void CBeamSolver::RunRestart(int FSIIter = 0){
     structure->UpdateLength();
     structure->UpdateRotationMatrix_FP();  // based on the rotational displacements
     structure->UpdateInternalForces_FP();
-
-    if (nRBE2 != 0 and iRigid == 1){ structure->SetRigidLagrangeDimensions();}    
     
     if (verbose){
         std::cout << "--> Starting Restart Sequence" << std::endl;
@@ -487,7 +474,7 @@ passivedouble CBeamSolver::OF_NodeDisplacement(int iNode){
 void CBeamSolver::SetDependencies(void){
 
     /** Register the solution as input **/
-    structure->RegisterSolutionInput();
+    structure->RegisterSolutionInput(iRigid);
 
     addouble E, E_dim, Nu, G;
     unsigned long iFEM,iRBE2, iLoad;
@@ -532,21 +519,19 @@ void CBeamSolver::ComputeAdjoint(void){
     unsigned long iLoad;
 
     for (unsigned short iTer = 0; iTer < input->Get_nIter(); iTer++){
-        std::cout << " Check 1" << std::endl;
+
         AD::SetDerivative(objective_function, 1.0);
-        std::cout << " Check 2" << std::endl;
-        structure->SetSolutionAdjoint();
-        std::cout << " Check 3" << std::endl;
+
+        structure->SetSolutionAdjoint(iRigid);
+
         AD::ComputeAdjoint();
-        std::cout << " Check 4" << std::endl;
-        structure->ExtractSolutionAdjoint();
-        std::cout << " Check 5" << std::endl;
+        structure->ExtractSolutionAdjoint(iRigid);
+
         E_grad = input->GetGradient_E();
         Nu_grad = input->GetGradient_Nu();
-        std::cout << " Check 6" << std::endl;
         for (iLoad = 0; iLoad < nTotalDOF; iLoad++){
             loadGradient[iLoad] = AD::GetValue(AD::GetDerivative(loadVector[iLoad]));
-            std::cout << " Check 7" << std::endl;
+
         }
 
         AD::ClearAdjoints();
@@ -560,7 +545,7 @@ void CBeamSolver::StopRecording(void) {
     AD::RegisterOutput(objective_function);
 
     /** Register the solution as output **/
-    structure->RegisterSolutionOutput();
+    structure->RegisterSolutionOutput(iRigid);
 
     AD::StopRecording();
 
