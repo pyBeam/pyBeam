@@ -54,9 +54,9 @@ protected:
     addouble t_sp;            // spar thickness
     addouble A_stiff;        // stiffener Area
     addouble A_fl;           // flanges Area 
-    addouble h;              //  box height 
-    addouble C_wb;          //  box length 
-    int n_stiff;            // number of stiffener (not taking into account the Spar flanges)
+    addouble h;              //  box tot height 
+    addouble C_wb;          //  box tot length 
+    int n_stiff;            // number of stiffener (not taking into account the Spar's flanges)
  
         unsigned long PropertyID;   // ID of the property
 

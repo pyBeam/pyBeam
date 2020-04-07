@@ -110,7 +110,7 @@ void CBeamSolver::InitializeInput(CInput* py_input){   // insert node class and 
                                << std::endl;}
     }
     else {RBE2 = NULL; }
-    //Prop->SetSectionProperties2();
+    Prop->SetSectionProperties2();
    
     
     //===============================================
@@ -224,9 +224,7 @@ void CBeamSolver::Solve(int FSIIter = 0){
              *----------------------------------------------------*/
             
             // Reassembling Stiffness Matrix + Applying Boundary Conditions
-           // Ksys.resize(nNode*6+nRBE2*6,nNode*6+nRBE2*6);
-            //Ksys = MatrixXdDiff::Zero(nNode*6+nRBE2*6,nNode*6+nRBE2*6);
-       
+           
             
             structure->AssemblyTang(1);
                             

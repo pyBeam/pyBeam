@@ -62,15 +62,15 @@ CStructure::CStructure(CInput *input, CElement **container_element, CNode **cont
     
     
     // Resizes and zeros the K matrices
-    Ksys.resize(nNode*6,nNode*6);
-    Ksys = MatrixXdDiff::Zero(nNode*6,nNode*6);
+    Ksys.resize(nNode*6+nRBE2*6,nNode*6+nRBE2*6);
+    Ksys = MatrixXdDiff::Zero(nNode*6+nRBE2*6,nNode*6+nRBE2*6);
    
     
     
     
                                                         
-    U  = VectorXdDiff::Zero(nNode*6);                // whole vector solution   
-    dU  = VectorXdDiff::Zero(nNode*6);
+    U  = VectorXdDiff::Zero(nNode*6+nRBE2*6);                // whole vector solution   
+    dU  = VectorXdDiff::Zero(nNode*6+nRBE2*6);
     
    
     
@@ -361,9 +361,9 @@ void CStructure::AssemblyTang(int iIter)
     // Intermediate rotation matrix
     MatrixXdDiff Krotated = MatrixXdDiff::Zero(6,6);
     MatrixXdDiff Ktang(12,12);
-    
+    //cout<<"nRBE2"<<nRBE2<<endl;
     // Setting to Zero the stiffness matrix
-    //Ksys = MatrixXdDiff::Zero(nNode*6+nRBE2*6,nNode*6+nRBE2*6);
+    Ksys = MatrixXdDiff::Zero(nNode*6+nRBE2*6,nNode*6+nRBE2*6);
  
    
     /*------------------------------------
@@ -622,7 +622,7 @@ void CStructure::EvalSensRot(){
  WARNING: (Fext and Fint need to be updated before)    */
 
 void CStructure::EvalResidual() {
-    Residual =  VectorXdDiff::Zero(nNode*6);
+    
     Residual = Fext - Fint;
       //cout<<"Forze interne= \n"<<Fint<<endl;  
 }
@@ -930,18 +930,19 @@ void CStructure::SolveLinearStaticSystem_RBE2_lagrange(int iIter)
         file5  <<  Residual_lagr << endl;
     }
     
+    
     }
+     //cout<<"LM=\n"<<LM<<endl; 
+    //cout<<"U=\n"<<U<<endl; 
     if (iIter ==1)
     {
-    std::ofstream file4("./Residual_lagr_norm.dat");
-    if (file4.is_open())
+    std::ofstream file3("./Ksys.dat");
+    if (file3.is_open())
     {
 
-        file4  <<  Residual_lagr.norm()  << endl;
+        file3  <<  Ksys<< endl;
     }
-    
     }
-    
     
     
 
@@ -1021,7 +1022,7 @@ void CStructure::UpdateCoord(int nRBE2, unsigned short rigid) {
         //uptading lagrange multiplier
       
     }
-    /*
+    
     if (nRBE2 != 0 and  rigid == 1){
         for (int iRBE2 = 0; iRBE2 < nRBE2; iRBE2++) {  
             U.segment(nNode*6 -1 + (iRBE2)*6+1 ,6) +=  dU.segment(nNode*6 -1 + (iRBE2)*6+1 ,6) ;    
@@ -1030,9 +1031,8 @@ void CStructure::UpdateCoord(int nRBE2, unsigned short rigid) {
         LM=U.segment(nNode*6,nRBE2*6);
          
     }
-   */
-    //cout<<"LM=\n"<<LM<<endl; 
-    //cout<<"U=\n"<<U<<endl; 
+   
+   
 }
       
        
