@@ -26,6 +26,7 @@
 
 
 #include "../include/element.h"
+#include "../include/property.h"
 #include <iostream>
 
 CElement::CElement(int element_ID) {
@@ -559,4 +560,147 @@ void CElement::InitializeRotMats()
     Rrig = Rprev.transpose() * R;
 
 }
+
+
+void StressRetrieving  ()
+{
+    int n_stiff      =0;
+    int n_tot = n_stiff+4;
+    addouble  = A_stiff;
+    addouble C_wb    =3000;
+    
+    addouble L_Qxy;
+    addouble L_Qxz;       
+    
+    addouble b=(C_wb)/(((n_tot)/2)-1); 
+    
+    sigma_booms = VectorXdDiff::Zero(n_tot);
+    dsigma_dx   = VectorXdDiff::Zero(n_tot);
+    tau         = VectorXdDiff::Zero(n_tot);
+    //cout<<"sigma_booms=\n"<<sigma_booms<<endl;
+    
+    addouble  N = fint[6];     
+    addouble  Qxy= fint[7];
+    addouble  Qxz= fint[8];
+    addouble  My= fint[10];   
+    addouble  Mz= fint[11];  
+    
+    //cout<<"N=\n"<<N<<endl;
+    
+    
+    
+    // Calculation of Normal stress absorbed by booms (Navier Formula) 
+     int r= ((n_stiff)/2)%2;
+     
+     
+      if (n_stiff == 0 ){
+         sigma_booms[0]=(N/A) - (Mz/Izz)*C_wb +(My/Iyy)*(h/2);
+         sigma_booms[1]=(N/A) + (Mz/Izz)*C_wb +(My/Iyy)*(h/2);
+         sigma_booms[2]=(N/A) + (Mz/Izz)*C_wb -(My/Iyy)*(h/2);
+         sigma_booms[3]=(N/A) - (Mz/Izz)*C_wb -(My/Iyy)*(h/2);
+         
+         
+         dsigma_dx[0]= -A_stiff*(Qxy/Izz)*C_wb  + A_stiff*(Qxz/Iyy)*(h/2);
+         dsigma_dx[1]=  A_stiff*(Qxy/Izz)*C_wb  + A_stiff*(Qxz/Iyy)*(h/2);
+         dsigma_dx[2]=  A_stiff*(Qxy/Izz)*C_wb  - A_stiff*(Qxz/Iyy)*(h/2);
+         dsigma_dx[3]= -A_stiff*(Qxy/Izz)*C_wb  - A_stiff*(Qxz/Iyy)*(h/2);
+        
+                                        
+     } else
+     {
+     
+      if (r==0) // Even number 
+     {
+          
+          for (int i=0 ; i< (n_tot)/4 ; i += 1)
+  {
+     sigma_booms[i]                      = (N/A) - (Mz/Izz)*b*((n_tot/4)-1-i+(1/2)) + (My/Iyy)*(h/2);
+     sigma_booms[((n_tot)/4) +i]         = (N/A) + (Mz/Izz)*b*(i + (1/2))           + (My/Iyy)*(h/2);
+     sigma_booms[(((n_tot)/2)+1) +i]     = (N/A) + (Mz/Izz)*b*((n_tot/4)-1-i+(1/2)) - (My/Iyy)*(h/2);
+     sigma_booms[(((n_tot)*3/4)) +i]     = (N/A) - (Mz/Izz)*b*(i + (1/2))           - (My/Iyy)*(h/2);
+      
+     dsigma_dx[i]                      =  -A_stiff*(Qxy/Izz)*b*((n_tot/4)-1-i+(1/2))  + A_stiff*(Qxz/Iyy)*(h/2);
+     dsigma_dx[((n_tot)/4) +i]         =  A_stiff*(Qxy/Izz)*b*(i + (1/2))             + A_stiff*(Qxz/Iyy)*(h/2);
+     dsigma_dx[(((n_tot-2)/2)+1) +i]   =  A_stiff*(Qxy/Izz)*b*((n_tot/4)-1-i+(1/2))   - A_stiff*(Qxz/Iyy)*(h/2);
+     dsigma_dx[(((n_tot-2)*3/4)+2) +i] =  -A_stiff*(Qxy/Izz)*b*(i + (1/2))            - A_stiff*(Qxz/Iyy)*(h/2);
+     
+  }
+          
+          
+          
+      }else{
+    //odd number
+          
+  for (int i=0 ; i< (n_tot-2)/4 ; i += 1)
+  {
+     sigma_booms[i]                      = (N/A) - (Mz/Izz)*b*(((n_tot-2)/4)-i)  + (My/Iyy)*(h/2);
+     sigma_booms[(((n_tot-2)/4)+1) +i]   = (N/A) + (Mz/Izz)*b*(i + 1)            + (My/Iyy)*(h/2);
+     sigma_booms[(((n_tot-2)/2)+1) +i]   = (N/A) + (Mz/Izz)*b*(((n_tot-2)/4)-i)  - (My/Iyy)*(h/2);
+     sigma_booms[(((n_tot-2)*3/4)+2) +i] = (N/A) - (Mz/Izz)*b* (i + 1)           - (My/Iyy)*(h/2);
+     
+     
+     
+     dsigma_dx[i]                      =  -A_stiff*(Qxy/Izz)*b*(((n_tot-2)/4)-i)  + A_stiff*(Qxz/Iyy)*(h/2);
+     dsigma_dx[(((n_tot-2)/4)+1) +i]    =   A_stiff*(Qxy/Izz)*b*(i + 1)            + A_stiff*(Qxz/Iyy)*(h/2);
+     dsigma_dx[(((n_tot-2)/2)+1) +i]    =   A_stiff*(Qxy/Izz)*b*(((n_tot-2)/4)-i)  - A_stiff*(Qxz/Iyy)*(h/2);
+     dsigma_dx[(((n_tot-2)*3/4)+2) +i]  =  -A_stiff*(Qxy/Izz)*b*(i + 1)            - A_stiff*(Qxz/Iyy)*(h/2);
+      
+  }
+      sigma_booms[(n_tot-2)/4]           = (N/A) + (My/Iyy)*(h/2);    //upper stiffener on Z-axis
+      sigma_booms[((n_tot-2)*3/4)+1]     = (N/A) - (My/Iyy)*(h/2);   //lower stiffener on Z-axis
+      
+      dsigma_dx[(n_tot-2)/4]           =  A_stiff*(Qxz/Iyy)*(h/2);    //upper stiffener on Z-axis
+      dsigma_dx[((n_tot-2)*3/4)+1]     = -A_stiff*(Qxz/Iyy)*(h/2);   //lower stiffener on Z-axis
+      
+    
+      }
+    
+     }  
+     
+       
+     
+     // Shear Flux calculation
+     
+     
+     //Solve the equation :
+     // tau_coeff*tau + dsigma_dx=0 ---> tau= -dsigma_dx*(tau_coeff)^-1
+     
+     //    % tau_coeff = [ -1    0       0     0      0 ...     1;                dsigma_dx=[ dsigma/dx (1st node)
+    //    %                1     -1      0     0      0 ...     0;                            dsigma/dx (2nd node)
+    //    %                0      1      -1     0     0         0;                               .
+    //    %                0      0       1    -1     0         0;                               .
+    //    %                0      0       0     1    -1         0;                            dsigma/dx (ntot-1  node)
+    //    %               bh     bh ...  bh     0     0 ...     0];                              M_Q]
+             
+    addouble M_Q = Qxz*L_Qxz + Qxy*L_Qxy;   // total Torque in the section due to Qxz and Qxy
+    dsigma_dx(n_tot-1)= M_Q;    //index start from 0   
+             
+             
+             
+    MatrixXdDiff tau_coeff= MatrixXdDiff::Zero(n_tot,n_tot);
+    
+    for (int j=0; j< (n_tot-1); j+=1)
+    {
+      for (int jj=0; jj< (n_tot-2); jj+=1)
+     {
+          for (int jjj=0; jjj< (n_tot/2); jjj+=1)
+          {
+    
+        tau_coeff(j,j)=1;           // Diagonal
+        tau_coeff(jj+1,jj)=1;      // sub-diagonal
+        tau(n_tot-1,jjj)= -b*h;   // last row
+          }
+          
+     }
+    }
+    
+    tau_coeff(1-1,(n_tot)-1)=1;
+    
+   
+    
+    tau = (tau_coeff).fullPivHouseholderQr().solve(-dsigma_dx);
+    
+}
+
+
 

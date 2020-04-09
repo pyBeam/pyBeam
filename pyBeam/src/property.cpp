@@ -38,15 +38,15 @@ void CProperty::SetSectionProperties2()
 {
     // input parameters 
     
-    int n_stiff=0;
-    addouble C_wb=3000;
-    addouble t_sk=3;
-    addouble t_sp=5;
-    addouble h=500;
-    addouble A_stiff=0;
-    addouble A_fl=200;
+    int n_stiff      =0;
+    addouble C_wb    =3000;
+    addouble t_sk    =3;
+    addouble t_sp    =5;
+    addouble h       =500;
+    addouble A_stiff =0;
+    addouble A_fl    =200;
     
-    addouble b=(C_wb)/(((n_stiff+4)/2)-1);  //distance within stiffeners
+    addouble b=(C_wb)/(((n_stiff+4)/2)-1);      //distance within stiffeners
     
     
     

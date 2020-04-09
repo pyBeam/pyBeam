@@ -55,6 +55,18 @@ private:
     addouble AE;
     addouble EIz;
     addouble EIy;
+    
+    addouble My;       // Bending moment around Y-axis
+    addouble Mz;       // Bending Moments around Z_axis
+    addouble  N;      // Normal load in the section
+    addouble Qxy;     //Shear stress along y axis 
+    addouble Qxz;     //shear stress along z axix 
+    
+    addouble L_Qxy;  // harm of Qxy w.r.t the left lower corner
+    addouble L_Qxz;    // // harm of Qxy w.r.t the left lower corner
+    
+            
+           
 
 public:
 
@@ -79,6 +91,11 @@ public:
     VectorXdDiff eps ;  // Elastic Deformational Status
     VectorXdDiff phi ;  // Elastic Cumulative Tension
     MatrixXdDiff Kprim;
+    
+    VectorXdDiff  sigma_booms ;   //Normal stress absorbed by the booms 
+    VectorXdDiff  dsigma_dx;      // gradient of normal stress for each boom
+    VectorXdDiff  tau ;          // Shear Fluxes absorbed by the skin and by the spar 
+    MatrixXdDiff  tau_coeff;
     
 private:
     
@@ -116,7 +133,10 @@ public:
     void setLength();
 
     void Initializer(CNode* Node1, CNode* Node2, CProperty* Property, CInput* Input, passivedouble AuxVector_x, passivedouble AuxVector_y, passivedouble AuxVector_z);
-
+    
+    // Normal stresses absorbed by the concentrated areas (Stiffeners + spars' flanges)
+    void StressRetrieving();
+    
     // Evaluates FEM element mass matrix
     void ElementMass_Rao();
 
