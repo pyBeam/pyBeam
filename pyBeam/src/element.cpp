@@ -26,7 +26,6 @@
 
 
 #include "../include/element.h"
-#include "../include/property.h"
 #include <iostream>
 
 CElement::CElement(int element_ID) {
@@ -40,6 +39,7 @@ CElement::CElement(int element_ID) {
     nodeB= nullptr;
     elprop = nullptr;
     input = nullptr;
+    
 
 };
 
@@ -153,7 +153,7 @@ void CElement::SetDependencies(void){
     AE  = input->GetYoungModulus()*elprop->GetA();
     Iyy = elprop->GetIyy();
     Izz = elprop->GetIzz();
-
+    
     // INITIALIZATION of KPRIM  (linear)
     Kprim = MatrixXdDiff::Zero(6,6);
 
@@ -218,7 +218,7 @@ void CElement::ElementMass_Rao() {
 /*
  * This routine, for a given value of the actual beam length (l_curr) evaluates
  * the "kinematic" matrices. Recall that
- * fint = ([Na' ; Nb']*Kprim* [Na, Nb]) u;
+ * fint = ((Na' ; Nb']*Kprim* (Na, Nb]) u;
  */
 
 void CElement::EvalNaNb(MatrixXdDiff &Na, MatrixXdDiff  &Nb) {
@@ -226,7 +226,7 @@ void CElement::EvalNaNb(MatrixXdDiff &Na, MatrixXdDiff  &Nb) {
     addouble one_to_l = 1.0/l_curr;
 
     //-------------    KINEMATIC MATRIX  --------------------------------------
-    //    % Na=1/Lcurr* [ -Lcurr   0      0     0       0      0;
+    //    % Na=1/Lcurr* ( -Lcurr   0      0     0       0      0;
     //    %                0     0      0    -Lcurr    0      0;
     //    %                0     0     -1     0       0      0;
     //    %                0     1      0     0       0      0;
@@ -252,7 +252,7 @@ void CElement::EvalNaNb(MatrixXdDiff &Na, MatrixXdDiff  &Nb) {
     Nb(4-1,2-1) = -one_to_l;    Nb(4-1,6-1) = 1.0;
     Nb(5-1,3-1) = one_to_l;
     Nb(6-1,2-1) = -one_to_l;
-
+   
 }
 
 //------------------------------------
@@ -274,7 +274,7 @@ void CElement::ElementElastic_Rao(MatrixXdDiff &Kel) {
     Kel.block(1-1,7-1,6,6) = Na.transpose() * Kprim * Nb;
     Kel.block(7-1,1-1,6,6) = Nb.transpose() * Kprim * Na;
     Kel.block(7-1,7-1,6,6) = Nb.transpose() * Kprim * Nb;
-
+    
 }
 
 /*##############################################
@@ -318,6 +318,8 @@ void CElement::ElementTang_Rao(int iIter, MatrixXdDiff & Ktang){
     // Still needs to be rotated and also added the rigid contribution
     Ktang = Kstretch + Kel;
 
+    
+   
 }
 
 
@@ -493,7 +495,7 @@ void CElement::EvalRotMat_FP(VectorXdDiff &dU_AB,  VectorXdDiff  &X_AB)
     R.block(4-1,4-1,3,3) = R.block(1-1,1-1,3,3);
 
     Rrig = Rprev.transpose() * R;
-
+    
 }
 
 
@@ -562,48 +564,64 @@ void CElement::InitializeRotMats()
 }
 
 
-void StressRetrieving  ()
+void  CElement::StressRetrieving()
 {
+     
     int n_stiff      =0;
+    
     int n_tot = n_stiff+4;
-    addouble  = A_stiff;
-    addouble C_wb    =3000;
+    addouble h= 0.5; 
     
-    addouble L_Qxy;
-    addouble L_Qxz;       
+    addouble A_stiff = 0;
+    addouble A_sp    = 9*pow(10,-4);
+    addouble C_wb    =2.5;
+   
     
+    A= elprop->GetA();
+   
+  
+    Iyy=elprop->GetIyy();
+    Izz=elprop->GetIzz();
+    
+
+    
+    L_Qxy=0;
+    L_Qxz=0;       
+      
     addouble b=(C_wb)/(((n_tot)/2)-1); 
     
     sigma_booms = VectorXdDiff::Zero(n_tot);
     dsigma_dx   = VectorXdDiff::Zero(n_tot);
-    tau         = VectorXdDiff::Zero(n_tot);
+   
     //cout<<"sigma_booms=\n"<<sigma_booms<<endl;
     
-    addouble  N = fint[6];     
-    addouble  Qxy= fint[7];
-    addouble  Qxz= fint[8];
-    addouble  My= fint[10];   
-    addouble  Mz= fint[11];  
+  
+   N =  fint(8-1);  
+   Qxy= fint(9-1);
+   Qxz= fint(10-1);
+   My=  fint(11-1);   
+   Mz=  fint(12-1);  
     
-    //cout<<"N=\n"<<N<<endl;
+   
     
-    
+  
     
     // Calculation of Normal stress absorbed by booms (Navier Formula) 
      int r= ((n_stiff)/2)%2;
      
      
       if (n_stiff == 0 ){
-         sigma_booms[0]=(N/A) - (Mz/Izz)*C_wb +(My/Iyy)*(h/2);
-         sigma_booms[1]=(N/A) + (Mz/Izz)*C_wb +(My/Iyy)*(h/2);
-         sigma_booms[2]=(N/A) + (Mz/Izz)*C_wb -(My/Iyy)*(h/2);
-         sigma_booms[3]=(N/A) - (Mz/Izz)*C_wb -(My/Iyy)*(h/2);
+         sigma_booms(1-1)=(N/A) - (Mz/Izz)*C_wb +(My/Iyy)*(h/2);
+         sigma_booms(2-1)=(N/A) + (Mz/Izz)*C_wb +(My/Iyy)*(h/2);
+         sigma_booms(3-1)=(N/A) + (Mz/Izz)*C_wb -(My/Iyy)*(h/2);
+         sigma_booms(4-1)=(N/A) - (Mz/Izz)*C_wb -(My/Iyy)*(h/2);
          
          
-         dsigma_dx[0]= -A_stiff*(Qxy/Izz)*C_wb  + A_stiff*(Qxz/Iyy)*(h/2);
-         dsigma_dx[1]=  A_stiff*(Qxy/Izz)*C_wb  + A_stiff*(Qxz/Iyy)*(h/2);
-         dsigma_dx[2]=  A_stiff*(Qxy/Izz)*C_wb  - A_stiff*(Qxz/Iyy)*(h/2);
-         dsigma_dx[3]= -A_stiff*(Qxy/Izz)*C_wb  - A_stiff*(Qxz/Iyy)*(h/2);
+         dsigma_dx(1-1)= -A_sp*(Qxy/Izz)*C_wb  + A_sp*(Qxz/Iyy)*(h/2);
+         dsigma_dx(2-1)=  A_sp*(Qxy/Izz)*C_wb  + A_sp*(Qxz/Iyy)*(h/2);
+         dsigma_dx(3-1)=  A_sp*(Qxy/Izz)*C_wb  - A_sp*(Qxz/Iyy)*(h/2);
+         dsigma_dx(4-1)= -A_sp*(Qxy/Izz)*C_wb  - A_sp*(Qxz/Iyy)*(h/2);
+        
         
                                         
      } else
@@ -612,60 +630,73 @@ void StressRetrieving  ()
       if (r==0) // Even number 
      {
           
-          for (int i=0 ; i< (n_tot)/4 ; i += 1)
+          for (int i=1-1  ; i<= ((n_tot)/4 - 1) ; i += 1)
   {
-     sigma_booms[i]                      = (N/A) - (Mz/Izz)*b*((n_tot/4)-1-i+(1/2)) + (My/Iyy)*(h/2);
-     sigma_booms[((n_tot)/4) +i]         = (N/A) + (Mz/Izz)*b*(i + (1/2))           + (My/Iyy)*(h/2);
-     sigma_booms[(((n_tot)/2)+1) +i]     = (N/A) + (Mz/Izz)*b*((n_tot/4)-1-i+(1/2)) - (My/Iyy)*(h/2);
-     sigma_booms[(((n_tot)*3/4)) +i]     = (N/A) - (Mz/Izz)*b*(i + (1/2))           - (My/Iyy)*(h/2);
-      
-     dsigma_dx[i]                      =  -A_stiff*(Qxy/Izz)*b*((n_tot/4)-1-i+(1/2))  + A_stiff*(Qxz/Iyy)*(h/2);
-     dsigma_dx[((n_tot)/4) +i]         =  A_stiff*(Qxy/Izz)*b*(i + (1/2))             + A_stiff*(Qxz/Iyy)*(h/2);
-     dsigma_dx[(((n_tot-2)/2)+1) +i]   =  A_stiff*(Qxy/Izz)*b*((n_tot/4)-1-i+(1/2))   - A_stiff*(Qxz/Iyy)*(h/2);
-     dsigma_dx[(((n_tot-2)*3/4)+2) +i] =  -A_stiff*(Qxy/Izz)*b*(i + (1/2))            - A_stiff*(Qxz/Iyy)*(h/2);
+     sigma_booms(i)                       = (N/A) - (Mz/Izz)*b*((n_tot/4)-1-i+(1/2)) + (My/Iyy)*(h/2);
+     sigma_booms( ((n_tot)/4)+i )         = (N/A) + (Mz/Izz)*b*(i + (1/2))           + (My/Iyy)*(h/2);
+     sigma_booms( ((n_tot)/2)+i )         = (N/A) + (Mz/Izz)*b*((n_tot/4)-1-i+(1/2)) - (My/Iyy)*(h/2);
+     sigma_booms( (((n_tot)*3/4))+i )     = (N/A) - (Mz/Izz)*b*(i + (1/2))           - (My/Iyy)*(h/2);
+    
+     
+     dsigma_dx(i)                       =  -A_stiff*(Qxy/Izz)*b*((n_tot/4)-1-i+(1/2))  + A_stiff*(Qxz/Iyy)*(h/2);
+     dsigma_dx( ((n_tot)/4)+i )         =  A_stiff*(Qxy/Izz)*b*(i + (1/2))             + A_stiff*(Qxz/Iyy)*(h/2);
+     dsigma_dx( ((n_tot)/2)+i )         =  A_stiff*(Qxy/Izz)*b*((n_tot/4)-1-i+(1/2))   - A_stiff*(Qxz/Iyy)*(h/2);
+     dsigma_dx( ((n_tot)*3/4)+i)        =  -A_stiff*(Qxy/Izz)*b*(i + (1/2))            - A_stiff*(Qxz/Iyy)*(h/2);
+     
      
   }
-          
+      dsigma_dx(1-1)             =  dsigma_dx(1-1)*(A_sp/A_stiff); 
+      dsigma_dx((n_tot/2) - 1)   =  dsigma_dx((n_tot/2) - 1)*(A_sp/A_stiff); 
+      dsigma_dx((n_tot/2+1) - 1) =  dsigma_dx((n_tot/2+1) - 1)*(A_sp/A_stiff); 
+      dsigma_dx(n_tot - 1)       = dsigma_dx(n_tot - 1)*(A_sp/A_stiff); 
           
           
       }else{
     //odd number
           
-  for (int i=0 ; i< (n_tot-2)/4 ; i += 1)
+  for (int i=1-1 ; i<= ((n_tot-2)/4 - 1) ; i += 1)
   {
-     sigma_booms[i]                      = (N/A) - (Mz/Izz)*b*(((n_tot-2)/4)-i)  + (My/Iyy)*(h/2);
-     sigma_booms[(((n_tot-2)/4)+1) +i]   = (N/A) + (Mz/Izz)*b*(i + 1)            + (My/Iyy)*(h/2);
-     sigma_booms[(((n_tot-2)/2)+1) +i]   = (N/A) + (Mz/Izz)*b*(((n_tot-2)/4)-i)  - (My/Iyy)*(h/2);
-     sigma_booms[(((n_tot-2)*3/4)+2) +i] = (N/A) - (Mz/Izz)*b* (i + 1)           - (My/Iyy)*(h/2);
+     sigma_booms(i)                      = (N/A) - (Mz/Izz)*b*(((n_tot-2)/4)-i)  + (My/Iyy)*(h/2);
+     sigma_booms((((n_tot-2)/4)+1) +i)   = (N/A) + (Mz/Izz)*b*(i + 1)            + (My/Iyy)*(h/2);
+     sigma_booms((((n_tot-2)/2)+1) +i)   = (N/A) + (Mz/Izz)*b*(((n_tot-2)/4)-i)  - (My/Iyy)*(h/2);
+     sigma_booms((((n_tot-2)*3/4)+2) +i) = (N/A) - (Mz/Izz)*b* (i + 1)           - (My/Iyy)*(h/2);
      
      
      
-     dsigma_dx[i]                      =  -A_stiff*(Qxy/Izz)*b*(((n_tot-2)/4)-i)  + A_stiff*(Qxz/Iyy)*(h/2);
-     dsigma_dx[(((n_tot-2)/4)+1) +i]    =   A_stiff*(Qxy/Izz)*b*(i + 1)            + A_stiff*(Qxz/Iyy)*(h/2);
-     dsigma_dx[(((n_tot-2)/2)+1) +i]    =   A_stiff*(Qxy/Izz)*b*(((n_tot-2)/4)-i)  - A_stiff*(Qxz/Iyy)*(h/2);
-     dsigma_dx[(((n_tot-2)*3/4)+2) +i]  =  -A_stiff*(Qxy/Izz)*b*(i + 1)            - A_stiff*(Qxz/Iyy)*(h/2);
+     dsigma_dx(i)                      =  -A_stiff*(Qxy/Izz)*b*(((n_tot-2)/4)-i)  + A_stiff*(Qxz/Iyy)*(h/2);
+     dsigma_dx((((n_tot-2)/4)+1) +i)    =   A_stiff*(Qxy/Izz)*b*(i + 1)            + A_stiff*(Qxz/Iyy)*(h/2);
+     dsigma_dx((((n_tot-2)/2)+1) +i)    =   A_stiff*(Qxy/Izz)*b*(((n_tot-2)/4)-i)  - A_stiff*(Qxz/Iyy)*(h/2);
+     dsigma_dx((((n_tot-2)*3/4)+2) +i)  =  -A_stiff*(Qxy/Izz)*b*(i + 1)            - A_stiff*(Qxz/Iyy)*(h/2);
       
   }
-      sigma_booms[(n_tot-2)/4]           = (N/A) + (My/Iyy)*(h/2);    //upper stiffener on Z-axis
-      sigma_booms[((n_tot-2)*3/4)+1]     = (N/A) - (My/Iyy)*(h/2);   //lower stiffener on Z-axis
+      //Taking into account the different Spars' Area in the corners
+      dsigma_dx(1-1)             =  dsigma_dx(1-1)*(A_sp/A_stiff); 
+      dsigma_dx((n_tot/2) - 1)   =  dsigma_dx((n_tot/2) - 1)*(A_sp/A_stiff); 
+      dsigma_dx((n_tot/2+1) - 1) =  dsigma_dx((n_tot/2+1) - 1)*(A_sp/A_stiff); 
+      dsigma_dx(n_tot - 1)       =  dsigma_dx(n_tot - 1)*(A_sp/A_stiff); 
       
-      dsigma_dx[(n_tot-2)/4]           =  A_stiff*(Qxz/Iyy)*(h/2);    //upper stiffener on Z-axis
-      dsigma_dx[((n_tot-2)*3/4)+1]     = -A_stiff*(Qxz/Iyy)*(h/2);   //lower stiffener on Z-axis
+      sigma_booms((n_tot-2)/4)           = (N/A) + (My/Iyy)*(h/2);    //upper stiffener on Z-axis
+      sigma_booms(((n_tot-2)*3/4)+1)     = (N/A) - (My/Iyy)*(h/2);   //lower stiffener on Z-axis
+      
+      dsigma_dx((n_tot-2)/4)           =  A_stiff*(Qxz/Iyy)*(h/2);    //upper stiffener on Z-axis
+      dsigma_dx(((n_tot-2)*3/4)+1)     = -A_stiff*(Qxz/Iyy)*(h/2);   //lower stiffener on Z-axis
       
     
       }
     
      }  
      
-       
+    
+     
      
      // Shear Flux calculation
      
      
      //Solve the equation :
+     
      // tau_coeff*tau + dsigma_dx=0 ---> tau= -dsigma_dx*(tau_coeff)^-1
      
-     //    % tau_coeff = [ -1    0       0     0      0 ...     1;                dsigma_dx=[ dsigma/dx (1st node)
+     //    % tau_coeff = ( -1    0       0     0      0 ...     1;                dsigma_dx=( dsigma/dx (1st node)
     //    %                1     -1      0     0      0 ...     0;                            dsigma/dx (2nd node)
     //    %                0      1      -1     0     0         0;                               .
     //    %                0      0       1    -1     0         0;                               .
@@ -673,32 +704,53 @@ void StressRetrieving  ()
     //    %               bh     bh ...  bh     0     0 ...     0];                              M_Q]
              
     addouble M_Q = Qxz*L_Qxz + Qxy*L_Qxy;   // total Torque in the section due to Qxz and Qxy
-    dsigma_dx(n_tot-1)= M_Q;    //index start from 0   
-             
-             
-             
-    MatrixXdDiff tau_coeff= MatrixXdDiff::Zero(n_tot,n_tot);
-    
-    for (int j=0; j< (n_tot-1); j+=1)
-    {
-      for (int jj=0; jj< (n_tot-2); jj+=1)
-     {
-          for (int jjj=0; jjj< (n_tot/2); jjj+=1)
-          {
-    
-        tau_coeff(j,j)=1;           // Diagonal
-        tau_coeff(jj+1,jj)=1;      // sub-diagonal
-        tau(n_tot-1,jjj)= -b*h;   // last row
-          }
-          
-     }
-    }
-    
-    tau_coeff(1-1,(n_tot)-1)=1;
     
    
+    dsigma_dx(n_tot-1)= M_Q;    //index start from 0   
+                
+    tau_coeff= MatrixXdDiff::Zero(n_tot,n_tot);
     
+    
+     
+    for (int j=1 -1 ; j<= (n_tot-1) -1; j+=1)
+    {
+     tau_coeff(j,j)=-1;           // Diagonal
+    }
+  
+     for (int jj=1 -1; jj<= (n_tot-2) -1; jj+=1)
+     {
+          tau_coeff(jj+1,jj)=1;      // sub-diagonal   
+     }
+    
+     for (int jjj=1 -1 ; jjj<= (n_tot/2) -1 ; jjj+=1)
+          {
+
+        tau_coeff(n_tot-1,jjj)= -b*h;   // last row
+          }
+     
+  
+     
+    tau_coeff(1-1,(n_tot)-1)=1;
+       
+  
     tau = (tau_coeff).fullPivHouseholderQr().solve(-dsigma_dx);
+   
+     std::ofstream file1("./Sigma.dat");
+    if (file1.is_open())
+    {
+
+        file1  <<  sigma_booms<< endl;
+    }
+    
+     
+   
+    std::ofstream file2("./tau.dat");
+    if (file2.is_open())
+    {
+
+        file2  <<  tau << endl;
+    }
+   
     
 }
 

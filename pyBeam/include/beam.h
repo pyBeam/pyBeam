@@ -54,7 +54,10 @@ private:
     //CConnectivity **connectivity;       /*!< \brief Vector which stores the connectivity. */
      
      
-     CProperty* Prop;
+    CProperty* Prop;
+    
+
+    
       
     CInput* input;
 

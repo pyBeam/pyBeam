@@ -49,7 +49,7 @@ CBeamSolver::CBeamSolver(void) {
     totalIter = 0;
     initResNorm   =  1.0;
     initDispNorm  =  1.0;
-    
+   
     
 }
 
@@ -110,8 +110,8 @@ void CBeamSolver::InitializeInput(CInput* py_input){   // insert node class and 
                                << std::endl;}
     }
     else {RBE2 = NULL; }
-    Prop->SetSectionProperties2();
-   
+    //Prop->SetSectionProperties2();
+    
     
     //===============================================
     //  Initialize structural solver
@@ -137,6 +137,7 @@ void CBeamSolver::Solve(int FSIIter = 0){
     addouble TotalLength = 0;
     for  ( unsigned long iFEM = 0; iFEM < nFEM; iFEM++) {
         TotalLength += element[iFEM]->GetInitial_Length();
+      
     }
 
     if (verbose){std::cout << "--> Setting External Forces" << std::endl;}
@@ -175,6 +176,7 @@ void CBeamSolver::Solve(int FSIIter = 0){
     structure->UpdateRotationMatrix_FP();  // based on the rotational displacements
     structure->UpdateLength();
     structure->UpdateInternalForces_FP();
+    
 
     totalIter = 0;
     for  ( loadStep = 0; loadStep < input->Get_LoadSteps(); loadStep++) {
@@ -279,6 +281,9 @@ void CBeamSolver::Solve(int FSIIter = 0){
             // Now, X, R, l are updated
             //structure->UpdateInternalForces();
             structure-> UpdateInternalForces_FP();
+            
+          
+            
             /*--------------------------------------------------
              *   Update Penalty Forces
              *----------------------------------------------------*/
@@ -344,6 +349,8 @@ void CBeamSolver::RunRestart(int FSIIter = 0){
     structure->UpdateRotationMatrix_FP();  // based on the rotational displacements
     structure->UpdateInternalForces_FP();
 
+    
+   
     if (verbose){
     std::cout << "--> Starting Restart Sequence" << std::endl;
     std::cout << "===========================================================================" << std::endl;

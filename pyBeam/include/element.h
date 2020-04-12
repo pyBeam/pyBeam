@@ -74,6 +74,7 @@ public:
     CNode* nodeB;
     CProperty* elprop;
     CInput* input;
+    
 
     VectorXdDiff GlobalDOFs; // Global DOFs
 

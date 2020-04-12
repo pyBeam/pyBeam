@@ -904,6 +904,7 @@ void CStructure::BoundaryConditions()
 
 void CStructure::SolveLinearStaticSystem_RBE2_lagrange(int iIter)
 {
+   
     //std::cout << "-->  Solving Linear System with penalty method for rigid constraints, "  << std::endl;
     //cout << "Ksys = \n" <<Ksys << endl;   
     //cout << "K_penal = \n" <<K_penal << endl;
@@ -1509,7 +1510,7 @@ void CStructure::UpdateInternalForces()
         Fint.segment((nodeB_id-1)*6+1 -1,6) +=  element[id_fe-1]->R * element[id_fe-1]->fint.segment(7-1,6);
 
     }
-    cout<<"internal forces=\n"<<Fint<<endl;
+   
 }
 
 void CStructure::InitializeInternalForces()
@@ -1706,12 +1707,19 @@ void CStructure::UpdateInternalForces_FP()
         // Updating cumulative internal forces
         element[id_fe-1]->fint.segment(1-1,6) =  Na.transpose()*element[id_fe-1]->phi;
         element[id_fe-1]->fint.segment(7-1,6) =  Nb.transpose()*element[id_fe-1]->phi;
-
+         
+        
+        
         // Contribution to the NODAL Internal Forces ARRAY
         Fint.segment((nodeA_id-1)*6+1 -1,6) +=  element[id_fe-1]->R * element[id_fe-1]->fint.segment(1-1,6);
         Fint.segment((nodeB_id-1)*6+1 -1,6) +=  element[id_fe-1]->R * element[id_fe-1]->fint.segment(7-1,6);
+        
+        // stress calculations
+        element[id_fe-1]->StressRetrieving();
+          
+   
     }
-
+       
 }
 
 

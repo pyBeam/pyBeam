@@ -38,11 +38,11 @@ void CProperty::SetSectionProperties2()
 {
     // input parameters 
     
-    int n_stiff      =0;
-    addouble C_wb    =3000;
-    addouble t_sk    =3;
-    addouble t_sp    =5;
-    addouble h       =500;
+    n_stiff =0;
+    C_wb    =3000;
+    t_sk    =3;
+    t_sp    =5;
+     h       =500;
     addouble A_stiff =0;
     addouble A_fl    =200;
     
