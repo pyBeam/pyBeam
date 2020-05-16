@@ -160,9 +160,15 @@ public:
 
     void SolveLinearStaticSystem(int iIter);
     
+    #ifdef DENSE
     void SolveLinearStaticSystem_RBE2(int iIter);
 
     void SolveLinearStaticSystem_RBE2_penalty(int iIter);
+    #else
+    void SolveLinearStaticSystem_RBE2(int iIter){};
+
+    void SolveLinearStaticSystem_RBE2_penalty(int iIter){};    
+    #endif
 
     //===================================================
     //      Update Coordinates

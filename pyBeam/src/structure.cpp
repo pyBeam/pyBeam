@@ -753,7 +753,7 @@ void CStructure::SolveLinearStaticSystem(int iIter) {
     //	LDLT 	                         ldlt() Positive or negative semidefinite 	+++ 	++
 
 }
-
+#ifdef DENSE
 void CStructure::SolveLinearStaticSystem_RBE2(int iIter)
 { 
     // Debug
@@ -903,7 +903,7 @@ void CStructure::SolveLinearStaticSystem_RBE2_penalty(int iIter)
     }
 
 }
-
+#endif
 /*===================================================
  *            Update Coordinates
  * ==================================================
