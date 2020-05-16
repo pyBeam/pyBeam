@@ -5,3 +5,4 @@
 [submodule "pyBeam/externals/Eigen"]
 	path = pyBeam/externals/Eigen
 	url = https://github.com/eigenteam/eigen-git-mirror.git
+        branch = master

@@ -65,7 +65,11 @@ void SolveAdjSys::SolveSys(const codi::RealReverse::Real* x, codi::RealReverse::
     VectorXdDiff Residual_bar;
     Residual_bar = VectorXdDiff::Zero(nNode_b*6);
 
-    MatrixXdDiff Ksys_b;
+    #ifdef DENSE
+       MatrixXdDiff Ksys_b;
+    #else
+       MatrixXdDiffSP Ksys_b;
+    #endif
     d->getData(Ksys_b);
 
     /*--- Initialize the right-hand side with the gradient of the solution of the primal linear system ---*/
@@ -73,7 +77,7 @@ void SolveAdjSys::SolveSys(const codi::RealReverse::Real* x, codi::RealReverse::
     for (unsigned long i = 0; i < n; i ++) {
       dU_bar(i) = y_b[i];
     }
-
+    #ifdef DENSE
     switch(kind_linSol_b){
     case PartialPivLu:
       Residual_bar = Ksys_b.transpose().partialPivLu().solve(dU_bar); break;
@@ -92,6 +96,16 @@ void SolveAdjSys::SolveSys(const codi::RealReverse::Real* x, codi::RealReverse::
     default:
       Residual_bar = Ksys_b.transpose().fullPivLu().solve(dU_bar); break;
     }
+   #else
+    SPLUSolver  solver_b;
+    MatrixXdDiffSP Ksys_bt;
+    Ksys_bt = Ksys_b.transpose();
+    //    solver_b.analyzePattern(Ksys_bt); 
+    //    solver.factorize(Ksys_b.transpose()); 
+    //    solver_b.factorize(Ksys_bt);   
+    solver_b.compute(Ksys_bt);
+    Residual_bar= solver_b.solve(dU_bar);
+    #endif
 
     for (unsigned long i = 0; i < n; i ++) {
       x_b[i] = AD::GetValue(Residual_bar(i));
