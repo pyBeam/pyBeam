@@ -49,6 +49,19 @@ protected:
     
     
     
+   
+ 
+        unsigned long PropertyID;   // ID of the property
+
+public:
+    
+    addouble A_2;                 // cross section area
+    addouble Iyy_2, Izz_2;          // Bending Moment of Inertia
+    addouble Jt_2;                // Torsional Moment of Inertia
+    addouble J0_2;                // Polar Moment of Inertia
+    addouble Iyy_b;
+    addouble Izz_b;
+    
     
     addouble t_sk;             // skin  thickness 
     addouble t_sp;            // spar thickness
@@ -57,11 +70,13 @@ protected:
     addouble h;              //  box tot height 
     addouble C_wb;          //  box tot length 
     int n_stiff;            // number of stiffener (not taking into account the Spar's flanges)
- 
-        unsigned long PropertyID;   // ID of the property
-
-public:
-
+    
+    
+    
+    
+   
+    
+    
     CProperty(int ID) {PropertyID = ID; }
 
     ~CProperty(void){}
@@ -89,23 +104,23 @@ public:
      */
     void SetSectionProperties2();
  
-/*
-    inline addouble Get_t_sk(void){return t_sk;}
+
+    //inline addouble Get_t_sk(void){return t_sk;}
     
-    inline addouble Get_t_sp(void){return t_sp;}
+    //inline addouble Get_t_sp(void){return t_sp;}
     
-    inline addouble GetA_stiff(void){return A_stiff;}
+   // inline addouble GetA_stiff(void){return A_stiff;}
     
-    inline addouble Get_h(void){return h;}
+    //inline addouble Get_h(void){return h;}
     
-    inline addouble GetC_wb(void){return C_wb;}
+    //inline addouble GetC_wb(void){return C_wb;}
     
-    inline addouble Get_n_stiff(void){return n_stiff;}
+    //inline addouble Get_n_stiff(void){return n_stiff;}
     
-    inline addouble Get_b(void){return b;}
+    //inline addouble Get_b(void){return b;}
     
-    inline VectorXdDiff Get_ys(void){return ys;}
-    */
+    //inline VectorXdDiff Get_ys(void){return ys;}
+    
     
     
     
@@ -120,5 +135,7 @@ public:
     inline addouble GetJt(void) { return Jt; }
 
     inline addouble GetJ0(void) { return J0; }
-
+    
+    
+ 
 };

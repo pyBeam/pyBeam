@@ -71,7 +71,8 @@ public:
     CRBE2 **RBE2;               // Pointer to the first RBE2 element
     CElement **element;         // Pointer to the first finite element
     CNode **node;               // Pointer to the first finite element
-
+   
+    
     VectorXdDiff cross_term;    // Store the displacement vector
     
     MatrixXdDiff Ksys;          //  matrix containing just the tangent matrix with the dimensions of global matrix 
@@ -102,7 +103,9 @@ public:
     VectorXdDiff Fext;          // Array of External Forces
     VectorXdDiff Residual;      // Array of Unbalanced Forces (elastic residual)
     
-                                //                                              
+    
+    
+                                                                          
     VectorXdDiff Residual_lagr;      //global Residual for lagrangian method =Residual-V_lagr
     
     VectorXdDiff Residual_red;  // Array of Unbalanced Forces   [relative to masters in case of RBE2]
@@ -111,7 +114,13 @@ public:
     VectorXdDiff Fnom;          // Array of nominal forces
     
     addouble YoungModulus;
+    addouble ro;
     
+   
+    addouble r ; // aggregation parameter
+    addouble KS;
+    addouble W ;             // Weight of the whole structure 
+  
     CStructure(CInput *input, CElement **container_element, CNode **container_node);
     
     ~CStructure();
@@ -123,7 +132,7 @@ public:
      *###############################################################*/
     
     inline void ReadForces(int nTotalDOF, addouble *loadVector) {
-        for (int iLoad = 0; iLoad < nTotalDOF; iLoad++){Fnom(iLoad) = loadVector[iLoad];}
+        for (int iLoad = 0; iLoad < nTotalDOF; iLoad++){Fnom(iLoad) = loadVector[iLoad];} 
     }
 
     inline void SetDimensionalYoungModulus(addouble val_E){ YoungModulus = val_E; }
@@ -216,8 +225,19 @@ public:
     void UpdateInternalForces();
 
     void UpdateInternalForces_FP();
-
+    
+    void InternalForcesLinear();
+    
     void InitializeInternalForces();
+    
+    
+    
+     //===================================================
+    //      OPTIMIZATION
+    //===================================================
+    
+   void evaluate_no_AdaptiveKSstresses();
+   void EvaluateWeight();
 
     addouble GetDisplacement(int iNode, int iDim) {
         return U(6*iNode+iDim);

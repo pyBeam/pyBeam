@@ -62,8 +62,14 @@ private:
     addouble Qxy;     //Shear stress along y axis 
     addouble Qxz;     //shear stress along z axix 
     
+    
+    
     addouble L_Qxy;  // harm of Qxy w.r.t the left lower corner
     addouble L_Qxz;    // // harm of Qxy w.r.t the left lower corner
+    
+    
+   
+   
     
             
            
@@ -74,7 +80,7 @@ public:
     CNode* nodeB;
     CProperty* elprop;
     CInput* input;
-    
+   
 
     VectorXdDiff GlobalDOFs; // Global DOFs
 
@@ -95,8 +101,18 @@ public:
     
     VectorXdDiff  sigma_booms ;   //Normal stress absorbed by the booms 
     VectorXdDiff  dsigma_dx;      // gradient of normal stress for each boom
-    VectorXdDiff  tau ;          // Shear Fluxes absorbed by the skin and by the spar 
-    MatrixXdDiff  tau_coeff;
+    VectorXdDiff  tau ;          // Shear Fluxes absorbed by the skin and by the spar
+    VectorXdDiff  axial_load ;   // Axial load absorbed by the booms 
+    MatrixXdDiff  tau_coeff;     
+    
+   
+    addouble N_sec;       // Resultant N in the section 
+    addouble Tz_sec;     // Resultant Tz in the section
+    addouble Ty_sec;     // Resultant Tz in the section
+    
+    VectorXdDiff g_element;  // element constraint  equations Von mises    dim = (2*n_tot) 
+    addouble     SF;        // safety factor 
+    addouble     sigma_y;  // sigma yelding 
     
 private:
     
@@ -135,8 +151,11 @@ public:
 
     void Initializer(CNode* Node1, CNode* Node2, CProperty* Property, CInput* Input, passivedouble AuxVector_x, passivedouble AuxVector_y, passivedouble AuxVector_z);
     
-    // Normal stresses absorbed by the concentrated areas (Stiffeners + spars' flanges)
+    // Stress state in the section 
     void StressRetrieving();
+    
+    // maximum normal stress in the section 
+    void VonMises();
     
     // Evaluates FEM element mass matrix
     void ElementMass_Rao();

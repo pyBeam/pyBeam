@@ -62,6 +62,7 @@ void CBeamSolver::InitializeInput(CInput* py_input){   // insert node class and 
     // I'm memorizing as a member variable the object input passed from outside
     input = py_input;
    
+    //Prop->SetSectionProperties2();
 
     input->SetParameters();
     
@@ -110,7 +111,7 @@ void CBeamSolver::InitializeInput(CInput* py_input){   // insert node class and 
                                << std::endl;}
     }
     else {RBE2 = NULL; }
-    //Prop->SetSectionProperties2();
+    
     
     
     //===============================================
@@ -270,6 +271,12 @@ void CBeamSolver::Solve(int FSIIter = 0){
             
             structure->UpdateCoord(nRBE2,input->Get_RigidCriteria() );
             
+            structure-> InternalForcesLinear ();
+            structure-> evaluate_no_AdaptiveKSstresses();
+            structure->    EvaluateWeight();
+            
+            
+            break;
             // Now only X is updated
             //structure->UpdateRotationMatrix();  // based on the rotational displacements
             structure->UpdateRotationMatrix_FP();  // based on the rotational displacements
@@ -454,7 +461,7 @@ void CBeamSolver::SetDependencies(void){
 
     /** Register the solution as input **/
     structure->RegisterSolutionInput();
-
+    
     addouble E, E_dim, Nu, G;
     unsigned long iFEM, iLoad;
 

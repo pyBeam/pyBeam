@@ -40,6 +40,7 @@ CElement::CElement(int element_ID) {
     elprop = nullptr;
     input = nullptr;
     
+    
 
 };
 
@@ -82,6 +83,13 @@ void CElement::Initializer(CNode* Node1, CNode* Node2, CProperty* Property, CInp
 
     //  Associate property
     SetProperty(Property);
+    
+    // Associate Property of WingBox
+    //elprop->SetSectionProperties2();
+    
+    
+    
+    
 
     // Associate all inputs
     SetInput(Input);
@@ -94,6 +102,21 @@ void CElement::Initializer(CNode* Node1, CNode* Node2, CProperty* Property, CInp
     setElementMass();
 
     // Store element properties from the input property object
+    /*
+    J0_2  = elprop->J0_2;
+    A_b   = elprop->A_b;
+    EIz_2 = input->GetYoungModulus()*elprop->Izz_b;
+    EIy_2 = input->GetYoungModulus()*elprop->Iyy_b;
+    GJ_2  = input->GetShear()*elprop->Jt_2;
+    AE_2  = input->GetYoungModulus()*elprop->A_b;
+    Iyy_b = elprop->Iyy_b;
+    Izz_b = elprop->Izz_b;
+    */
+   //cout<<"Atot="<<A_b<<endl;
+   //cout<<"Iyy="<<Iyy_b<<endl;
+   //cout<<"Izz="<<Izz_b<<endl;
+   
+  
     J0  = elprop->GetJ0();
     A   = elprop->GetA();
     EIz = input->GetYoungModulus()*elprop->GetIzz();
@@ -120,6 +143,7 @@ void CElement::Initializer(CNode* Node1, CNode* Node2, CProperty* Property, CInp
 
     // Initialize cumulative strain vector
     eps = VectorXdDiff::Zero(6);
+    
 
     // Initialize stress vector
     phi = VectorXdDiff::Zero(6);
@@ -129,15 +153,21 @@ void CElement::Initializer(CNode* Node1, CNode* Node2, CProperty* Property, CInp
 
     VectorXdDiff diagonal = VectorXdDiff::Zero(6);
     diagonal << AE/l_ini  , GJ/l_ini  ,  4*EIy/l_ini  ,   4*EIz/l_ini , 4*EIy/l_ini , 4*EIz/l_ini ;
+    
+    //diagonal << AE_2/l_ini  , GJ_2/l_ini  ,  4*EIy_2/l_ini  ,   4*EIz_2/l_ini , 4*EIy_2/l_ini , 4*EIz_2/l_ini ;
 
+    
     // Writing the diagonal
     for (unsigned short index = 0; index < 6; index++)
     {
         Kprim(index,index) = diagonal(index);
     }
+    
+     Kprim(3-1,5-1) = 2*EIy/l_ini;  Kprim(5-1,3-1) = Kprim(3-1,5-1);
+     Kprim(4-1,6-1) = 2*EIz/l_ini;  Kprim(6-1,4-1) = Kprim(4-1,6-1);
 
-    Kprim(3-1,5-1) = 2*EIy/l_ini;  Kprim(5-1,3-1) = Kprim(3-1,5-1);
-    Kprim(4-1,6-1) = 2*EIz/l_ini;  Kprim(6-1,4-1) = Kprim(4-1,6-1);
+    //Kprim(3-1,5-1) = 2*EIy_2/l_ini;  Kprim(5-1,3-1) = Kprim(3-1,5-1);
+    //Kprim(4-1,6-1) = 2*EIz_2/l_ini;  Kprim(6-1,4-1) = Kprim(4-1,6-1);
 
 }
 
@@ -145,6 +175,7 @@ void CElement::Initializer(CNode* Node1, CNode* Node2, CProperty* Property, CInp
 void CElement::SetDependencies(void){
 
     // Store element properties from the input property object
+    
     J0  = elprop->GetJ0();
     A   = elprop->GetA();
     EIz = input->GetYoungModulus()*elprop->GetIzz();
@@ -153,12 +184,30 @@ void CElement::SetDependencies(void){
     AE  = input->GetYoungModulus()*elprop->GetA();
     Iyy = elprop->GetIyy();
     Izz = elprop->GetIzz();
+    /*
+    elprop->SetSectionProperties2();
     
+    J0_2  = elprop->J0_2;
+    A_b   = elprop->A_b;
+    EIz_2 = input->GetYoungModulus()*elprop->Izz_b;
+    EIy_2 = input->GetYoungModulus()*elprop->Iyy_b;
+    GJ_2  = input->GetShear()*elprop->Jt_2;
+    AE_2  = input->GetYoungModulus()*elprop->A_b;
+    Iyy_b = elprop->Iyy_b;
+    Izz_b = elprop->Izz_b;
+    */
+    
+    //cout<<"Iyy="<< setprecision(20)<<Iyy<<endl;
+    //cout<<"Izz="<< setprecision(20)<<Izz<<endl;
+    
+ 
     // INITIALIZATION of KPRIM  (linear)
     Kprim = MatrixXdDiff::Zero(6,6);
 
     VectorXdDiff diagonal = VectorXdDiff::Zero(6);
     diagonal << AE/l_ini  , GJ/l_ini  ,  4*EIy/l_ini  ,   4*EIz/l_ini , 4*EIy/l_ini , 4*EIz/l_ini ;
+    
+    //diagonal << AE_2/l_ini  , GJ_2/l_ini  ,  4*EIy_2/l_ini  ,   4*EIz_2/l_ini , 4*EIy_2/l_ini , 4*EIz_2/l_ini ;
 
     // Writing the diagonal
     for (unsigned short index = 0; index < 6; index++) {
@@ -167,6 +216,9 @@ void CElement::SetDependencies(void){
 
     Kprim(3-1,5-1) = 2*EIy/l_ini;  Kprim(5-1,3-1) = Kprim(3-1,5-1);
     Kprim(4-1,6-1) = 2*EIz/l_ini;  Kprim(6-1,4-1) = Kprim(4-1,6-1);
+    
+    //Kprim(3-1,5-1) = 2*EIy_2/l_ini;  Kprim(5-1,3-1) = Kprim(3-1,5-1);
+    //Kprim(4-1,6-1) = 2*EIz_2/l_ini;  Kprim(6-1,4-1) = Kprim(4-1,6-1);
 
 }
 
@@ -178,6 +230,8 @@ void CElement::ElementMass_Rao() {
     // This mass matrix is currently evaluated using the original length of the element
     // The Finite Element Method in Engineering- S.S. Rao
     addouble r = J0/A;
+    
+    //addouble r = J0_2/A_b;
 
     // Element matrix
 
@@ -564,91 +618,97 @@ void CElement::InitializeRotMats()
 }
 
 
+
 void  CElement::StressRetrieving()
 {
      
-    int n_stiff      =0;
+    //elprop->SetSectionProperties2();
     
-    int n_tot = n_stiff+4;
-    addouble h= 0.5; 
+    int n_stiff =0;
+    addouble h= 500; 
+    addouble A_fl    = 200;
+    addouble C_wb    =3000;
+    addouble A_stiff =50;
     
-    addouble A_stiff = 0;
-    addouble A_sp    = 9*pow(10,-4);
-    addouble C_wb    =2.5;
-   
-    
-    A= elprop->GetA();
-   
-  
-    Iyy=elprop->GetIyy();
-    Izz=elprop->GetIzz();
-    
+    int n_tot = n_stiff+4;  // n_stiff + 4 flanges  
 
+    addouble b=(C_wb)/(((n_tot)/2)-1);
     
-    L_Qxy=0;
-    L_Qxz=0;       
-      
-    addouble b=(C_wb)/(((n_tot)/2)-1); 
     
-    sigma_booms = VectorXdDiff::Zero(n_tot);
-    dsigma_dx   = VectorXdDiff::Zero(n_tot);
-   
-    //cout<<"sigma_booms=\n"<<sigma_booms<<endl;
+    L_Qxy= -h/2;
+    L_Qxz= -C_wb/2; 
     
+    addouble A_b= n_stiff*A_stiff + 4*A_fl; 
+    addouble Iyy_b =50000000 ;
+    addouble Izz_b=1800000000;
   
-   N =  fint(8-1);  
-   Qxy= fint(9-1);
-   Qxz= fint(10-1);
-   My=  fint(11-1);   
-   Mz=  fint(12-1);  
-    
    
-    
+   N =  fint(7-1);  
+   Qxy= fint(8-1);
+   Qxz= fint(9-1);
+   My=  fint(11-1)-Qxz*(l_curr/2);   
+   Mz=  fint(12-1)+Qxz*(l_curr/2);
+   
+   sigma_booms = VectorXdDiff::Zero(n_tot);
+   dsigma_dx   = VectorXdDiff::Zero(n_tot);
+   axial_load  = VectorXdDiff::Zero(n_tot);
   
+   
+  
+     /// Calculation of Normal stress absorbed by booms (Navier Formula) 
     
-    // Calculation of Normal stress absorbed by booms (Navier Formula) 
      int r= ((n_stiff)/2)%2;
      
-     
       if (n_stiff == 0 ){
-         sigma_booms(1-1)=(N/A) - (Mz/Izz)*C_wb +(My/Iyy)*(h/2);
-         sigma_booms(2-1)=(N/A) + (Mz/Izz)*C_wb +(My/Iyy)*(h/2);
-         sigma_booms(3-1)=(N/A) + (Mz/Izz)*C_wb -(My/Iyy)*(h/2);
-         sigma_booms(4-1)=(N/A) - (Mz/Izz)*C_wb -(My/Iyy)*(h/2);
+         sigma_booms(1-1)=(N/A_b) - (Mz/Izz_b)*C_wb*0.5 +(My/Iyy_b)*(h/2);
+         sigma_booms(2-1)=(N/A_b) + (Mz/Izz_b)*C_wb*0.5 +(My/Iyy_b)*(h/2);
+         sigma_booms(3-1)=(N/A_b) + (Mz/Izz_b)*C_wb*0.5 -(My/Iyy_b)*(h/2);
+         sigma_booms(4-1)=(N/A_b) - (Mz/Izz_b)*C_wb*0.5 -(My/Iyy_b)*(h/2);
+         
+        
          
          
-         dsigma_dx(1-1)= -A_sp*(Qxy/Izz)*C_wb  + A_sp*(Qxz/Iyy)*(h/2);
-         dsigma_dx(2-1)=  A_sp*(Qxy/Izz)*C_wb  + A_sp*(Qxz/Iyy)*(h/2);
-         dsigma_dx(3-1)=  A_sp*(Qxy/Izz)*C_wb  - A_sp*(Qxz/Iyy)*(h/2);
-         dsigma_dx(4-1)= -A_sp*(Qxy/Izz)*C_wb  - A_sp*(Qxz/Iyy)*(h/2);
+         dsigma_dx(1-1)= -A_fl*(Qxy/Izz_b)*C_wb*0.5  + A_fl*(Qxz/Iyy_b)*(h/2);
+         dsigma_dx(2-1)=  A_fl*(Qxy/Izz_b)*C_wb*0.5  + A_fl*(Qxz/Iyy_b)*(h/2);
+         dsigma_dx(3-1)=  A_fl*(Qxy/Izz_b)*C_wb*0.5  - A_fl*(Qxz/Iyy_b)*(h/2);
+         dsigma_dx(4-1)= -A_fl*(Qxy/Izz_b)*C_wb*0.5  - A_fl*(Qxz/Iyy_b)*(h/2);
         
+          
+   
+         axial_load                  = sigma_booms*A_fl;
         
-                                        
-     } else
-     {
-     
-      if (r==0) // Even number 
+         
+     } else if (r==0) // Even number 
      {
           
           for (int i=1-1  ; i<= ((n_tot)/4 - 1) ; i += 1)
   {
-     sigma_booms(i)                       = (N/A) - (Mz/Izz)*b*((n_tot/4)-1-i+(1/2)) + (My/Iyy)*(h/2);
-     sigma_booms( ((n_tot)/4)+i )         = (N/A) + (Mz/Izz)*b*(i + (1/2))           + (My/Iyy)*(h/2);
-     sigma_booms( ((n_tot)/2)+i )         = (N/A) + (Mz/Izz)*b*((n_tot/4)-1-i+(1/2)) - (My/Iyy)*(h/2);
-     sigma_booms( (((n_tot)*3/4))+i )     = (N/A) - (Mz/Izz)*b*(i + (1/2))           - (My/Iyy)*(h/2);
+     sigma_booms(i)                       = (N/A_b) - (Mz/Izz_b)*b*((n_tot/4)-1-i+(1/2)) + (My/Iyy_b)*(h/2);
+     sigma_booms( ((n_tot)/4)+i )         = (N/A_b) + (Mz/Izz_b)*b*(i + (1/2))           + (My/Iyy_b)*(h/2);
+     sigma_booms( ((n_tot)/2)+i )         = (N/A_b) + (Mz/Izz_b)*b*((n_tot/4)-1-i+(1/2)) - (My/Iyy_b)*(h/2);
+     sigma_booms( (((n_tot)*3/4))+i )     = (N/A_b) - (Mz/Izz_b)*b*(i + (1/2))           - (My/Iyy_b)*(h/2);
     
      
-     dsigma_dx(i)                       =  -A_stiff*(Qxy/Izz)*b*((n_tot/4)-1-i+(1/2))  + A_stiff*(Qxz/Iyy)*(h/2);
-     dsigma_dx( ((n_tot)/4)+i )         =  A_stiff*(Qxy/Izz)*b*(i + (1/2))             + A_stiff*(Qxz/Iyy)*(h/2);
-     dsigma_dx( ((n_tot)/2)+i )         =  A_stiff*(Qxy/Izz)*b*((n_tot/4)-1-i+(1/2))   - A_stiff*(Qxz/Iyy)*(h/2);
-     dsigma_dx( ((n_tot)*3/4)+i)        =  -A_stiff*(Qxy/Izz)*b*(i + (1/2))            - A_stiff*(Qxz/Iyy)*(h/2);
+     dsigma_dx(i)                       =  -A_stiff*(Qxy/Izz_b)*b*((n_tot/4)-1-i+(1/2))  + A_stiff*(Qxz/Iyy_b)*(h/2);
+     dsigma_dx( ((n_tot)/4)+i )         =  A_stiff*(Qxy/Izz_b)*b*(i + (1/2))             + A_stiff*(Qxz/Iyy_b)*(h/2);
+     dsigma_dx( ((n_tot)/2)+i )         =  A_stiff*(Qxy/Izz_b)*b*((n_tot/4)-1-i+(1/2))   - A_stiff*(Qxz/Iyy_b)*(h/2);
+     dsigma_dx( ((n_tot)*3/4)+i)        =  -A_stiff*(Qxy/Izz_b)*b*(i + (1/2))            - A_stiff*(Qxz/Iyy_b)*(h/2);
      
      
   }
-      dsigma_dx(1-1)             =  dsigma_dx(1-1)*(A_sp/A_stiff); 
-      dsigma_dx((n_tot/2) - 1)   =  dsigma_dx((n_tot/2) - 1)*(A_sp/A_stiff); 
-      dsigma_dx((n_tot/2+1) - 1) =  dsigma_dx((n_tot/2+1) - 1)*(A_sp/A_stiff); 
-      dsigma_dx(n_tot - 1)       = dsigma_dx(n_tot - 1)*(A_sp/A_stiff); 
+       //Take into account the different Spars' Area in the corners
+      dsigma_dx(1-1)             =  dsigma_dx(1-1)*(A_fl/A_stiff); 
+      dsigma_dx((n_tot/2) - 1)   =  dsigma_dx((n_tot/2) - 1)*(A_fl/A_stiff); 
+      dsigma_dx((n_tot/2+1) - 1) =  dsigma_dx((n_tot/2+1) - 1)*(A_fl/A_stiff); 
+      dsigma_dx(n_tot - 1)       =  dsigma_dx(n_tot - 1)*(A_fl/A_stiff); 
+      
+     
+      
+    axial_load                  = sigma_booms*A_stiff;
+    axial_load(1-1)             = axial_load (1 -1)*(A_fl/A_stiff);
+    axial_load((n_tot/2) - 1)   = axial_load((n_tot/2) - 1)*(A_fl/A_stiff);
+    axial_load((n_tot/2+1) - 1) = axial_load((n_tot/2+1) - 1)*(A_fl/A_stiff); 
+    axial_load(n_tot - 1)       = axial_load(n_tot - 1)*(A_fl/A_stiff);
           
           
       }else{
@@ -656,103 +716,153 @@ void  CElement::StressRetrieving()
           
   for (int i=1-1 ; i<= ((n_tot-2)/4 - 1) ; i += 1)
   {
-     sigma_booms(i)                      = (N/A) - (Mz/Izz)*b*(((n_tot-2)/4)-i)  + (My/Iyy)*(h/2);
-     sigma_booms((((n_tot-2)/4)+1) +i)   = (N/A) + (Mz/Izz)*b*(i + 1)            + (My/Iyy)*(h/2);
-     sigma_booms((((n_tot-2)/2)+1) +i)   = (N/A) + (Mz/Izz)*b*(((n_tot-2)/4)-i)  - (My/Iyy)*(h/2);
-     sigma_booms((((n_tot-2)*3/4)+2) +i) = (N/A) - (Mz/Izz)*b* (i + 1)           - (My/Iyy)*(h/2);
+     sigma_booms(i)                      = (N/A_b) - (Mz/Izz_b)*b*(((n_tot-2)/4)-i)  + (My/Iyy_b)*(h/2);
+     sigma_booms((((n_tot-2)/4)+1) +i)   = (N/A_b) + (Mz/Izz_b)*b*(i + 1)            + (My/Iyy_b)*(h/2);
+     sigma_booms((((n_tot-2)/2)+1) +i)   = (N/A_b) + (Mz/Izz_b)*b*(((n_tot-2)/4)-i)  - (My/Iyy_b)*(h/2);
+     sigma_booms((((n_tot-2)*3/4)+2) +i) = (N/A_b) - (Mz/Izz_b)*b* (i + 1)           - (My/Iyy_b)*(h/2);
      
      
      
-     dsigma_dx(i)                      =  -A_stiff*(Qxy/Izz)*b*(((n_tot-2)/4)-i)  + A_stiff*(Qxz/Iyy)*(h/2);
-     dsigma_dx((((n_tot-2)/4)+1) +i)    =   A_stiff*(Qxy/Izz)*b*(i + 1)            + A_stiff*(Qxz/Iyy)*(h/2);
-     dsigma_dx((((n_tot-2)/2)+1) +i)    =   A_stiff*(Qxy/Izz)*b*(((n_tot-2)/4)-i)  - A_stiff*(Qxz/Iyy)*(h/2);
-     dsigma_dx((((n_tot-2)*3/4)+2) +i)  =  -A_stiff*(Qxy/Izz)*b*(i + 1)            - A_stiff*(Qxz/Iyy)*(h/2);
+     
+     dsigma_dx(i)                      =  -A_stiff*(Qxy/Izz_b)*b*(((n_tot-2)/4)-i)  + A_stiff*(Qxz/Iyy_b)*(h/2);
+     dsigma_dx((((n_tot-2)/4)+1) +i)    =   A_stiff*(Qxy/Izz_b)*b*(i + 1)            + A_stiff*(Qxz/Iyy_b)*(h/2);
+     dsigma_dx((((n_tot-2)/2)+1) +i)    =   A_stiff*(Qxy/Izz_b)*b*(((n_tot-2)/4)-i)  - A_stiff*(Qxz/Iyy_b)*(h/2);
+     dsigma_dx((((n_tot-2)*3/4)+2) +i)  =  -A_stiff*(Qxy/Izz_b)*b*(i + 1)            - A_stiff*(Qxz/Iyy_b)*(h/2);
       
   }
-      //Taking into account the different Spars' Area in the corners
-      dsigma_dx(1-1)             =  dsigma_dx(1-1)*(A_sp/A_stiff); 
-      dsigma_dx((n_tot/2) - 1)   =  dsigma_dx((n_tot/2) - 1)*(A_sp/A_stiff); 
-      dsigma_dx((n_tot/2+1) - 1) =  dsigma_dx((n_tot/2+1) - 1)*(A_sp/A_stiff); 
-      dsigma_dx(n_tot - 1)       =  dsigma_dx(n_tot - 1)*(A_sp/A_stiff); 
+      //Take into account the different Spars' Area in the corners
+      dsigma_dx(1-1)             =  dsigma_dx(1-1)*(A_fl/A_stiff); 
+      dsigma_dx((n_tot/2) - 1)   =  dsigma_dx((n_tot/2) - 1)*(A_fl/A_stiff); 
+      dsigma_dx((n_tot/2+1) - 1) =  dsigma_dx((n_tot/2+1) - 1)*(A_fl/A_stiff); 
+      dsigma_dx(n_tot - 1)       =  dsigma_dx(n_tot - 1)*(A_fl/A_stiff); 
       
-      sigma_booms((n_tot-2)/4)           = (N/A) + (My/Iyy)*(h/2);    //upper stiffener on Z-axis
-      sigma_booms(((n_tot-2)*3/4)+1)     = (N/A) - (My/Iyy)*(h/2);   //lower stiffener on Z-axis
+      sigma_booms((n_tot-2)/4)           = (N/A_b) + (My/Iyy_b)*(h/2);    //upper stiffener on Z-axis
+      sigma_booms(((n_tot-2)*3/4)+1)     = (N/A_b) - (My/Iyy_b)*(h/2);   //lower stiffener on Z-axis
       
-      dsigma_dx((n_tot-2)/4)           =  A_stiff*(Qxz/Iyy)*(h/2);    //upper stiffener on Z-axis
-      dsigma_dx(((n_tot-2)*3/4)+1)     = -A_stiff*(Qxz/Iyy)*(h/2);   //lower stiffener on Z-axis
+      dsigma_dx((n_tot-2)/4)           =  A_stiff*(Qxz/Iyy_b)*(h/2);    //upper stiffener on Z-axis
+      dsigma_dx(((n_tot-2)*3/4)+1)     = -A_stiff*(Qxz/Iyy_b)*(h/2);   //lower stiffener on Z-axis
       
+      
+    
+    axial_load                  = sigma_booms*A_stiff;
+    axial_load(1-1)             = axial_load (1 -1)*(A_fl/A_stiff);
+    axial_load((n_tot/2) - 1)   = axial_load((n_tot/2) - 1)*(A_fl/A_stiff);
+    axial_load((n_tot/2+1) - 1) = axial_load((n_tot/2+1) - 1)*(A_fl/A_stiff); 
+    axial_load(n_tot - 1)       = axial_load(n_tot - 1)*(A_fl/A_stiff);
     
       }
     
-     }  
+       
      
     
      
      
-     // Shear Flux calculation
+  /// Shear Flux calculation
      
-     
-     //Solve the equation :
+    
+  //Solve the equation :
      
      // tau_coeff*tau + dsigma_dx=0 ---> tau= -dsigma_dx*(tau_coeff)^-1
      
-     //    % tau_coeff = ( -1    0       0     0      0 ...     1;                dsigma_dx=( dsigma/dx (1st node)
-    //    %                1     -1      0     0      0 ...     0;                            dsigma/dx (2nd node)
-    //    %                0      1      -1     0     0         0;                               .
-    //    %                0      0       1    -1     0         0;                               .
-    //    %                0      0       0     1    -1         0;                            dsigma/dx (ntot-1  node)
-    //    %               bh     bh ...  bh     0     0 ...     0];                              M_Q]
+     //    % tau_coeff = ( 1    0       0     0      0 ...     -1;                dsigma_dx=( dsigma/dx (1st )
+    //    %                -1     1      0     0      0 ...     0;                            dsigma/dx (2nd)
+    //    %                0      -1      1     0     0         0;                               .
+    //    %                0      0       -1    1     0         0;                               .
+    //    %                0      0       0     -1    1         0;                            dsigma/dx (ntot-1 )
+    //    %               bh     bh ...  bh     0     0 ...     0];                              M_Q]     
+     
+     
              
-    addouble M_Q = Qxz*L_Qxz + Qxy*L_Qxy;   // total Torque in the section due to Qxz and Qxy
+    addouble M_Q = Qxz*L_Qxz ;   // total Torque in the section due to Qxz and Qxy
     
-   
+  
     dsigma_dx(n_tot-1)= M_Q;    //index start from 0   
                 
     tau_coeff= MatrixXdDiff::Zero(n_tot,n_tot);
     
     
-     
+    // fill tau_coeff matrix 
     for (int j=1 -1 ; j<= (n_tot-1) -1; j+=1)
     {
-     tau_coeff(j,j)=-1;           // Diagonal
+     tau_coeff(j,j)=1;           // Diagonal
     }
   
      for (int jj=1 -1; jj<= (n_tot-2) -1; jj+=1)
      {
-          tau_coeff(jj+1,jj)=1;      // sub-diagonal   
+          tau_coeff(jj+1,jj)= -1;      // sub-diagonal   
      }
     
      for (int jjj=1 -1 ; jjj<= (n_tot/2) -1 ; jjj+=1)
           {
 
-        tau_coeff(n_tot-1,jjj)= -b*h;   // last row
+        tau_coeff(n_tot-1,jjj)= b*h;   // last row
           }
-     
-  
-     
-    tau_coeff(1-1,(n_tot)-1)=1;
+        
+    tau_coeff(1-1,(n_tot)-1)= -1;  // up right corner
        
-  
-    tau = (tau_coeff).fullPivHouseholderQr().solve(-dsigma_dx);
    
-     std::ofstream file1("./Sigma.dat");
-    if (file1.is_open())
-    {
-
-        file1  <<  sigma_booms<< endl;
-    }
+   // System resolution 
+    tau   = (tau_coeff).fullPivHouseholderQr().solve(-dsigma_dx);
     
      
-   
-    std::ofstream file2("./tau.dat");
-    if (file2.is_open())
-    {
-
-        file2  <<  tau << endl;
+    
+    ///Section Verification
+    
+      //N resultant in the section 
+    N_sec =0;
+    for (int i = 1-1 ;i<=(n_tot) -1 ; i=i+1){
+        N_sec=N_sec+axial_load(i);                     
     }
+    
+      // Tz resultant in the section 
+    Tz_sec= -tau( (n_tot/2)-1)*h + tau(n_tot-1)*h ; 
+      
+    
+      //Ty resultant in the section 
+    VectorXdDiff Ty_vect = VectorXdDiff::Zero((n_tot/2)-1);   
+    Ty_vect.segment(1-1,(n_tot/2)-1)=tau.segment(1-1, (n_tot/2)-1)*b - tau.segment((n_tot/2), (n_tot/2)-1)*b;
    
+    Ty_sec=0;
+    for (int iy = 1-1 ;iy<=((n_tot/2)-1) -1 ; iy=iy+1){
+        Ty_sec=Ty_sec + Ty_vect(iy);            
+    }
+    
+   
+    //cout<<"sigma =\n"<<sigma_booms<<endl;
+    
+    //cout<<"axial_load =\n"<< axial_load <<endl;
+    
+    
+    //cout<<"tau=\n"<<tau<<endl;
+    
+    //cout<<"shear  =\n"<<shear<<endl<<endl;
+    
+    cout<<"N="<<N_sec<<endl;
+    cout<<"Ty="<<Ty_sec<<endl;
+    cout<<"Tz="<<Tz_sec<<endl;
+    
     
 }
+  
 
 
-
+void CElement:: VonMises()
+{
+ /// Von mises criteria (skin and booms ) ----> (sigma_e/sigma_all) -1 <=0
+          
+     int n_stiff = 0;
+     int n_tot = n_stiff+4;                     // n_stiff + 4 flanges
+     g_element = VectorXdDiff::Zero(2*n_tot);  //element constraint  equation Von mises    dim = (2*n_tot) 
+     
+     SF=1.5;                                   // Safety factor
+     sigma_y= 468.5;                          // yielding stress Alluminum 7075
+     addouble sigma_all = sigma_y/SF;        // Allowable Stress
+     
+    // Constraints
+    for (int i= 1 -1 ; i<= n_tot -1 ; i=i+1)
+    {
+      g_element(i)=(fabs(sigma_booms(i))/sigma_all)-1;                     // Normal stress state (Booms)     ---> g=(sigma_x/sigma_all) -1 
+      g_element((n_tot+1 - 1) +i )=(pow(3,0.5)*fabs(tau(i))/sigma_all)-1;  // Pure shear state (Spar and skin)---> g= (sqrt(3)*tau /sigma_all) -1 
+    }
+     
+}

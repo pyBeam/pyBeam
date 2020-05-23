@@ -79,9 +79,9 @@ endif
 #    include_directories : ['./include/'],
 #    cpp_args : ['-Wno-ignored-attributes', 
 #                '-Wno-deprecated-declarations', 
- #               '-DSWIG_TYPE_TABLE=pyBeamAD', 
+#                '-DSWIG_TYPE_TABLE=pyBeamAD', 
 #                codi_rev_args],
- #   name_prefix : '',
+#    name_prefix : '',
 #)
 #if meson.is_subproject()
 #	meson.add_install_script(meson.source_root()+'/subprojects/pyBeam/install.sh', meson.build_root()+'/subprojects/pyBeam', 'pyBeamAD.py')

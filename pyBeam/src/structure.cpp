@@ -58,7 +58,7 @@ CStructure::CStructure(CInput *input, CElement **container_element, CNode **cont
  
 
     YoungModulus = input->GetYoungModulus_dimensional();
-    
+    ro=input->GetDensity();
     
     
     // Resizes and zeros the K matrices
@@ -624,7 +624,7 @@ void CStructure::EvalSensRot(){
 void CStructure::EvalResidual() {
     
     Residual = Fext - Fint;
-      //cout<<"Forze interne= \n"<<Fint<<endl;  
+    
 }
 
 /*===================================================
@@ -703,6 +703,10 @@ void CStructure::SolveLinearStaticSystem(int iIter) {
         std::cout << "Use Keyword TOLERANCE_LINSOL" << std:: endl;
         throw std::exception();
     }
+    
+    
+    
+   
 
     //	Decomposition  	                   Method     Requirements          Speed   Accuracy
     //	PartialPivLU 	             partialPivLu()  Invertible             ++      +
@@ -713,6 +717,10 @@ void CStructure::SolveLinearStaticSystem(int iIter) {
     //	LLT 	                          llt() 	Positive definite       +++ 	+
     //	LDLT 	                         ldlt() Positive or negative semidefinite 	+++ 	++
     
+    
+    //cout<<"Resiudl"<< Residual << endl; 
+     //cout<<"Fext"<< Fext << endl;
+     //cout<<"Fint" << Fint <<endl; 
 }
 
 void CStructure::SolveLinearStaticSystem_RBE2(int iIter)
@@ -743,6 +751,7 @@ void CStructure::SolveLinearStaticSystem_RBE2(int iIter)
     //    std::cout << "-->  Expanding Linear System (RBE2...), "  << std::endl;
     //Caution, at this point RBE2 slave displacements are still linear
     dU = KRBE*dU_red;
+    
     //    std::cout << "KRBE.transpose() = \n" << KRBE.transpose() << std::endl;
     //    std::cout << "KRBE_ext = \n" << KRBE_ext << std::endl;
     //   std::cout << "dU (after) = \n" << dU << std::endl;
@@ -935,6 +944,7 @@ void CStructure::SolveLinearStaticSystem_RBE2_lagrange(int iIter)
     }
      //cout<<"LM=\n"<<LM<<endl; 
     //cout<<"U=\n"<<U<<endl; 
+    
     if (iIter ==1)
     {
     std::ofstream file3("./Ksys.dat");
@@ -1034,6 +1044,13 @@ void CStructure::UpdateCoord(int nRBE2, unsigned short rigid) {
     }
    
    
+    
+    std::ofstream file1("./U_sol.dat");
+    if (file1.is_open())
+    {
+
+        file1  <<  U << endl;
+    }
 }
       
        
@@ -1508,7 +1525,9 @@ void CStructure::UpdateInternalForces()
         // Contribution to the NODAL Internal Forces ARRAY
         Fint.segment((nodeA_id-1)*6+1 -1,6) +=  element[id_fe-1]->R * element[id_fe-1]->fint.segment(1-1,6);
         Fint.segment((nodeB_id-1)*6+1 -1,6) +=  element[id_fe-1]->R * element[id_fe-1]->fint.segment(7-1,6);
-
+     
+       // cout<<"fint"<< element[id_fe-1]->fint <<endl;
+        
     }
    
 }
@@ -1561,6 +1580,8 @@ void CStructure::InitializeInternalForces()
         // Contribution to the NODAL Internal Forces ARRAY
         Fint.segment((nodeA_id-1)*6+1 -1,6) +=  element[id_fe-1]->R * element[id_fe-1]->fint.segment(1-1,6);
         Fint.segment((nodeB_id-1)*6+1 -1,6) +=  element[id_fe-1]->R * element[id_fe-1]->fint.segment(7-1,6);
+        
+        cout<<"fin"<<  element[id_fe-1]->fint << endl;
 
     }
 
@@ -1619,6 +1640,7 @@ void CStructure::UpdateInternalForces_FP()
     // Nodal vector of internal forces
     // VERY IMPORTANT to reset it to 0 every time
     Fint = VectorXdDiff::Zero(nNode*6);
+    
     
     VectorXdDiff eps = VectorXdDiff::Zero(6);
     VectorXdDiff phi = VectorXdDiff::Zero(6);
@@ -1699,6 +1721,8 @@ void CStructure::UpdateInternalForces_FP()
         
         element[id_fe-1]->phi =  element[id_fe-1]->Kprim*element[id_fe-1]->eps;
         
+        //cout<<"phi"<< element[id_fe-1]->phi << endl; 
+        
         Na = MatrixXdDiff::Zero(6,6);
         Nb = MatrixXdDiff::Zero(6,6);
         
@@ -1715,12 +1739,228 @@ void CStructure::UpdateInternalForces_FP()
         Fint.segment((nodeB_id-1)*6+1 -1,6) +=  element[id_fe-1]->R * element[id_fe-1]->fint.segment(7-1,6);
         
         // stress calculations
-        element[id_fe-1]->StressRetrieving();
-          
-   
+        //element[id_fe-1]->StressRetrieving();
+       // cout<<"Sigma"<<  element[id_fe-1]-> sigma_booms <<endl;
+    
+        
     }
-       
+      
+    
+    
+    
+   
+    
+    
 }
+
+
+
+
+void CStructure::InternalForcesLinear()
+{
+    
+    //std::cout << "-->  Updating Internal Forces "   << std::endl;
+    
+    // U is the displacement
+    // Need to evaluate the displacements in the new reference system.
+    // Re is the matrix which rotates from one to the other one.
+    
+    int nodeA_id = 0;
+    int nodeB_id = 0;
+    
+  
+    
+    Matrix3dDiff Rnode_A = Matrix3dDiff::Zero();
+    Matrix3dDiff Rnode_B = Matrix3dDiff::Zero();
+    
+    // Nodal ELASTIC Rotation Matrix
+    
+    
+    Matrix3dDiff Rreduc = Matrix3dDiff::Zero();;
+    Matrix3dDiff Rtransp = Matrix3dDiff::Zero();;
+
+    // Auxiliary matrices for the elastic component
+    MatrixXdDiff Na = MatrixXdDiff::Zero(6,6);
+    MatrixXdDiff Nb = MatrixXdDiff::Zero(6,6);
+    
+    int tot_dofs= nNode*6;
+    
+    // Element's level  forces/elastic displ--> u element
+    VectorXdDiff u_el = VectorXdDiff::Zero(12);
+    
+    // Nodal vector of internal forces
+    // VERY IMPORTANT to reset it to 0 every time
+    Fint = VectorXdDiff::Zero(nNode*6);
+    
+    
+    VectorXdDiff eps = VectorXdDiff::Zero(6);
+    VectorXdDiff phi = VectorXdDiff::Zero(6);
+    VectorXdDiff fint = VectorXdDiff::Zero(12);
+    
+    /*-------------------------------
+     //     LOOPING FINITE ELEMENTS
+     * -------------------------------*/
+    std::cout<< "------>Warning: u_el=0 linear forces routine UpdateInternalForcesLinear"<<std::endl;
+    
+   
+   
+   
+   
+   
+    int id_fe;
+    
+    for (id_fe=1;     id_fe <= nfem ; id_fe++) {
+
+        u_el = VectorXdDiff::Zero(12);
+  
+       
+
+        
+        nodeA_id = element[id_fe-1]->nodeA->GeID();
+        nodeB_id = element[id_fe-1]->nodeB->GeID();
+        
+        /*----------------------------
+         //      TRANSLATIONAL PART
+         * ---------------------------*/
+
+        // Relative displacement of the second node is only along the new axis_vectoris direction
+        u_el(7-1) = 0; 
+        
+       
+
+        
+        /*----------------------------
+         *       ROTATIONAL PART
+         * ----------------------------*/
+        // (a) pseudo-vector is in global CS
+        
+        VectorXdDiff UlocA;
+        VectorXdDiff UlocB;
+        VectorXdDiff Uloc=VectorXdDiff::Zero(12);
+        
+        // Extracting  rotation
+        
+        MatrixXdDiff Kel = MatrixXdDiff::Zero(12,12);
+        element[id_fe-1]-> ElementElastic_Rao(Kel);
+      
+        UlocA=element[id_fe-1]-> R.transpose() * U.segment((nodeA_id-1)*6,6);
+        UlocB=element[id_fe-1]-> R.transpose() * U.segment((nodeB_id-1)*6,6);
+        
+        Uloc.segment(1-1 , 6  )=  UlocA.segment(1-1 , 6 );
+        Uloc.segment(7-1 , 6 ) =  UlocB.segment(1-1 , 6 );
+        
+        element[id_fe-1]->fint =Kel*YoungModulus*Uloc;
+       
+       }
+    
+    
+    
+    
+    
+    
+    
+    /*
+    //Tensional state in the root 
+       element[1-1]->i_root=1;
+    
+       cout<<"NODE-----------------------> "<< 1 <<endl;
+       
+       element[1-1]->StressRetrieving();
+       
+       element[1-1]->MaximumStressSection();
+        
+        //maximum loads root section  
+        Max_N_vect(1-1 ) = element[1-1]->N_max_sec;
+        Max_T_vect(1-1 ) = element[1-1]->T_max_sec;
+    
+   
+       
+   // Tensional state in the sections (no root)
+    for (id_fe=1;     id_fe <= nfem ; id_fe++) 
+    {
+       element[id_fe-1]->i_root=0;
+       
+       cout<<"NODE-----------------------> "<<id_fe+1 <<endl;
+       
+       element[id_fe-1]->StressRetrieving();
+       
+       element[id_fe-1]->MaximumStressSection();
+        
+        //maximum load each sections   
+        Max_N_vect(id_fe ) = element[id_fe-1]->N_max_sec;
+        Max_T_vect(id_fe ) = element[id_fe-1]->T_max_sec;
+     }
+  */
+   
+   
+    
+    
+   
+      
+      
+      
+   
+}
+   
+
+void CStructure:: evaluate_no_AdaptiveKSstresses()
+{
+    // Ks calculation ----> Ks(g_element) = g_max + summ (exp(aggr_parameter*(g_element - g_max)))
+    int n_stiff = 0;
+    int n_tot = n_stiff+4;  // n_stiff + 4 flanges
+    
+    r=50;
+    
+     int id_fe;
+     
+     
+    addouble g_max;
+    addouble summ_KS=0;
+    
+    for (id_fe=1;     id_fe <= nfem ; id_fe++) {
+        
+       cout<<"element -----------------------> "<< id_fe <<endl;
+       
+       element[id_fe-1]->StressRetrieving();
+       element[id_fe-1]->VonMises();
+   
+     //g_max
+       g_max= element[1-1]->g_element(1-1);
+       
+       for(int i= 1-1 ; i<= n_tot;i=i+1)
+     {
+       if(element[id_fe-1]->g_element(i) >= g_max)
+       {
+            
+        g_max= element[id_fe-1]->g_element(i); 
+       }
+     // summ (exp(aggr_parameter(g_element)))
+        summ_KS=summ_KS + pow(M_E,r*(element[id_fe-1]->g_element(i)));       
+     }    
+    }
+    //KS
+    
+     KS=g_max+(1/ r)*log(summ_KS *pow(M_E,-r*g_max )); //contribute of g_max
+     cout<<"g_max="<<g_max<<endl;
+     cout<<"KS="<<KS<<endl;
+}
+      
+     
+ 
+     
+void CStructure:: EvaluateWeight(){
+             
+    addouble A=element[1-1]->elprop->GetA();  //Area  (constant)
+    
+    addouble l=element[1-1]->GetInitial_Length();     // initial length
+       
+    W=nfem*ro*l*A;                             //weight
+    
+    cout<<"W"<<W<<endl;
+}
+
+
+
 
 
 /*

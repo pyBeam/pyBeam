@@ -38,16 +38,18 @@ void CProperty::SetSectionProperties2()
 {
     // input parameters 
     
+   
+    
     n_stiff =0;
     C_wb    =3000;
     t_sk    =3;
     t_sp    =5;
      h       =500;
-    addouble A_stiff =0;
+    addouble A_stiff=50 ;
     addouble A_fl    =200;
     
     addouble b=(C_wb)/(((n_stiff+4)/2)-1);      //distance within stiffeners
-    
+    //cout<<"b"<<b<<endl;
     
     
    
@@ -57,16 +59,13 @@ void CProperty::SetSectionProperties2()
     
      if (n_stiff == 0 ){
          
-        std::cout << "--> no stiffeners "<< std::endl;
+        //std::cout << "--> no stiffeners "<< std::endl;
         
         summ_ys=0;                           //stiffeners moment of inertia respect vertical axis = 0
                                         
-     } else
-    
-    { 
-    if (r==0) // Even number 
+     } else if (r==0) // Even number 
      {
-        std::cout << "--> Even Number of stiffeners"<< std::endl;
+        //std::cout << "--> Even Number of stiffeners"<< std::endl;
        for (int j=0;j<=(n_stiff/4)-1;j+=1)
         {
            
@@ -76,46 +75,58 @@ void CProperty::SetSectionProperties2()
           
      } else  //odd nnumber 
     {
-     std::cout << "--> Odd Number of stiffeners"<< std::endl;
+     //std::cout << "--> Odd Number of stiffeners"<< std::endl;
       for (int i=1;i<=(((n_stiff/2)-1)/2);i+=1)
       {
         a=a+pow(i,2);  
        
       }
     }
-     addouble summ_ys=4*pow(b,2)*a;
-    }   
-         
-  
-    addouble A_skin = C_wb*t_sk;                                        //  skin area
-    addouble A_sp = (t_sp*(h-2*t_sk));                                 //  spar area
+    summ_ys=4*pow(b,2)*a;   
+    
+   
+    addouble A_skin = (C_wb+t_sp)*t_sk;                                        //  skin area
+    addouble A_sp = (t_sp*(h-t_sk));                                          //  spar area
  
-    addouble Iyy_skin=C_wb*(pow(t_sk,3)/12)+A_skin*(pow(((h/2)-(t_sk/2)),2));                 // Iyy of the skin
-    addouble Iyy_spar= t_sp*(pow((h-(2*t_sk)),3)/12);                                        //Iyy of the spar
-    addouble Izz_skin= t_sk*(pow(C_wb,3)/12);                                               // Izz od the skin 
-    addouble Izz_spar= (h-2*t_sk)*(pow(t_sp,3)/12)+A_sp*(pow(((C_wb/2)-(t_sp/2)),2));      // Izz of the spar
-    addouble Izz_fl = 4*A_fl*pow((C_wb/2)-(t_sp/2),2);                                    // Izz of the flanges 
+    addouble Iyy_skin=(C_wb+t_sp)*(pow(t_sk,3)/12)+A_skin*(pow(((h/2)),2));                // Iyy of the skin
+    addouble Iyy_spar= t_sp*(pow((h-t_sk),3)/12);                                        //Iyy of the spar
+    addouble Izz_skin= t_sk*(pow((C_wb-t_sp),3)/12);                                               // Izz of the skin 
+    addouble Izz_spar= (h-t_sk)*(pow(t_sp,3)/12)+A_sp*(pow(((C_wb/2)),2));      // Izz of the spar
+    addouble Izz_fl = 4*A_fl*pow((C_wb/2),2);                                  // Izz of the flanges 
     
-   addouble  A=2*A_skin + 2*A_sp  +  n_stiff*A_stiff  +  4*A_fl;       //  total area
-  
-   addouble  Iyy=2*Iyy_skin  + 2*Iyy_spar + (n_stiff)*((A_stiff)*pow(((h/2)-(t_sk/2)),2))  + 4*A_fl*pow(((h/2)-(t_sk/2)),2);
     
-   addouble Izz=2*Izz_skin  +   2*Izz_spar + (A_stiff*summ_ys+Izz_fl);
+     addouble Iyy_b=(n_stiff)*((A_stiff)*pow((h/2),2))  + 4*A_fl*pow((h/2),2);  // Iyy of the booms system for ideal shell theory
+     addouble Izz_b=(A_stiff*summ_ys+Izz_fl);                                  // Izz of the booms system for ideal shell theory
+    
+    A_2=2*A_skin + 2*A_sp  +  n_stiff*A_stiff  +  4*A_fl;       //  total area
+             
+                  
+             
+    Iyy_2=2*Iyy_skin  + 2*Iyy_spar + (n_stiff)*((A_stiff)*pow((h/2),2))  + 4*A_fl*pow((h/2),2);   
    
-   addouble Jt=(2*t_sp*t_sk*pow(C_wb,2)*pow(h,2))/(C_wb*t_sp+h*t_sk);
+      
+    Izz_2=2*Izz_skin  +   2*Izz_spar + (A_stiff*summ_ys+Izz_fl);
+    
+    
+    Jt_2=(2*t_sp*t_sk*pow(C_wb,2)*pow(h,2))/(C_wb*t_sp+h*t_sk);
    
-   addouble Sy= A*(h/2);   // Y static moment of the section
+
+    J0_2=Iyy_2+Izz_2;
    
-   addouble Sz=A*(C_wb/2);  // Z static moment of the section
+   addouble Sy= A_2*(h/2);   // Y static moment of the section
+   
+   addouble Sz=A_2*(C_wb/2);  // Z static moment of the section
     
    
     
-    cout<<"Atot="<<A<<endl;
-    cout<<"Iyy="<<Iyy<<endl;
-    cout<<"Izz="<<Izz<<endl;
-    cout<<"Sy="<<Sy<<endl;
-    cout<<"Sz"<<Sz<<endl;
-   
+   // cout<<"Atot="<< setprecision(20) <<A_2<<endl;
+    //cout<<"Iyy="<< setprecision(20)<<Iyy_2<<endl;
+    //cout<<"Izz="<< setprecision(20)<<Izz_2<<endl;
+    //cout<<"Jt"<< setprecision(20) <<Jt_2<<endl;
+    //cout<<"Sy="<<Sy<<endl;
+    //cout<<"Sz"<<Sz<<endl;
+    //cout<< "I_yy_b"<< setprecision(20) << Iyy_b<<endl;
+    //cout<< "I_zz_b"<< setprecision(20) << Izz_b<<endl;
     
    
       
