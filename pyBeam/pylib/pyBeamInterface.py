@@ -80,9 +80,16 @@ class pyBeamSolver:
   def run(self):
     
     """This function runs the solver. Needs to be run after SetLoads"""
-    self.beam.Run()
-
-
+ 
+    success =True  
+    try:
+       self.beam.Run       
+    except:
+       print("pyBeam error: check history") 
+       success = False
+       
+    return success   
+       
 class pyBeamADSolver:
   """Description"""
 
