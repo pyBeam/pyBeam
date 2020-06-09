@@ -83,7 +83,7 @@ class pyBeamSolver:
  
     success =True  
     try:
-       self.beam.Run       
+       self.beam.Run()
     except:
        print("pyBeam error: check history") 
        success = False
