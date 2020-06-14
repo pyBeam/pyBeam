@@ -458,8 +458,8 @@ if (verbose){
         history << std::endl << "--> Exiting Restart Sequence." << std::endl;
     }
 
-    // Resetting Fnom in case Solve is called again
-    structure->ResetForces();
+    // Reset of load is not used here as restart is usually run before Adjoint which requires the loadvector array
+
 
 }
 
