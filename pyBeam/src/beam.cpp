@@ -153,9 +153,9 @@ void CBeamSolver::Solve(int FSIIter = 0){
     structure->InitialCoord(); //sets the Coordinates 0 of the configuration (as given in the mesh)
     structure->RestartCoord(); //sets the current Coordinates of the configuration (as given in restart or from the previous iter of FSI)
     structure->UpdateLength();
-    structure->UpdateRotationMatrix_FP();  // based on the rotational displacements
-    structure->UpdateInternalForces_FP();
-    
+    //structure->UpdateRotationMatrix_FP();  // based on the rotational displacements
+    //structure->UpdateInternalForces_FP();
+       
     totalIter = 0;
     for  ( loadStep = 0; loadStep < input->Get_LoadSteps(); loadStep++) {
         
@@ -310,7 +310,10 @@ void CBeamSolver::Solve(int FSIIter = 0){
     if (verbose){std::cout << std::endl << "--> Exiting Iterative Sequence." << std::endl;}
     
     history.close();
-
+    
+    // Resetting Fnom in case Solve is called again
+    ResetLoads(); 
+    
 }
 
 void CBeamSolver::RunRestart(int FSIIter = 0){
@@ -449,12 +452,15 @@ if (verbose){
                 history << std::endl;
 
 
-    std::cout << "===========================================================================" << std::endl;
-    std::cout << std::endl << "--> Exiting Restart Sequence." << std::endl;
-    history << "===========================================================================" << std::endl;
-    history << std::endl << "--> Exiting Restart Sequence." << std::endl;
+        std::cout << "===========================================================================" << std::endl;
+        std::cout << std::endl << "--> Exiting Restart Sequence." << std::endl;
+        history << "===========================================================================" << std::endl;
+        history << std::endl << "--> Exiting Restart Sequence." << std::endl;
     }
-    
+
+    // Resetting Fnom in case Solve is called again
+    structure->ResetForces();
+
 }
 
 passivedouble CBeamSolver::OF_NodeDisplacement(int iNode){

@@ -101,6 +101,7 @@ public:
     VectorXdDiff Residual;      // Array of Unbalanced Forces
     
     VectorXdDiff Fnom;          // Array of nominal forces
+    VectorXdDiff Fnom_old;          // Array of nominal forces  of previous FSI run  
     
     addouble YoungModulus;
     addouble penalty;
@@ -118,12 +119,18 @@ public:
     inline void ReadForces(int nTotalDOF, addouble *loadVector) {
         for (int iLoad = 0; iLoad < nTotalDOF; iLoad++){Fnom(iLoad) = loadVector[iLoad];}
     }
+    
+    inline void ResetForces() {
+        Fnom_old = Fnom;
+        Fnom = VectorXdDiff::Zero(nNode*6);
+    }    
 
     inline void SetDimensionalYoungModulus(addouble val_E){ YoungModulus = val_E; }
 
     // External forces are normalized by the Young Modulus
-    inline void UpdateExtForces(addouble lambda){ Fext = lambda* Fnom / YoungModulus; }
-
+    //inline void UpdateExtForces(addouble lambda){ Fext = lambda* Fnom / YoungModulus; }
+    inline void UpdateExtForces(addouble lambda){       
+        Fext = ( lambda* (Fnom -Fnom_old) +Fnom_old )  / YoungModulus;}
     void EvalResidual();
 
     //===================================================
