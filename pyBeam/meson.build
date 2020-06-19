@@ -25,7 +25,7 @@
 #
 
 # Option for compilation solving structural system with eigen sparse matrix or dense (default: sparse)
-matrixstorage = '-DDENSEs'
+matrixstorage = '-DDENSE'
 
 
 beam_src =files(['./src/ad.cpp',

@@ -363,7 +363,6 @@ void CStructure::AssemblyTang(int iIter)
         }
     }    
     
-}
    
     /*--------------------------------------------------------
      *    Rigid rotation contribution to the Stiffness Matrix
