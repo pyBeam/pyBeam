@@ -151,9 +151,9 @@ void CBeamSolver::Solve(int FSIIter = 0){
     // This function set the current initial coordinates and memorizes them as the old one before the converging procedure starts
     structure->InitialCoord();
     structure->RestartCoord();
-    structure->UpdateRotationMatrix_FP();  // based on the rotational displacements
     structure->UpdateLength();
-    structure->UpdateInternalForces_FP();
+    //structure->UpdateRotationMatrix_FP();  // based on the rotational displacements    
+    //structure->UpdateInternalForces_FP();
 
     totalIter = 0;
     for  ( loadStep = 0; loadStep < input->Get_LoadSteps(); loadStep++) {
@@ -272,7 +272,8 @@ void CBeamSolver::Solve(int FSIIter = 0){
     WriteRestart();
     if (verbose){std::cout << std::endl << "--> Exiting Iterative Sequence." << std::endl;}
 
-    
+     // Resetting Fnom in case Solve is called again
+    ResetLoads();    
     
 }
 

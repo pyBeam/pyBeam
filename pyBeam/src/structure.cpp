@@ -71,6 +71,7 @@ CStructure::CStructure(CInput *input, CElement **container_element, CNode **cont
 
     // Forces nodal Vector
     Fnom     =  VectorXdDiff::Zero(nNode*6);
+    Fnom_old =  VectorXdDiff::Zero(nNode*6); 
     Fext     =  VectorXdDiff::Zero(nNode*6);
     Fpenal   =  VectorXdDiff::Zero(nNode*6);
     Fint     =  VectorXdDiff::Zero(nNode*6);
