@@ -30,8 +30,14 @@
 #include <math.h>     
 #include <cmath> 
 #include <Eigen/Dense>
+
+#ifdef DENSE
 #include <Eigen/Eigenvalues>
 #include <Eigen/LU>
+#else
+#include <Eigen/Sparse>
+#include <Eigen/SparseLU>
+#endif
 
 #include <iostream>
 #include <vector>
@@ -66,3 +72,8 @@ typedef Eigen::Matrix<addouble, 3, 3> Matrix3dDiff;                           //
 typedef Eigen::Matrix<addouble, 3, 1> Vector3dDiff;                           // Vector3d
 typedef Eigen::Matrix<int, Eigen::Dynamic, 1> VectorXi;                       // VectorXi
 
+#ifndef DENSE
+typedef Eigen::SparseMatrix<addouble>  MatrixXdDiffSP; 
+typedef Eigen::Triplet<addouble> adtripletype;  
+typedef Eigen::SparseLU<Eigen::SparseMatrix<addouble>, Eigen::COLAMDOrdering<int> >  SPLUSolver;
+#endif

@@ -53,11 +53,17 @@ CStructure::CStructure(CInput *input, CElement **container_element, CNode **cont
 
     YoungModulus = input->GetYoungModulus_dimensional();
     
+    #ifdef DENSE
     // Resizes and zeros the K matrices
     Ksys.resize(nNode*6,nNode*6);
     Ksys = MatrixXdDiff::Zero(nNode*6,nNode*6);
+    #else
+    // Resizes the sparse Ksys matriX
+    Ksys.resize( (nNode)*6,(nNode)*6);    
+    tripletList.reserve((nNode)*6*100);     
+    #endif
 
-
+    
     U   = VectorXdDiff::Zero(nNode*6);         // Whole system displacements (Cumulative)
     dU  = VectorXdDiff::Zero(nNode*6);         // Incremental system displacements
 
@@ -306,7 +312,12 @@ void CStructure::AssemblyTang(int iIter)
     MatrixXdDiff Krotated = MatrixXdDiff::Zero(6,6);
     
     // Setting to Zero the stiffness matrix
+    #ifdef DENSE
     Ksys = MatrixXdDiff::Zero(nNode*6,nNode*6);
+    #else    
+    Ksys.setZero();
+    tripletList.clear();  // Zeroing the vector of triplet
+    #endif
     
     // Element's contribution to Ktang
     MatrixXdDiff Ktang(12,12);
@@ -340,13 +351,20 @@ void CStructure::AssemblyTang(int iIter)
                 Krotated = (element[id_el-1]->R * Ktang.block((jjj-1)*6+1 -1,(kkk-1)*6+1 -1,6,6)  ) * element[id_el-1]->R.transpose() ;
                 
                 // Contribution to the appropriate location of the global matrix
+                #ifdef DENSE
                 Ksys.block(dof_jjj-1,dof_kkk-1,6,6) += Krotated;
-                               
-            }            
+                #else                
+                for (int jj=0; jj< 6; jj++)
+                    for (int kk=0; kk< 6; kk++)
+                      tripletList.push_back(adtripletype(dof_jjj-1+jj,dof_kkk-1+kk, Krotated(jj,kk) ));
+                #endif
+            }
+
         }
-               
-    }
+    }    
     
+}
+   
     /*--------------------------------------------------------
      *    Rigid rotation contribution to the Stiffness Matrix
      * -------------------------------------------------------*/
@@ -357,6 +375,11 @@ void CStructure::AssemblyTang(int iIter)
         //EvalSensRotFiniteDifferences();
         EvalSensRot();
     }
+    
+    #ifndef DENSE    
+    //-->  Building Sparse MATRIX
+    Ksys.setFromTriplets( tripletList.begin(), tripletList.end());    
+    #endif 
 }
 
 /*------------------------------------
@@ -365,14 +388,21 @@ void CStructure::AssemblyTang(int iIter)
 void  CStructure::ImposeBC(){
     
     int iii = 0; int constr_dof_id = 0;
-        
+               
     // Imposing BC
     for (iii =1; iii<= Constr_matrix.rows(); iii++) {
-        constr_dof_id = round(AD::GetValue((Constr_matrix(iii-1,1-1) -1) *6 + Constr_matrix(iii-1,2-1)));
-        Ksys.row(constr_dof_id-1) = VectorXdDiff::Zero(nNode*6);
-        Ksys.col(constr_dof_id-1) = VectorXdDiff::Zero(nNode*6);
-        Ksys(constr_dof_id-1,constr_dof_id-1) = 1.0;
-    }    
+       constr_dof_id = round(AD::GetValue((Constr_matrix(iii-1,1-1) -1) *6 + Constr_matrix(iii-1,2-1)));
+       #ifdef DENSE        
+       Ksys.row(constr_dof_id-1) = VectorXdDiff::Zero(nNode*6);
+       Ksys.col(constr_dof_id-1) = VectorXdDiff::Zero(nNode*6);
+       Ksys(constr_dof_id-1,constr_dof_id-1) = 1.0;
+       #else
+       //       Ksys.coeffRef(constr_dof_id -1 ,constr_dof_id -1 ) =  (maxdiago*diagfact) ; // OLD WAY
+       Ksys.row(constr_dof_id-1) *= 0;            //Set a row to 0
+       Ksys.col(constr_dof_id-1) *= 0;            //Set a column to 0
+       Ksys.coeffRef(constr_dof_id -1 , constr_dof_id -1 ) =   1.0;  //(maxdiago*diagfact)       
+       #endif   
+    }  
     
     
     // BC on the residuals
@@ -405,8 +435,8 @@ void  CStructure::ImposeBC_RigidLagrangian(){
         constr_dof_id = round(AD::GetValue((Constr_matrix(iii-1,1-1) -1) *6 + Constr_matrix(iii-1,2-1)));
         Residual_lam(constr_dof_id-1) = 0.0;
     }    
-    
-    
+
+       
 }
 
 /*===================================================
@@ -584,8 +614,13 @@ void CStructure::EvalSensRot(){
             for (int kkk=1; kkk<= 2; kkk++) {
                 if (kkk==1) {dof_kkk  =  (nodeA_id-1)*6 +1;} else {dof_kkk  =  (nodeB_id-1)*6 +1;}
                 
+                #ifdef DENSE
                 Ksys.block(dof_jjj-1,dof_kkk-1,6,6) += Krot.block((jjj-1)*6+1 -1,(kkk-1)*6+1 -1,6,6);
-                
+                #else
+                for (int jj=0; jj< 6; jj++)
+                    for (int kk=0; kk< 6; kk++)
+                      tripletList.push_back(adtripletype(dof_jjj-1+jj,dof_kkk-1+kk, Krot((jjj-1)*6+1 -1 +jj , (kkk-1)*6+1 -1+kk ) ));                
+                #endif 
             }
             
         }
@@ -622,7 +657,7 @@ void CStructure::SolveLinearStaticSystem(int iIter, std::ofstream &history, int 
 
     bool TapeActive = false;
 
-#ifdef CODI_REVERSE_TYPE
+    #ifdef CODI_REVERSE_TYPE
 
     TapeActive = AD::globalTape.isActive();
 
@@ -636,8 +671,11 @@ void CStructure::SolveLinearStaticSystem(int iIter, std::ofstream &history, int 
     /*--- Stop the recording for the linear solver ---*/
 
     AD::StopRecording();
-#endif
+    #endif
     
+
+    #ifdef DENSE
+
     switch(kind_linSol){
         case PartialPivLu:
             dU = Ksys.partialPivLu().solve(Residual); break;
@@ -656,7 +694,28 @@ void CStructure::SolveLinearStaticSystem(int iIter, std::ofstream &history, int 
         default:
             dU = Ksys.fullPivLu().solve(Residual); break;
     }
+    #else
 
+    SPLUSolver  solver;
+    /*  In factorize(), the factors of the coefficient matrix are computed. This step should be called each time the values of 
+     *   the matrix change. However, the structural pattern of the matrix should not change between multiple calls.*/
+
+    solver.compute(Ksys);
+    
+    /* The input matrix A should be in a compressed and column-major form. Otherwise an expensive copy will be made. 
+     * You can call the inexpensive makeCompressed() to get a compressed matrix.    */    
+
+    if(solver.info()!=Eigen::Success) {
+      std::cout << "-->  ERROR: DECOMPOSITION FAILED "  <<  std::endl;
+      throw std::exception();} 
+    
+    dU= solver.solve(Residual);
+    
+    if(solver.info()!=Eigen::Success) {
+        std::cout << "-->  ERROR:  SOLVING FAILED "  <<  std::endl;
+        throw std::exception();}
+    #endif
+    
     if(TapeActive) {
 
         /*--- Start recording if it was stopped for the linear solver ---*/
@@ -700,13 +759,12 @@ void CStructure::SolveLinearStaticSystem(int iIter, std::ofstream &history, int 
     //	FullPivHouseholderQR 	fullPivHouseholderQr() 	None                - 	+++
     //	LLT 	                          llt() 	Positive definite       +++ 	+
     //	LDLT 	                         ldlt() Positive or negative semidefinite 	+++ 	++
-    
 
+    
 }
 
-  
 /*===================================================
- /      Solve linear static system
+ /      Solve linear static system Rigid Lagrangian approach
  /===================================================
  Solves the linear static problem.
  It needs Ksys and Residual updated*/
