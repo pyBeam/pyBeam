@@ -130,7 +130,7 @@ void CBeamSolver::InitializeInput(CInput* py_input){   // insert node class and 
     // Resizes the sparse Ksys matriX
     structure->K_penal.resize( (input->Get_nNodes())*6,(input->Get_nNodes())*6);    
     structure->tripletListRBEPenalty.reserve((input->Get_nNodes())*6*100);     
-    #endif}
+    #endif }
     }
     if (nRBE2 != 0 and iRigid == 1){
     structure->SetRigidLagrangeDimensions();}
