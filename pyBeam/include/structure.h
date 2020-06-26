@@ -74,15 +74,15 @@ public:
 
 #ifdef DENSE
 	MatrixXdDiff Ksys;
+        MatrixXdDiff K_penal;       // penalty matrix for rigid elements        
 #else        
         MatrixXdDiffSP  Ksys ;      
+        MatrixXdDiffSP  K_penal ;  // penalty matrix for rigid elements 
         std::vector<adtripletype > tripletList;
-        
-        addouble diagfact = 10000;   ///< dnumber to multiply diagonal of constraints imposed by penalty method
+        std::vector<adtripletype > tripletListRBEPenalty;  // triplet for the rigid contribution to the tangent matrix
 #endif 
     
-    MatrixXdDiff Ksys_red;      // [relative to masters in case of RBE2]
-    MatrixXdDiff K_penal;       // penalty matrix for rigid elements
+
     
     // In case Rigid with Lagrangian multiplier method
     MatrixXdDiff Ksys_lam;  // Aumented matrix [6*(nNode+nRBE)x6*(nNode+nRBE)]
@@ -160,7 +160,6 @@ public:
     
     void ImposeBC_RigidLagrangian();
     
-    void SolveLinearStaticSystem_RigidLagrangian(int iIter, std::ofstream &history , int print); 
     //===================================================
     //      Assembly System Stiffness Matrix
     //===================================================
@@ -175,9 +174,15 @@ public:
     //      Solve linear static system
     //===================================================
     // Assembles LHS and RHS and solves the linear static problem
-
-    void SolveLinearStaticSystem(int iIter, std::ofstream &history , int print);
-
+#ifdef DENSE
+    void SolveLinearStaticSystem(int iIter, std::ofstream &history , int print);  ///< Performs the linear system solution for DENSE matrix 
+       
+    void SolveLinearStaticSystem_RigidLagrangian(int iIter, std::ofstream &history , int print); 
+#else
+    void SolveLinearStaticSystem(int iIter, std::ofstream &history , int print);  ///< Performs the linear system solution for SPARSE matrix 
+       
+    void SolveLinearStaticSystem_RigidLagrangian(int iIter, std::ofstream &history , int print){}; ///< Linear solutino of system using SPARSE not supported in case of Lagrangian formulation for rigid elements      
+#endif    
     //===================================================
     //      Update Coordinates
     //===================================================

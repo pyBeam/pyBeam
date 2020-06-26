@@ -182,9 +182,14 @@ void CStructure::AssemblyRigidPenalty()
     VectorXdDiff Um;
     VectorXdDiff Us ;    
     // Setting to Zero the SYSTEM penalty matrix and residual vector
+    #ifdef DENSE
     K_penal = MatrixXdDiff::Zero(nNode*6,nNode*6);
-    
+    #else    
+    K_penal.setZero();
+    tripletListRBEPenalty.clear();  // Zeroing the vector of triplet
+    #endif    
   
+    
     MatrixXdDiff Krbe1 =  MatrixXdDiff::Zero(12,12); // first contribution to the tangent matrix: G^T*G  (single element)
     MatrixXdDiff Krbe2 =  MatrixXdDiff::Zero(12,12); // second contribution to the tangent matrix: sum_i g_i*H_i (single element)
 
@@ -211,18 +216,36 @@ void CStructure::AssemblyRigidPenalty()
         //Krbe2 =  RBE2[iRBE2]->g(0)*RBE2[iRBE2]->H_0 + RBE2[iRBE2]->g(1)*RBE2[iRBE2]->H_1 + RBE2[iRBE2]->g(2)*RBE2[iRBE2]->H_2;// + RBE2[iRBE2]->g(3)*RBE2[iRBE2]->H_3 + RBE2[iRBE2]->g(4)*RBE2[iRBE2]->H_4 + RBE2[iRBE2]->g(5)*RBE2[iRBE2]->H_5;
         
         // Expansion in to the system's tangent matrix
+        #ifdef DENSE
         K_penal.block(RBE2[iRBE2]->MasterDOFs(1 -1) -1,RBE2[iRBE2]->MasterDOFs(1 -1) -1, 6 , 6) += Krbe1.block(1 -1, 1 -1, 6, 6) + Krbe2.block(1 -1, 1 -1, 6, 6);
         K_penal.block(RBE2[iRBE2]->MasterDOFs(1 -1) -1,RBE2[iRBE2]->SlaveDOFs(1 -1) -1, 6 , 6) +=  Krbe1.block(1 -1, 7 -1, 6, 6) + Krbe2.block(1 -1, 7 -1, 6, 6);
         K_penal.block(RBE2[iRBE2]->SlaveDOFs(1 -1) -1,RBE2[iRBE2]->MasterDOFs(1 -1) -1, 6 , 6) +=  Krbe1.block(7 -1, 1 -1, 6, 6) + Krbe2.block(7 -1, 1 -1, 6, 6);
         K_penal.block(RBE2[iRBE2]->SlaveDOFs(1 -1) -1,RBE2[iRBE2]->SlaveDOFs(1 -1) -1, 6 , 6) +=   Krbe1.block(7 -1, 7 -1, 6, 6) + Krbe2.block(7 -1, 7 -1, 6, 6);
-             
+        #else 
+        for (int jj=0; jj< 6; jj++){
+            for (int kk=0; kk< 6; kk++) {   
+                tripletListRBEPenalty.push_back(adtripletype(RBE2[iRBE2]->MasterDOFs(1 -1) -1+jj ,RBE2[iRBE2]->MasterDOFs(1 -1) -1+kk , Krbe1(jj,kk) + Krbe2(jj,kk) ));
+                tripletListRBEPenalty.push_back(adtripletype(RBE2[iRBE2]->MasterDOFs(1 -1) -1+jj ,RBE2[iRBE2]->SlaveDOFs(1 -1)  -1+kk , Krbe1(jj,7 -1 + kk) + Krbe2(jj,7 -1 + kk) ));
+                tripletListRBEPenalty.push_back(adtripletype(RBE2[iRBE2]->SlaveDOFs(1 -1)  -1+jj ,RBE2[iRBE2]->MasterDOFs(1 -1)  -1+kk , Krbe1(7 -1 + jj, kk) + Krbe2(7 -1 + jj, kk) ));
+                tripletListRBEPenalty.push_back(adtripletype(RBE2[iRBE2]->SlaveDOFs(1 -1)  -1+jj ,RBE2[iRBE2]->SlaveDOFs(1 -1)   -1+kk , Krbe1(7 -1 + jj,7 -1 + kk) + Krbe2(7 -1 + jj,7 -1 + kk) ));
+            }}
+        #endif 
     }
+
+    #ifndef DENSE    
+    //-->  Building Sparse MATRIX
+    K_penal.setFromTriplets( tripletListRBEPenalty.begin(), tripletListRBEPenalty.end());    
+    #endif
     
     // Penalty application
     Ksys  +=   K_penal*penalty;
                
 }
-
+/*
+     #ifndef DENSE    
+    //-->  Building Sparse MATRIX
+    Ksys.setFromTriplets( tripletList.begin(), tripletList.end());    
+    #endif */
 
 //===================================================
 //      Assembly penalty matrix and vector for rigid constraints 
@@ -768,6 +791,7 @@ void CStructure::SolveLinearStaticSystem(int iIter, std::ofstream &history, int 
  Solves the linear static problem.
  It needs Ksys and Residual updated*/
 
+#ifdef DENSE
 void CStructure::SolveLinearStaticSystem_RigidLagrangian(int iIter, std::ofstream &history, int print) {
 
     bool TapeActive = false;
@@ -855,7 +879,7 @@ void CStructure::SolveLinearStaticSystem_RigidLagrangian(int iIter, std::ofstrea
     dU = VectorXdDiff::Zero(nNode*6);
     dU = dU_lam.segment(0,nNode*6);
 }
-
+#endif
 /*===================================================
  *            Update Coordinates
  * ==================================================

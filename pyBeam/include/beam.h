@@ -86,11 +86,7 @@ public:
 
     inline void InitializeRBE2(CRBE2* py_RBE2,unsigned long iRBE2) {RBE2[iRBE2] = py_RBE2;}
 
-    inline void InitializeStructure(void) {structure = new CStructure(input, element, node); structure->SetCoord0();
-    // If there are RBE and Lagrange multiplier method is used it's important to define already the dimension as AD recording needs it
-    if (nRBE2 != 0){ if (verbose){std::cout << "--> Setting RBE2 for Rigid Constraints" << std::endl;}        
-    structure->AddRBE2(input, RBE2);} 
-    if (nRBE2 != 0 and iRigid == 1){structure->SetRigidLagrangeDimensions();}}
+    void InitializeStructure(void);
 
     void Solve(int FSIIter);
 
