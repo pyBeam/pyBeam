@@ -119,14 +119,14 @@ void CProperty::SetSectionProperties2()
     
    
     
-   // cout<<"Atot="<< setprecision(20) <<A_2<<endl;
-    //cout<<"Iyy="<< setprecision(20)<<Iyy_2<<endl;
-    //cout<<"Izz="<< setprecision(20)<<Izz_2<<endl;
-    //cout<<"Jt"<< setprecision(20) <<Jt_2<<endl;
+    cout<<"Atot="<< setprecision(20) <<A_2<<endl;
+    cout<<"Iyy="<< setprecision(20)<<Iyy_2<<endl;
+    cout<<"Izz="<< setprecision(20)<<Izz_2<<endl;
+    cout<<"Jt="<< setprecision(20) <<Jt_2<<endl;
     //cout<<"Sy="<<Sy<<endl;
     //cout<<"Sz"<<Sz<<endl;
-    //cout<< "I_yy_b"<< setprecision(20) << Iyy_b<<endl;
-    //cout<< "I_zz_b"<< setprecision(20) << Izz_b<<endl;
+    cout<< "I_yy_b"<< setprecision(20) << Iyy_b<<endl;
+    cout<< "I_zz_b"<< setprecision(20) << Izz_b<<endl;
     
    
       

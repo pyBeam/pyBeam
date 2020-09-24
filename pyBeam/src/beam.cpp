@@ -62,7 +62,7 @@ void CBeamSolver::InitializeInput(CInput* py_input){   // insert node class and 
     // I'm memorizing as a member variable the object input passed from outside
     input = py_input;
    
-    //Prop->SetSectionProperties2();
+    Prop->SetSectionProperties2();
 
     input->SetParameters();
     
