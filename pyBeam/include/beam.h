@@ -47,6 +47,8 @@ private:
     bool register_loads;
     passivedouble *loadGradient;
     passivedouble E_grad, Nu_grad;
+    
+    VectorXd Prop_grad
 
     bool verbose = true;
 
@@ -55,10 +57,7 @@ private:
      
      
     CProperty* Prop;
-    
-
-    
-      
+          
     CInput* input;
 
     CElement** element;                   /*!< \brief Vector which the define the elements. */
@@ -78,10 +77,6 @@ private:
     addouble *loadVector;
     addouble thickness;
     
-
-    
-
-  
 
 protected:
 
@@ -106,6 +101,10 @@ public:
     void Solve(int FSIIter);
 
     passivedouble OF_NodeDisplacement(int iNode);
+    
+    passivedouble RESP_weight(){AD::GetValue(structure->EvaluateWeight());};
+    
+    passivedouble RESP_KSStress(){ AD::GetValue(structure->Evaluate_no_AdaptiveKSstresses() ) ;};
 
     void ComputeAdjoint(void);
 
@@ -119,8 +118,8 @@ public:
         return AD::GetValue(node[iNode]->GetCoordinate(iDim));
     }
 
-    inline passivedouble ExtractCoordinate0(int iNode, int iDim) {
         return AD::GetValue(node[iNode]->GetCoordinate0(iDim));
+    inline passivedouble ExtractCoordinate0(int iNode, int iDim) {
     }
 
     inline passivedouble ExtractCoordinateOld(int iNode, int iDim) {

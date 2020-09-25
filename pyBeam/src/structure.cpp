@@ -1903,7 +1903,7 @@ void CStructure::InternalForcesLinear()
 }
    
 
-void CStructure:: evaluate_no_AdaptiveKSstresses()
+addouble CStructure:: Evaluate_no_AdaptiveKSstresses()
 {
     // Ks calculation ----> Ks(g_element) = g_max + summ (exp(aggr_parameter*(g_element - g_max)))
     int n_stiff = 0;
@@ -1948,7 +1948,7 @@ void CStructure:: evaluate_no_AdaptiveKSstresses()
      
  
      
-void CStructure:: EvaluateWeight(){
+addouble CStructure:: EvaluateWeight(){
              
     addouble A=element[1-1]->elprop->GetA();  //Area  (constant)
     

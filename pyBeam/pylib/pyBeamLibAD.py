@@ -211,6 +211,26 @@ class pyBeamSolverAD:
 
     return displacement
 
+  def ComputeResponseWeight(self):
+
+    """ This function computes the response weight of the structure (important to be recorded) """
+    weight = self.beam.RESP_Weight()
+    print("Response - Weight  = ", weight)
+
+    return weight
+
+
+
+  def ComputeResponseKSStress(self):
+    """ This function computes the KS stress on the structure (important to be recorded) """
+    KSStress= self.beam.RESP_KSStress()
+    print("Response - KSStress = ", KSStress)
+
+    return KSStress
+
+
+
+
   def Run(self):
     """ This function runs the solver and stores the results.
         Needs to be run after __SetLoads """

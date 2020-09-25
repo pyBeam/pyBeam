@@ -37,54 +37,42 @@
 
 class CProperty{
 
-private:
+//private:
 
 protected:
 
     // Units Sys: SI
-    addouble A;                 // cross section area
-    addouble Iyy, Izz;          // Bending Moment of Inertia
-    addouble Jt;                // Torsional Moment of Inertia
-    addouble J0;                // Polar Moment of Inertia
+    addouble A;                 /// cross section area
+    addouble Iyy, Izz;          /// Bending Moment of Inertia
+    addouble Jt;                /// Torsional Moment of Inertia
+    addouble J0;                /// Polar Moment of Inertia
     
-    
-    
-   
- 
-        unsigned long PropertyID;   // ID of the property
+    unsigned long PropertyID;   // ID of the property
 
-public:
-    
-    addouble A_2;                 // cross section area
-    addouble Iyy_2, Izz_2;          // Bending Moment of Inertia
-    addouble Jt_2;                // Torsional Moment of Inertia
-    addouble J0_2;                // Polar Moment of Inertia
-    addouble Iyy_b;
-    addouble Izz_b;
-    
-    
-    addouble t_sk;             // skin  thickness 
-    addouble t_sp;            // spar thickness
+    addouble t_sk;           // skin  thickness 
+    addouble t_sp;           // spar thickness
     addouble A_stiff;        // stiffener Area
     addouble A_fl;           // flanges Area 
     addouble h;              //  box tot height 
-    addouble C_wb;          //  box tot length 
-    int n_stiff;            // number of stiffener (not taking into account the Spar's flanges)
+    addouble C_wb;           //  box tot length 
+    int n_stiff;             // number of stiffener (not taking into account the Spar's flanges)
     
     
+public:
+    
+//    addouble A_2;               ///< cross section area
+//    addouble Iyy_2, Izz_2;      ///< Bending Moment of Inertia
+//    addouble Jt_2;              ///< Torsional Moment of Inertia
+//    addouble J0_2;              ///< Polar Moment of Inertia
+//    addouble Iyy_b;
+//    addouble Izz_b;
     
     
-   
-    
-    
+     
     CProperty(int ID) {PropertyID = ID; }
 
     ~CProperty(void){}
      
-   
-   
-    
-   
     
     inline void SetSectionProperties(passivedouble A_in, passivedouble Iyy_in,
                                      passivedouble Izz_in, passivedouble Jt_in) {
@@ -92,10 +80,7 @@ public:
         Iyy = Iyy_in;
         Izz = Izz_in;
         J0 = Iyy + Izz;
-        Jt = Jt_in;
-        
-     
-        
+        Jt = Jt_in;               
     }
     
     /*passivedouble tsk_in,passivedouble tsp_in,
@@ -120,11 +105,7 @@ public:
     //inline addouble Get_b(void){return b;}
     
     //inline VectorXdDiff Get_ys(void){return ys;}
-    
-    
-    
-    
-    
+     
     
     inline addouble GetIyy(void) { return Iyy; }
 

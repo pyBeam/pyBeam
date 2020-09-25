@@ -236,8 +236,10 @@ public:
     //      OPTIMIZATION
     //===================================================
     
-   void evaluate_no_AdaptiveKSstresses();
-   void EvaluateWeight();
+   addouble Evaluate_no_AdaptiveKSstresses();
+   
+   addouble EvaluateWeight();
+   
 
     addouble GetDisplacement(int iNode, int iDim) {
         return U(6*iNode+iDim);
