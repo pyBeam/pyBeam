@@ -141,6 +141,9 @@ class RBE2_elem:  # for boundary elements
   def SetID(self,ID):
     self.ID = ID
 
+
+
+
 class Property:
   """ Description. """
     
@@ -149,6 +152,15 @@ class Property:
     self.Iyy = 0
     self.Izz = 0
     self.Jt = 0
+    self.t_sk = 0;       # skin  thickness 
+    self.t_sp = 0;           # spar thickness
+    self.A_stiff = 0;        # stiffener Area
+    self.A_fl = 0;           # flanges Area 
+    self.h = 0;              # box tot height 
+    self.C_wb = 0;           # box tot length 
+    self.n_stiff = 0;        # number of stiffeners
+    self.format = N;         # N tipical one in which inertias are defined
+                             # S on in which wing box sizes are defined
 
   def SetA(self,A):
     self.A = A 
@@ -161,6 +173,28 @@ class Property:
     
   def SetJt(self,Jt):
     self.Jt = Jt
+
+  def Sett_sk(self,t_sk):
+    self.t_sk = t_sk
+    
+  def Sett_sp(self,t_sp):
+    self.t_sp = t_sp   
+    
+  def SetA_stiff(self,A_stiff):
+    self.A_stiff = A_stiff    
+
+  def SetA_fl(self,A_fl):
+    self.A_fl = A_fl  
+    
+  def Seth(self,h):
+    self.h = h  
+
+  def SetC_wb(self,C_wb):
+    self.C_wb = C_wb  
+    
+  def Setn_stiff(self,n_stiff):
+    self.n_stiff = n_stiff 
+    
     
   def GetA(self):
     return self.A
@@ -174,6 +208,27 @@ class Property:
   def GetJt(self):
     return self.Jt
 
+  def Gett_sk(self):
+    return self.t_sk
+    
+  def Gett_sp(self):
+    return self.t_sp
+    
+  def GetA_stiff(self):
+    return self.A_stiff   
+
+  def GetA_fl(self):
+    return self.A_fl   
+    
+  def Geth(self):
+    return self.h 
+
+  def GetC_wb(self):
+    return self.C_wb 
+    
+  def Getn_stiff(self):
+    return self.n_stiff 
+    
 
 def readDimension(Mesh_file):
 
@@ -364,6 +419,9 @@ def readProp(Prop_file):
         if line.strip():
           if (line[0] == '%'):
             continue	
+            
+            SONO QUI
+            
         pos = line.find('NPROP')
         if pos != -1:
           line = line.strip('\r\n')
