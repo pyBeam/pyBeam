@@ -48,7 +48,7 @@ private:
     passivedouble *loadGradient;
     passivedouble E_grad, Nu_grad;
     
-    VectorXd Prop_grad
+    Eigen::VectorXd Prop_grad;
 
     bool verbose = true;
 
@@ -118,8 +118,9 @@ public:
         return AD::GetValue(node[iNode]->GetCoordinate(iDim));
     }
 
-        return AD::GetValue(node[iNode]->GetCoordinate0(iDim));
+        
     inline passivedouble ExtractCoordinate0(int iNode, int iDim) {
+        return AD::GetValue(node[iNode]->GetCoordinate0(iDim));
     }
 
     inline passivedouble ExtractCoordinateOld(int iNode, int iDim) {

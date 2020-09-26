@@ -272,8 +272,8 @@ void CBeamSolver::Solve(int FSIIter = 0){
             structure->UpdateCoord(nRBE2,input->Get_RigidCriteria() );
             
             structure-> InternalForcesLinear ();
-            structure-> evaluate_no_AdaptiveKSstresses();
-            structure->    EvaluateWeight();
+            structure-> Evaluate_no_AdaptiveKSstresses();
+            structure-> EvaluateWeight();
             
             
             break;

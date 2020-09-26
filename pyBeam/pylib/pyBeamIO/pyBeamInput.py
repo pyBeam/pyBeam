@@ -420,10 +420,12 @@ def readProp(Prop_file):
           if (line[0] == '%'):
             continue	
             
-            SONO QUI
-            
+       
+        iOLD = 0    
         pos = line.find('NPROP')
         if pos != -1:
+          print('--> OLD FORMAT FOR SPECIFYING PROPERTIES. WILL BE DISCONTINUED')
+          iOLD = 1
           line = line.strip('\r\n')
           line = line.replace(" ", "")
           line = line.split("=",1)
@@ -435,7 +437,38 @@ def readProp(Prop_file):
               line = line.split() ## important modification in case the formatting includes tabs    
               A = float(line[0]); Iyy = float(line[1]); Izz = float(line[2]); Jt = float(line[3]); 
               Prop[iProp].SetA(A); Prop[iProp].SetIyy(Iyy); Prop[iProp].SetIzz(Izz); Prop[iProp].SetJt(Jt); 
-              
+
+        pos = line.find('NPROPS')
+        if pos != -1:
+            if iOLD = 1:
+                raise ValueError('Cannot specify properties in new and old format. Execution aborted') 
+          line = line.strip('\r\n')
+          line = line.replace(" ", "")
+          line = line.split("=",1)
+          nProp = int(line[1])
+          for iProp in range(nProp):    
+              Prop.append(Property())
+              line = propfile.readline()
+              line = line.strip('\r\n')
+              line = line.split() ## important modification in case the formatting includes tabs    
+              Pformat = line[0]
+              line = propfile.readline()
+              line = line.strip('\r\n')
+              line = line.split() ## important modification in case the formatting includes tabs   
+                
+              if (Pformat == 'N'):        
+                A = float(line[0]); Iyy = float(line[1]); Izz = float(line[2]); Jt = float(line[3]); 
+                Prop[iProp].SetA(A); Prop[iProp].SetIyy(Iyy); Prop[iProp].SetIzz(Izz); Prop[iProp].SetJt(Jt)              
+              if (Pformat == 'S'):
+                C_wb = float(line[0]);  h = float(line[1]);  t_sk = float(line[2]);  t_sp = float(line[3]); 
+                A_fl = float(line[4]);  n_stiff =  int(line[5]);   A_stiff = float(line[6]);
+                Prop[iProp].SetC_wb(C_wb); 
+                Prop[iProp].Seth(h); 
+                Prop[iProp].Sett_sk(t_sk); 
+                Prop[iProp].Sett_sp(t_sp);
+                Prop[iProp].SetA_fl(A_fl);                   
+                Prop[iProp].Setn_stiff(n_stiff);   
+                Prop[iProp].SetA_stiff(A_stiff);                   
     return Prop, nProp
 
 

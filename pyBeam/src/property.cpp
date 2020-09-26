@@ -98,31 +98,31 @@ void CProperty::SetSectionProperties2()
      addouble Iyy_b=(n_stiff)*((A_stiff)*pow((h/2),2))  + 4*A_fl*pow((h/2),2);  // Iyy of the booms system for ideal shell theory
      addouble Izz_b=(A_stiff*summ_ys+Izz_fl);                                  // Izz of the booms system for ideal shell theory
     
-    A_2=2*A_skin + 2*A_sp  +  n_stiff*A_stiff  +  4*A_fl;       //  total area
+    A=2*A_skin + 2*A_sp  +  n_stiff*A_stiff  +  4*A_fl;       //  total area
              
                   
              
-    Iyy_2=2*Iyy_skin  + 2*Iyy_spar + (n_stiff)*((A_stiff)*pow((h/2),2))  + 4*A_fl*pow((h/2),2);   
+    Iyy=2*Iyy_skin  + 2*Iyy_spar + (n_stiff)*((A_stiff)*pow((h/2),2))  + 4*A_fl*pow((h/2),2);   
    
       
-    Izz_2=2*Izz_skin  +   2*Izz_spar + (A_stiff*summ_ys+Izz_fl);
+    Izz=2*Izz_skin  +   2*Izz_spar + (A_stiff*summ_ys+Izz_fl);
     
     
-    Jt_2=(2*t_sp*t_sk*pow(C_wb,2)*pow(h,2))/(C_wb*t_sp+h*t_sk);
+    Jt=(2*t_sp*t_sk*pow(C_wb,2)*pow(h,2))/(C_wb*t_sp+h*t_sk);
    
 
-    J0_2=Iyy_2+Izz_2;
+    J0=Iyy+Izz;
    
-   addouble Sy= A_2*(h/2);   // Y static moment of the section
+   addouble Sy= A*(h/2);   // Y static moment of the section
    
-   addouble Sz=A_2*(C_wb/2);  // Z static moment of the section
+   addouble Sz=A*(C_wb/2);  // Z static moment of the section
     
    
     
-    cout<<"Atot="<< setprecision(20) <<A_2<<endl;
-    cout<<"Iyy="<< setprecision(20)<<Iyy_2<<endl;
-    cout<<"Izz="<< setprecision(20)<<Izz_2<<endl;
-    cout<<"Jt="<< setprecision(20) <<Jt_2<<endl;
+    cout<<"Atot="<< setprecision(20) <<A<<endl;
+    cout<<"Iyy="<< setprecision(20)<<Iyy<<endl;
+    cout<<"Izz="<< setprecision(20)<<Izz<<endl;
+    cout<<"Jt="<< setprecision(20) <<Jt<<endl;
     //cout<<"Sy="<<Sy<<endl;
     //cout<<"Sz"<<Sz<<endl;
     cout<< "I_yy_b"<< setprecision(20) << Iyy_b<<endl;
