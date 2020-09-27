@@ -49,26 +49,17 @@ protected:
     
     unsigned long PropertyID;   // ID of the property
 
+    addouble C_wb;           //  box tot length 
+    addouble h;              //  box tot height 
     addouble t_sk;           // skin  thickness 
     addouble t_sp;           // spar thickness
-    addouble A_stiff;        // stiffener Area
-    addouble A_fl;           // flanges Area 
-    addouble h;              //  box tot height 
-    addouble C_wb;           //  box tot length 
+    addouble A_fl;           // flanges Area     
     int n_stiff;             // number of stiffener (not taking into account the Spar's flanges)
-    
+    addouble A_stiff;        // stiffener Area    
     
 public:
     
-//    addouble A_2;               ///< cross section area
-//    addouble Iyy_2, Izz_2;      ///< Bending Moment of Inertia
-//    addouble Jt_2;              ///< Torsional Moment of Inertia
-//    addouble J0_2;              ///< Polar Moment of Inertia
-//    addouble Iyy_b;
-//    addouble Izz_b;
-    
-    
-     
+        
     CProperty(int ID) {PropertyID = ID; }
 
     ~CProperty(void){}
@@ -87,9 +78,12 @@ public:
                                         passivedouble Astiff_in,passivedouble h_in,
                                         passivedouble Cwb_in,passivedouble nstiff_in,passivedouble b_in,VectorXdDiff ys_in
      */
-    void SetSectionProperties2();
+    void SetSectionProperties(passivedouble C_wb_, passivedouble h_, passivedouble t_sk_,  
+                              passivedouble t_sp_, passivedouble A_fl_, 
+                              int n_stiff_, passivedouble A_stiff_);
  
-
+    void SetSectionProperties2();
+    
     //inline addouble Get_t_sk(void){return t_sk;}
     
     //inline addouble Get_t_sp(void){return t_sp;}

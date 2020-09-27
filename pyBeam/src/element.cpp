@@ -172,7 +172,7 @@ void CElement::Initializer(CNode* Node1, CNode* Node2, CProperty* Property, CInp
 }
 
 
-void CElement::SetDependencies(void){
+                                                                                                        void CElement::SetDependencies(void){
 
     // Store element properties from the input property object
     

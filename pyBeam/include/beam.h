@@ -89,7 +89,6 @@ public:
     
     void InitializeInput(CInput *py_input);
     
-
     inline void InitializeNode(CNode *py_node, unsigned long iNode) {node[iNode] = py_node;}
 
     inline void InitializeElement(CElement *py_element, unsigned long iFEM) {element[iFEM] = py_element;}

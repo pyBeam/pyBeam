@@ -1892,16 +1892,14 @@ void CStructure::InternalForcesLinear()
      }
   */
    
-   
-    
-    
-   
-      
-      
-      
-   
 }
    
+
+void CStructure::ReSetPropfromWB()
+{
+}
+
+
 
 addouble CStructure::Evaluate_no_AdaptiveKSstresses()
 {

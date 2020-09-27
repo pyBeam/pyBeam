@@ -235,8 +235,12 @@ public:
      //===================================================
     //      OPTIMIZATION
     //===================================================
-    
-   addouble Evaluate_no_AdaptiveKSstresses();
+    void ReSetPropfromWB();     ///< Given the WB sectional, re-evaluates the   
+                                ///< inertial sections to register dependencies
+
+     
+     
+    addouble Evaluate_no_AdaptiveKSstresses();
    
    addouble EvaluateWeight();
    

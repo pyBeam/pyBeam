@@ -159,7 +159,7 @@ class Property:
     self.h = 0;              # box tot height 
     self.C_wb = 0;           # box tot length 
     self.n_stiff = 0;        # number of stiffeners
-    self.format = N;         # N tipical one in which inertias are defined
+    self.format = "N";         # N tipical one in which inertias are defined
                              # S on in which wing box sizes are defined
 
   def SetA(self,A):
@@ -195,6 +195,11 @@ class Property:
   def Setn_stiff(self,n_stiff):
     self.n_stiff = n_stiff 
     
+  def SetFormat(self,Pformat):
+    self.Format = Pformat  
+    
+  def GetFormat(self):
+    return self.Format  
     
   def GetA(self):
     return self.A
@@ -208,26 +213,27 @@ class Property:
   def GetJt(self):
     return self.Jt
 
+  def GetC_wb(self):
+    return self.C_wb 
+
+  def Geth(self):
+    return self.h 
+
   def Gett_sk(self):
     return self.t_sk
     
   def Gett_sp(self):
     return self.t_sp
+
+  def GetA_fl(self):
+    return self.A_fl 
+
+  def Getn_stiff(self):
+    return self.n_stiff 
     
   def GetA_stiff(self):
     return self.A_stiff   
 
-  def GetA_fl(self):
-    return self.A_fl   
-    
-  def Geth(self):
-    return self.h 
-
-  def GetC_wb(self):
-    return self.C_wb 
-    
-  def Getn_stiff(self):
-    return self.n_stiff 
     
 
 def readDimension(Mesh_file):
@@ -409,9 +415,15 @@ def readRBE2(Mesh_file):
 def readProp(Prop_file):	
 
     Prop = []    
-    
+              
     with open(Prop_file, 'r') as propfile:
       print('--> Reading property file: ' + Prop_file + '.')
+      
+      #for line in propfile:
+      #  # For each line, check if line contains the string
+      #  if string_to_search in line:
+      #          return True          
+          
       while 1:
         line = propfile.readline()
         if not line:
@@ -419,29 +431,33 @@ def readProp(Prop_file):
         if line.strip():
           if (line[0] == '%'):
             continue	
-            
-       
-        iOLD = 0    
+                
         pos = line.find('NPROP')
-        if pos != -1:
+        #print ("NPROPS", pos)
+        pos2 = line.find('NPROPS')
+        #print ("NPROPS2", pos2)
+        
+        if pos != -1 and pos2 ==-1:
           print('--> OLD FORMAT FOR SPECIFYING PROPERTIES. WILL BE DISCONTINUED')
-          iOLD = 1
           line = line.strip('\r\n')
           line = line.replace(" ", "")
           line = line.split("=",1)
           nProp = int(line[1])
-          for iProp in range(nProp):    
+          for iProp in range(nProp):   
+              print("Storing Property", iProp)
               Prop.append(Property())
               line = propfile.readline()
               line = line.strip('\r\n')
               line = line.split() ## important modification in case the formatting includes tabs    
               A = float(line[0]); Iyy = float(line[1]); Izz = float(line[2]); Jt = float(line[3]); 
               Prop[iProp].SetA(A); Prop[iProp].SetIyy(Iyy); Prop[iProp].SetIzz(Izz); Prop[iProp].SetJt(Jt); 
-
-        pos = line.find('NPROPS')
-        if pos != -1:
-            if iOLD = 1:
-                raise ValueError('Cannot specify properties in new and old format. Execution aborted') 
+              print("Success!",iProp)
+          
+#        pos = line.find('NPROPS')
+        elif pos != -1 and pos2 !=-1:
+          print('--> NEW FORMAT FOR SPECIFYING PROPERTIES.')
+          #if iOLD == 1:
+          #  raise ValueError('Cannot specify properties in new and old format. Execution aborted') 
           line = line.strip('\r\n')
           line = line.replace(" ", "")
           line = line.split("=",1)
@@ -452,6 +468,7 @@ def readProp(Prop_file):
               line = line.strip('\r\n')
               line = line.split() ## important modification in case the formatting includes tabs    
               Pformat = line[0]
+              Prop[iProp].SetFormat(Pformat)
               line = propfile.readline()
               line = line.strip('\r\n')
               line = line.split() ## important modification in case the formatting includes tabs   
@@ -459,7 +476,7 @@ def readProp(Prop_file):
               if (Pformat == 'N'):        
                 A = float(line[0]); Iyy = float(line[1]); Izz = float(line[2]); Jt = float(line[3]); 
                 Prop[iProp].SetA(A); Prop[iProp].SetIyy(Iyy); Prop[iProp].SetIzz(Izz); Prop[iProp].SetJt(Jt)              
-              if (Pformat == 'S'):
+              elif (Pformat == 'S'):
                 C_wb = float(line[0]);  h = float(line[1]);  t_sk = float(line[2]);  t_sp = float(line[3]); 
                 A_fl = float(line[4]);  n_stiff =  int(line[5]);   A_stiff = float(line[6]);
                 Prop[iProp].SetC_wb(C_wb); 
@@ -468,7 +485,10 @@ def readProp(Prop_file):
                 Prop[iProp].Sett_sp(t_sp);
                 Prop[iProp].SetA_fl(A_fl);                   
                 Prop[iProp].Setn_stiff(n_stiff);   
-                Prop[iProp].SetA_stiff(A_stiff);                   
+                Prop[iProp].SetA_stiff(A_stiff);  
+              else: 
+                raise ValueError("Unknown paramter for Property CARD input. Execution aborted") 
+                
     return Prop, nProp
 
 

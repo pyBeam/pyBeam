@@ -62,12 +62,10 @@ void CBeamSolver::InitializeInput(CInput* py_input){   // insert node class and 
     // I'm memorizing as a member variable the object input passed from outside
     input = py_input;
    
-    Prop->SetSectionProperties2();
+    //Prop->SetSectionProperties();
 
     input->SetParameters();
     
-    
-
     nDOF = input->Get_nDOF();
     nFEM = input->Get_nFEM();
     nTotalDOF = input->Get_nNodes() * input->Get_nDOF();
@@ -112,8 +110,7 @@ void CBeamSolver::InitializeInput(CInput* py_input){   // insert node class and 
     }
     else {RBE2 = NULL; }
     
-    
-    
+ 
     //===============================================
     //  Initialize structural solver
     //===============================================
