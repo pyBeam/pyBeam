@@ -63,7 +63,7 @@ void CBeamSolver::InitializeInput(CInput* py_input){   // insert node class and 
     input = py_input;
    
     //Prop->SetSectionProperties();
-
+    
     input->SetParameters();
     
     nDOF = input->Get_nDOF();
@@ -116,6 +116,8 @@ void CBeamSolver::InitializeInput(CInput* py_input){   // insert node class and 
     //===============================================
     
     structure = NULL;
+    
+    
     
     
 }

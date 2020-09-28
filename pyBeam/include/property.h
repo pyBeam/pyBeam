@@ -46,6 +46,8 @@ protected:
     addouble Iyy, Izz;          /// Bending Moment of Inertia
     addouble Jt;                /// Torsional Moment of Inertia
     addouble J0;                /// Polar Moment of Inertia
+    addouble A_b;
+    addouble Iyy_b, Izz_b; 
     
     unsigned long PropertyID;   // ID of the property
 
@@ -66,12 +68,15 @@ public:
      
     
     inline void SetSectionProperties(passivedouble A_in, passivedouble Iyy_in,
-                                     passivedouble Izz_in, passivedouble Jt_in) {
+                                     passivedouble Izz_in, passivedouble Jt_in, passivedouble A_b_in, passivedouble Iyy_b_in, passivedouble Izz_b_in) {
         A = A_in;
         Iyy = Iyy_in;
         Izz = Izz_in;
         J0 = Iyy + Izz;
-        Jt = Jt_in;               
+        Jt = Jt_in;
+        A_b=A_b_in;
+        Iyy_b= Iyy_b_in;
+        Izz_b= Izz_b_in;
     }
     
     /*passivedouble tsk_in,passivedouble tsp_in,
@@ -83,24 +88,7 @@ public:
                               int n_stiff_, passivedouble A_stiff_);
  
     void SetSectionProperties2();
-    
-    //inline addouble Get_t_sk(void){return t_sk;}
-    
-    //inline addouble Get_t_sp(void){return t_sp;}
-    
-   // inline addouble GetA_stiff(void){return A_stiff;}
-    
-    //inline addouble Get_h(void){return h;}
-    
-    //inline addouble GetC_wb(void){return C_wb;}
-    
-    //inline addouble Get_n_stiff(void){return n_stiff;}
-    
-    //inline addouble Get_b(void){return b;}
-    
-    //inline VectorXdDiff Get_ys(void){return ys;}
-     
-    
+         
     inline addouble GetIyy(void) { return Iyy; }
 
     inline addouble GetIzz(void) { return Izz; }
@@ -110,7 +98,24 @@ public:
     inline addouble GetJt(void) { return Jt; }
 
     inline addouble GetJ0(void) { return J0; }
-    
-    
- 
+     
+     inline addouble GetA_b(void) { return A_b; }
+      
+     inline addouble GetIyy_b(void) { return Iyy_b; }
+       
+     inline addouble GetIzz_b(void) { return Izz_b; }
+     
+     inline addouble GetC_wb(void) { return C_wb; }
+     
+     inline addouble Geth(void) { return h; }
+     
+     inline addouble Gett_sk(void) { return t_sk; }
+     
+     inline addouble Gett_sp(void) { return t_sp; }
+     
+     inline addouble GetA_fl(void) { return A_fl; }
+     
+     inline addouble Getn_stiff(void) { return n_stiff; }
+     
+     inline addouble GetA_stiff(void) { return A_stiff; }
 };

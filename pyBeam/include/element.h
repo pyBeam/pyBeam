@@ -45,9 +45,12 @@ private:
 
     addouble m_e;                // Element mass
     addouble A;                  // Element area
+    addouble A_b;
 
     addouble Iyy;                // Beam inertia over y axis
     addouble Izz;                // Beam inertia over y axis
+    addouble Iyy_b;
+    addouble Izz_b;
 
     addouble GJ;                 // Torsional stiffness
     addouble J0;                 // Polar inertia
@@ -68,7 +71,14 @@ private:
     addouble L_Qxz;    // // harm of Qxy w.r.t the left lower corner
     
     
-   
+    // Section Design Variables
+    int n_stiff;             // number of stiffener (not taking into account the Spar's flanges)
+    addouble C_wb;           //  box tot length 
+    addouble h;              //  box tot height 
+    addouble t_sk;           // skin  thickness 
+    addouble t_sp;           // spar thickness
+    addouble A_fl;           // flanges Area     
+    addouble A_stiff;        // stiffener Area    
    
     
             

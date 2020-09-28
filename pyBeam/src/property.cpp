@@ -32,7 +32,7 @@
 
 using namespace std;
 
-/**  This function overloads the other funciton with the same name but here as inputs are passed
+/**  This function overloads the other function with the same name but here as inputs are passed
  wingbox thicknesses instead of inertias. Hence, inertias are evaluated.*/
 void CProperty::SetSectionProperties(passivedouble C_wb_, passivedouble h_, passivedouble t_sk_,  
                               passivedouble t_sp_, passivedouble A_fl_, 
@@ -74,10 +74,13 @@ void CProperty::SetSectionProperties(passivedouble C_wb_, passivedouble h_, pass
     addouble Iyy_spar= t_sp*(pow((h-t_sk),3)/12);                            //Iyy of the spar
     addouble Izz_skin= t_sk*(pow((C_wb-t_sp),3)/12);                         // Izz of the skin 
     addouble Izz_spar= (h-t_sk)*(pow(t_sp,3)/12)+A_sp*(pow(((C_wb/2)),2));   // Izz of the spar
-    addouble Izz_fl = 4*A_fl*pow((C_wb/2),2);                                // Izz of the flanges 
+    addouble Izz_fl = 4*A_fl*pow((C_wb/2),2); // Izz of the flanges 
+    
+    A_b= n_stiff*A_stiff + 4*A_fl; 
        
-    addouble Iyy_b=(n_stiff)*((A_stiff)*pow((h/2),2))  + 4*A_fl*pow((h/2),2);  // Iyy of the booms system for ideal shell theory
-    addouble Izz_b=(A_stiff*summ_ys+Izz_fl);                                  // Izz of the booms system for ideal shell theory
+    Iyy_b=(n_stiff)*((A_stiff)*pow((h/2),2))  + 4*A_fl*pow((h/2),2);  // Iyy of the booms system for ideal shell theory
+    
+    Izz_b=(A_stiff*summ_ys+Izz_fl);                                  // Izz of the booms system for ideal shell theory
     
     A = 2*A_skin + 2*A_sp  +  n_stiff*A_stiff  +  4*A_fl;       //  total area
            
@@ -94,6 +97,7 @@ void CProperty::SetSectionProperties(passivedouble C_wb_, passivedouble h_, pass
    addouble Sz=A*(C_wb/2);  // Z static moment of the section   
    
    std::cout << "Inertias of the boom never used. Static Moments neither" << std::endl;
+    
 }
 
 
