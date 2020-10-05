@@ -88,6 +88,8 @@ public:
                               int n_stiff_, passivedouble A_stiff_);
  
     void SetSectionProperties2();
+    
+    //void VectorXdDiff GetDesignVariable(void);
          
     inline addouble GetIyy(void) { return Iyy; }
 

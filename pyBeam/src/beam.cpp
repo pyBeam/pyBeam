@@ -70,6 +70,9 @@ void CBeamSolver::InitializeInput(CInput* py_input){   // insert node class and 
     nFEM = input->Get_nFEM();
     nTotalDOF = input->Get_nNodes() * input->Get_nDOF();
     nRBE2=input->Get_nRBE2();
+     
+    
+   
    
     //==============================================================
     //      Load Vector initialization
@@ -117,12 +120,9 @@ void CBeamSolver::InitializeInput(CInput* py_input){   // insert node class and 
     
     structure = NULL;
     
-    
-    
-    
+
+   
 }
-
-
 
 
 /**
@@ -273,7 +273,7 @@ void CBeamSolver::Solve(int FSIIter = 0){
             structure-> InternalForcesLinear ();
             structure-> Evaluate_no_AdaptiveKSstresses();
             structure-> EvaluateWeight();
-            
+            //
             
             break;
             // Now only X is updated

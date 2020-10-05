@@ -830,7 +830,6 @@ void CElement:: VonMises()
 {
  /// Von mises criteria (skin and booms ) ----> (sigma_e/sigma_all) -1 <=0
           
-     int n_stiff = 0;
      int n_tot = n_stiff+4;                     // n_stiff + 4 flanges
      g_element = VectorXdDiff::Zero(2*n_tot);  //element constraint  equation Von mises    dim = (2*n_tot) 
      

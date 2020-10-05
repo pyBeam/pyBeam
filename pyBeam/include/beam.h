@@ -47,6 +47,7 @@ private:
     bool register_loads;
     passivedouble *loadGradient;
     passivedouble E_grad, Nu_grad;
+    VectorXdDiff DVs;
     
     Eigen::VectorXd Prop_grad;
 
@@ -66,6 +67,7 @@ private:
 
     CStructure* structure;                /*!< \brief Pointer which the defines the structure. */
     
+   
   
 
     int nDOF, nTotalDOF, nRBE2, nDim;
@@ -81,6 +83,8 @@ private:
 protected:
 
 public:
+    
+ 
 
     CBeamSolver(void);
 
@@ -104,6 +108,7 @@ public:
     passivedouble RESP_weight(){AD::GetValue(structure->EvaluateWeight());};
     
     passivedouble RESP_KSStress(){ AD::GetValue(structure->Evaluate_no_AdaptiveKSstresses() ) ;};
+    
 
     void ComputeAdjoint(void);
 

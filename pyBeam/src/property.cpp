@@ -101,8 +101,6 @@ void CProperty::SetSectionProperties(passivedouble C_wb_, passivedouble h_, pass
 }
 
 
-
-
 void CProperty::SetSectionProperties2()
 {
     // input parameters 
