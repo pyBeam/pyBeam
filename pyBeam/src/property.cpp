@@ -76,7 +76,7 @@ void CProperty::SetSectionProperties(passivedouble C_wb_, passivedouble h_, pass
     addouble Izz_spar= (h-t_sk)*(pow(t_sp,3)/12)+A_sp*(pow(((C_wb/2)),2));   // Izz of the spar
     addouble Izz_fl = 4*A_fl*pow((C_wb/2),2); // Izz of the flanges 
     
-    A_b= n_stiff*A_stiff + 4*A_fl; 
+    A_b= n_stiff*A_stiff + 4*A_fl;  /// Number of stiffeners
        
     Iyy_b=(n_stiff)*((A_stiff)*pow((h/2),2))  + 4*A_fl*pow((h/2),2);  // Iyy of the booms system for ideal shell theory
     
@@ -92,16 +92,41 @@ void CProperty::SetSectionProperties(passivedouble C_wb_, passivedouble h_, pass
    
     J0=Iyy+Izz;
    
-   addouble Sy= A*(h/2);   // Y static moment of the section
+   //addouble Sy= A*(h/2);   // Y static moment of the section
    
-   addouble Sz=A*(C_wb/2);  // Z static moment of the section   
+   //addouble Sz=A*(C_wb/2);  // Z static moment of the section   
    
-   std::cout << "Inertias of the boom never used. Static Moments neither" << std::endl;
+   isWBDV = 1;
+   
+//   std::cout << "Inertias of the boom never used. Static Moments neither" << std::endl;
     
 }
 
 
-void CProperty::SetSectionProperties2()
+void CProperty::RegisterInput_WB(void) {
+    if (isWBDV == 1){
+    AD::RegisterInput(C_wb);
+    AD::RegisterInput(h);
+    AD::RegisterInput(t_sk);
+    AD::RegisterInput(t_sp);
+    AD::RegisterInput(A_fl);    
+    AD::RegisterInput(A_stiff);      
+    }
+    else if  (isWBDV == 0){
+    AD::RegisterInput(A);
+    AD::RegisterInput(Iyy);
+    AD::RegisterInput(Izz);
+    AD::RegisterInput(Jt); 
+    }
+}
+
+
+
+
+
+
+
+/*void CProperty::SetSectionProperties2()
 {
     // input parameters 
     n_stiff =0;
@@ -195,3 +220,4 @@ void CProperty::SetSectionProperties2()
    
       
 }
+ * */

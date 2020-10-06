@@ -49,6 +49,7 @@ protected:
     unsigned long nNodes;           // Number of overall nodes along the wing (no collapsed)
     unsigned long nFEM;             // Number of finite elements
     unsigned long nRBE2;            // Number of RBE2 rigid elements
+    unsigned long nProp;            ///< Number of Properties
 
     unsigned short nDOF;            // Number of degrees of freedom
 
@@ -89,7 +90,9 @@ public:
     CInput(int py_nPoint, int py_nElem);
     
     CInput(int py_nPoint, int py_nElem, int py_nRBE2);
-
+    
+    CInput(int py_nPoint, int py_nElem, int py_nRBE2, int py_nProp);
+    
     virtual ~CInput(void);
 
     void SetParameters();
@@ -161,6 +164,8 @@ public:
 
     unsigned long Get_nRBE2(void) { return nRBE2; }
 
+    unsigned long Get_nProp(void) { return nProp; }
+        
     unsigned short Get_nDOF(void) { return nDOF; }
 
     unsigned short Get_FollowerFlag(void) { return follower_flag; }

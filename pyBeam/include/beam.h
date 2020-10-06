@@ -54,10 +54,9 @@ private:
     bool verbose = true;
 
     CNode **node;                         /*!< \brief Vector which stores the node initial coordinates. */
-    //CConnectivity **connectivity;       /*!< \brief Vector which stores the connectivity. */
+    //CConnectivity **connectivity;       /*!< \brief Vector which stores the connectivity. */     
      
-     
-    CProperty* Prop;
+    CProperty** Prop;
           
     CInput* input;
 
@@ -72,6 +71,7 @@ private:
 
     int nDOF, nTotalDOF, nRBE2, nDim;
     unsigned long nFEM;
+    unsigned long nProp;
 
     unsigned long totalIter;
     addouble initDispNorm;
@@ -85,12 +85,10 @@ protected:
 public:
     
  
-
     CBeamSolver(void);
 
     virtual ~CBeamSolver(void);
-   
-    
+       
     void InitializeInput(CInput *py_input);
     
     inline void InitializeNode(CNode *py_node, unsigned long iNode) {node[iNode] = py_node;}
@@ -105,9 +103,9 @@ public:
 
     passivedouble OF_NodeDisplacement(int iNode);
     
-    passivedouble RESP_weight(){AD::GetValue(structure->EvaluateWeight());};
-    
-    passivedouble RESP_KSStress(){ AD::GetValue(structure->Evaluate_no_AdaptiveKSstresses() ) ;};
+    passivedouble EvalWeight(){return AD::GetValue(structure->EvaluateWeight());};
+       
+    passivedouble EvalKSStress(){return AD::GetValue(structure->Evaluate_no_AdaptiveKSstresses() ) ;};
     
 
     void ComputeAdjoint(void);
@@ -117,7 +115,7 @@ public:
     inline passivedouble ExtractDisplacements(int iNode, int iDim) {
         return AD::GetValue(structure->GetDisplacement(iNode, iDim));
     }
-
+    
     inline passivedouble ExtractCoordinate(int iNode, int iDim) {
         return AD::GetValue(node[iNode]->GetCoordinate(iDim));
     }
@@ -168,4 +166,5 @@ public:
 
     inline void SetLowVerbosity(void) { verbose = false; structure->SetLowVerbosity();}
     inline void SetHighVerbosity(void) { verbose = true; structure->SetLowVerbosity();}
+
 };

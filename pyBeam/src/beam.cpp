@@ -70,9 +70,9 @@ void CBeamSolver::InitializeInput(CInput* py_input){   // insert node class and 
     nFEM = input->Get_nFEM();
     nTotalDOF = input->Get_nNodes() * input->Get_nDOF();
     nRBE2=input->Get_nRBE2();
+    nProp=input->Get_nProp();
      
-    
-   
+
    
     //==============================================================
     //      Load Vector initialization
@@ -458,12 +458,13 @@ passivedouble CBeamSolver::OF_NodeDisplacement(int iNode){
 
 void CBeamSolver::SetDependencies(void){
 
-    /** Register the solution as input **/
+    /* Register the restart/initial U  as input **/
     structure->RegisterSolutionInput();
     
     addouble E, E_dim, Nu, G;
-    unsigned long iFEM, iLoad;
-
+    unsigned long iFEM, iLoad, iP;
+    
+    /* Registers E and Nu as inputs **/
     input->RegisterInput_E();
     input->RegisterInput_Nu();
 
@@ -475,7 +476,13 @@ void CBeamSolver::SetDependencies(void){
     G = E/(2*(1+Nu));
 
     input->SetShear(G);
-
+    
+    /* Registering Wing-box sizes as inputs*/
+    for (iP= 0; iP<nProp; iP ++){
+        Prop[iP]->RegisterInput_WB();
+    }
+        
+        
     for (iFEM = 0; iFEM < nFEM; iFEM++) {
         element[iFEM]->SetDependencies();
     }
@@ -491,8 +498,8 @@ void CBeamSolver::SetDependencies(void){
         /*--- Initialize the load gradient to 0 ---*/
         loadGradient[iLoad] = 0.0;
     }
-
 }
+
 
 void CBeamSolver::ComputeAdjoint(void){
 

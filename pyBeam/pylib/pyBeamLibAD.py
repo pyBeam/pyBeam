@@ -93,7 +93,7 @@ class pyBeamSolverAD:
 
     # Initializing objects
     self.beam = pyBeamAD.CBeamSolver()
-    self.inputs = pyBeamAD.CInput(self.nPoint, self.nElem, self.nRBE2)
+    self.inputs = pyBeamAD.CInput(self.nPoint, self.nElem, self.nRBE2, self.nProp)
 
     # Start recording
     print("--> Initialization successful")
@@ -218,21 +218,16 @@ class pyBeamSolverAD:
 
     return displacement
 
-  def ComputeResponseWeight(self):
-
+  def ComputeWeight(self):
     """ This function computes the response weight of the structure (important to be recorded) """
-    weight = self.beam.RESP_Weight()
-    print("Response - Weight  = ", weight)
-
+    print("ENTRA DENTRO 1")
+    weight = self.beam.EvalWeight()
     return weight
-
 
 
   def ComputeResponseKSStress(self):
     """ This function computes the KS stress on the structure (important to be recorded) """
     KSStress= self.beam.RESP_KSStress()
-    print("Response - KSStress = ", KSStress)
-
     return KSStress
 
 

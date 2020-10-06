@@ -113,13 +113,13 @@ public:
     
     VectorXdDiff Fnom;          // Array of nominal forces
     
-    addouble YoungModulus;
-    addouble ro;
     
+    addouble YoungModulus;
+    addouble rho;               
    
-    addouble r ; // aggregation parameter
+    addouble r ;    // aggregation parameter
     addouble KS;
-    addouble W ;             // Weight of the whole structure 
+    addouble W ;    // Weight of the whole structure 
   
     CStructure(CInput *input, CElement **container_element, CNode **container_node);
     
@@ -237,17 +237,20 @@ public:
     //===================================================
     void ReSetPropfromWB();     ///< Given the WB sectional, re-evaluates the   
                                 ///< inertial sections to register dependencies
-
+     
+    addouble EvaluateWeight();
      
      
     addouble Evaluate_no_AdaptiveKSstresses();
    
-   addouble EvaluateWeight();
-   
+ 
 
     addouble GetDisplacement(int iNode, int iDim) {
         return U(6*iNode+iDim);
     }
+    
+
+   
 
     inline void RegisterSolutionInput(void) {
         for (unsigned long i = 0; i < nNode * 6; i++)

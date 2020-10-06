@@ -42,12 +42,12 @@ class CProperty{
 protected:
 
     // Units Sys: SI
-    addouble A;                 /// cross section area
+    addouble A;                 /// Cross section area
     addouble Iyy, Izz;          /// Bending Moment of Inertia
     addouble Jt;                /// Torsional Moment of Inertia
-    addouble J0;                /// Polar Moment of Inertia
-    addouble A_b;
-    addouble Iyy_b, Izz_b; 
+    addouble J0;                /// Polar Moment of Inertia  is the SUM of Iyy and Izz
+    addouble A_b;               /// Cross section area of the booms
+    addouble Iyy_b, Izz_b;      ///   
     
     unsigned long PropertyID;   // ID of the property
 
@@ -59,6 +59,8 @@ protected:
     int n_stiff;             // number of stiffener (not taking into account the Spar's flanges)
     addouble A_stiff;        // stiffener Area    
     
+    unsigned int isWBDV;     ///< flag which determines if the initial inputs were given as WB sizes
+    
 public:
     
         
@@ -68,15 +70,16 @@ public:
      
     
     inline void SetSectionProperties(passivedouble A_in, passivedouble Iyy_in,
-                                     passivedouble Izz_in, passivedouble Jt_in, passivedouble A_b_in, passivedouble Iyy_b_in, passivedouble Izz_b_in) {
-        A = A_in;
+                                     passivedouble Izz_in, passivedouble Jt_in) {
+        A   = A_in;
         Iyy = Iyy_in;
         Izz = Izz_in;
-        J0 = Iyy + Izz;
-        Jt = Jt_in;
-        A_b=A_b_in;
-        Iyy_b= Iyy_b_in;
-        Izz_b= Izz_b_in;
+        J0  = Iyy + Izz;
+        Jt  = Jt_in;
+        A_b = 0.0;
+        Iyy_b = 0.0;
+        Izz_b = 0.0;
+        isWBDV = 0;
     }
     
     /*passivedouble tsk_in,passivedouble tsp_in,
@@ -87,7 +90,7 @@ public:
                               passivedouble t_sp_, passivedouble A_fl_, 
                               int n_stiff_, passivedouble A_stiff_);
  
-    void SetSectionProperties2();
+    //void SetSectionProperties2();
     
     //void VectorXdDiff GetDesignVariable(void);
          
@@ -102,7 +105,7 @@ public:
     inline addouble GetJ0(void) { return J0; }
      
      inline addouble GetA_b(void) { return A_b; }
-      
+    
      inline addouble GetIyy_b(void) { return Iyy_b; }
        
      inline addouble GetIzz_b(void) { return Izz_b; }
@@ -117,7 +120,12 @@ public:
      
      inline addouble GetA_fl(void) { return A_fl; }
      
-     inline addouble Getn_stiff(void) { return n_stiff; }
+     inline int Getn_stiff(void) { return n_stiff; }
      
      inline addouble GetA_stiff(void) { return A_stiff; }
+     
+     void RegisterInput_WB(void);
+
+
+    
 };

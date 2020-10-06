@@ -50,6 +50,17 @@ CInput::CInput(int py_nPoint, int py_nElem, int py_nRBE2) {
 
 }
 
+CInput::CInput(int py_nPoint, int py_nElem, int py_nRBE2,int py_nProp) {
+
+    nNodes = py_nPoint;
+    nFEM   = py_nElem;
+    nRBE2  = py_nRBE2;
+    nProp  = py_nProp;
+
+}
+
+
+
 void CInput::SetParameters(){
 
     nDOF = 6;                // To be removed

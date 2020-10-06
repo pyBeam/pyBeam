@@ -41,11 +41,11 @@ pyBeam = static_library('pyBeam',
                         dependencies : eigen_dep, 
                         cpp_args : ['-Wno-ignored-attributes', '-Wno-deprecated-declarations'])
                         
-#pyBeamAD = static_library('pyBeamAD', 
-#                           beam_src,
-#                          install : false, 
-#                      dependencies : [eigen_dep, codi_dep],
-#                      cpp_args : ['-Wno-ignored-attributes', '-Wno-deprecated-declarations', codi_rev_args])                        
+pyBeamAD = static_library('pyBeamAD', 
+                           beam_src,
+                          install : false, 
+                      dependencies : [eigen_dep, codi_dep],
+                      cpp_args : ['-Wno-ignored-attributes', '-Wno-deprecated-declarations', codi_rev_args])                        
 
 pyBeam_dep = [declare_dependency(link_with: pyBeam)]
 #pyBeamAD_dep = [declare_dependency(link_with: pyBeamAD)]

@@ -95,7 +95,7 @@ class pyBeamSolver:
     
     # Initializing objects
     self.beam = pyBeam.CBeamSolver()
-    self.inputs = pyBeam.CInput(self.nPoint, self.nElem, self.nRBE2)
+    self.inputs = pyBeam.CInput(self.nPoint, self.nElem, self.nRBE2, self.nProp)
 
 
     # Sending to CInput object
@@ -165,6 +165,7 @@ class pyBeamSolver:
     print("--> Initialization successful")
     print("\n---------------------------------------------------------------------------\n")
 
+  
   def GetDesignVariables(self):
 
       self.beam_prop = []
@@ -178,41 +179,40 @@ class pyBeamSolver:
               t_sk = self.Prop[i].Gett_sk()
               t_sp = self.Prop[i].Gett_sp()
 
-
               print("C_wb =",C_wb,"h =",h,"A_fl =",A_fl,"A_stiff =",A_stiff,"n_stiff =",n_stiff,"t_sk =",t_sk,"t_sp =",t_sp)
               return C_wb,h,A_fl,A_stiff,n_stiff,t_sk,t_sp
 
 
 
-
-  def CheckNewDesign(self,index_iter,C_wb_new,h_new,t_sk_new,t_sp_new,A_fl_new,n_stiff_new,A_stiff_new):
-      save_path_design = '/home/marco/pyBeam/pyBeam/temp_testcase/Long_Beam_no_stiff _optimization/Design'
-      save_path_prop = '/home/marco/pyBeam/pyBeam/temp_testcase/Long_Beam_no_stiff _optimization'
-      self.beam_prop = []
-      for i in range(self.nProp):
-          if self.Prop[i].GetFormat() == "S":
-              C_wb = self.Prop[i].GetC_wb()
-              h = self.Prop[i].Geth()
-              A_fl = self.Prop[i].GetA_fl()
-              A_stiff = self.Prop[i].GetA_stiff()
-              n_stiff = self.Prop[i].Getn_stiff()
-              t_sk = self.Prop[i].Gett_sk()
-              t_sp = self.Prop[i].Gett_sp()
-      if (C_wb_new == C_wb and h_new==h and A_fl_new == A_fl and A_stiff_new == A_stiff and\
-          n_stiff_new == n_stiff and t_sk_new == t_sk and t_sp_new == t_sp):
-          print("Same of the previous design ")
-      else:
-          Name_design = os.path.join(save_path_design, str(index_iter) + "Design.txt")
-          Name_prop = os.path.join(save_path_prop,"property.prt")
-          with open(Name_design, "w") as f_design:
-              f_design.write( str(C_wb_new) + " " + str(h_new) + " " + str(t_sk_new) + " " + str(t_sp_new) + " " + str(A_fl_new) + " " + str(
-                  n_stiff_new) + " " + str(A_stiff_new))
-              f_design.close()
-          with open(Name_prop,"w") as f_prop:
-              f_prop.write( "% ChordofWB  HeightofWB thickskin  thicksparweb Areasparcap numberstiff Astiff" +
-                           " \n NPROPS=" + str(self.nProp) + "\n" + "S\n" + str(C_wb_new) + "  " + str(h_new) + "  " + str(t_sk_new) + "  " + str(
-                           t_sp_new) + "  " + str(A_fl_new) + "  " + str(n_stiff_new) + "  " + str(A_stiff_new))
-              f_prop.close()
+#
+#  def CheckNewDesign(self,index_iter,C_wb_new,h_new,t_sk_new,t_sp_new,A_fl_new,n_stiff_new,A_stiff_new):
+#      save_path_design = '/home/marco/pyBeam/pyBeam/temp_testcase/Long_Beam_no_stiff _optimization/Design'
+#      save_path_prop = '/home/marco/pyBeam/pyBeam/temp_testcase/Long_Beam_no_stiff _optimization'
+#      self.beam_prop = []
+#      for i in range(self.nProp):
+#          if self.Prop[i].GetFormat() == "S":
+#              C_wb = self.Prop[i].GetC_wb()
+#              h = self.Prop[i].Geth()
+#              A_fl = self.Prop[i].GetA_fl()
+#              A_stiff = self.Prop[i].GetA_stiff()
+#              n_stiff = self.Prop[i].Getn_stiff()
+#              t_sk = self.Prop[i].Gett_sk()
+#              t_sp = self.Prop[i].Gett_sp()
+#      if (C_wb_new == C_wb and h_new==h and A_fl_new == A_fl and A_stiff_new == A_stiff and\
+#          n_stiff_new == n_stiff and t_sk_new == t_sk and t_sp_new == t_sp):
+#          print("Same of the previous design ")
+#      else:
+#          Name_design = os.path.join(save_path_design, str(index_iter) + "Design.txt")
+#          Name_prop = os.path.join(save_path_prop,"property.prt")
+#          with open(Name_design, "w") as f_design:
+#              f_design.write( str(C_wb_new) + " " + str(h_new) + " " + str(t_sk_new) + " " + str(t_sp_new) + " " + str(A_fl_new) + " " + str(
+#                  n_stiff_new) + " " + str(A_stiff_new))
+#              f_design.close()
+#          with open(Name_prop,"w") as f_prop:
+#              f_prop.write( "% ChordofWB  HeightofWB thickskin  thicksparweb Areasparcap numberstiff Astiff" +
+#                           " \n NPROPS=" + str(self.nProp) + "\n" + "S\n" + str(C_wb_new) + "  " + str(h_new) + "  " + str(t_sk_new) + "  " + str(
+#                           t_sp_new) + "  " + str(A_fl_new) + "  " + str(n_stiff_new) + "  " + str(A_stiff_new))
+#              f_prop.close()
 
 
 
@@ -233,6 +233,7 @@ class pyBeamSolver:
 
     return coordX, coordY, coordZ
 
+
   def ExtractDisplacements(self,iVertex):
 
     """ This function returns the initial coordinates of the structural beam model  """
@@ -242,6 +243,7 @@ class pyBeamSolver:
 
     return dispX, dispY, dispZ
 
+
   def ComputeObjectiveFunction(self, iNode):
 
       """ This function computes the objective function (Important to be recorded) """
@@ -249,6 +251,22 @@ class pyBeamSolver:
       print("Objective Function - Displacement(", iNode, ") = ", displacement)
 
       return displacement
+  
+  
+  def ComputeWeight(self):
+    """ This function computes the response weight of the structure (important to be recorded) """
+    print("ENTRA DENTRO 1")
+    weight = self.beam.EvalWeight()
+    return weight
+
+
+  def ComputeResponseKSStress(self):
+    """ This function computes the KS stress on the structure (important to be recorded) """
+    KSStress= self.beam.RESP_KSStress()
+    return KSStress
+
+
+
 
   def Run(self):
     """ This function runs the solver and stores the results.

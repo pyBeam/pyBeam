@@ -58,7 +58,7 @@ CStructure::CStructure(CInput *input, CElement **container_element, CNode **cont
  
 
     YoungModulus = input->GetYoungModulus_dimensional();
-    ro=input->GetDensity();
+    rho  =   input->GetDensity();
     
     
     // Resizes and zeros the K matrices
@@ -66,15 +66,9 @@ CStructure::CStructure(CInput *input, CElement **container_element, CNode **cont
     Ksys = MatrixXdDiff::Zero(nNode*6+nRBE2*6,nNode*6+nRBE2*6);
    
     
-    
-    
                                                         
     U  = VectorXdDiff::Zero(nNode*6+nRBE2*6);                // whole vector solution   
     dU  = VectorXdDiff::Zero(nNode*6+nRBE2*6);
-    
-   
-    
-   
     
 
     U_adj = VectorXdDiff::Zero(nNode*6);           // Whole system displacement adjoint
@@ -1895,9 +1889,8 @@ void CStructure::InternalForcesLinear()
 }
    
 
-void CStructure::ReSetPropfromWB()
-{
-}
+
+
 
 
 
@@ -1941,20 +1934,24 @@ addouble CStructure::Evaluate_no_AdaptiveKSstresses()
      KS=g_max+(1/ r)*log(summ_KS *pow(M_E,-r*g_max )); //contribute of g_max
      cout<<"g_max="<<g_max<<endl;
      cout<<"KS="<<KS<<endl;
+     
+     return KS;
 }
       
      
  
      
 addouble CStructure::EvaluateWeight(){
-             
+    
     addouble A=element[1-1]->elprop->GetA();  //Area  (constant)
-    
+
     addouble l=element[1-1]->GetInitial_Length();     // initial length
-       
-    W=nfem*ro*l*A;                             //weight
     
-    cout<<"W"<<W<<endl;
+    W = nfem * rho * l * A;                 
+    
+//    cout<<"W = "<<W<<endl;
+    
+    return W;
 }
 
 

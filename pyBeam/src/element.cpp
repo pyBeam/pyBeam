@@ -166,8 +166,8 @@ void CElement::Initializer(CNode* Node1, CNode* Node2, CProperty* Property, CInp
 
 }
 
-
-                                                                                                        void CElement::SetDependencies(void){
+                                                                                                        
+void CElement::SetDependencies(void){
 
     // Store element properties from the input property object
     
@@ -812,14 +812,14 @@ void  CElement::StressRetrieving()
         Ty_sec=Ty_sec + Ty_vect(iy);            
     }
     
-   
-    cout<<"sigma =\n"<<sigma_booms<<endl;
+  /*
+    cout<< "sigma = "<< sigma_booms <<endl;
     //cout<<"axial_load =\n"<< axial_load <<endl;
     cout<<"tau=\n"<<tau<<endl;
     //cout<<"shear  =\n"<<shear<<endl<<endl; 
     cout<<"N="<<N_sec<<endl;
     cout<<"Ty="<<Ty_sec<<endl;
-    cout<<"Tz="<<Tz_sec<<endl;
+    cout<<"Tz="<<Tz_sec<<endl;  */
     
     
 }
