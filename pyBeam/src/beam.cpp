@@ -273,7 +273,9 @@ void CBeamSolver::Solve(int FSIIter = 0){
             structure-> InternalForcesLinear ();
             structure-> Evaluate_no_AdaptiveKSstresses();
             structure-> EvaluateWeight();
-            //
+            
+            
+            
             
             break;
             // Now only X is updated

@@ -100,6 +100,10 @@ public:
     inline void InitializeRBE2(CRBE2* py_RBE2,unsigned long iRBE2) {RBE2[iRBE2] = py_RBE2;}
 
     inline void InitializeStructure(void) {structure = new CStructure(input, element, node); structure->SetCoord0();}
+    
+    inline passivedouble Objfunc_weight(void){structure->EvaluateWeight(); return structure->W ;}
+    
+    inline passivedouble Constraint_KS(void){structure->Evaluate_no_AdaptiveKSstresses(); return structure->KS;}
 
     void Solve(int FSIIter);
 
@@ -109,7 +113,9 @@ public:
     
     passivedouble RESP_KSStress(){ AD::GetValue(structure->Evaluate_no_AdaptiveKSstresses() ) ;};
     
-
+    
+ 
+    
     void ComputeAdjoint(void);
 
     inline void SetLoads(int iNode, int iDOF, passivedouble loadValue) { loadVector[iNode*nDOF + iDOF] = loadValue; }

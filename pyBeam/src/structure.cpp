@@ -1939,8 +1939,8 @@ addouble CStructure::Evaluate_no_AdaptiveKSstresses()
     //KS
     
      KS=g_max+(1/ r)*log(summ_KS *pow(M_E,-r*g_max )); //contribute of g_max
-     cout<<"g_max="<<g_max<<endl;
-     cout<<"KS="<<KS<<endl;
+     //cout<<"g_max="<<g_max<<endl;
+     //cout<<"KS="<<KS<<endl;
 }
       
      
@@ -1949,12 +1949,13 @@ addouble CStructure::Evaluate_no_AdaptiveKSstresses()
 addouble CStructure::EvaluateWeight(){
              
     addouble A=element[1-1]->elprop->GetA();  //Area  (constant)
+   
     
     addouble l=element[1-1]->GetInitial_Length();     // initial length
        
     W=nfem*ro*l*A;                             //weight
     
-    cout<<"W"<<W<<endl;
+    //cout<<"W"<<W<<endl;
 }
 
 

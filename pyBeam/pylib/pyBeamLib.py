@@ -33,6 +33,7 @@ from pyBeamIO import pyBeamConfig as pyConfig
 from pyBeamIO import pyBeamInput as pyInput
 import numpy as np
 import os,os.path
+import shutil
 import pyBeam
 
 # ----------------------------------------------------------------------
@@ -166,7 +167,6 @@ class pyBeamSolver:
     print("\n---------------------------------------------------------------------------\n")
 
   def GetDesignVariables(self):
-
       self.beam_prop = []
       for i in range(self.nProp):
           if self.Prop[i].GetFormat() == "S":
@@ -177,44 +177,71 @@ class pyBeamSolver:
               n_stiff = self.Prop[i].Getn_stiff()
               t_sk = self.Prop[i].Gett_sk()
               t_sp = self.Prop[i].Gett_sp()
+              DVs = (C_wb, h, t_sk, t_sp, A_fl, n_stiff, A_stiff)
+
+              return DVs
+
+  def NewDesign(self, iter, DVs):
+    """ This function create a folder in which are copied the input files,appending the new Design Variables (DVs) in property file   """
+    path = os.path.abspath(os.path.join(self.file_dir, ".."))
+    final_directory = os.path.join(path, r'new_folder' + str(iter))
+    if not os.path.exists(final_directory):
+        os.makedirs(final_directory)
+
+    file_names = os.listdir(self.file_dir)
+
+    for file_name in file_names:
+        shutil.copy(os.path.join(self.file_dir, file_name), final_directory)
 
 
-              print("C_wb =",C_wb,"h =",h,"A_fl =",A_fl,"A_stiff =",A_stiff,"n_stiff =",n_stiff,"t_sk =",t_sk,"t_sp =",t_sp)
-              return C_wb,h,A_fl,A_stiff,n_stiff,t_sk,t_sp
+    Name_prop = os.path.join(final_directory, "property.prt")
+
+    with open(Name_prop, "w") as f_prop:
+        f_prop.write("% ChordofWB  HeightofWB thickskin  thicksparweb Areasparcap numberstiff Astiff" +
+                     " \n NPROPS=" + str(self.nProp) + "\n" + "S\n" + str(DVs[0]) + "  " + str(
+            DVs[1]) + "  " + str(
+            DVs[2]) + "  " + str(DVs[3]) + "  " + str(DVs[4]) + "  " + str(DVs[5]) + "  " + str(DVs[6]))
+        f_prop.close()
+    return final_directory
+
+
+  def GetConstraint_KS(self, iter, DVs):
+
+      final_directory = self.NewDesign(iter, DVs)
+      self.Run()
+      #self.GetDesignVariables()
+
+      """ This function computes the aggregation constraint of the structure (important to be recorded) """
+      KS = self.beam.Constraint_KS()
+      print("constraint = ", KS)
+
+      Name_KS = os.path.join(final_directory,"constraint_KS.txt")
+
+      with open(Name_KS, "w") as f_KS:
+          f_KS.write(str(KS))
+          f_KS.close()
+
+      return KS
 
 
 
+  def GetObjFunction(self, iter, DVs):
 
-  def CheckNewDesign(self,index_iter,C_wb_new,h_new,t_sk_new,t_sp_new,A_fl_new,n_stiff_new,A_stiff_new):
-      save_path_design = '/home/marco/pyBeam/pyBeam/temp_testcase/Long_Beam_no_stiff _optimization/Design'
-      save_path_prop = '/home/marco/pyBeam/pyBeam/temp_testcase/Long_Beam_no_stiff _optimization'
-      self.beam_prop = []
-      for i in range(self.nProp):
-          if self.Prop[i].GetFormat() == "S":
-              C_wb = self.Prop[i].GetC_wb()
-              h = self.Prop[i].Geth()
-              A_fl = self.Prop[i].GetA_fl()
-              A_stiff = self.Prop[i].GetA_stiff()
-              n_stiff = self.Prop[i].Getn_stiff()
-              t_sk = self.Prop[i].Gett_sk()
-              t_sp = self.Prop[i].Gett_sp()
-      if (C_wb_new == C_wb and h_new==h and A_fl_new == A_fl and A_stiff_new == A_stiff and\
-          n_stiff_new == n_stiff and t_sk_new == t_sk and t_sp_new == t_sp):
-          print("Same of the previous design ")
-      else:
-          Name_design = os.path.join(save_path_design, str(index_iter) + "Design.txt")
-          Name_prop = os.path.join(save_path_prop,"property.prt")
-          with open(Name_design, "w") as f_design:
-              f_design.write( str(C_wb_new) + " " + str(h_new) + " " + str(t_sk_new) + " " + str(t_sp_new) + " " + str(A_fl_new) + " " + str(
-                  n_stiff_new) + " " + str(A_stiff_new))
-              f_design.close()
-          with open(Name_prop,"w") as f_prop:
-              f_prop.write( "% ChordofWB  HeightofWB thickskin  thicksparweb Areasparcap numberstiff Astiff" +
-                           " \n NPROPS=" + str(self.nProp) + "\n" + "S\n" + str(C_wb_new) + "  " + str(h_new) + "  " + str(t_sk_new) + "  " + str(
-                           t_sp_new) + "  " + str(A_fl_new) + "  " + str(n_stiff_new) + "  " + str(A_stiff_new))
-              f_prop.close()
+      final_directory = self.NewDesign(iter, DVs)
+      self.Run()
+      #self.GetDesignVariables()
 
+      """ This function computes the response weight of the structure (important to be recorded) """
+      weight = self.beam.Objfunc_weight()
+      print("Response - Weight  = ", weight)
 
+      Name_weight = os.path.join(final_directory,"weight.txt")
+
+      with open(Name_weight, "w") as f_weight:
+          f_weight.write(str(weight))
+          f_weight.close()
+
+      return weight
 
 
   def SetLoads(self, iVertex, loadX, loadY, loadZ):

@@ -97,6 +97,7 @@ void CProperty::SetSectionProperties(passivedouble C_wb_, passivedouble h_, pass
    addouble Sz=A*(C_wb/2);  // Z static moment of the section   
    
    std::cout << "Inertias of the boom never used. Static Moments neither" << std::endl;
+   
     
 }
 

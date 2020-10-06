@@ -33,6 +33,7 @@ from pyBeamIO import pyBeamConfig as pyConfig
 from pyBeamIO import pyBeamInput as pyInput
 import numpy as np
 import pyBeamAD
+from pyBeamLib import pyBeamSolver
 
 # ----------------------------------------------------------------------
 #  Beam object
@@ -166,6 +167,7 @@ class pyBeamSolverAD:
 
     print("--> Initialization successful")
     print("\n---------------------------------------------------------------------------\n")
+
 
 
   def RegisterLoads(self):
