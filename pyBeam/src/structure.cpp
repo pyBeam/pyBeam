@@ -1529,6 +1529,59 @@ void CStructure::UpdateInternalForces_FP()
 
 }
 
+
+addouble CStructure::Evaluate_no_AdaptiveKSstresses()
+{
+    // Ks calculation ----> Ks(g_element) = g_max + summ (exp(aggr_parameter*(g_element - g_max)))
+    int n_stiff = 0;
+    int n_tot = n_stiff+4;  // n_stiff + 4 flanges    
+    r = 50;
+    
+    int id_fe;
+         
+    addouble g_max;
+    addouble summ_KS=0;
+    
+    for (id_fe=1;     id_fe <= nfem ; id_fe++) {       
+       cout<<"element -----------------------> "<< id_fe <<endl;
+       element[id_fe-1]->StressRetrieving();
+       element[id_fe-1]->VonMises();
+   
+     //g_max
+       g_max= element[1-1]->g_element(1-1);
+       
+       for(int i= 1-1 ; i<= n_tot;i=i+1){
+         if(element[id_fe-1]->g_element(i) >= g_max){
+            g_max= element[id_fe-1]->g_element(i); }
+         
+     // summ (exp(aggr_parameter(g_element)))
+        summ_KS=summ_KS + pow(M_E,r*(element[id_fe-1]->g_element(i)));}    
+    }
+    //KS
+    
+    KS=g_max+(1/ r)*log(summ_KS *pow(M_E,-r*g_max )); //contribute of g_max
+    cout<<"g_max="<<g_max<<endl;
+    cout<<"KS="<<KS<<endl;
+     
+    return KS;
+}
+      
+     
+ 
+     
+addouble CStructure::EvaluateWeight(){
+    
+    addouble A=element[1-1]->elprop->GetA();  //Area  (constant)
+
+    addouble l=element[1-1]->GetInitial_Length();     // initial length
+    
+    weight = nfem * rho * l * A;                 
+    
+//    cout<<"W = "<<W<<endl;
+    
+    return weight;
+}
+
 /*
 /*===================================================
  *        Evaluate the Sensitivty of Rotation Matrix with finite differences

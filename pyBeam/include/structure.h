@@ -108,8 +108,16 @@ public:
     VectorXdDiff Fnom;          // Array of nominal forces
     VectorXdDiff Fnom_old;          // Array of nominal forces  of previous FSI run  
     
-    addouble YoungModulus;
+    addouble YoungModulus;     ///< Material density
+    addouble rho;    
+    
     addouble penalty;
+    
+    addouble r ;         // Aggregation parameter for stress 
+    addouble KS;         ///< KS equivalent stress 
+    addouble weight ;    ///< Weight of the whole structure 
+
+    
     
     CStructure(CInput *input, CElement **container_element, CNode **container_node);
     
@@ -216,6 +224,15 @@ public:
 
     void InitializeInternalForces();
 
+    //===================================================
+    //      OPTIMIZATION
+    //===================================================
+
+    addouble EvaluateWeight();
+     
+    addouble Evaluate_no_AdaptiveKSstresses();
+    
+    
     addouble GetDisplacement(int iNode, int iDim) {
         return U(6 * iNode + iDim);
     }
