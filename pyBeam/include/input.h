@@ -89,6 +89,8 @@ public:
     
     CInput(int py_nPoint, int py_nElem, int py_nRBE2);
 
+    CInput(int py_nPoint, int py_nElem, int py_nRBE2, int py_nProp);    
+
     virtual ~CInput(void);
 
     void SetParameters();
@@ -159,6 +161,8 @@ public:
     unsigned long Get_nFEM(void) { return nFEM; }
 
     unsigned long Get_nRBE2(void) { return nRBE2; }
+    
+    unsigned long Get_nProp(void) { return nProp; }    
 
     unsigned short Get_nDOF(void) { return nDOF; }
 
