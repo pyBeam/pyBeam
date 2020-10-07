@@ -55,6 +55,25 @@ private:
     addouble AE;
     addouble EIz;
     addouble EIy;
+    
+    // Extra members for stress retrieving
+    addouble My;       // Bending moment around Y-axis
+    addouble Mz;       // Bending Moments around Z_axis
+    addouble  N;      // Normal load in the section
+    addouble Qxy;     //Shear stress along y axis 
+    addouble Qxz;     //shear stress along z axix 
+    
+    addouble L_Qxy;  // harm of Qxy w.r.t the left lower corner
+    addouble L_Qxz;    // // harm of Qxy w.r.t the left lower corner
+    
+    // Section Design Variables
+    int n_stiff;             // number of stiffener (not taking into account the Spar's flanges)
+    addouble C_wb;           //  box tot length 
+    addouble h;              //  box tot height 
+    addouble t_sk;           // skin  thickness 
+    addouble t_sp;           // spar thickness
+    addouble A_fl;           // flanges Area     
+    addouble A_stiff;        // stiffener Area       
 
 public:
 
@@ -79,6 +98,25 @@ public:
     VectorXdDiff eps ;  // Elastic Deformational Status
     VectorXdDiff phi ;  // Elastic Cumulative Tension
     MatrixXdDiff Kprim;
+    
+    // Extra members for stress retrieving
+    
+    VectorXdDiff  sigma_booms ;   //Normal stress absorbed by the booms 
+    VectorXdDiff  dsigma_dx;      // gradient of normal stress for each boom
+    VectorXdDiff  tau ;          // Shear Fluxes absorbed by the skin and by the spar
+    VectorXdDiff  axial_load ;   // Axial load absorbed by the booms 
+    MatrixXdDiff  tau_coeff;     
+    
+   
+    addouble N_sec;       // Resultant N in the section 
+    addouble Tz_sec;     // Resultant Tz in the section
+    addouble Ty_sec;     // Resultant Tz in the section
+    
+    VectorXdDiff g_element;  // element constraint  equations Von mises    dim = (2*n_tot) 
+    addouble     SF;        // safety factor 
+    addouble     sigma_y;  // sigma yelding 
+
+    
     
 private:
     
@@ -140,6 +178,15 @@ public:
 
     // Set the element dependencies (AD )
     void SetDependencies(void);
+    
+   
+    // Stress state in the section 
+    void StressRetrieving();
+    
+    // maximum normal stress in the section 
+    void VonMises();
+
+    
 
 };
 
