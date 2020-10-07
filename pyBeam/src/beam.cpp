@@ -67,6 +67,7 @@ void CBeamSolver::InitializeInput(CInput* py_input){   // insert node class and 
     nFEM = input->Get_nFEM();
     nTotalDOF = input->Get_nNodes() * input->Get_nDOF();
     nRBE2 = input->Get_nRBE2();
+    nProp=input->Get_nProp();    
     
     //==============================================================
     //      Load Vector initialization
@@ -83,6 +84,16 @@ void CBeamSolver::InitializeInput(CInput* py_input){   // insert node class and 
     if (verbose){cout << "--> Node Structure Initialization... ";}
     unsigned long nNodes = input->Get_nNodes();   //substitute from mesh file
     node = new CNode*[nNodes];
+    if (verbose){std::cout << "ok!"  <<std::endl;}
+
+    //==============================================================
+    //      Property vector initialization
+    //==============================================================
+    
+    if (verbose){cout << "--> Property Initialization... ";}
+   
+    Prop = new CProperty*[nProp];
+    
     if (verbose){std::cout << "ok!"  <<std::endl;}
     
     //==============================================================
@@ -113,7 +124,10 @@ void CBeamSolver::InitializeInput(CInput* py_input){   // insert node class and 
     structure = NULL;
     
 }
-    void CBeamSolver::InitializeStructure(void) {
+
+
+void CBeamSolver::InitializeStructure(void) {
+    
     structure = new CStructure(input, element, node); structure->SetCoord0();
     // If there are RBE and Lagrange multiplier method is used it's important to define already the dimension as AD recording needs it
     if (nRBE2 != 0){ 
@@ -338,6 +352,7 @@ void CBeamSolver::Solve(int FSIIter = 0){
     
 }
 
+
 void CBeamSolver::RunRestart(int FSIIter = 0){
  
     std::ofstream history;
@@ -505,7 +520,7 @@ void CBeamSolver::SetDependencies(void){
     structure->RegisterSolutionInput(iRigid);
 
     addouble E, E_dim, Nu, G;
-    unsigned long iFEM,iRBE2, iLoad;
+    unsigned long iFEM,iRBE2, iLoad, iP;
 
     input->RegisterInput_E();
     input->RegisterInput_Nu();
@@ -518,7 +533,12 @@ void CBeamSolver::SetDependencies(void){
     G = E/(2*(1+Nu));
 
     input->SetShear(G);
-
+    
+    /* Registering wing-box sizes (or inertias) as inputs*/
+    for (iP= 0; iP<nProp; iP ++){
+        Prop[iP]->RegisterInput_WB();
+    }
+    
     for (iFEM = 0; iFEM < nFEM; iFEM++) {
         element[iFEM]->SetDependencies();
     }

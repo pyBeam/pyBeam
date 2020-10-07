@@ -59,10 +59,14 @@ private:
     CRBE2** RBE2;                         /*!< \brief Vector which the define the elements. */
 
     CStructure* structure;                /*!< \brief Pointer which the defines the structure. */
+    
+    CProperty** Prop;                     /*!< \brief Pointer to the Properties. */
 
+    
     int nDOF, nTotalDOF, nRBE2, nDim;
     int iRigid = 0;     // iRigid = 0: Penalty method iRigid = 1: Lagrange Multiplier method
     unsigned long nFEM;
+    unsigned long nProp;                    ///< Number of Properties
 
     unsigned long totalIter;
     addouble initDispNorm;
@@ -91,6 +95,10 @@ public:
     void Solve(int FSIIter);
 
     passivedouble OF_NodeDisplacement(int iNode);
+    
+    passivedouble EvalWeight(){return AD::GetValue(structure->EvaluateWeight());};
+       
+    passivedouble EvalKSStress(){return AD::GetValue(structure->Evaluate_no_AdaptiveKSstresses() ) ;};    
 
     void ComputeAdjoint(void);
 
