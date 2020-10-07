@@ -1535,7 +1535,7 @@ addouble CStructure::Evaluate_no_AdaptiveKSstresses()
     // Ks calculation ----> Ks(g_element) = g_max + summ (exp(aggr_parameter*(g_element - g_max)))
     int n_stiff = 0;
     int n_tot = n_stiff+4;  // n_stiff + 4 flanges    
-    r = 50;
+    addouble r = 50;     // Aggregation parameter for stress 
     
     int id_fe;
          

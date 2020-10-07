@@ -113,7 +113,7 @@ public:
     
     addouble penalty;
     
-    addouble r ;         // Aggregation parameter for stress 
+    //addouble r ;         // Aggregation parameter for stress 
     addouble KS;         ///< KS equivalent stress 
     addouble weight ;    ///< Weight of the whole structure 
 

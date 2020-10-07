@@ -40,12 +40,24 @@ private:
 protected:
 
     // Units Sys: SI
-    addouble A;                 // cross section area
-    addouble Iyy, Izz;          // Bending Moment of Inertia
-    addouble Jt;                // Torsional Moment of Inertia
-    addouble J0;                // Polar Moment of Inertia
+    addouble A;                 ///< cross section area
+    addouble Iyy, Izz;          ///< Bending Moment of Inertia
+    addouble Jt;                ///< Torsional Moment of Inertia
+    addouble J0;                ///< Polar Moment of Inertia
+    addouble A_b;               ///< Cross section area of the booms
+    addouble Iyy_b, Izz_b;      ///<       
     unsigned long PropertyID;   // ID of the property
 
+    addouble C_wb;           ///<  box tot length 
+    addouble h;              ///<  box tot height 
+    addouble t_sk;           ///< skin  thickness 
+    addouble t_sp;           ///< spar thickness
+    addouble A_fl;           ///< flanges Area     
+    int n_stiff;             ///< number of stiffener (not taking into account the Spar's flanges)
+    addouble A_stiff;        ///< stiffener Area    
+    
+    unsigned int isWBDV;     ///< flag which determines if the initial inputs were given as WB sizes
+    
 public:
 
     CProperty(int ID) {PropertyID = ID; }
@@ -59,7 +71,25 @@ public:
         Izz = Izz_in;
         J0 = Iyy + Izz;
         Jt = Jt_in;
+        // If only inertial properties are given, then we assume there are no stringers 
+        A_b = 0.0;
+        Iyy_b = 0.0;
+        Izz_b = 0.0;
+        isWBDV = 0;
+        // Set to zero the WB sizes 
+        C_wb = 0;          
+        h = 0;
+        t_sk = 0;
+        t_sp = 0;
+        A_fl = 0;
+        n_stiff = 0 ;
+        A_stiff = 0;        
+    
     }
+    
+    void SetSectionProperties(passivedouble C_wb_, passivedouble h_, passivedouble t_sk_,  
+                              passivedouble t_sp_, passivedouble A_fl_, 
+                              int n_stiff_, passivedouble A_stiff_);    
 
     inline addouble GetIyy(void) { return Iyy; }
 
@@ -70,5 +100,27 @@ public:
     inline addouble GetJt(void) { return Jt; }
 
     inline addouble GetJ0(void) { return J0; }
+    
+     inline addouble GetA_b(void) { return A_b; }
+    
+     inline addouble GetIyy_b(void) { return Iyy_b; }
+       
+     inline addouble GetIzz_b(void) { return Izz_b; }
+     
+     inline addouble GetC_wb(void) { return C_wb; }
+     
+     inline addouble Geth(void) { return h; }
+     
+     inline addouble Gett_sk(void) { return t_sk; }
+     
+     inline addouble Gett_sp(void) { return t_sp; }
+     
+     inline addouble GetA_fl(void) { return A_fl; }
+     
+     inline int Getn_stiff(void) { return n_stiff; }
+     
+     inline addouble GetA_stiff(void) { return A_stiff; }
+     
+     void RegisterInput_WB(void);      ///<  Registers properties as inputs for sensitivity evaluation
 
 };
