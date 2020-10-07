@@ -90,9 +90,10 @@ class pyBeamSolverAD:
     self.RBE2_py, self.nRBE2 = pyInput.readRBE2(self.Mesh_file)
     # Parsing Property file
     self.Prop, self.nProp = pyInput.readProp(self.Property)
+
     # Initializing objects
     self.beam = pyBeamAD.CBeamSolver()
-    self.inputs = pyBeamAD.CInput(self.nPoint, self.nElem, self.nRBE2)
+    self.inputs = pyBeamAD.CInput(self.nPoint, self.nElem, self.nRBE2, self.nProp))
 
     # Start recording
     print("--> Initialization successful")
@@ -118,7 +119,15 @@ class pyBeamSolverAD:
     self.beam_prop = []
     for i in range(self.nProp):
         self.beam_prop.append(pyBeamAD.CProperty(i))
-        self.beam_prop[i].SetSectionProperties(self.Prop[i].GetA(), self.Prop[i].GetIyy(), self.Prop[i].GetIzz(), self.Prop[i].GetJt())
+        if self.Prop[i].GetFormat() == "N":
+            self.beam_prop[i].SetSectionProperties(self.Prop[i].GetA(), self.Prop[i].GetIyy(), self.Prop[i].GetIzz(), self.Prop[i].GetJt())
+        elif self.Prop[i].GetFormat() == "S":
+            self.beam_prop[i].SetSectionProperties(self.Prop[i].GetC_wb(), self.Prop[i].Geth(), self.Prop[i].Gett_sk(), self.Prop[i].Gett_sp(),\
+            self.Prop[i].GetA_fl(), self.Prop[i].Getn_stiff(),self.Prop[i].GetA_stiff() )
+            print(self.Prop[i].GetA())
+        else:
+            raise ValueError("Unknown paramter for Property CARD input. Execution aborted")
+
 
     # Assigning element values to the element objects in C++
     self.element = []
@@ -209,6 +218,19 @@ class pyBeamSolverAD:
     print("Objective Function - Displacement(", iNode, ") = ", displacement)
 
     return displacement
+
+  def ComputeWeight(self):
+    """ This function computes the response weight of the structure (important to be recorded) """
+    print("ENTRA DENTRO 1")
+    weight = self.beam.EvalWeight()
+    return weight
+
+
+  def ComputeResponseKSStress(self):
+    """ This function computes the KS stress on the structure (important to be recorded) """
+    KSStress= self.beam.RESP_KSStress()
+    return KSStress
+
 
   def Run(self):
     """ This function runs the solver and stores the results.
