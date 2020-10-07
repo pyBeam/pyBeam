@@ -192,6 +192,9 @@ class Property:
   def Setn_stiff(self, n_stiff):
       self.n_stiff = n_stiff
 
+  def GetFormat(self):
+      return self.Format  
+
   def SetFormat(self, Pformat):
       self.Format = Pformat
 

@@ -30,6 +30,7 @@ matrixstorage = '-DDENSEs'
 
 beam_src =files(['./src/ad.cpp',
                 './src/input.cpp',
+		'./src/property.cpp',
                 './src/element.cpp',
                 './src/rigid_element.cpp',
                 './src/structure.cpp',

@@ -131,20 +131,20 @@ void CBeamSolver::InitializeStructure(void) {
     structure = new CStructure(input, element, node); structure->SetCoord0();
     // If there are RBE and Lagrange multiplier method is used it's important to define already the dimension as AD recording needs it
     if (nRBE2 != 0){ 
-    if (verbose){std::cout << "--> Setting RBE2 for Rigid Constraints" << std::endl;}        
-    structure->AddRBE2(input, RBE2);}
-    // Sizing rigid support matrix. Necessary in case of SPARSE approach
-    // Should be also done here for SPARSE approach and rigid lagraignan (in the future)
-    if (nRBE2 != 0 and iRigid == 0){
-    #ifdef DENSE
-    // Resizes and zeros the K matrices
-    structure->K_penal.resize(input->Get_nNodes()*6,input->Get_nNodes()*6);
-    structure->K_penal = MatrixXdDiff::Zero(input->Get_nNodes()*6,input->Get_nNodes()*6);
-    #else
-    // Resizes the sparse Ksys matriX
-    structure->K_penal.resize( (input->Get_nNodes())*6,(input->Get_nNodes())*6);    
-    structure->tripletListRBEPenalty.reserve((input->Get_nNodes())*6*100);     
-    #endif }
+        if (verbose){std::cout << "--> Setting RBE2 for Rigid Constraints" << std::endl;}        
+            structure->AddRBE2(input, RBE2);}
+            // Sizing rigid support matrix. Necessary in case of SPARSE approach
+            // Should be also done here for SPARSE approach and rigid lagraignan (in the future)
+        if (nRBE2 != 0 and iRigid == 0){
+#ifdef DENSE
+            // Resizes and zeros the K matrices
+            structure->K_penal.resize(input->Get_nNodes()*6,input->Get_nNodes()*6);
+            structure->K_penal = MatrixXdDiff::Zero(input->Get_nNodes()*6,input->Get_nNodes()*6);
+#else
+            // Resizes the sparse Ksys matriX
+            structure->K_penal.resize( (input->Get_nNodes())*6,(input->Get_nNodes())*6);    
+            structure->tripletListRBEPenalty.reserve((input->Get_nNodes())*6*100);     
+#endif  
     }
     if (nRBE2 != 0 and iRigid == 1){
     structure->SetRigidLagrangeDimensions();}

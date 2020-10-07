@@ -93,7 +93,7 @@ class pyBeamSolverAD:
 
     # Initializing objects
     self.beam = pyBeamAD.CBeamSolver()
-    self.inputs = pyBeamAD.CInput(self.nPoint, self.nElem, self.nRBE2, self.nProp))
+    self.inputs = pyBeamAD.CInput(self.nPoint, self.nElem, self.nRBE2, self.nProp)
 
     # Start recording
     print("--> Initialization successful")

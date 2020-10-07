@@ -93,7 +93,7 @@ class pyBeamSolver:
 
     # Initializing objects
     self.beam = pyBeam.CBeamSolver()
-    self.inputs = pyBeam.CInput(self.nPoint, self.nElem, self.nRBE2, self.nProp))
+    self.inputs = pyBeam.CInput(self.nPoint, self.nElem, self.nRBE2, self.nProp)
 
 
     print("--> Initialization successful")

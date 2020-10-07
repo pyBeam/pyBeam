@@ -45,10 +45,14 @@ private:
 
     addouble m_e;                // Element mass
     addouble A;                  // Element area
+    addouble A_b;    
 
     addouble Iyy;                // Beam inertia over y axis
     addouble Izz;                // Beam inertia over y axis
-
+    addouble Iyy_b;
+    addouble Izz_b;
+    
+    
     addouble GJ;                 // Torsional stiffness
     addouble J0;                 // Polar inertia
 
