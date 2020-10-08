@@ -52,6 +52,7 @@ CStructure::CStructure(CInput *input, CElement **container_element, CNode **cont
     Constr_matrix = input->GetConstrMatrix();
 
     YoungModulus = input->GetYoungModulus_dimensional();
+    rho  =   input->GetDensity();
     
     #ifdef DENSE
     // Resizes and zeros the K matrices
@@ -1559,7 +1560,7 @@ addouble CStructure::Evaluate_no_AdaptiveKSstresses()
     }
     //KS
     
-    KS=g_max+(1/ r)*log(summ_KS *pow(M_E,-r*g_max )); //contribute of g_max
+    addouble KS=g_max+(1/ r)*log(summ_KS *pow(M_E,-r*g_max )); //contribute of g_max
     cout<<"g_max="<<g_max<<endl;
     cout<<"KS="<<KS<<endl;
      
@@ -1575,9 +1576,11 @@ addouble CStructure::EvaluateWeight(){
 
     addouble l=element[1-1]->GetInitial_Length();     // initial length
     
-    weight = nfem * rho * l * A;                 
-    
-//    cout<<"W = "<<W<<endl;
+    addouble weight = nfem * rho * l * A;                 
+//    cout<<"A = "<< A<< endl;
+//    cout<<"l= "<< l<<endl;
+//    cout<<"rho = "<< rho<<endl;
+//    cout<<"W = "<< weight<<endl;
     
     return weight;
 }

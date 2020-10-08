@@ -221,14 +221,13 @@ class pyBeamSolverAD:
 
   def ComputeWeight(self):
     """ This function computes the response weight of the structure (important to be recorded) """
-    print("ENTRA DENTRO 1")
     weight = self.beam.EvalWeight()
     return weight
 
 
   def ComputeResponseKSStress(self):
     """ This function computes the KS stress on the structure (important to be recorded) """
-    KSStress= self.beam.RESP_KSStress()
+    KSStress= self.beam.EvalKSStress()
     return KSStress
 
 

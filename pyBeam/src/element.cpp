@@ -101,7 +101,7 @@ void CElement::Initializer(CNode* Node1, CNode* Node2, CProperty* Property, CInp
     AE  = input->GetYoungModulus()*elprop->GetA();
     Iyy = elprop->GetIyy();
     Izz = elprop->GetIzz();
-
+    
     int elemdofs = 12;
 
     //Mass matrix initialization (element level)
@@ -568,22 +568,22 @@ void CElement::InitializeRotMats()
 
 void  CElement::StressRetrieving()
 { 
-   int n_tot = n_stiff+4;  // n_stiff + 4 flanges  
+    int n_tot = n_stiff+4;  // n_stiff + 4 flanges  
 
-   addouble b=(C_wb)/(((n_tot)/2)-1);
+    addouble b=(C_wb)/(((n_tot)/2)-1);
     
-    L_Qxy= -h/2;
-    L_Qxz= -C_wb/2; 
+    addouble L_Qxy= -h/2;
+    addouble L_Qxz= -C_wb/2; 
     
-    N =  fint(7-1);  
-    Qxy= fint(8-1);
-    Qxz= fint(9-1);
-    My=  fint(11-1)-Qxz*(l_curr/2);   
-    Mz=  fint(12-1)+Qxz*(l_curr/2);
+    addouble N =  fint(7-1);  
+    addouble Qxy= fint(8-1);
+    addouble Qxz= fint(9-1);
+    addouble My=  fint(11-1)-Qxz*(l_curr/2);   
+    addouble Mz=  fint(12-1)+Qxz*(l_curr/2);
    
     sigma_booms = VectorXdDiff::Zero(n_tot);
-    dsigma_dx   = VectorXdDiff::Zero(n_tot);
-    axial_load  = VectorXdDiff::Zero(n_tot);
+    VectorXdDiff dsigma_dx   = VectorXdDiff::Zero(n_tot);
+    VectorXdDiff axial_load  = VectorXdDiff::Zero(n_tot);
   
     /// Calculation of Normal stress absorbed by booms (Navier Formula) 
     
@@ -610,7 +610,7 @@ void  CElement::StressRetrieving()
             sigma_booms( ((n_tot)/2)+i )    = (N/A_b) + (Mz/Izz_b)*b*((n_tot/4)-1-i+(1/2)) - (My/Iyy_b)*(h/2);
             sigma_booms( (((n_tot)*3/4))+i )= (N/A_b) - (Mz/Izz_b)*b*(i + (1/2))           - (My/Iyy_b)*(h/2);
     
-                 dsigma_dx(i)                       =  -A_stiff*(Qxy/Izz_b)*b*((n_tot/4)-1-i+(1/2))  + A_stiff*(Qxz/Iyy_b)*(h/2);
+            dsigma_dx(i)                       =  -A_stiff*(Qxy/Izz_b)*b*((n_tot/4)-1-i+(1/2))  + A_stiff*(Qxz/Iyy_b)*(h/2);
             dsigma_dx( ((n_tot)/4)+i )         =  A_stiff*(Qxy/Izz_b)*b*(i + (1/2))             + A_stiff*(Qxz/Iyy_b)*(h/2);
             dsigma_dx( ((n_tot)/2)+i )         =  A_stiff*(Qxy/Izz_b)*b*((n_tot/4)-1-i+(1/2))   - A_stiff*(Qxz/Iyy_b)*(h/2);
             dsigma_dx( ((n_tot)*3/4)+i)        =  -A_stiff*(Qxy/Izz_b)*b*(i + (1/2))            - A_stiff*(Qxz/Iyy_b)*(h/2);
@@ -676,41 +676,41 @@ void  CElement::StressRetrieving()
     
     dsigma_dx(n_tot-1)= M_Q;    //index start from 0   
                 
-    tau_coeff= MatrixXdDiff::Zero(n_tot,n_tot);
+    MatrixXdDiff tau_coeff= MatrixXdDiff::Zero(n_tot,n_tot);
 
     // fill tau_coeff matrix 
     for (int j=1 -1 ; j<= (n_tot-1) -1; j+=1){
-        tau_coeff(j,j)=1;           // Diagonal
-    }
+        tau_coeff(j,j)=1;}           // Diagonal
+    
   
     for (int jj=1 -1; jj<= (n_tot-2) -1; jj+=1){
-        tau_coeff(jj+1,jj)= -1;      // sub-diagonal   
-    }
+        tau_coeff(jj+1,jj)= -1;}      // sub-diagonal   
+   
     for (int jjj=1 -1 ; jjj<= (n_tot/2) -1 ; jjj+=1){
-        tau_coeff(n_tot-1,jjj)= b*h;   // last row
-    }
+        tau_coeff(n_tot-1,jjj)= b*h;}   // last row
+   
         
     tau_coeff(1-1,(n_tot)-1)= -1;  // up right corner
        
     // System resolution 
-    tau   = (tau_coeff).fullPivHouseholderQr().solve(-dsigma_dx);
+    tau = (tau_coeff).fullPivHouseholderQr().solve(-dsigma_dx);
     
     ///Section Verification
     //N resultant in the section 
-    N_sec =0;
+    addouble N_sec =0;
     
     for (int i = 1-1 ;i<=(n_tot) -1 ; i=i+1){
         N_sec=N_sec+axial_load(i);}
     
     // Tz resultant in the section 
-    Tz_sec= -tau( (n_tot/2)-1)*h + tau(n_tot-1)*h ; 
+    addouble Tz_sec= -tau( (n_tot/2)-1)*h + tau(n_tot-1)*h ; 
       
     
     //Ty resultant in the section 
     VectorXdDiff Ty_vect = VectorXdDiff::Zero((n_tot/2)-1);   
     Ty_vect.segment(1-1,(n_tot/2)-1)=tau.segment(1-1, (n_tot/2)-1)*b - tau.segment((n_tot/2), (n_tot/2)-1)*b;
    
-    Ty_sec=0;
+    addouble Ty_sec=0;
     for (int iy = 1-1 ;iy<=((n_tot/2)-1) -1 ; iy=iy+1){
         Ty_sec=Ty_sec + Ty_vect(iy);            
     }

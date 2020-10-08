@@ -121,7 +121,8 @@ class pyBeamSolver:
         elif self.Prop[i].GetFormat() == "S":
             self.beam_prop[i].SetSectionProperties(self.Prop[i].GetC_wb(), self.Prop[i].Geth(), self.Prop[i].Gett_sk(), self.Prop[i].Gett_sp(),\
             self.Prop[i].GetA_fl(), self.Prop[i].Getn_stiff(),self.Prop[i].GetA_stiff() )
-            print(self.Prop[i].GetA())
+            print (self.Prop[i].GetA_fl())
+
         else:
             raise ValueError("Unknown paramter for Property CARD input. Execution aborted")
 
@@ -200,13 +201,12 @@ class pyBeamSolver:
 
   def ComputeWeight(self):
     """ This function computes the response weight of the structure (important to be recorded) """
-    print("ENTRA DENTRO 1")
     weight = self.beam.EvalWeight()
     return weight
 
   def ComputeResponseKSStress(self):
     """ This function computes the KS stress on the structure (important to be recorded) """
-    KSStress= self.beam.RESP_KSStress()
+    KSStress= self.beam.EvalKSStress()
     return KSStress
 
 
