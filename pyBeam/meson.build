@@ -5,6 +5,7 @@
 #
 # File Developers: Ruben Sanchez (SciComp, TU Kaiserslautern)
 #                  Tim Albring (SciComp, TU Kaiserslautern)
+#                  Rocco Bombardieri (University Carlos III of Madrid)
 #
 # This file is part of pyBeam.
 #
@@ -23,6 +24,10 @@
 # If not, see <http://www.gnu.org/licenses/>.
 #
 
+# Option for compilation solving structural system with eigen sparse matrix or dense (default: sparse)
+matrixstorage = '-DDENSEs'
+
+
 beam_src =files(['./src/ad.cpp',
                 './src/input.cpp',
                 './src/element.cpp',
@@ -30,21 +35,21 @@ beam_src =files(['./src/ad.cpp',
                 './src/structure.cpp',
                 './src/rotations.cpp',
                 './src/beam.cpp'])
-                
+
 codi_dep = [declare_dependency(include_directories: 'externals/CoDiPack/include')]
 codi_rev_args = '-DCODI_REVERSE_TYPE'
 
-pyBeam = static_library('pyBeam', 
+pyBeam = static_library('pyBeam',
                         beam_src,
-                        install : false, 
-                        dependencies : eigen_dep, 
-                        cpp_args : ['-Wno-ignored-attributes', '-Wno-deprecated-declarations'])
-                        
-pyBeamAD = static_library('pyBeamAD', 
+                        install : false,
+                        dependencies : eigen_dep,
+                        cpp_args : ['-Wno-ignored-attributes', '-Wno-deprecated-declarations',matrixstorage])
+
+pyBeamAD = static_library('pyBeamAD',
                            beam_src,
-                           install : false, 
+                           install : false,
                            dependencies : [eigen_dep, codi_dep],
-                           cpp_args : ['-Wno-ignored-attributes', '-Wno-deprecated-declarations', codi_rev_args])                        
+                           cpp_args : ['-Wno-ignored-attributes', '-Wno-deprecated-declarations', matrixstorage, codi_rev_args])
 
 pyBeam_dep = [declare_dependency(link_with: pyBeam)]
 pyBeamAD_dep = [declare_dependency(link_with: pyBeamAD)]
@@ -58,7 +63,7 @@ swig_lib = shared_library(
     install: true,
     install_dir: ['bin'],
     include_directories : ['./include/'],
-    cpp_args : ['-Wno-ignored-attributes', '-Wno-deprecated-declarations', '-DSWIG_TYPE_TABLE=pyBeam'],
+    cpp_args : ['-Wno-ignored-attributes', '-Wno-deprecated-declarations', '-DSWIG_TYPE_TABLE=pyBeam',matrixstorage],
     name_prefix : '',
 )
 if meson.is_subproject()
@@ -76,9 +81,9 @@ swig_lib = shared_library(
     install: true,
     install_dir: ['bin'],
     include_directories : ['./include/'],
-    cpp_args : ['-Wno-ignored-attributes', 
-                '-Wno-deprecated-declarations', 
-                '-DSWIG_TYPE_TABLE=pyBeamAD', 
+    cpp_args : ['-Wno-ignored-attributes',
+                '-Wno-deprecated-declarations',
+                '-DSWIG_TYPE_TABLE=pyBeamAD', matrixstorage,
                 codi_rev_args],
     name_prefix : '',
 )

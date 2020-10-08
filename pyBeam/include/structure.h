@@ -28,9 +28,6 @@
 
 #pragma once
 
-#include <Eigen/Dense>
-#include <Eigen/Eigenvalues>
-#include <Eigen/LU>
 
 #include "../include/types.h"
 #include "../include/element.h"
@@ -74,8 +71,16 @@ public:
     CNode **node;               // Pointer to the first finite element
 
     VectorXdDiff cross_term;    // Store the displacement vector
+
+#ifdef DENSE
+	MatrixXdDiff Ksys;
+#else        
+        MatrixXdDiffSP  Ksys ;      
+        std::vector<adtripletype > tripletList;
+        
+        addouble diagfact = 10000;   ///< dnumber to multiply diagonal of constraints imposed by penalty method
+#endif 
     
-    MatrixXdDiff Ksys;
     MatrixXdDiff Ksys_red;      // [relative to masters in case of RBE2]
     MatrixXdDiff K_penal;       // penalty matrix for rigid elements
     VectorXdDiff V_penal;       // penalty vector for rigid elements
@@ -162,10 +167,16 @@ public:
     // Assembles LHS and RHS and solves the linear static problem
 
     void SolveLinearStaticSystem(int iIter);
-
+    
+    #ifdef DENSE
     void SolveLinearStaticSystem_RBE2(int iIter);
 
     void SolveLinearStaticSystem_RBE2_penalty(int iIter);
+    #else
+    void SolveLinearStaticSystem_RBE2(int iIter){};
+
+    void SolveLinearStaticSystem_RBE2_penalty(int iIter){};    
+    #endif
 
     //===================================================
     //      Update Coordinates
