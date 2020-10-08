@@ -43,6 +43,8 @@ class CBeamSolver
 private:
 
     addouble objective_function;
+    addouble resp_weight;
+    addouble resp_KS;
     bool register_loads;
     passivedouble *loadGradient;
     passivedouble E_grad, Nu_grad;
@@ -96,11 +98,13 @@ public:
 
     passivedouble OF_NodeDisplacement(int iNode);
     
-    passivedouble EvalWeight(){return AD::GetValue(structure->EvaluateWeight());};
+    passivedouble EvalWeight();
        
-    passivedouble EvalKSStress(){return AD::GetValue(structure->Evaluate_no_AdaptiveKSstresses() ) ;};    
+    passivedouble EvalKSStress();    
 
     void ComputeAdjoint(void);
+    
+    void ComputeAdjointWeight(void);    
 
     inline void SetLoads(int iNode, int iDOF, passivedouble loadValue) { loadVector[iNode*nDOF + iDOF] = loadValue; }
     
@@ -108,8 +112,7 @@ public:
     inline void ResetLoads() {
         for (int iLoad = 0; iLoad < nTotalDOF; iLoad++){
         loadVector[iLoad] = 0.0;}
-        structure->ResetForces();
-    }
+        structure->ResetForces();}
 
     inline passivedouble ExtractDisplacements(int iNode, int iDim) {
         return AD::GetValue(structure->GetDisplacement(iNode, iDim));
@@ -142,6 +145,10 @@ public:
     void SetDependencies(void);
 
     void StopRecording(void);
+    
+    void StopRecordingWeight(void);
+    
+    void StopRecordingKS(void);    
 
     inline passivedouble ExtractLoadGradient(int iNode, int iDOF) {return loadGradient[iNode*nDOF + iDOF];}
 

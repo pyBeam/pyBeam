@@ -211,6 +211,7 @@ class pyBeamSolverAD:
     self.beam.StoreDisplacementAdjoint(iVertex, 1, adjY)
     self.beam.StoreDisplacementAdjoint(iVertex, 2, adjZ)
 
+
   def ComputeObjectiveFunction(self, iNode):
 
     """ This function computes the objective function (Important to be recorded) """

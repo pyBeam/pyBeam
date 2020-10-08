@@ -1664,8 +1664,7 @@ void CStructure::InternalForcesLinear()
         Max_N_vect(id_fe ) = element[id_fe-1]->N_max_sec;
         Max_T_vect(id_fe ) = element[id_fe-1]->T_max_sec;
      }
-  */
-   
+  */   
 }
 
 

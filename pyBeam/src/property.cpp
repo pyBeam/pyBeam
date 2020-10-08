@@ -122,7 +122,22 @@ void CProperty::RegisterInput_WB(void) {
 }
 
 
-
+void CProperty::GetGradient_WB(void) {
+    if (isWBDV == 1){
+        AD::RegisterInput(C_wb);
+        AD::RegisterInput(h);
+        AD::RegisterInput(t_sk);
+        AD::RegisterInput(t_sp);
+        AD::RegisterInput(A_fl);    
+        AD::RegisterInput(A_stiff);      
+    }
+    else if  (isWBDV == 0){
+        AD::RegisterInput(A);
+        AD::RegisterInput(Iyy);
+        AD::RegisterInput(Izz);
+        AD::RegisterInput(Jt); 
+    }
+}
 
 
 

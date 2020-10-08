@@ -101,26 +101,28 @@ public:
 
     inline addouble GetJ0(void) { return J0; }
     
-     inline addouble GetA_b(void) { return A_b; }
+    inline addouble GetA_b(void) { return A_b; }
     
-     inline addouble GetIyy_b(void) { return Iyy_b; }
+    inline addouble GetIyy_b(void) { return Iyy_b; }
        
-     inline addouble GetIzz_b(void) { return Izz_b; }
+    inline addouble GetIzz_b(void) { return Izz_b; }
      
-     inline addouble GetC_wb(void) { return C_wb; }
+    inline addouble GetC_wb(void) { return C_wb; }
      
-     inline addouble Geth(void) { return h; }
+    inline addouble Geth(void) { return h; }
      
-     inline addouble Gett_sk(void) { return t_sk; }
+    inline addouble Gett_sk(void) { return t_sk; }
      
-     inline addouble Gett_sp(void) { return t_sp; }
+    inline addouble Gett_sp(void) { return t_sp; }
      
-     inline addouble GetA_fl(void) { return A_fl; }
+    inline addouble GetA_fl(void) { return A_fl; }
      
-     inline int Getn_stiff(void) { return n_stiff; }
+    inline int Getn_stiff(void) { return n_stiff; }
      
-     inline addouble GetA_stiff(void) { return A_stiff; }
+    inline addouble GetA_stiff(void) { return A_stiff; }
      
-     void RegisterInput_WB(void);      ///<  Registers properties as inputs for sensitivity evaluation
+    void RegisterInput_WB(void);      ///<  Registers properties as inputs for sensitivity evaluation
 
+    void GetGradient_WB(void);      ///<  Registers properties as inputs for sensitivity evaluation
+     
 };

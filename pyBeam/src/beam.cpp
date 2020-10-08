@@ -522,8 +522,17 @@ passivedouble CBeamSolver::OF_NodeDisplacement(int iNode){
     objective_function = sqrt(pow(pos1, 2.0) + pow(pos2, 2.0) + pow(pos3, 2.0));
 
     return AD::GetValue(objective_function);
-
 }
+
+passivedouble CBeamSolver::EvalWeight(){
+    resp_weight = structure->EvaluateWeight();
+    return AD::GetValue(resp_weight);     };
+       
+passivedouble CBeamSolver::EvalKSStress(){
+ 
+    resp_KS = structure->Evaluate_no_AdaptiveKSstresses();
+    return AD::GetValue(resp_KS);     };
+    
 
 void CBeamSolver::SetDependencies(void){
 
@@ -590,25 +599,64 @@ void CBeamSolver::ComputeAdjoint(void){
         Nu_grad = input->GetGradient_Nu();
         for (iLoad = 0; iLoad < nTotalDOF; iLoad++){
             loadGradient[iLoad] = AD::GetValue(AD::GetDerivative(loadVector[iLoad]));
-
         }
-
         AD::ClearAdjoints();
-
     }
-
 }
+
+
+void CBeamSolver::ComputeAdjointWeight(void){
+
+    unsigned long iLoad;
+
+    for (unsigned short iTer = 0; iTer < input->Get_nIter(); iTer++){
+
+        AD::SetDerivative(resp_weight, 1.0);
+
+        structure->SetSolutionAdjoint(iRigid);
+
+        AD::ComputeAdjoint();
+        structure->ExtractSolutionAdjoint(iRigid);
+        
+        E_grad = input->GetGradient_E();
+        Nu_grad = input->GetGradient_Nu();
+        
+//        for (iLoad = 0; iLoad < nTotalDOF; iLoad++){
+//            loadGradient[iLoad] = AD::GetValue(AD::GetDerivative(loadVector[iLoad]));
+//        }        
+        
+        for (iLoad = 0; iLoad < nTotalDOF; iLoad++){
+            loadGradient[iLoad] = AD::GetValue(AD::GetDerivative(loadVector[iLoad]));
+        }
+        AD::ClearAdjoints();
+    }
+}
+
+
 
 void CBeamSolver::StopRecording(void) {
 
     AD::RegisterOutput(objective_function);
-
     /** Register the solution as output **/
     structure->RegisterSolutionOutput(iRigid);
+    AD::StopRecording();}
 
-    AD::StopRecording();
 
-}
+void CBeamSolver::StopRecordingWeight(void) {
+
+    AD::RegisterOutput(resp_weight);
+    /** Register the solution as output **/
+    structure->RegisterSolutionOutput(iRigid);
+    AD::StopRecording();}
+
+
+void CBeamSolver::StopRecordingKS(void) {
+
+    AD::RegisterOutput(resp_KS);
+    /** Register the solution as output **/
+    structure->RegisterSolutionOutput(iRigid);
+    AD::StopRecording();}
+
 
 void CBeamSolver::StoreDisplacementAdjoint(int iNode, int iDim, passivedouble val_adj){
     structure->StoreDisplacementAdjoint(iNode, iDim, val_adj);
