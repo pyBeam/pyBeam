@@ -221,6 +221,8 @@ public:
     void UpdateInternalForces();
 
     void UpdateInternalForces_FP();
+    
+    void InternalForcesLinear();    
 
     void InitializeInternalForces();
 

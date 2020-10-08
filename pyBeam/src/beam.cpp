@@ -283,14 +283,14 @@ void CBeamSolver::Solve(int FSIIter = 0){
             }
             
             if (nRBE2 != 0 and iRigid == 1){
-            structure->ImposeBC_RigidLagrangian(); 
-            // Solve Linear System   Ksys_lam*dU_lam = Res_lam 
-            structure->SolveLinearStaticSystem_RigidLagrangian(iIter,history,1);                
+                structure->ImposeBC_RigidLagrangian(); 
+                // Solve Linear System   Ksys_lam*dU_lam = Res_lam 
+                structure->SolveLinearStaticSystem_RigidLagrangian(iIter,history,1);                
             }
             else{
-            structure->ImposeBC(); 
-            // Solve Linear System   Ksys*dU = Res =
-            structure->SolveLinearStaticSystem(iIter,history,1);
+                structure->ImposeBC(); 
+                // Solve Linear System   Ksys*dU = Res =
+                structure->SolveLinearStaticSystem(iIter,history,1);
             }
 
             if (verbose){
@@ -303,6 +303,17 @@ void CBeamSolver::Solve(int FSIIter = 0){
              *----------------------------------------------------*/
             
             structure->UpdateCoord(nRBE2,iRigid);
+            
+            //=================== HARD CODED ==============
+            //=================== HARD CODED ==============
+            std::cout << "HARD CODED" << std::endl;
+            structure-> InternalForcesLinear ();
+            structure-> Evaluate_no_AdaptiveKSstresses();
+            structure-> EvaluateWeight();
+            //         
+            break;
+            //=================== END HARD CODED ==============
+            //=================== END HARD CODED ==============
             
             // Now only X is updated
             //structure->UpdateRotationMatrix();  // based on the rotational displacements

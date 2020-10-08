@@ -101,6 +101,16 @@ void CElement::Initializer(CNode* Node1, CNode* Node2, CProperty* Property, CInp
     AE  = input->GetYoungModulus()*elprop->GetA();
     Iyy = elprop->GetIyy();
     Izz = elprop->GetIzz();
+    Iyy_b= elprop->GetIyy_b();
+    Izz_b= elprop->GetIzz_b();
+    A_b  = elprop->GetA_b();
+    h    = elprop->Geth();
+    C_wb = elprop->GetC_wb();
+    t_sk = elprop->Gett_sk();
+    t_sp = elprop->Gett_sp();
+    n_stiff= elprop->Getn_stiff();
+    A_stiff= elprop->GetA_stiff();
+    A_fl   = elprop->GetA_fl();    
     
     int elemdofs = 12;
 
@@ -569,12 +579,10 @@ void CElement::InitializeRotMats()
 void  CElement::StressRetrieving()
 { 
     int n_tot = n_stiff+4;  // n_stiff + 4 flanges  
-
     addouble b=(C_wb)/(((n_tot)/2)-1);
     
     addouble L_Qxy= -h/2;
     addouble L_Qxz= -C_wb/2; 
-    
     addouble N =  fint(7-1);  
     addouble Qxy= fint(8-1);
     addouble Qxz= fint(9-1);
@@ -588,7 +596,6 @@ void  CElement::StressRetrieving()
     /// Calculation of Normal stress absorbed by booms (Navier Formula) 
     
     int r= ((n_stiff)/2)%2;
-     
     if (n_stiff == 0 ){
         sigma_booms(1-1)=(N/A_b) - (Mz/Izz_b)*C_wb*0.5 +(My/Iyy_b)*(h/2);
         sigma_booms(2-1)=(N/A_b) + (Mz/Izz_b)*C_wb*0.5 +(My/Iyy_b)*(h/2);
