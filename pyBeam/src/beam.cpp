@@ -45,6 +45,8 @@ CBeamSolver::CBeamSolver(void) {
     
     register_loads = false;
     objective_function = 0.0;
+    resp_weight = 0.0;
+    resp_KS = 0.0;
 
     totalIter = 0;
     initResNorm   =  1.0;
@@ -306,9 +308,9 @@ void CBeamSolver::Solve(int FSIIter = 0){
             
             //=================== HARD CODED ==============
             //=================== HARD CODED ==============
-            std::cout << "HARD CODED" << std::endl;
+            std::cout << "\nHARD CODED" << std::endl;
             structure-> InternalForcesLinear ();
-            structure-> Evaluate_no_AdaptiveKSstresses();
+            //structure-> Evaluate_no_AdaptiveKSstresses();
             structure-> EvaluateWeight();
             //         
             break;
@@ -527,13 +529,22 @@ passivedouble CBeamSolver::OF_NodeDisplacement(int iNode){
 passivedouble CBeamSolver::EvalWeight(){
     resp_weight = structure->EvaluateWeight();
     return AD::GetValue(resp_weight);     };
-       
+   
+    
 passivedouble CBeamSolver::EvalKSStress(){
- 
     resp_KS = structure->Evaluate_no_AdaptiveKSstresses();
     return AD::GetValue(resp_KS);     };
     
-
+    
+passivedouble CBeamSolver::EvalEA(){
+    resp_EA = element[0]->GetEA();
+    return AD::GetValue(resp_EA);     };
+    
+    
+   
+/** Core function that exposes the dependencies*/    
+/** Order d/d  U, E, Nu, Props, A,Loads      
+ */
 void CBeamSolver::SetDependencies(void){
 
     /** Register the solution as input **/
@@ -554,21 +565,65 @@ void CBeamSolver::SetDependencies(void){
 
     input->SetShear(G);
     
-    /* Registering wing-box sizes (or inertias) as inputs*/
+    /* Registering wing-box sizes (or inertias) as inputs.
+     Need to be done before exposing dependencies of FE from Properties*/
+    
+    // Counting total numbers of prop DVs 
+    nPropDVs = 0;
+    std::vector<int> index; 
+    index.push_back(0);
     for (iP= 0; iP<nProp; iP ++){
-        Prop[iP]->RegisterInput_WB();
+        //Prop[iP]->RegisterInput_WB();
+        if (Prop[iP]->GetisWBDV() == 0){
+            nPropDVs += 4; }
+        else if (Prop[iP]->GetisWBDV() == 1){
+            nPropDVs += 6;}    
+        else {std::cout << "======= ERROR  ======" <<  Prop[iP]->GetisWBDV() << std::endl; }
+        index.push_back(nPropDVs);
+        }
+    /* Creating vector storing all WB/Property DVs*/  
+
+    propDVsVector = new addouble[nPropDVs]; 
+    
+    for (int iPDVs= 0; iPDVs<nPropDVs; iPDVs ++){propDVsVector[iPDVs]=0.0;}         
+
+    for (iP= 0; iP<nProp; iP ++){
+        Prop[iP]->InitializePropDVsVec(propDVsVector,index[iP]);  }
+ 
+        /// FOR DEBUGGING
+//    Prop[0]->RegisterInput_A();
+    
+    /* Registering as inputs WB/Property DVs*/    
+    for (int iPDV= 0; iPDV<nPropDVs; iPDV ++){
+        AD::RegisterInput(propDVsVector[iPDV]);
     }
     
+
+    
+    /* Exposing dependencies  DVs*/
+    for (iP= 0; iP<nProp; iP ++){
+        Prop[iP]->SetDependencyfromDVVec(propDVsVector,index[iP]);         
+        }
+    
+
+    /*--- Initialize vector to store the gradient wrt to propDV vector ---*/
+    propGradient = new passivedouble[nPropDVs]; 
+    for (int iPDV= 0; iPDV<nPropDVs; iPDV ++){propGradient[iPDV] = 0.0;}
+
+    /* Exposing dependencies of FEMs*/
     for (iFEM = 0; iFEM < nFEM; iFEM++) {
         element[iFEM]->SetDependencies();
     }
-
+    
+    /* Exposing dependencies of nRBE2*/
     if (nRBE2 != 0){
-    for (iRBE2 = 0; iRBE2 < nRBE2; iRBE2++) {    
-        RBE2[iRBE2]->SetDependencies();    
+        for (iRBE2 = 0; iRBE2 < nRBE2; iRBE2++) {    
+            RBE2[iRBE2]->SetDependencies();    
+        }
     }
-    }
-    /*--- Initialize vector to store the gradient ---*/
+    
+    /*--- Initialize vector to store the gradient wrt to LOADS ---*/
+    /*--- and REGISTER LOADS as INPUTS ---*/    
     loadGradient = new passivedouble[nTotalDOF];
 
     for (iLoad = 0; iLoad < nTotalDOF; iLoad++){
@@ -577,7 +632,7 @@ void CBeamSolver::SetDependencies(void){
         AD::RegisterInput(loadVector[iLoad]);
 
         /*--- Initialize the load gradient to 0 ---*/
-        loadGradient[iLoad] = 0.0;
+        loadGradient[iLoad] = 0.0;       
     }
 
 }
@@ -590,16 +645,23 @@ void CBeamSolver::ComputeAdjoint(void){
 
         AD::SetDerivative(objective_function, 1.0);
 
-        structure->SetSolutionAdjoint(iRigid);
+        structure->SetSolutionAdjoint(iRigid);  // takes care of the source term and adjoint to disp 
 
         AD::ComputeAdjoint();
-        structure->ExtractSolutionAdjoint(iRigid);
+        structure->ExtractSolutionAdjoint(iRigid);  // extract gradient wrt to state variables
 
         E_grad = input->GetGradient_E();
         Nu_grad = input->GetGradient_Nu();
+        
+
+        for (int iPDV = 0; iPDV < nPropDVs; iPDV++){
+            propGradient[iPDV] = AD::GetValue(AD::GetDerivative(propDVsVector[iPDV]));
+        }   
+        
         for (iLoad = 0; iLoad < nTotalDOF; iLoad++){
             loadGradient[iLoad] = AD::GetValue(AD::GetDerivative(loadVector[iLoad]));
-        }
+        }        
+        
         AD::ClearAdjoints();
     }
 }
@@ -609,28 +671,91 @@ void CBeamSolver::ComputeAdjointWeight(void){
 
     unsigned long iLoad;
 
-    for (unsigned short iTer = 0; iTer < input->Get_nIter(); iTer++){
+    AD::SetDerivative(resp_weight, 1.0);
 
-        AD::SetDerivative(resp_weight, 1.0);
+//    structure->SetSolutionAdjoint(iRigid);
+
+    AD::ComputeAdjoint();
+    structure->ExtractSolutionAdjoint(iRigid);
+
+    E_grad = input->GetGradient_E();
+    Nu_grad = input->GetGradient_Nu();
+    
+//    A_grad = Prop[0]->GetGradient_A();
+    
+    for (int iPDV = 0; iPDV < nPropDVs; iPDV++){
+        propGradient[iPDV] = AD::GetValue(AD::GetDerivative(propDVsVector[iPDV]));
+    }      
+    
+    for (iLoad = 0; iLoad < nTotalDOF; iLoad++){
+        loadGradient[iLoad] = AD::GetValue(AD::GetDerivative(loadVector[iLoad]));
+    }
+ 
+    AD::ClearAdjoints();    
+}
+
+
+
+void CBeamSolver::ComputeAdjointKS(void){
+
+    unsigned long iLoad;
+    
+    for (unsigned short iTer = 0; iTer < input->Get_nIter(); iTer++){
+//    for (unsigned short iTer = 0; iTer < 100; iTer++){        
+
+        AD::SetDerivative(resp_KS, 1.0);
 
         structure->SetSolutionAdjoint(iRigid);
 
         AD::ComputeAdjoint();
         structure->ExtractSolutionAdjoint(iRigid);
-        
+
         E_grad = input->GetGradient_E();
         Nu_grad = input->GetGradient_Nu();
-        
-//        for (iLoad = 0; iLoad < nTotalDOF; iLoad++){
-//            loadGradient[iLoad] = AD::GetValue(AD::GetDerivative(loadVector[iLoad]));
-//        }        
-        
+
+
+        for (int iPDV = 0; iPDV < nPropDVs; iPDV++){
+            propGradient[iPDV] = AD::GetValue(AD::GetDerivative(propDVsVector[iPDV]));
+        }      
+
         for (iLoad = 0; iLoad < nTotalDOF; iLoad++){
             loadGradient[iLoad] = AD::GetValue(AD::GetDerivative(loadVector[iLoad]));
         }
-        AD::ClearAdjoints();
+
+        AD::ClearAdjoints();  
     }
 }
+
+
+
+//* Order d/d  U, E, Nu, Props, A,Loads  
+void CBeamSolver::ComputeAdjointEA(void){
+
+    unsigned long iLoad;
+
+    AD::SetDerivative(resp_EA, 1.0);
+
+    structure->SetSolutionAdjoint(iRigid);
+
+    AD::ComputeAdjoint();
+    structure->ExtractSolutionAdjoint(iRigid);
+        
+    E_grad = input->GetGradient_E();
+    Nu_grad = input->GetGradient_Nu();
+        
+    
+//    for (int iPDV = 0; iPDV < nPropDVs; iPDV++){
+//        propGradient[iPDV] = AD::GetValue(AD::GetDerivative(propDVsVector[iPDV]));}       
+        
+    A_grad = Prop[0]->GetGradient_A();
+    
+    for (iLoad = 0; iLoad < nTotalDOF; iLoad++){
+        loadGradient[iLoad] = AD::GetValue(AD::GetDerivative(loadVector[iLoad]));}
+    
+    AD::ClearAdjoints();
+   
+}
+
 
 
 
@@ -656,6 +781,14 @@ void CBeamSolver::StopRecordingKS(void) {
     /** Register the solution as output **/
     structure->RegisterSolutionOutput(iRigid);
     AD::StopRecording();}
+
+void CBeamSolver::StopRecordingEA(void) {
+
+    AD::RegisterOutput(resp_EA);
+    /** Register the solution as output **/
+    structure->RegisterSolutionOutput(iRigid);
+    AD::StopRecording();}
+
 
 
 void CBeamSolver::StoreDisplacementAdjoint(int iNode, int iDim, passivedouble val_adj){

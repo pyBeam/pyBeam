@@ -96,7 +96,7 @@ class pyBeamSolverAD:
     self.inputs = pyBeamAD.CInput(self.nPoint, self.nElem, self.nRBE2, self.nProp)
 
     # Start recording
-    print("--> Initialization successful")
+    print("--> Initialization successful!")
 
     # Sending to CInput object
     pyConfig.parseInput(self.Config, self.inputs, self.Constr, self.nConstr)
@@ -117,17 +117,20 @@ class pyBeamSolverAD:
 
     # Assigning property values to the property objects in C++
     self.beam_prop = []
+    self.nPropDVs = 0
     for i in range(self.nProp):
         self.beam_prop.append(pyBeamAD.CProperty(i))
         if self.Prop[i].GetFormat() == "N":
+            self.nPropDVs = self.nPropDVs + 4
             self.beam_prop[i].SetSectionProperties(self.Prop[i].GetA(), self.Prop[i].GetIyy(), self.Prop[i].GetIzz(), self.Prop[i].GetJt())
         elif self.Prop[i].GetFormat() == "S":
+            self.nPropDVs = self.nPropDVs + 6
             self.beam_prop[i].SetSectionProperties(self.Prop[i].GetC_wb(), self.Prop[i].Geth(), self.Prop[i].Gett_sk(), self.Prop[i].Gett_sp(),\
             self.Prop[i].GetA_fl(), self.Prop[i].Getn_stiff(),self.Prop[i].GetA_stiff() )
-            print(self.Prop[i].GetA())
+            #print(self.Prop[i].GetA())
         else:
             raise ValueError("Unknown paramter for Property CARD input. Execution aborted")
-
+        self.beam.InitializeProp(self.beam_prop[i], i)
 
     # Assigning element values to the element objects in C++
     self.element = []
@@ -184,11 +187,38 @@ class pyBeamSolverAD:
   def StopRecording(self):
     """ This function stops registration for AD  """
     self.beam.StopRecording()
-
+    
+  def StopRecordingWeight(self):
+    """ This function stops registration for AD  """
+    self.beam.StopRecordingWeight()
+    
+  def StopRecordingKS(self):
+    """ This function stops registration for AD  """
+    self.beam.StopRecordingKS()
+    
+  def StopRecordingEA(self):
+    """ This function stops registration for AD  """
+    self.beam.StopRecordingEA()
+    
+    
   def ComputeAdjoint(self):
     """ This function computes Adjoint for AD  """
     self.beam.ComputeAdjoint()
 
+  def ComputeAdjointWeight(self):
+    """ This function computes Adjoint for AD  """
+    self.beam.ComputeAdjointWeight()
+    
+  def ComputeAdjointKS(self):
+    """ This function computes Adjoint for AD  """
+    self.beam.ComputeAdjointKS()
+    
+  def ComputeAdjointEA(self):
+    """ This function computes Adjoint for AD  """
+    self.beam.ComputeAdjointEA()
+    
+    
+    
   def SetLoads(self, iVertex, loadX, loadY, loadZ):
 
     """ This function sets the load  """
@@ -230,6 +260,10 @@ class pyBeamSolverAD:
     """ This function computes the KS stress on the structure (important to be recorded) """
     KSStress= self.beam.EvalKSStress()
     return KSStress
+
+  def ComputeEA(self):
+    EA = self.beam.EvalEA()
+    return EA
 
 
   def Run(self):
@@ -317,17 +351,19 @@ class pyBeamSolverAD:
                                       self.displacement_Y[iVertex],
                                       self.displacement_Z[iVertex]))
 
+  
+  
   def PrintSensitivitiesAllLoads(self):
 
     """ This function prints the sensitivities of the objective functions for all the loads"""
     print("E', Nu' = (", self.beam.ExtractGradient_E(), self.beam.ExtractGradient_Nu(), ")")
     for iNode in range(0,self.nPoint):
        print("F'(",iNode,") = (", self.beam.ExtractLoadGradient(iNode,0), self.beam.ExtractLoadGradient(iNode,1), self.beam.ExtractLoadGradient(iNode,2), ")")
-
+       
+       
   def PrintSensitivityLoad(self, iNode):
 
       """ This function prints the sensitivities of the objective functions for the single load"""
-
       sensX = self.beam.ExtractLoadGradient(iNode,0)
       sensY = self.beam.ExtractLoadGradient(iNode,1)
       sensZ = self.beam.ExtractLoadGradient(iNode,2)
@@ -336,13 +372,34 @@ class pyBeamSolverAD:
 
       return sensX, sensY, sensZ
 
+  
   def PrintSensitivityE(self):
 
       """ This function prints the sensitivities of the objective functions for all the loads"""
       print("E' = ", self.beam.ExtractGradient_E())
 
       return self.beam.ExtractGradient_E()
+  
+  
+  def PrintSensitivityPropDVs(self):
 
+    """ This function prints the sensitivities of the objective functions wrt  Prop DVs"""
+    grad_DVs =[]
+    for iPDV in range(0,self.nPropDVs):
+        grad_DVs.append(self.beam.ExtractPropGradient(iPDV))
+        print("Prop DV '(",iPDV,") = (", grad_DVs[iPDV], ")")
+    return grad_DVs
+
+    #return self.beam.ExtractGradient_E() 
+    
+  def PrintSensitivityPropA(self):
+
+      """ This function prints the sensitivities of the objective functions wrt to first Property """
+      print("C_WB or A' = ", self.beam.ExtractGradient_A() )
+      return self.beam.ExtractGradient_A()
+  
+  
+  
   def TestSensitivityE(self, sensEres, sensECheck):
 
       """ This function prints the sensitivities of the objective functions for all the loads"""

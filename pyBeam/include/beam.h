@@ -45,9 +45,16 @@ private:
     addouble objective_function;
     addouble resp_weight;
     addouble resp_KS;
+    
     bool register_loads;
+    
     passivedouble *loadGradient;
     passivedouble E_grad, Nu_grad;
+    passivedouble *propGradient;
+    
+    ///DEBUG
+    passivedouble A_grad;  
+    addouble resp_EA;
 
     bool verbose = true;
 
@@ -69,14 +76,16 @@ private:
     int iRigid = 0;     // iRigid = 0: Penalty method iRigid = 1: Lagrange Multiplier method
     unsigned long nFEM;
     unsigned long nProp;                    ///< Number of Properties
-
+    int nPropDVs; 
+    
     unsigned long totalIter;
     addouble initDispNorm;
     addouble initResNorm;
     addouble *loadVector;
     addouble thickness;
-
-protected:
+    addouble *propDVsVector;   ///< property DVs gathered in a vector
+    
+//protected:
 
 public:
 
@@ -91,6 +100,8 @@ public:
     inline void InitializeElement(CElement *py_element, unsigned long iFEM) {element[iFEM] = py_element;}
 
     inline void InitializeRBE2(CRBE2* py_RBE2,unsigned long iRBE2) {RBE2[iRBE2] = py_RBE2;}
+    
+    inline void InitializeProp(CProperty* py_prop,unsigned long iProp) {Prop[iProp] = py_prop;}
 
     void InitializeStructure(void);
 
@@ -101,10 +112,18 @@ public:
     passivedouble EvalWeight();
        
     passivedouble EvalKSStress();    
+    
+    ///DEBUG 
+    passivedouble EvalEA();  
 
     void ComputeAdjoint(void);
     
-    void ComputeAdjointWeight(void);    
+    void ComputeAdjointWeight(void);  
+    
+    void ComputeAdjointKS(void);      
+    
+    ///DEBUG 
+    void ComputeAdjointEA(void);
 
     inline void SetLoads(int iNode, int iDOF, passivedouble loadValue) { loadVector[iNode*nDOF + iDOF] = loadValue; }
     
@@ -149,12 +168,20 @@ public:
     void StopRecordingWeight(void);
     
     void StopRecordingKS(void);    
+    
+    void StopRecordingEA(void);    
 
     inline passivedouble ExtractLoadGradient(int iNode, int iDOF) {return loadGradient[iNode*nDOF + iDOF];}
 
     inline passivedouble ExtractGradient_E(void) {return E_grad;}
 
     inline passivedouble ExtractGradient_Nu(void) {return Nu_grad;}
+    
+    inline passivedouble ExtractPropGradient(int iPDV){return propGradient[iPDV];}
+    
+    inline passivedouble ExtractGradient_A(void) {return A_grad;}
+
+    
 
     inline unsigned long Get_nNodes(void) {return input->Get_nNodes();}
 

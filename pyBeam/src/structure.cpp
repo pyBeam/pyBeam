@@ -1710,15 +1710,19 @@ addouble CStructure::Evaluate_no_AdaptiveKSstresses()
      
 addouble CStructure::EvaluateWeight(){
     
-    addouble A=element[1-1]->elprop->GetA();  //Area  (constant)
-
-    addouble l=element[1-1]->GetInitial_Length();     // initial length
+    addouble weight = 0.0;
     
-    addouble weight = nfem * rho * l * A;                 
+    for (int id_fe=0;     id_fe < nfem ; id_fe++) { 
+        
+        //addouble A = element[1-1]-> elprop->GetA();  //Area  (constant)
+        //addouble l = element[1-1]-> GetInitial_Length();     // initial length
+    
+        weight +=   rho *  element[id_fe]-> elprop->GetA() * element[id_fe]-> GetInitial_Length();                 
 //    cout<<"A = "<< A<< endl;
 //    cout<<"l= "<< l<<endl;
 //    cout<<"rho = "<< rho<<endl;
 //    cout<<"W = "<< weight<<endl;
+    }
     
     return weight;
 }
