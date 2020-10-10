@@ -156,7 +156,7 @@ class Property:
     self.h = 0;              # box tot height
     self.C_wb = 0;           # box tot length
     self.n_stiff = 0;        # number of stiffeners
-    self.format = "N";         # N tipical one in which inertias are defined
+    self.Format = "N";         # N tipical one in which inertias are defined
                              # S on in which wing box sizes are defined
 
   def SetA(self,A):
@@ -410,20 +410,27 @@ def readRBE2(Mesh_file):
 def readProp(Prop_file):	
 
     Prop = []    
-    
+    nProp = 0
     with open(Prop_file, 'r') as propfile:
       print('--> Reading property file: ' + Prop_file + '.')
       while 1:
         line = propfile.readline()
+#        print("line->",line)
         if not line:
           break	
+#        print("line.strip->",line.strip())
         if line.strip():
           if (line[0] == '%'):
             continue	
-        pos = line.find('NPROP')
-        pos2 = line.find('NPROPS')
-
-        if pos != -1 and pos2 == -1:
+        pos  = line.find('NPROP ')
+        pos2 = line.find('NPROPS')        
+#        print(pos)
+#        print(pos2)
+        
+        if pos != -1 and pos2 != -1:
+            raise ValueError("CANNOT have OLD and NEW FORMAT of PROPERTY CARD at the SAME TIME. Execution aborted")    
+            
+        elif pos != -1 and pos2 == -1:
             print('--> OLD FORMAT FOR SPECIFYING PROPERTIES. WILL BE DISCONTINUED')
             line = line.strip('\r\n')
             line = line.replace(" ", "")
@@ -446,7 +453,7 @@ def readProp(Prop_file):
                 print("Success!", iProp)
 
         #        pos = line.find('NPROPS')
-        elif pos != -1 and pos2 != -1:
+        elif pos == -1 and pos2 != -1:
             print('--> NEW FORMAT FOR SPECIFYING PROPERTIES.')
             # if iOLD == 1:
             #  raise ValueError('Cannot specify properties in new and old format. Execution aborted')
@@ -491,7 +498,9 @@ def readProp(Prop_file):
                     Prop[iProp].SetA_stiff(A_stiff);
                 else:
                     raise ValueError("Unknown paramter for Property CARD input. Execution aborted")
-
+#        else:
+#            raise ValueError("MINCHIA SUCCEDE??")
+                
     return Prop, nProp
 
 

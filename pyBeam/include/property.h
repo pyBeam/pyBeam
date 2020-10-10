@@ -56,7 +56,7 @@ protected:
     int n_stiff;             ///< number of stiffener (not taking into account the Spar's flanges)
     addouble A_stiff;        ///< stiffener Area    
     
-    unsigned int isWBDV;     ///< flag which determines if the initial inputs were given as WB sizes
+    int isWBDV=0;     ///< flag which determines if the initial inputs were given as WB sizes
     
 public:
 
@@ -90,7 +90,10 @@ public:
     void SetSectionProperties(passivedouble C_wb_, passivedouble h_, passivedouble t_sk_,  
                               passivedouble t_sp_, passivedouble A_fl_, 
                               int n_stiff_, passivedouble A_stiff_);    
-
+    
+    void FromWBtoInertias();
+    
+    
     inline addouble GetIyy(void) { return Iyy; }
 
     inline addouble GetIzz(void) { return Izz; }
@@ -120,9 +123,29 @@ public:
     inline int Getn_stiff(void) { return n_stiff; }
      
     inline addouble GetA_stiff(void) { return A_stiff; }
+    
+    inline int GetisWBDV(void){ return  isWBDV;} 
      
     void RegisterInput_WB(void);      ///<  Registers properties as inputs for sensitivity evaluation
 
     void GetGradient_WB(void);      ///<  Registers properties as inputs for sensitivity evaluation
-     
+    
+    void RegisterInput_A(void){
+//        if (isWBDV == 1){        
+//           AD::RegisterInput(C_wb);}
+        if (isWBDV == 0){
+           AD::RegisterInput(A);}}        
+    
+    
+    passivedouble  GetGradient_A(void){
+//        if (isWBDV == 1){
+//            return AD::GetValue(AD::GetDerivative(C_wb));}
+        if (isWBDV == 0){
+            return AD::GetValue(AD::GetDerivative(A));} }       
+    
+    void InitializePropDVsVec(addouble*,int);   ///< Initializing prop DVs Vecor from Property
+    
+    void SetDependencyfromDVVec(addouble*,int); ///< Register the dependency from the prop DVs Vector
+    
+    void SetA(addouble A_in){A=A_in;} ;
 };

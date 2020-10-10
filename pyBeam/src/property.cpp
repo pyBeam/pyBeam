@@ -46,7 +46,21 @@ void CProperty::SetSectionProperties(passivedouble C_wb_, passivedouble h_, pass
     A_fl = A_fl_;
     n_stiff = n_stiff_;
     A_stiff = A_stiff_;
+    FromWBtoInertias();
+
+   
+   //addouble Sy= A*(h/2);   // Y static moment of the section
+   
+   //addouble Sz=A*(C_wb/2);  // Z static moment of the section   
+   
+   isWBDV = 1;
+   
+//   std::cout << "Inertias of the boom never used. Static Moments neither" << std::endl;
     
+}
+
+void CProperty::FromWBtoInertias()
+{
     addouble b=(C_wb)/(((n_stiff+4)/2)-1);      //distance within stiffeners
     
     int r= ((n_stiff)/2)%2;
@@ -92,56 +106,87 @@ void CProperty::SetSectionProperties(passivedouble C_wb_, passivedouble h_, pass
     Jt=(2*t_sp*t_sk*pow(C_wb,2)*pow(h,2))/(C_wb*t_sp+h*t_sk);
    
     J0=Iyy+Izz;
-   
-   //addouble Sy= A*(h/2);   // Y static moment of the section
-   
-   //addouble Sz=A*(C_wb/2);  // Z static moment of the section   
-   
-   isWBDV = 1;
-   
-//   std::cout << "Inertias of the boom never used. Static Moments neither" << std::endl;
-    
+
 }
-
-
 void CProperty::RegisterInput_WB(void) {
     if (isWBDV == 1){
         AD::RegisterInput(C_wb);
-        AD::RegisterInput(h);
-        AD::RegisterInput(t_sk);
-        AD::RegisterInput(t_sp);
-        AD::RegisterInput(A_fl);    
-        AD::RegisterInput(A_stiff);      
+//        AD::RegisterInput(h);
+//        AD::RegisterInput(t_sk);
+//        AD::RegisterInput(t_sp);
+//        AD::RegisterInput(A_fl);    
+//        AD::RegisterInput(A_stiff);      
     }
     else if  (isWBDV == 0){
         AD::RegisterInput(A);
-        AD::RegisterInput(Iyy);
-        AD::RegisterInput(Izz);
-        AD::RegisterInput(Jt); 
+//        AD::RegisterInput(Iyy);
+//        AD::RegisterInput(Izz);
+//        AD::RegisterInput(Jt); 
     }
 }
 
 
 void CProperty::GetGradient_WB(void) {
     if (isWBDV == 1){
-        AD::RegisterInput(C_wb);
-        AD::RegisterInput(h);
-        AD::RegisterInput(t_sk);
-        AD::RegisterInput(t_sp);
-        AD::RegisterInput(A_fl);    
-        AD::RegisterInput(A_stiff);      
+        AD::GetValue(AD::GetDerivative(C_wb));
+        AD::GetValue(AD::GetDerivative(h));
+        AD::GetValue(AD::GetDerivative(t_sk));
+        AD::GetValue(AD::GetDerivative(t_sp));
+        AD::GetValue(AD::GetDerivative(A_fl));
+        AD::GetValue(AD::GetDerivative(A_stiff));            
     }
     else if  (isWBDV == 0){
-        AD::RegisterInput(A);
-        AD::RegisterInput(Iyy);
-        AD::RegisterInput(Izz);
-        AD::RegisterInput(Jt); 
+        AD::GetValue(AD::GetDerivative(A));
+        AD::GetValue(AD::GetDerivative(Iyy));
+        AD::GetValue(AD::GetDerivative(Izz));
+        AD::GetValue(AD::GetDerivative(Jt));                
     }
 }
 
 
-
-
+ void CProperty::InitializePropDVsVec(addouble* VecPropDVs, int pos){
+    //int pos = 0;
+    if (isWBDV == 1){
+        VecPropDVs[pos] = C_wb ;
+        VecPropDVs[pos+1] = h;
+        VecPropDVs[pos+2] = t_sk ;
+        VecPropDVs[pos+3] = t_sp ;
+        VecPropDVs[pos+4] = A_fl;
+        VecPropDVs[pos+5] = A_stiff ;        
+    }
+    else if (isWBDV == 0){
+        VecPropDVs[pos] = A;
+        VecPropDVs[pos+1] = Iyy;
+        VecPropDVs[pos+2] = Izz;
+        VecPropDVs[pos+3] = Jt;   
+    }
+ }
+    
+    
+ void CProperty::SetDependencyfromDVVec(addouble* VecPropDVs, int pos){
+    //int pos = 0;
+    if (isWBDV == 1){
+        C_wb = VecPropDVs[pos];
+        std::cout << "C_wb = " <<  C_wb << std::endl;
+        h = VecPropDVs[pos+1];
+        t_sk = VecPropDVs[pos+2];
+        t_sp = VecPropDVs[pos+3];
+        A_fl = VecPropDVs[pos+4];
+        A_stiff = VecPropDVs[pos+5]; 
+        
+        FromWBtoInertias();
+    }
+    else if (isWBDV == 0){
+        A = VecPropDVs[pos];  
+        std::cout << "A = " <<  A << std::endl;
+        Iyy = VecPropDVs[pos+1];
+        Izz = VecPropDVs[pos+2];
+        Jt = VecPropDVs[pos+3];   }
+    else { std::cout << "ERRRRRRRRRRRRRRRRRRRRRRRRROOOOORRRRR" << std::endl;}
+                                                                      
+}
+ 
+ 
 /*void CProperty::SetSectionProperties2()
 {
     // input parameters 

@@ -274,17 +274,17 @@ public:
 
     inline void SetSolutionAdjoint(int iRigid) {
         if (nRBE2 != 0 and iRigid == 1) {
-        for (unsigned long i = 0; i < nNode * 6; i++){
-            AD::SetDerivative(U_lam(i), AD::GetValue(U_lam_adj(i) + cross_term(i))); 
-        }    
-        for (unsigned long i = nNode * 6; i < (nNode + nRBE2)*6; i++){
-            AD::SetDerivative(U_lam(i), AD::GetValue( U_lam_adj(i) ));
-        }
-        }
+            for (unsigned long i = 0; i < nNode * 6; i++){
+                AD::SetDerivative(U_lam(i), AD::GetValue(U_lam_adj(i) + cross_term(i))); 
+                }    
+            for (unsigned long i = nNode * 6; i < (nNode + nRBE2)*6; i++){
+                AD::SetDerivative(U_lam(i), AD::GetValue( U_lam_adj(i) ));
+                }
+            }
         else{
-        for (unsigned long i = 0; i < nNode * 6; i++){
-            AD::SetDerivative(U(i), AD::GetValue(U_adj(i) + cross_term(i)));}
-        }
+            for (unsigned long i = 0; i < nNode * 6; i++){
+                AD::SetDerivative(U(i), AD::GetValue(U_adj(i) + cross_term(i)));}
+            }
     }
 
     inline void StoreDisplacementAdjoint(int iNode, int iDim, passivedouble val_adj) {

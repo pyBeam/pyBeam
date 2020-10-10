@@ -142,6 +142,10 @@ public:
     // Methods to access/set the previous element length
     inline void SetPrevious_Length(void) { l_prev = l_curr; }
     inline addouble GetPrevious_Length(void) { return l_prev; }
+    
+    // Methods to access FE inertias
+    inline addouble GetEA(void) { 
+        return   AE;}//input->GetYoungModulus()*elprop->GetA();}
 
     // Methods to set initial properties to the element
     inline void SetNode_1( CNode* Node1) { nodeA = Node1; }

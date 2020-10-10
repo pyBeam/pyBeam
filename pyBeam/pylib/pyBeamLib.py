@@ -114,18 +114,23 @@ class pyBeamSolver:
 
     # Assigning property values to the property objects in C++
     self.beam_prop = []
+    self.nPropDVs = 0    
     for i in range(self.nProp):
         self.beam_prop.append(pyBeam.CProperty(i))
         if self.Prop[i].GetFormat() == "N":
+            self.nPropDVs = self.nPropDVs + 4            
             self.beam_prop[i].SetSectionProperties(self.Prop[i].GetA(), self.Prop[i].GetIyy(), self.Prop[i].GetIzz(), self.Prop[i].GetJt())
         elif self.Prop[i].GetFormat() == "S":
+            self.nPropDVs = self.nPropDVs + 6            
             self.beam_prop[i].SetSectionProperties(self.Prop[i].GetC_wb(), self.Prop[i].Geth(), self.Prop[i].Gett_sk(), self.Prop[i].Gett_sp(),\
             self.Prop[i].GetA_fl(), self.Prop[i].Getn_stiff(),self.Prop[i].GetA_stiff() )
             print (self.Prop[i].GetA_fl())
 
         else:
             raise ValueError("Unknown paramter for Property CARD input. Execution aborted")
-
+        self.beam.InitializeProp(self.beam_prop[i], i)
+                
+                
     # Assigning element values to the element objects in C++
     self.element = []
     for i in range(self.nElem):
