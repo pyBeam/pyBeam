@@ -241,11 +241,11 @@ void CElement::EvalNaNb(MatrixXdDiff &Na, MatrixXdDiff  &Nb) {
 
     //-------------    KINEMATIC MATRIX  --------------------------------------
     //    % Na=1/Lcurr* [ -Lcurr   0      0     0       0      0;
-    //    %                0     0      0    -Lcurr    0      0;
-    //    %                0     0     -1     0       0      0;
-    //    %                0     1      0     0       0      0;
-    //    %                0     0     -1     0      Lcurr    0;
-    //    %                0     1      0     0       0     Lcurr];
+    //    %                0       0      0    -Lcurr    0      0;
+    //    %                0       0     -1     0       0      0;
+    //    %                0       1      0     0       0      0;
+    //    %                0       0     -1     0      Lcurr    0;
+    //    %                0       1      0     0       0     Lcurr];
 
     Na(1-1,1-1) =   -1.0;    Na(2-1,4-1) =  -1.0;
     Na(3-1,3-1) =   -one_to_l;

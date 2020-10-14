@@ -954,6 +954,8 @@ void CStructure::SolveLinearStaticSystem_RigidLagrangian(int iIter, std::ofstrea
     dU = dU_lam.segment(0,nNode*6);
 }
 #endif
+
+
 /*===================================================
  *            Update Coordinates
  * ==================================================
@@ -1030,6 +1032,88 @@ void CStructure::UpdateCoord(int nRBE2,int iRigid) {
     }
     
 }
+
+
+/*===================================================
+ *            Update Coordinates
+ * ==================================================
+ This member function upates the coordinates XYZ
+ (expressed in global reference system) of the finite element nodes.
+ 
+ */
+
+void CStructure::UpdateCoordLIN(int nRBE2,int iRigid) {
+
+    //std::cout << "-->  Update Global Coordinates "  << std::endl;
+    
+    /* We have the X array, we need to add the displacements referred to the pre-last displacement local reference system.
+     Thus, this operation need to eb done before the rottion matrix is updated. */
+    
+    // to correctly update the rotational Dofs of the nodes
+    Vector3dDiff U_rot = Vector3dDiff::Zero();
+    Vector3dDiff U_rot_new = Vector3dDiff::Zero();
+    Vector3dDiff dU_rot = Vector3dDiff::Zero();
+    Matrix3dDiff R_U = Matrix3dDiff::Zero();
+    Matrix3dDiff R_U_new = Matrix3dDiff::Zero();
+    Matrix3dDiff R_dU = Matrix3dDiff::Zero();
+
+    int posX = 1;    // current  position in the X array
+    int posU = 1;    // current position in the U array
+
+    VectorXdDiff DX;
+    DX = VectorXdDiff::Zero(nNode*3);
+
+ 
+    // Browsing all the nodes of the current segment
+    for (int id_node=1-1; id_node<=nNode-1 ; id_node++) {
+        
+        DX.segment(posX-1,3) = dU.segment(posU-1,3);  //  *
+        X.segment(posX-1,3) += DX.segment(posX-1,3);
+
+        // Update displacements
+        U.segment(posU-1,3) += dU.segment(posU-1,3);
+        
+        // in the linear case no need for finite rotations
+        U.segment(posU-1+3,3) += dU.segment(posU-1+3,3);
+        
+//        //The rotation matrix is extracted from the rotational degrees of freedom of each node
+//        U_rot = U.segment(posU+3 -1,3);
+//        R_U = Matrix3dDiff::Zero();
+//        PseudoToRot(U_rot, R_U);
+//
+//        //same thing is done for the new rotation
+//        dU_rot = dU.segment(posU+3 -1,3);
+//        R_dU = Matrix3dDiff::Zero();
+//        PseudoToRot(dU_rot, R_dU);
+//
+//        //Rotation is updated
+//        R_U_new = Matrix3dDiff::Zero();
+//        R_U_new = R_dU*R_U;
+//        
+//        //and into the vector
+//        U_rot_new = Vector3dDiff::Zero();
+//        RotToPseudo(U_rot_new , R_U_new);
+//        U.segment(posU+3 -1,3) = U_rot_new;
+        
+//        // Updating the node's coordinates
+//        for (int iDim=0; iDim < 3; iDim++) {
+//            node[id_node]->SetCoordinate(iDim, X(posX+iDim-1)) ;
+//        }
+        
+        posX += 3;
+        posU += 6;
+    }
+    // Update expanded solution in case of Lagrange multiplier approach for rigid elements U_lam = {U; lambda}
+    if (nRBE2 != 0 and iRigid == 1){
+        U_lam.segment(0,nNode*6) = U;
+        for (int iRBE2 = 0; iRBE2 < nRBE2; iRBE2++) {  
+            U_lam.segment(nNode*6 -1 + (iRBE2)*6+1 ,6) +=  dU_lam.segment(nNode*6 -1 + (iRBE2)*6+1 ,6) ;    
+        }
+             
+    }
+    
+}
+
 
 /*===================================================
  *            Restart Coordinates
@@ -1503,9 +1587,9 @@ void CStructure::UpdateInternalForces_FP()
     // VERY IMPORTANT to reset it to 0 every time
     Fint = VectorXdDiff::Zero(nNode*6);
     
-    VectorXdDiff eps = VectorXdDiff::Zero(6);
-    VectorXdDiff phi = VectorXdDiff::Zero(6);
-    VectorXdDiff fint = VectorXdDiff::Zero(12);
+//    VectorXdDiff eps = VectorXdDiff::Zero(6);
+//    VectorXdDiff phi = VectorXdDiff::Zero(6);
+//    VectorXdDiff fint = VectorXdDiff::Zero(12);
     
     /*-------------------------------
      //     LOOPING FINITE ELEMENTS
@@ -1614,36 +1698,11 @@ void CStructure::UpdateInternalForcesLinear()
     
     int nodeA_id = 0;
     int nodeB_id = 0;
-    
-  
-    
-    Matrix3dDiff Rnode_A = Matrix3dDiff::Zero();
-    Matrix3dDiff Rnode_B = Matrix3dDiff::Zero();
-    
-    // Nodal ELASTIC Rotation Matrix
-    
-    
-    Matrix3dDiff Rreduc = Matrix3dDiff::Zero();;
-    Matrix3dDiff Rtransp = Matrix3dDiff::Zero();;
-
-    // Auxiliary matrices for the elastic component
-    MatrixXdDiff Na = MatrixXdDiff::Zero(6,6);
-    MatrixXdDiff Nb = MatrixXdDiff::Zero(6,6);
-    
-    int tot_dofs= nNode*6;
-    
-    // Element's level  forces/elastic displ--> u element
-    VectorXdDiff u_el = VectorXdDiff::Zero(12);
-    
+      
     // Nodal vector of internal forces
     // VERY IMPORTANT to reset it to 0 every time
     Fint = VectorXdDiff::Zero(nNode*6);
-    
-    
-    VectorXdDiff eps = VectorXdDiff::Zero(6);
-    VectorXdDiff phi = VectorXdDiff::Zero(6);
-    VectorXdDiff fint = VectorXdDiff::Zero(12);
-    
+      
     /*-------------------------------
      //     LOOPING FINITE ELEMENTS
      * -------------------------------*/    
@@ -1663,8 +1722,8 @@ void CStructure::UpdateInternalForcesLinear()
         MatrixXdDiff Kel = MatrixXdDiff::Zero(12,12);
         element[id_fe-1]-> ElementElastic_Rao(Kel);
       
-        UlocA=element[id_fe-1]-> R0.transpose() * U.segment((nodeA_id-1)*6,6);
-        UlocB=element[id_fe-1]-> R0.transpose() * U.segment((nodeB_id-1)*6,6);
+        UlocA = element[id_fe-1]-> R0.transpose() * U.segment((nodeA_id-1)*6,6);
+        UlocB = element[id_fe-1]-> R0.transpose() * U.segment((nodeB_id-1)*6,6);
         
         Uloc.segment(1-1 , 6  )=  UlocA.segment(1-1 , 6 );
         Uloc.segment(7-1 , 6 ) =  UlocB.segment(1-1 , 6 );
@@ -1673,11 +1732,9 @@ void CStructure::UpdateInternalForcesLinear()
         
         // Being linear, the element initial reference system is maintained even if displacements are zero 
         Fint.segment((nodeA_id-1)*6+1 -1,6) +=  element[id_fe-1]->R0 * element[id_fe-1]->fint.segment(1-1,6);
-        Fint.segment((nodeB_id-1)*6+1 -1,6) +=  element[id_fe-1]->R0 * element[id_fe-1]->fint.segment(7-1,6);    
-       
+        Fint.segment((nodeB_id-1)*6+1 -1,6) +=  element[id_fe-1]->R0 * element[id_fe-1]->fint.segment(7-1,6);          
        }
-    
-
+   
 }
 
 

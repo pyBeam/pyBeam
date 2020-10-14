@@ -490,7 +490,7 @@ void CBeamSolver::SolveLin(int FSIIter = 0){
          *   Updates Coordinates, Updates Rotation Matrices
          *----------------------------------------------------*/
 
-        structure->UpdateCoord(nRBE2,iRigid);
+        structure->UpdateCoordLIN(nRBE2,iRigid);
         structure-> UpdateInternalForcesLinear ();
 
 
@@ -780,7 +780,7 @@ if (verbose){
      *   Updates Coordinates, Updates Rotation Matrices
      *----------------------------------------------------*/
     
-    structure->UpdateCoord(nRBE2,iRigid);
+    structure->UpdateCoordLIN(nRBE2,iRigid);
     
     
     /*--------------------------------------------------

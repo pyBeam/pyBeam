@@ -204,6 +204,8 @@ public:
      */
 
     void UpdateCoord(int nRBE2, int iRigid);
+    
+    void UpdateCoordLIN(int nRBE2, int iRigid);    
 
     void RestartCoord();
 
