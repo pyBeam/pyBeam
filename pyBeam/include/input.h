@@ -67,7 +67,7 @@ protected:
     unsigned short kind_LinSol;     // Tolerance of the linear solver
     unsigned short WriteRestart;    // Write restart option
     unsigned short Restart;         // Restart option
-
+    unsigned short Structure_Lin;   ///< Flag for linear structure (during recording)
     bool discrete_adjoint;
 
     //##############    Material inputs (only ONE homogeneous material is allowed by now)  ###########################
@@ -134,6 +134,8 @@ public:
 
     void SetSingleConstr(int iConstr, int node_id, int DOF_id) {Constr_matrix(iConstr,1 -1) = node_id;
                                                                 Constr_matrix(iConstr,2 -1) = DOF_id;}
+    
+    void SetStructure_Lin (int iLIN){ Structure_Lin = iLIN;}
 
     MatrixXdDiff  GetConstrMatrix() {return Constr_matrix;};
 
@@ -172,6 +174,8 @@ public:
     unsigned long Get_LoadSteps(void) { return loadSteps;}
 
     unsigned long Get_nIter(void) { return nIter;}
+    
+    unsigned short GetStructure_Lin (void){ return Structure_Lin;}
 
     addouble Get_ConvCriteria(void) { return convCriteria; }
 

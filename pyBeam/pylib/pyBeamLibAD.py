@@ -200,11 +200,19 @@ class pyBeamSolverAD:
     """ This function stops registration for AD  """
     self.beam.StopRecordingEA()
     
+  def StopRecordingNint(self):
+    """ This function stops registration for AD  """
+    self.beam.StopRecordingNint()
+    
     
   def ComputeAdjoint(self):
     """ This function computes Adjoint for AD  """
     self.beam.ComputeAdjoint()
-
+    
+  def ComputeAdjointNint(self):
+    """ This function computes Adjoint for AD  """
+    self.beam.ComputeAdjointNint()
+    
   def ComputeAdjointWeight(self):
     """ This function computes Adjoint for AD  """
     self.beam.ComputeAdjointWeight()
@@ -247,8 +255,15 @@ class pyBeamSolverAD:
     """ This function computes the objective function (Important to be recorded) """
     displacement = self.beam.OF_NodeDisplacement(iNode)
     print("Objective Function - Displacement(", iNode, ") = ", displacement)
-
     return displacement
+
+  
+  #####  DEBUG
+  def ComputeNint(self):
+
+    Nint = self.beam.EvalNint()
+    return Nint
+
 
   def ComputeWeight(self):
     """ This function computes the response weight of the structure (important to be recorded) """
@@ -298,6 +313,40 @@ class pyBeamSolverAD:
         self.displacement_Y.append(self.beam.ExtractDisplacements(jNode, 1))
         self.displacement_Z.append(self.beam.ExtractDisplacements(jNode, 2))
 
+
+  def RunLin(self):
+    """ This function runs the solver and stores the results.
+        Needs to be run after __SetLoads """
+
+    self.beam.SolveLin(0)
+
+    self.coordinate_X = []
+    self.coordinate_Y = []
+    self.coordinate_Z = []
+
+    self.coordinate_X0 = []
+    self.coordinate_Y0 = []
+    self.coordinate_Z0 = []
+
+    self.displacement_X = []
+    self.displacement_Y = []
+    self.displacement_Z = []
+
+    for jNode in range(0,self.nPoint):
+
+        self.coordinate_X.append(self.beam.ExtractCoordinate(jNode, 0))
+        self.coordinate_Y.append(self.beam.ExtractCoordinate(jNode, 1))
+        self.coordinate_Z.append(self.beam.ExtractCoordinate(jNode, 2))
+
+        self.coordinate_X0.append(self.beam.ExtractCoordinate0(jNode, 0))
+        self.coordinate_Y0.append(self.beam.ExtractCoordinate0(jNode, 1))
+        self.coordinate_Z0.append(self.beam.ExtractCoordinate0(jNode, 2))
+
+        self.displacement_X.append(self.beam.ExtractDisplacements(jNode, 0))
+        self.displacement_Y.append(self.beam.ExtractDisplacements(jNode, 1))
+        self.displacement_Z.append(self.beam.ExtractDisplacements(jNode, 2))
+        
+        
   def ReadRestart(self):
 
       self.beam.ReadRestart()
@@ -333,6 +382,39 @@ class pyBeamSolverAD:
           self.displacement_Y.append(self.beam.ExtractDisplacements(jNode, 1))
           self.displacement_Z.append(self.beam.ExtractDisplacements(jNode, 2))
 
+
+  def RestartLin(self):
+      """ This function runs the restart and stores the results.
+          Needs to be run after __SetLoads """
+
+      self.beam.RunRestartLin(0)
+
+      self.coordinate_X = []
+      self.coordinate_Y = []
+      self.coordinate_Z = []
+
+      self.coordinate_X0 = []
+      self.coordinate_Y0 = []
+      self.coordinate_Z0 = []
+
+      self.displacement_X = []
+      self.displacement_Y = []
+      self.displacement_Z = []
+
+      for jNode in range(0, self.nPoint):
+          self.coordinate_X.append(self.beam.ExtractCoordinate(jNode, 0))
+          self.coordinate_Y.append(self.beam.ExtractCoordinate(jNode, 1))
+          self.coordinate_Z.append(self.beam.ExtractCoordinate(jNode, 2))
+
+          self.coordinate_X0.append(self.beam.ExtractCoordinate0(jNode, 0))
+          self.coordinate_Y0.append(self.beam.ExtractCoordinate0(jNode, 1))
+          self.coordinate_Z0.append(self.beam.ExtractCoordinate0(jNode, 2))
+
+          self.displacement_X.append(self.beam.ExtractDisplacements(jNode, 0))
+          self.displacement_Y.append(self.beam.ExtractDisplacements(jNode, 1))
+          self.displacement_Z.append(self.beam.ExtractDisplacements(jNode, 2))
+          
+          
   def PrintDisplacements(self, iVertex):
 
     """ This function prints to screen the displacements on the nodes """

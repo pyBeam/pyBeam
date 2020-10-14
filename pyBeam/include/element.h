@@ -195,6 +195,8 @@ public:
     void VonMises();
 
     
+    addouble RetrieveNint();
+    
 
 };
 

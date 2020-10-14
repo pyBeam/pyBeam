@@ -744,3 +744,8 @@ void CElement:: VonMises(){
     }
      
 }
+
+addouble CElement:: RetrieveNint(){
+    std::cout << fint << std::endl;
+    return fint[12-1];
+}

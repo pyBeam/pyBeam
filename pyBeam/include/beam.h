@@ -45,6 +45,8 @@ private:
     addouble objective_function;
     addouble resp_weight;
     addouble resp_KS;
+    addouble resp_EA;
+    addouble resp_Nint;
     
     bool register_loads;
     
@@ -54,7 +56,7 @@ private:
     
     ///DEBUG
     passivedouble A_grad;  
-    addouble resp_EA;
+    
 
     bool verbose = true;
 
@@ -106,6 +108,8 @@ public:
     void InitializeStructure(void);
 
     void Solve(int FSIIter);
+    
+    void SolveLin(int FSIIter);    
 
     passivedouble OF_NodeDisplacement(int iNode);
     
@@ -115,8 +119,12 @@ public:
     
     ///DEBUG 
     passivedouble EvalEA();  
+    
+    passivedouble EvalNint();   /// FOR DEBUG PURPOSES
 
     void ComputeAdjoint(void);
+    
+    void ComputeAdjointNint(void);   /// DEBUG    
     
     void ComputeAdjointWeight(void);  
     
@@ -169,7 +177,10 @@ public:
     
     void StopRecordingKS(void);    
     
-    void StopRecordingEA(void);    
+    void StopRecordingEA(void); 
+    
+    void StopRecordingNint(void);  /// DEBUG
+
 
     inline passivedouble ExtractLoadGradient(int iNode, int iDOF) {return loadGradient[iNode*nDOF + iDOF];}
 
@@ -188,6 +199,8 @@ public:
     void StoreDisplacementAdjoint(int iNode, int iDim, passivedouble val_adj);
 
     void RunRestart(int FSIIter);
+    
+    void RunRestartLin(int FSIIter);    
 
     void WriteRestart();
 

@@ -144,6 +144,7 @@ public:
     //inline void UpdateExtForces(addouble lambda){ Fext = lambda* Fnom / YoungModulus; }
     inline void UpdateExtForces(addouble lambda){       
         Fext = ( lambda* (Fnom -Fnom_old) +Fnom_old )  / YoungModulus;}
+    
     void EvalResidual();
 
     //===================================================
@@ -173,6 +174,8 @@ public:
     //===================================================
 
     void AssemblyTang(int iIter);
+    
+    void AssemblyElasticStiffness();
 
     void EvalSensRot();    // Evaluate the sensitivity of Rotation Matrix - need for Jacobian
 
@@ -222,7 +225,7 @@ public:
 
     void UpdateInternalForces_FP();
     
-    void InternalForcesLinear();    
+    void UpdateInternalForcesLinear();    
 
     void InitializeInternalForces();
 

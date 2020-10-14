@@ -356,7 +356,7 @@ void CStructure::AssemblyTang(int iIter)
         
         nodeA_id = element[id_el-1]->nodeA->GeID();
         nodeB_id = element[id_el-1]->nodeB->GeID();
-        
+                
         //  To evaluate the Tangent the Elastic Matrix needs to be updated
         element[id_el-1]->ElementTang_Rao(iIter, Ktang);
 
@@ -404,6 +404,79 @@ void CStructure::AssemblyTang(int iIter)
     Ksys.setFromTriplets( tripletList.begin(), tripletList.end());    
     #endif 
 }
+
+
+//===================================================
+//      Assembly System Elastic Stiffness Matrix
+//===================================================
+/*
+ *
+ */
+
+void CStructure::AssemblyElasticStiffness()
+{
+   
+    int dof_jjj = 0;   int dof_kkk = 0;
+    int nodeA_id = 0; int nodeB_id = 0;
+
+    // Intermediate rotation matrix
+    MatrixXdDiff Krotated = MatrixXdDiff::Zero(6,6);
+    
+    // Setting to Zero the stiffness matrix
+    #ifdef DENSE
+    Ksys = MatrixXdDiff::Zero(nNode*6,nNode*6);
+    #else    
+    Ksys.setZero();
+    tripletList.clear();  // Zeroing the vector of triplet
+    #endif
+    
+    // Element's contribution to Ktang
+    MatrixXdDiff Kel(12,12);
+
+    /*------------------------------------
+     * Elastic contribution to the stiffness matrix
+     *------------------------------------*/
+    
+    for (int id_el=1; id_el<= nfem; id_el++) {
+        
+        nodeA_id = element[id_el-1]->nodeA->GeID();
+        nodeB_id = element[id_el-1]->nodeB->GeID();
+                
+        element[id_el-1]->ElementElastic_Rao(Kel);
+
+        // Reorganize the element tangent matrix into the global matrix according to the element DOFs
+        for (int jjj=1; jjj<= 2; jjj++){
+            
+            // Determine the global element node id "j"
+            if (jjj==1) {dof_jjj = (nodeA_id-1)*6 +1;} else {dof_jjj = (nodeB_id-1)*6 +1;}
+            
+            for (int kkk=1; kkk<= 2; kkk++){
+                
+                // Determine the global element node id "k"
+                if (kkk==1) {dof_kkk  =  (nodeA_id-1)*6 +1;} else {dof_kkk  =  (nodeB_id-1)*6 +1;}
+                
+                // Rotates the element's SUBMATRIX tangent
+                Krotated = (element[id_el-1]->R * Kel.block((jjj-1)*6+1 -1,(kkk-1)*6+1 -1,6,6)  ) * element[id_el-1]->R.transpose() ;
+                
+                // Contribution to the appropriate location of the global matrix
+                #ifdef DENSE
+                Ksys.block(dof_jjj-1,dof_kkk-1,6,6) += Krotated;
+                #else                
+                for (int jj=0; jj< 6; jj++)
+                    for (int kk=0; kk< 6; kk++)
+                      tripletList.push_back(adtripletype(dof_jjj-1+jj,dof_kkk-1+kk, Krotated(jj,kk) ));
+                #endif
+            }
+
+        }
+    }    
+        
+    #ifndef DENSE    
+    //-->  Building Sparse MATRIX
+    Ksys.setFromTriplets( tripletList.begin(), tripletList.end());    
+    #endif 
+}
+
 
 /*------------------------------------
  *    Imposing  B.C.
@@ -1530,7 +1603,7 @@ void CStructure::UpdateInternalForces_FP()
 
 }
 
-void CStructure::InternalForcesLinear()
+void CStructure::UpdateInternalForcesLinear()
 {
     
     //std::cout << "-->  Updating Internal Forces "   << std::endl;
@@ -1573,40 +1646,13 @@ void CStructure::InternalForcesLinear()
     
     /*-------------------------------
      //     LOOPING FINITE ELEMENTS
-     * -------------------------------*/
-    std::cout<< "------>Warning: u_el=0 linear forces routine UpdateInternalForcesLinear"<<std::endl;
-    
-   
-   
-   
-   
-   
-    int id_fe;
-    
-    for (id_fe=1;     id_fe <= nfem ; id_fe++) {
+     * -------------------------------*/    
+    for (int id_fe=1;     id_fe <= nfem ; id_fe++) {
 
-        u_el = VectorXdDiff::Zero(12);
-  
-       
-
-        
+          
         nodeA_id = element[id_fe-1]->nodeA->GeID();
         nodeB_id = element[id_fe-1]->nodeB->GeID();
         
-        /*----------------------------
-         //      TRANSLATIONAL PART
-         * ---------------------------*/
-
-        // Relative displacement of the second node is only along the new axis_vectoris direction
-        u_el(7-1) = 0; 
-        
-       
-
-        
-        /*----------------------------
-         *       ROTATIONAL PART
-         * ----------------------------*/
-        // (a) pseudo-vector is in global CS
         
         VectorXdDiff UlocA;
         VectorXdDiff UlocB;
@@ -1617,54 +1663,21 @@ void CStructure::InternalForcesLinear()
         MatrixXdDiff Kel = MatrixXdDiff::Zero(12,12);
         element[id_fe-1]-> ElementElastic_Rao(Kel);
       
-        UlocA=element[id_fe-1]-> R.transpose() * U.segment((nodeA_id-1)*6,6);
-        UlocB=element[id_fe-1]-> R.transpose() * U.segment((nodeB_id-1)*6,6);
+        UlocA=element[id_fe-1]-> R0.transpose() * U.segment((nodeA_id-1)*6,6);
+        UlocB=element[id_fe-1]-> R0.transpose() * U.segment((nodeB_id-1)*6,6);
         
         Uloc.segment(1-1 , 6  )=  UlocA.segment(1-1 , 6 );
         Uloc.segment(7-1 , 6 ) =  UlocB.segment(1-1 , 6 );
         
-        element[id_fe-1]->fint =Kel*YoungModulus*Uloc;
+        element[id_fe-1]->fint =  Kel*YoungModulus*Uloc;
+        
+        // Being linear, the element initial reference system is maintained even if displacements are zero 
+        Fint.segment((nodeA_id-1)*6+1 -1,6) +=  element[id_fe-1]->R0 * element[id_fe-1]->fint.segment(1-1,6);
+        Fint.segment((nodeB_id-1)*6+1 -1,6) +=  element[id_fe-1]->R0 * element[id_fe-1]->fint.segment(7-1,6);    
        
        }
     
-    
-    
-    
-    
-    
-    
-    /*
-    //Tensional state in the root 
-       element[1-1]->i_root=1;
-    
-       cout<<"NODE-----------------------> "<< 1 <<endl;
-       
-       element[1-1]->StressRetrieving();
-       
-       element[1-1]->MaximumStressSection();
-        
-        //maximum loads root section  
-        Max_N_vect(1-1 ) = element[1-1]->N_max_sec;
-        Max_T_vect(1-1 ) = element[1-1]->T_max_sec;
-    
-   
-       
-   // Tensional state in the sections (no root)
-    for (id_fe=1;     id_fe <= nfem ; id_fe++) 
-    {
-       element[id_fe-1]->i_root=0;
-       
-       cout<<"NODE-----------------------> "<<id_fe+1 <<endl;
-       
-       element[id_fe-1]->StressRetrieving();
-       
-       element[id_fe-1]->MaximumStressSection();
-        
-        //maximum load each sections   
-        Max_N_vect(id_fe ) = element[id_fe-1]->N_max_sec;
-        Max_T_vect(id_fe ) = element[id_fe-1]->T_max_sec;
-     }
-  */   
+
 }
 
 
