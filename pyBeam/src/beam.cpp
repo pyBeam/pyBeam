@@ -388,7 +388,8 @@ void CBeamSolver::SolveLin(int FSIIter = 0){
     // before the converging procedure starts (necessary in case of FSI)
     structure->InitialCoord(); //sets the Coordinates 0 of the configuration (as given in the mesh)
     structure->RestartCoord(); //sets the current Coordinates of the configuration (as given in restart or from the previous iter of FSI)
-       
+    // N.B. Internal forces are the one found at the previosu iteration
+    
     totalIter = 0;
     for  ( loadStep = 0; loadStep < input->Get_LoadSteps(); loadStep++) {
         
@@ -491,8 +492,16 @@ void CBeamSolver::SolveLin(int FSIIter = 0){
          *----------------------------------------------------*/
 
         structure->UpdateCoordLIN(nRBE2,iRigid);
+//        structure->U=structure->dU;
+        
         structure-> UpdateInternalForcesLinear ();
-
+        
+//        for  ( unsigned long iFEM = 0; iFEM < nFEM; iFEM++) {
+//            std::cout << element[iFEM]->GetInitial_Length() <<std::endl;
+//            std::cout << element[iFEM]->GetCurrent_Length() <<std::endl;
+//        }
+        
+        
 
         if (verbose){std::cout << std::endl;  history << std::endl;}
    
@@ -684,7 +693,7 @@ void CBeamSolver::RunRestartLin(int FSIIter = 0){
     if (verbose){std::cout << "--> Initializing from restart file" << std::endl;}
     structure->InitialCoord(); //sets the Coordinates 0 of the configuration (as given in the mesh)
     structure->RestartCoord(); //sets the current Coordinates of the configuration (as given in restart or from the previous iter of FSI)
-    structure-> UpdateInternalForcesLinear ();
+    //structure-> UpdateInternalForcesLinear ();
     
     if (verbose){
         std::cout << "--> Starting Restart Sequence" << std::endl;
@@ -781,7 +790,9 @@ if (verbose){
      *----------------------------------------------------*/
     
     structure->UpdateCoordLIN(nRBE2,iRigid);
-    
+//    structure->U=structure->dU;
+//    std:cout << "\n\n NOW WRITING U" << structure->U<<std::endl;
+     structure-> UpdateInternalForcesLinear ();
     
     /*--------------------------------------------------
      *    Check Convergence

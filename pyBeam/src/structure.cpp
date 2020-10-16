@@ -442,7 +442,8 @@ void CStructure::AssemblyElasticStiffness()
         nodeA_id = element[id_el-1]->nodeA->GeID();
         nodeB_id = element[id_el-1]->nodeB->GeID();
                 
-        element[id_el-1]->ElementElastic_Rao(Kel);
+//        element[id_el-1]->ElementElastic_Rao(Kel);
+        element[id_el-1]->ElementElastic_DBG(Kel);
 
         // Reorganize the element tangent matrix into the global matrix according to the element DOFs
         for (int jjj=1; jjj<= 2; jjj++){
@@ -1050,13 +1051,6 @@ void CStructure::UpdateCoordLIN(int nRBE2,int iRigid) {
      Thus, this operation need to eb done before the rottion matrix is updated. */
     
     // to correctly update the rotational Dofs of the nodes
-    Vector3dDiff U_rot = Vector3dDiff::Zero();
-    Vector3dDiff U_rot_new = Vector3dDiff::Zero();
-    Vector3dDiff dU_rot = Vector3dDiff::Zero();
-    Matrix3dDiff R_U = Matrix3dDiff::Zero();
-    Matrix3dDiff R_U_new = Matrix3dDiff::Zero();
-    Matrix3dDiff R_dU = Matrix3dDiff::Zero();
-
     int posX = 1;    // current  position in the X array
     int posU = 1;    // current position in the U array
 
@@ -1071,34 +1065,12 @@ void CStructure::UpdateCoordLIN(int nRBE2,int iRigid) {
         X.segment(posX-1,3) += DX.segment(posX-1,3);
 
         // Update displacements
-        U.segment(posU-1,3) += dU.segment(posU-1,3);
+        U.segment(posU-1,3) = dU.segment(posU-1,3);
         
         // in the linear case no need for finite rotations
-        U.segment(posU-1+3,3) += dU.segment(posU-1+3,3);
+        U.segment(posU-1+3,3) = dU.segment(posU-1+3,3);
         
-//        //The rotation matrix is extracted from the rotational degrees of freedom of each node
-//        U_rot = U.segment(posU+3 -1,3);
-//        R_U = Matrix3dDiff::Zero();
-//        PseudoToRot(U_rot, R_U);
-//
-//        //same thing is done for the new rotation
-//        dU_rot = dU.segment(posU+3 -1,3);
-//        R_dU = Matrix3dDiff::Zero();
-//        PseudoToRot(dU_rot, R_dU);
-//
-//        //Rotation is updated
-//        R_U_new = Matrix3dDiff::Zero();
-//        R_U_new = R_dU*R_U;
-//        
-//        //and into the vector
-//        U_rot_new = Vector3dDiff::Zero();
-//        RotToPseudo(U_rot_new , R_U_new);
-//        U.segment(posU+3 -1,3) = U_rot_new;
-        
-//        // Updating the node's coordinates
-//        for (int iDim=0; iDim < 3; iDim++) {
-//            node[id_node]->SetCoordinate(iDim, X(posX+iDim-1)) ;
-//        }
+
         
         posX += 3;
         posU += 6;
@@ -1702,7 +1674,8 @@ void CStructure::UpdateInternalForcesLinear()
     // Nodal vector of internal forces
     // VERY IMPORTANT to reset it to 0 every time
     Fint = VectorXdDiff::Zero(nNode*6);
-      
+    
+//    std::cout << "\nUPDATING INTERNAL FORCES" << std::endl;
     /*-------------------------------
      //     LOOPING FINITE ELEMENTS
      * -------------------------------*/    
@@ -1720,7 +1693,7 @@ void CStructure::UpdateInternalForcesLinear()
         // Extracting  rotation
         
         MatrixXdDiff Kel = MatrixXdDiff::Zero(12,12);
-        element[id_fe-1]-> ElementElastic_Rao(Kel);
+        element[id_fe-1]-> ElementElastic_DBG(Kel);
       
         UlocA = element[id_fe-1]-> R0.transpose() * U.segment((nodeA_id-1)*6,6);
         UlocB = element[id_fe-1]-> R0.transpose() * U.segment((nodeB_id-1)*6,6);

@@ -171,6 +171,9 @@ public:
     
     // Evaluates FEM element elastic matrix
     void ElementElastic_Rao(MatrixXdDiff &Kel);
+
+    // Evaluates FEM element elastic matrix
+    void ElementElastic_DBG(MatrixXdDiff &Kel);
     
     // Evaluates FEM element stiffness matrix
     void ElementTang_Rao(int iIter, MatrixXdDiff &Ktang);

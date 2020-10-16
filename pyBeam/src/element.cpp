@@ -291,6 +291,66 @@ void CElement::ElementElastic_Rao(MatrixXdDiff &Kel) {
     
 }
 
+//------------------------------------
+// Evaluates FEM element matrix (with update)
+//------------------------------------
+void CElement::ElementElastic_DBG(MatrixXdDiff &Kel) {
+
+
+    Kel = MatrixXdDiff::Zero(12,12);
+    VectorXdDiff diagonal(12);
+    diagonal << AE/l_ini  ,  12*EIz/pow(l_ini,3) , 12*EIy/pow(l_ini,3) , GJ/l_ini ,
+                       4*EIy/l_ini ,  4*EIz/l_ini , 
+               AE/l_ini  ,  12*EIz/pow(l_ini,3) , 12*EIy/pow(l_ini,3) , GJ/l_ini ,
+                       4*EIy/l_ini ,  4*EIz/l_ini ;
+            
+    // Writing the diagonal
+    for (unsigned short index = 0; index < 12; index++) {
+        Kel(index,index) = diagonal(index);
+    }        
+    
+    Kel(2-1,6-1) =   (6*EIz)/pow(l_ini,2); 
+    Kel(3-1,5-1) =  -(6*EIy)/pow(l_ini,2);  
+    // SYM
+    Kel(5-1,3-1) =  -(6*EIy)/pow(l_ini,2);
+    Kel(6-1,2-1) =   (6*EIz)/pow(l_ini,2);
+    
+    VectorXdDiff shortdiagonal(6);
+    shortdiagonal << -AE/l_ini  ,  -12*EIz/pow(l_ini,3) , -12*EIy/pow(l_ini,3) , GJ/l_ini ,
+                       2*EIy/l_ini ,  2*EIz/l_ini  ;
+
+    // BLOCK 1,6 -> 7,12
+    // Writing the second diagonal
+    for (unsigned short index = 0; index < 6; index++) {
+        Kel(index,index+6) = shortdiagonal(index);
+    } 
+    
+    Kel(2-1,12-1) =   Kel(2-1,6-1);
+    Kel(3-1,11-1) =   Kel(3-1,5-1);        
+    Kel(5-1,9-1)  =  -Kel(5-1,3-1);
+    Kel(6-1,8-1)  =  -Kel(6-1,2-1); 
+    
+    // SYM 
+    // Writing the second diagonal
+    for (unsigned short index = 0; index < 6; index++) {
+        Kel(index+6,index) = shortdiagonal(index);
+    } 
+    Kel(12-1,2-1) = Kel(2-1,12-1); 
+    Kel(11-1,3-1) = Kel(3-1,11-1) ;        
+    Kel(9-1,5-1) = Kel(5-1,9-1);  
+    Kel(8-1,6-1) = Kel(6-1,8-1);      
+    
+   // BLOCK 7,12 -> 7,12 out of diagonal
+    Kel(8-1,12-1) = - Kel(2-1,6-1) ;
+    Kel(9-1,11-1) = - Kel(3-1,5-1) ;
+    //SYM 
+    Kel(12-1,8-1) = Kel(8-1,12-1) ;
+    Kel(11-1,9-1) = Kel(9-1,11-1);        
+                
+}
+
+
+
 /*##############################################
  *
  *    Evaluates FEM tangent element matrix

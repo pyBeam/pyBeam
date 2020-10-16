@@ -37,6 +37,7 @@
 #else
 #include <Eigen/Sparse>
 #include <Eigen/SparseLU>
+//#include <Eigen/SparseCholesky>
 #endif
 
 #include <iostream>
@@ -76,4 +77,5 @@ typedef Eigen::Matrix<int, Eigen::Dynamic, 1> VectorXi;                       //
 typedef Eigen::SparseMatrix<addouble>  MatrixXdDiffSP; 
 typedef Eigen::Triplet<addouble> adtripletype;  
 typedef Eigen::SparseLU<Eigen::SparseMatrix<addouble>, Eigen::COLAMDOrdering<int> >  SPLUSolver;
+//typedef Eigen::SimplicialLLT<Eigen::SparseMatrix<addouble> >  SPLUSolver;
 #endif
