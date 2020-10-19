@@ -389,7 +389,9 @@ void CBeamSolver::SolveLin(int FSIIter = 0){
     structure->InitialCoord(); //sets the Coordinates 0 of the configuration (as given in the mesh)
     structure->RestartCoord(); //sets the current Coordinates of the configuration (as given in restart or from the previous iter of FSI)
     // N.B. Internal forces are the one found at the previosu iteration
-    
+    structure-> UpdateInternalForcesLinear ();  // For consistency is better to update them
+        
+        
     totalIter = 0;
     for  ( loadStep = 0; loadStep < input->Get_LoadSteps(); loadStep++) {
         
@@ -492,15 +494,8 @@ void CBeamSolver::SolveLin(int FSIIter = 0){
          *----------------------------------------------------*/
 
         structure->UpdateCoordLIN(nRBE2,iRigid);
-//        structure->U=structure->dU;
-        
-        structure-> UpdateInternalForcesLinear ();
-        
-//        for  ( unsigned long iFEM = 0; iFEM < nFEM; iFEM++) {
-//            std::cout << element[iFEM]->GetInitial_Length() <<std::endl;
-//            std::cout << element[iFEM]->GetCurrent_Length() <<std::endl;
-//        }
-        
+
+        structure-> UpdateInternalForcesLinear ();       
         
 
         if (verbose){std::cout << std::endl;  history << std::endl;}
@@ -693,7 +688,8 @@ void CBeamSolver::RunRestartLin(int FSIIter = 0){
     if (verbose){std::cout << "--> Initializing from restart file" << std::endl;}
     structure->InitialCoord(); //sets the Coordinates 0 of the configuration (as given in the mesh)
     structure->RestartCoord(); //sets the current Coordinates of the configuration (as given in restart or from the previous iter of FSI)
-    //structure-> UpdateInternalForcesLinear ();
+    structure-> UpdateInternalForcesLinear ();
+     
     
     if (verbose){
         std::cout << "--> Starting Restart Sequence" << std::endl;
@@ -733,7 +729,7 @@ void CBeamSolver::RunRestartLin(int FSIIter = 0){
     /*--------------------------------------------------
      *   Updates  Fext, Residual,
      *----------------------------------------------------*/
-    
+       
     // Update the External Forces with the loadStep
     structure->UpdateExtForces(1);
     
@@ -776,6 +772,12 @@ if (nRBE2 != 0 and iRigid == 1){
 }
 else{
     structure->ImposeBC(); 
+//    std::cout << " ==== RESIDUAL ==== " <<std::endl;
+//    std::cout << structure->Residual.segment(60*6,3) <<std::endl;
+//    std::cout << " ================== END RESIDUAL " <<std::endl;
+//    std::cout << "  ==== FEXT==== " <<std::endl;
+//    std::cout << structure->Fext.segment(60*6,3) <<std::endl;
+    
     // Solve Linear System   Ksys*dU = Res =
     structure->SolveLinearStaticSystem(0,history,1);
 }
@@ -842,12 +844,25 @@ passivedouble CBeamSolver::EvalWeight(){
 passivedouble CBeamSolver::EvalKSStress(){
     resp_KS = structure->Evaluate_no_AdaptiveKSstresses();
     return AD::GetValue(resp_KS);     };
+ 
     
+//////  DEBUG 
+passivedouble CBeamSolver::EvalSigmaBoom(){
+//    std::cout <<  element[0]->sigma_booms <<std::endl;
+//    resp_sigmaboom = element[0]->GetSB(); //sigma_booms(0);
+//    resp_sigmaboom = element[0]->Gettau();
+    std::cout <<  element[0]->dsigma_dx <<std::endl;    
+    resp_sigmaboom = element[0]->Getdsigma_dx();    
+    return AD::GetValue(resp_sigmaboom);     };
     
+//////  DEBUG     
 passivedouble CBeamSolver::EvalEA(){
     resp_EA = element[0]->GetEA();
     return AD::GetValue(resp_EA);     };
-
+//////  DEBUG     
+passivedouble CBeamSolver::EvalIzz_b(){
+    resp_Izz_b = element[0]->GetIzz_b();
+    return AD::GetValue(resp_Izz_b);     };
 //////  DEBUG  
 passivedouble CBeamSolver::EvalNint(){
     resp_Nint = element[0]->RetrieveNint();
@@ -1064,8 +1079,7 @@ void CBeamSolver::ComputeAdjointKS(void){
 
     unsigned long iLoad;
     
-    for (unsigned short iTer = 0; iTer < input->Get_nIter(); iTer++){
-//    for (unsigned short iTer = 0; iTer < 100; iTer++){        
+    for (unsigned short iTer = 0; iTer < input->Get_nIter(); iTer++){ 
 
         AD::SetDerivative(resp_KS, 1.0);
 
@@ -1090,6 +1104,54 @@ void CBeamSolver::ComputeAdjointKS(void){
     }
 }
 
+
+void CBeamSolver::ComputeAdjointSigmaBoom(void){
+    
+    unsigned long iLoad;
+    
+    for (unsigned short iTer = 0; iTer < input->Get_nIter(); iTer++){ 
+
+        AD::SetDerivative(resp_sigmaboom, 1.0);
+
+        structure->SetSolutionAdjoint(iRigid);
+
+        AD::ComputeAdjoint();
+        structure->ExtractSolutionAdjoint(iRigid);
+
+        E_grad = input->GetGradient_E();
+        Nu_grad = input->GetGradient_Nu();
+
+
+        for (int iPDV = 0; iPDV < nPropDVs; iPDV++){
+            propGradient[iPDV] = AD::GetValue(AD::GetDerivative(propDVsVector[iPDV]));
+        }      
+
+        for (iLoad = 0; iLoad < nTotalDOF; iLoad++){
+            loadGradient[iLoad] = AD::GetValue(AD::GetDerivative(loadVector[iLoad]));
+        }
+
+        AD::ClearAdjoints();  
+    }
+}
+
+void CBeamSolver::ComputeAdjointIzz_b(void){    
+    unsigned long iLoad;    
+    for (unsigned short iTer = 0; iTer < input->Get_nIter(); iTer++){ 
+        AD::SetDerivative(resp_Izz_b, 1.0);
+        structure->SetSolutionAdjoint(iRigid);
+        AD::ComputeAdjoint();
+        structure->ExtractSolutionAdjoint(iRigid);
+        E_grad = input->GetGradient_E();
+        Nu_grad = input->GetGradient_Nu();
+        for (int iPDV = 0; iPDV < nPropDVs; iPDV++){
+            propGradient[iPDV] = AD::GetValue(AD::GetDerivative(propDVsVector[iPDV]));
+        }      
+        for (iLoad = 0; iLoad < nTotalDOF; iLoad++){
+            loadGradient[iLoad] = AD::GetValue(AD::GetDerivative(loadVector[iLoad]));
+        }
+        AD::ClearAdjoints();  
+    }
+}
 
 
 //* Order d/d  U, E, Nu, Props, A,Loads  
@@ -1152,6 +1214,20 @@ void CBeamSolver::StopRecordingKS(void) {
     /** Register the solution as output **/
     structure->RegisterSolutionOutput(iRigid);
     AD::StopRecording();}
+
+void CBeamSolver::StopRecordingSigmaBoom(void) {
+
+    AD::RegisterOutput(resp_sigmaboom);
+    /** Register the solution as output **/
+    structure->RegisterSolutionOutput(iRigid);
+    AD::StopRecording();}
+
+void CBeamSolver::StopRecordingIzz_b(void) {
+    AD::RegisterOutput(resp_Izz_b);
+    /** Register the solution as output **/
+    structure->RegisterSolutionOutput(iRigid);
+    AD::StopRecording();}
+
 
 void CBeamSolver::StopRecordingEA(void) {
 

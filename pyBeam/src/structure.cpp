@@ -1057,7 +1057,8 @@ void CStructure::UpdateCoordLIN(int nRBE2,int iRigid) {
     VectorXdDiff DX;
     DX = VectorXdDiff::Zero(nNode*3);
 
- 
+//    std::cout << dU << std::endl;
+    
     // Browsing all the nodes of the current segment
     for (int id_node=1-1; id_node<=nNode-1 ; id_node++) {
         
@@ -1065,12 +1066,10 @@ void CStructure::UpdateCoordLIN(int nRBE2,int iRigid) {
         X.segment(posX-1,3) += DX.segment(posX-1,3);
 
         // Update displacements
-        U.segment(posU-1,3) = dU.segment(posU-1,3);
+        U.segment(posU-1,3) += dU.segment(posU-1,3);
         
         // in the linear case no need for finite rotations
-        U.segment(posU-1+3,3) = dU.segment(posU-1+3,3);
-        
-
+        U.segment(posU-1+3,3) += dU.segment(posU-1+3,3);
         
         posX += 3;
         posU += 6;
@@ -1701,7 +1700,7 @@ void CStructure::UpdateInternalForcesLinear()
         Uloc.segment(1-1 , 6  )=  UlocA.segment(1-1 , 6 );
         Uloc.segment(7-1 , 6 ) =  UlocB.segment(1-1 , 6 );
         
-        element[id_fe-1]->fint =  Kel*YoungModulus*Uloc;
+        element[id_fe-1]->fint =  Kel*Uloc; //Kel*YoungModulus*Uloc;
         
         // Being linear, the element initial reference system is maintained even if displacements are zero 
         Fint.segment((nodeA_id-1)*6+1 -1,6) +=  element[id_fe-1]->R0 * element[id_fe-1]->fint.segment(1-1,6);
@@ -1717,7 +1716,7 @@ addouble CStructure::Evaluate_no_AdaptiveKSstresses()
     // Ks calculation ----> Ks(g_element) = g_max + summ (exp(aggr_parameter*(g_element - g_max)))
     int n_stiff = 0;
     int n_tot = n_stiff+4;  // n_stiff + 4 flanges    
-    addouble r = 50;     // Aggregation parameter for stress 
+    addouble r = 50;       // Aggregation parameter for stress 
     
     int id_fe;
          
@@ -1727,6 +1726,9 @@ addouble CStructure::Evaluate_no_AdaptiveKSstresses()
     for (id_fe=1;     id_fe <= nfem ; id_fe++) {       
        //cout<<"element -----------------------> "<< id_fe <<endl;
        element[id_fe-1]->StressRetrieving();
+    }
+       
+       /*   UNCOMMENT LATER
        element[id_fe-1]->VonMises();
    
      //g_max
@@ -1744,8 +1746,11 @@ addouble CStructure::Evaluate_no_AdaptiveKSstresses()
     addouble KS=g_max+(1/ r)*log(summ_KS *pow(M_E,-r*g_max )); //contribute of g_max
     //cout<<"g_max="<<g_max<<endl;
     //cout<<"KS="<<KS<<endl;
+    */
+    
+    
      
-    return KS;
+    return 1; //KS;
 }
       
      

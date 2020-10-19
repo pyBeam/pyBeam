@@ -195,6 +195,11 @@ class pyBeamSolverAD:
   def StopRecordingKS(self):
     """ This function stops registration for AD  """
     self.beam.StopRecordingKS()
+
+  def StopRecordingSigmaBoom(self):
+    self.beam.StopRecordingSigmaBoom()
+  def StopRecordingIzz_b(self):
+    self.beam.StopRecordingIzz_b()
     
   def StopRecordingEA(self):
     """ This function stops registration for AD  """
@@ -213,6 +218,10 @@ class pyBeamSolverAD:
     """ This function computes Adjoint for AD  """
     self.beam.ComputeAdjointNint()
     
+  def ComputeAdjointIzz_b(self):
+    """ This function computes Adjoint for AD  """
+    self.beam.ComputeAdjointIzz_b()
+    
   def ComputeAdjointWeight(self):
     """ This function computes Adjoint for AD  """
     self.beam.ComputeAdjointWeight()
@@ -220,6 +229,10 @@ class pyBeamSolverAD:
   def ComputeAdjointKS(self):
     """ This function computes Adjoint for AD  """
     self.beam.ComputeAdjointKS()
+
+  def ComputeAdjointSigmaBoom(self):
+    """ This function computes Adjoint for AD  """
+    self.beam.ComputeAdjointSigmaBoom()
     
   def ComputeAdjointEA(self):
     """ This function computes Adjoint for AD  """
@@ -260,10 +273,11 @@ class pyBeamSolverAD:
   
   #####  DEBUG
   def ComputeNint(self):
-
     Nint = self.beam.EvalNint()
     return Nint
-
+  def ComputeIzz_b(self):
+    Nint = self.beam.EvalIzz_b()
+    return Nint
 
   def ComputeWeight(self):
     """ This function computes the response weight of the structure (important to be recorded) """
@@ -275,6 +289,11 @@ class pyBeamSolverAD:
     """ This function computes the KS stress on the structure (important to be recorded) """
     KSStress= self.beam.EvalKSStress()
     return KSStress
+
+  def ComputeResponseSigmaBoom(self):
+    """ This function computes the KS stress on the structure (important to be recorded) """
+    SB= self.beam.EvalSigmaBoom()
+    return SB
 
   def ComputeEA(self):
     EA = self.beam.EvalEA()

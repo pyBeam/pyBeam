@@ -106,7 +106,7 @@ public:
     // Extra members for stress retrieving
     
     VectorXdDiff  sigma_booms ;   //Normal stress absorbed by the booms 
-//    VectorXdDiff  dsigma_dx;      // gradient of normal stress for each boom
+    VectorXdDiff  dsigma_dx;      // gradient of normal stress for each boom
     VectorXdDiff  tau ;          // Shear Fluxes absorbed by the skin and by the spar
 //    VectorXdDiff  axial_load ;   // Axial load absorbed by the booms 
 //    MatrixXdDiff  tau_coeff;     
@@ -146,7 +146,16 @@ public:
     // Methods to access FE inertias
     inline addouble GetEA(void) { 
         return   AE;}//input->GetYoungModulus()*elprop->GetA();}
+    inline addouble GetIzz_b(void) { 
+        return   Izz_b;}//input->GetYoungModulus()*elprop->GetA();}
+    inline addouble GetSB(void) { 
+        return   sigma_booms(0);}//input->GetYoungModulus()*elprop->GetA();}    
+    inline addouble Gettau(void) { 
+        return   tau(0);}//input->GetYoungModulus()*elprop->GetA();}    
+    inline addouble Getdsigma_dx(void) { 
+        return   dsigma_dx(0);}//input->GetYoungModulus()*elprop->GetA();}    
 
+    
     // Methods to set initial properties to the element
     inline void SetNode_1( CNode* Node1) { nodeA = Node1; }
     inline void SetNode_2( CNode* Node2) { nodeB = Node2;}

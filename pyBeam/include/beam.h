@@ -45,9 +45,12 @@ private:
     addouble objective_function;
     addouble resp_weight;
     addouble resp_KS;
+    //DBG
     addouble resp_EA;
+    addouble resp_Izz_b;    
     addouble resp_Nint;
-    
+    addouble resp_sigmaboom;
+    //END BDG 
     bool register_loads;
     
     passivedouble *loadGradient;
@@ -115,23 +118,29 @@ public:
     
     passivedouble EvalWeight();
        
-    passivedouble EvalKSStress();    
+    passivedouble EvalKSStress();  
     
-    ///DEBUG 
-    passivedouble EvalEA();  
+    passivedouble EvalEA();   ///DEBUG 
+    
+    passivedouble EvalIzz_b();   ///DEBUG     
     
     passivedouble EvalNint();   /// FOR DEBUG PURPOSES
+    
+    passivedouble EvalSigmaBoom();   ///DEBUG    
 
     void ComputeAdjoint(void);
     
     void ComputeAdjointNint(void);   /// DEBUG    
+    void ComputeAdjointSigmaBoom(void);   /// DEBUG  
+    void ComputeAdjointEA(void);       ///DEBUG 
+    void ComputeAdjointIzz_b(void);       ///DEBUG 
     
     void ComputeAdjointWeight(void);  
     
     void ComputeAdjointKS(void);      
     
-    ///DEBUG 
-    void ComputeAdjointEA(void);
+   
+    
 
     inline void SetLoads(int iNode, int iDOF, passivedouble loadValue) { loadVector[iNode*nDOF + iDOF] = loadValue; }
     
@@ -177,10 +186,10 @@ public:
     
     void StopRecordingKS(void);    
     
-    void StopRecordingEA(void); 
-    
-    void StopRecordingNint(void);  /// DEBUG
-
+    void StopRecordingEA(void); /// DEBUG
+    void StopRecordingIzz_b(void); /// DEBUG    
+    void StopRecordingNint(void);  /// DEBUG    
+    void StopRecordingSigmaBoom(void);  /// DEBUG
 
     inline passivedouble ExtractLoadGradient(int iNode, int iDOF) {return loadGradient[iNode*nDOF + iDOF];}
 

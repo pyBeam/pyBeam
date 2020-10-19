@@ -75,6 +75,7 @@ void CProperty::FromWBtoInertias()
      else if (r ==0)  {  //std::cout << "--> Even Number of stiffeners"<< std::endl;
         for (int j=0;j<=(n_stiff/4)-1;j+=1){
            a=a + pow(0.5+j,2);}   }
+    
      else  { //std::cout << "--> Odd Number of stiffeners"<< std::endl;
 
         for (int i=1;i<=(((n_stiff/2)-1)/2);i+=1) {
@@ -106,8 +107,9 @@ void CProperty::FromWBtoInertias()
     Jt=(2*t_sp*t_sk*pow(C_wb,2)*pow(h,2))/(C_wb*t_sp+h*t_sk);
    
     J0=Iyy+Izz;
-
 }
+
+
 void CProperty::RegisterInput_WB(void) {
     if (isWBDV == 1){
         AD::RegisterInput(C_wb);
@@ -166,8 +168,8 @@ void CProperty::GetGradient_WB(void) {
  void CProperty::SetDependencyfromDVVec(addouble* VecPropDVs, int pos){
     //int pos = 0;
     if (isWBDV == 1){
+        std::cout << "--> Exposing dependencies of Properties WB DVs from the cumulative Vector " << std::endl;
         C_wb = VecPropDVs[pos];
-        std::cout << "C_wb = " <<  C_wb << std::endl;
         h = VecPropDVs[pos+1];
         t_sk = VecPropDVs[pos+2];
         t_sp = VecPropDVs[pos+3];
@@ -177,8 +179,8 @@ void CProperty::GetGradient_WB(void) {
         FromWBtoInertias();
     }
     else if (isWBDV == 0){
+        std::cout << "--> Exposing dependencies of Properties Inertias from the cumulative Vector " << std::endl;        
         A = VecPropDVs[pos];  
-        std::cout << "A = " <<  A << std::endl;
         Iyy = VecPropDVs[pos+1];
         Izz = VecPropDVs[pos+2];
         Jt = VecPropDVs[pos+3];   }

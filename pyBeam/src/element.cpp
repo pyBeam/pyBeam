@@ -101,13 +101,15 @@ void CElement::Initializer(CNode* Node1, CNode* Node2, CProperty* Property, CInp
     AE  = input->GetYoungModulus()*elprop->GetA();
     Iyy = elprop->GetIyy();
     Izz = elprop->GetIzz();
+    //
     Iyy_b= elprop->GetIyy_b();
     Izz_b= elprop->GetIzz_b();
     A_b  = elprop->GetA_b();
-    h    = elprop->Geth();
-    C_wb = elprop->GetC_wb();
-    t_sk = elprop->Gett_sk();
-    t_sp = elprop->Gett_sp();
+    //
+    h      = elprop->Geth();
+    C_wb   = elprop->GetC_wb();
+    t_sk   = elprop->Gett_sk();
+    t_sp   = elprop->Gett_sp();
     n_stiff= elprop->Getn_stiff();
     A_stiff= elprop->GetA_stiff();
     A_fl   = elprop->GetA_fl();    
@@ -166,7 +168,13 @@ void CElement::SetDependencies(void){
     A_b= elprop->GetA_b();     
     Iyy_b= elprop->GetIyy_b();
     Izz_b= elprop->GetIzz_b();
-   
+    if (elprop->GetisWBDV() == 1){
+        C_wb = elprop->GetC_wb(); 
+        h    = elprop->Geth();
+        t_sk = elprop->Gett_sk();
+        t_sp = elprop->Gett_sp();
+        A_fl = elprop->GetA_fl();    
+        A_stiff = elprop->GetA_stiff();  }
 
     // INITIALIZATION of KPRIM  (linear)
     Kprim = MatrixXdDiff::Zero(6,6);
@@ -638,24 +646,25 @@ void CElement::InitializeRotMats()
 
 void  CElement::StressRetrieving()
 { 
-    int n_tot = n_stiff+4;  // n_stiff + 4 flanges  
+    int n_tot = 4 + n_stiff;  // n_stiff + 4 flanges  
     addouble b=(C_wb)/(((n_tot)/2)-1);
     
-    addouble L_Qxy= -h/2;
-    addouble L_Qxz= -C_wb/2; 
-    addouble N =  fint(7-1);  
-    addouble Qxy= fint(8-1);
-    addouble Qxz= fint(9-1);
-    addouble My=  fint(11-1)-Qxz*(l_curr/2);   
-    addouble Mz=  fint(12-1)+Qxz*(l_curr/2);
+    addouble L_Qxy = -h/2;
+    addouble L_Qxz = -C_wb/2; 
+    addouble Edim =input->GetYoungModulus_dimensional();
+    addouble N    =  Edim*fint(7-1);  
+    addouble Qxy  = Edim*fint(8-1);
+    addouble Qxz  = Edim*fint(9-1);
+    addouble My   = Edim*fint(11-1)-Qxz*(l_curr/2);   
+    addouble Mz   = Edim*fint(12-1)+Qxz*(l_curr/2);
    
     sigma_booms = VectorXdDiff::Zero(n_tot);
-    VectorXdDiff dsigma_dx   = VectorXdDiff::Zero(n_tot);
+    dsigma_dx   = VectorXdDiff::Zero(n_tot);
     VectorXdDiff axial_load  = VectorXdDiff::Zero(n_tot);
   
     /// Calculation of Normal stress absorbed by booms (Navier Formula) 
-    
     int r= ((n_stiff)/2)%2;
+    
     if (n_stiff == 0 ){
         sigma_booms(1-1)=(N/A_b) - (Mz/Izz_b)*C_wb*0.5 +(My/Iyy_b)*(h/2);
         sigma_booms(2-1)=(N/A_b) + (Mz/Izz_b)*C_wb*0.5 +(My/Iyy_b)*(h/2);
@@ -702,7 +711,7 @@ void  CElement::StressRetrieving()
             sigma_booms((((n_tot-2)/2)+1) +i)   = (N/A_b) + (Mz/Izz_b)*b*(((n_tot-2)/4)-i)  - (My/Iyy_b)*(h/2);
             sigma_booms((((n_tot-2)*3/4)+2) +i) = (N/A_b) - (Mz/Izz_b)*b* (i + 1)           - (My/Iyy_b)*(h/2);
      
-            dsigma_dx(i)                      =  -A_stiff*(Qxy/Izz_b)*b*(((n_tot-2)/4)-i)  + A_stiff*(Qxz/Iyy_b)*(h/2);
+            dsigma_dx(i)                       =  -A_stiff*(Qxy/Izz_b)*b*(((n_tot-2)/4)-i)  + A_stiff*(Qxz/Iyy_b)*(h/2);
             dsigma_dx((((n_tot-2)/4)+1) +i)    =   A_stiff*(Qxy/Izz_b)*b*(i + 1)            + A_stiff*(Qxz/Iyy_b)*(h/2);
             dsigma_dx((((n_tot-2)/2)+1) +i)    =   A_stiff*(Qxy/Izz_b)*b*(((n_tot-2)/4)-i)  - A_stiff*(Qxz/Iyy_b)*(h/2);
             dsigma_dx((((n_tot-2)*3/4)+2) +i)  =  -A_stiff*(Qxy/Izz_b)*b*(i + 1)            - A_stiff*(Qxz/Iyy_b)*(h/2);
@@ -725,6 +734,7 @@ void  CElement::StressRetrieving()
         axial_load((n_tot/2+1) - 1) = axial_load((n_tot/2+1) - 1)*(A_fl/A_stiff); 
         axial_load(n_tot - 1)       = axial_load(n_tot - 1)*(A_fl/A_stiff);
       }
+      
     
     /// Shear Flux calculation
 
@@ -780,7 +790,7 @@ void  CElement::StressRetrieving()
     addouble Ty_sec=0;
     for (int iy = 1-1 ;iy<=((n_tot/2)-1) -1 ; iy=iy+1){
         Ty_sec=Ty_sec + Ty_vect(iy);            
-    }
+    }    
   
 }    
 

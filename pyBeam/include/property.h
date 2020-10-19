@@ -43,11 +43,11 @@ protected:
     addouble A;                 ///< cross section area
     addouble Iyy, Izz;          ///< Bending Moment of Inertia
     addouble Jt;                ///< Torsional Moment of Inertia
-    addouble J0;                ///< Polar Moment of Inertia
-    addouble A_b;               ///< Cross section area of the booms
-    addouble Iyy_b, Izz_b;      ///<       
+    addouble J0;                ///< Polar Moment of Inertia   
     unsigned long PropertyID;   // ID of the property
-
+    
+    addouble A_b;               ///< Cross section area of the booms
+    addouble Iyy_b, Izz_b;      ///<    
     addouble C_wb;           ///<  box tot length 
     addouble h;              ///<  box tot height 
     addouble t_sk;           ///< skin  thickness 
