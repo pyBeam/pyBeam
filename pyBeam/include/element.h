@@ -106,8 +106,9 @@ public:
     // Extra members for stress retrieving
     
     VectorXdDiff  sigma_booms ;   //Normal stress absorbed by the booms 
-    VectorXdDiff  dsigma_dx;      // gradient of normal stress for each boom
     VectorXdDiff  tau ;          // Shear Fluxes absorbed by the skin and by the spar
+
+//    VectorXdDiff  dsigma_dx;      // gradient of normal stress for each boom    
 //    VectorXdDiff  axial_load ;   // Axial load absorbed by the booms 
 //    MatrixXdDiff  tau_coeff;     
     
@@ -118,7 +119,7 @@ public:
     
     VectorXdDiff g_element;  // element constraint  equations Von mises    dim = (2*n_tot) 
     addouble     SF;        // safety factor 
-    addouble     sigma_y;  // sigma yelding 
+    addouble     sigma_y;  // sigma yielding 
 
     
     
@@ -147,13 +148,20 @@ public:
     inline addouble GetEA(void) { 
         return   AE;}//input->GetYoungModulus()*elprop->GetA();}
     inline addouble GetIzz_b(void) { 
-        return   Izz_b;}//input->GetYoungModulus()*elprop->GetA();}
+        return   Izz_b;}
     inline addouble GetSB(void) { 
-        return   sigma_booms(0);}//input->GetYoungModulus()*elprop->GetA();}    
+        return   sigma_booms(0);}
     inline addouble Gettau(void) { 
-        return   tau(0);}//input->GetYoungModulus()*elprop->GetA();}    
-    inline addouble Getdsigma_dx(void) { 
-        return   dsigma_dx(0);}//input->GetYoungModulus()*elprop->GetA();}    
+        std::cout << "tau" <<  tau << std::endl;        
+        return   tau(1);}//input->GetYoungModulus()*elprop->GetA();}   
+    inline addouble Getg(void) { 
+        std::cout << "g" <<  g_element << std::endl;        
+        return   g_element(4);}//input->GetYoungModulus()*elprop->GetA();} 
+
+    
+//    inline addouble Getdsigma_dx(void) {
+//        std::cout << "dsigma_dx(0)" <<  dsigma_dx(0) << std::endl;
+//        return   dsigma_dx(0);}
 
     
     // Methods to set initial properties to the element

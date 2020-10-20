@@ -165,16 +165,17 @@ void CElement::SetDependencies(void){
     Iyy = elprop->GetIyy();
     Izz = elprop->GetIzz();
     
-    A_b= elprop->GetA_b();     
-    Iyy_b= elprop->GetIyy_b();
-    Izz_b= elprop->GetIzz_b();
+
     if (elprop->GetisWBDV() == 1){
         C_wb = elprop->GetC_wb(); 
         h    = elprop->Geth();
         t_sk = elprop->Gett_sk();
         t_sp = elprop->Gett_sp();
         A_fl = elprop->GetA_fl();    
-        A_stiff = elprop->GetA_stiff();  }
+        A_stiff = elprop->GetA_stiff();  
+        A_b= elprop->GetA_b();     
+        Iyy_b= elprop->GetIyy_b();
+        Izz_b= elprop->GetIzz_b();    }
 
     // INITIALIZATION of KPRIM  (linear)
     Kprim = MatrixXdDiff::Zero(6,6);
@@ -646,35 +647,42 @@ void CElement::InitializeRotMats()
 
 void  CElement::StressRetrieving()
 { 
+    
     int n_tot = 4 + n_stiff;  // n_stiff + 4 flanges  
+    
     addouble b=(C_wb)/(((n_tot)/2)-1);
+    
     
     addouble L_Qxy = -h/2;
     addouble L_Qxz = -C_wb/2; 
     addouble Edim =input->GetYoungModulus_dimensional();
     addouble N    =  Edim*fint(7-1);  
-    addouble Qxy  = Edim*fint(8-1);
-    addouble Qxz  = Edim*fint(9-1);
-    addouble My   = Edim*fint(11-1)-Qxz*(l_curr/2);   
-    addouble Mz   = Edim*fint(12-1)+Qxz*(l_curr/2);
-   
-    sigma_booms = VectorXdDiff::Zero(n_tot);
-    dsigma_dx   = VectorXdDiff::Zero(n_tot);
+    addouble Qxy  = Edim*fint(8-1);                    // shear y end B and A
+    addouble Qxz  = Edim*fint(9-1);                    // shear z end B and A
+    addouble Mt   = Edim*fint(10-1);     
+    addouble My   = Edim*fint(11-1)-Qxz*(l_curr/2.0);    // moment y, mid section
+    addouble Mz   = Edim*fint(12-1)+Qxy*(l_curr/2.0);    // moment z, mid section
+
+    
+    
+    VectorXdDiff dsigma_dx   = VectorXdDiff::Zero(n_tot);
     VectorXdDiff axial_load  = VectorXdDiff::Zero(n_tot);
-  
+    
+    sigma_booms = VectorXdDiff::Zero(n_tot);
+    
     /// Calculation of Normal stress absorbed by booms (Navier Formula) 
     int r= ((n_stiff)/2)%2;
     
     if (n_stiff == 0 ){
-        sigma_booms(1-1)=(N/A_b) - (Mz/Izz_b)*C_wb*0.5 +(My/Iyy_b)*(h/2);
-        sigma_booms(2-1)=(N/A_b) + (Mz/Izz_b)*C_wb*0.5 +(My/Iyy_b)*(h/2);
-        sigma_booms(3-1)=(N/A_b) + (Mz/Izz_b)*C_wb*0.5 -(My/Iyy_b)*(h/2);
-        sigma_booms(4-1)=(N/A_b) - (Mz/Izz_b)*C_wb*0.5 -(My/Iyy_b)*(h/2);
+        sigma_booms(1-1)=(N/A_b) - (Mz/Izz_b)*C_wb*0.5 +(My/Iyy_b)*(h/2.0);
+        sigma_booms(2-1)=(N/A_b) + (Mz/Izz_b)*C_wb*0.5 +(My/Iyy_b)*(h/2.0);
+        sigma_booms(3-1)=(N/A_b) + (Mz/Izz_b)*C_wb*0.5 -(My/Iyy_b)*(h/2.0);
+        sigma_booms(4-1)=(N/A_b) - (Mz/Izz_b)*C_wb*0.5 -(My/Iyy_b)*(h/2.0);
 
-        dsigma_dx(1-1)= -A_fl*(Qxy/Izz_b)*C_wb*0.5  + A_fl*(Qxz/Iyy_b)*(h/2);
-        dsigma_dx(2-1)=  A_fl*(Qxy/Izz_b)*C_wb*0.5  + A_fl*(Qxz/Iyy_b)*(h/2);
-        dsigma_dx(3-1)=  A_fl*(Qxy/Izz_b)*C_wb*0.5  - A_fl*(Qxz/Iyy_b)*(h/2);
-        dsigma_dx(4-1)= -A_fl*(Qxy/Izz_b)*C_wb*0.5  - A_fl*(Qxz/Iyy_b)*(h/2);
+        dsigma_dx(1-1)= -A_fl*(Qxy/Izz_b)*C_wb*0.5  + A_fl*(Qxz/Iyy_b)*(h/2.0);
+        dsigma_dx(2-1)=  A_fl*(Qxy/Izz_b)*C_wb*0.5  + A_fl*(Qxz/Iyy_b)*(h/2.0);
+        dsigma_dx(3-1)=  A_fl*(Qxy/Izz_b)*C_wb*0.5  - A_fl*(Qxz/Iyy_b)*(h/2.0);
+        dsigma_dx(4-1)= -A_fl*(Qxy/Izz_b)*C_wb*0.5  - A_fl*(Qxz/Iyy_b)*(h/2.0);
 
         axial_load  = sigma_booms*A_fl;} 
     
@@ -716,6 +724,7 @@ void  CElement::StressRetrieving()
             dsigma_dx((((n_tot-2)/2)+1) +i)    =   A_stiff*(Qxy/Izz_b)*b*(((n_tot-2)/4)-i)  - A_stiff*(Qxz/Iyy_b)*(h/2);
             dsigma_dx((((n_tot-2)*3/4)+2) +i)  =  -A_stiff*(Qxy/Izz_b)*b*(i + 1)            - A_stiff*(Qxz/Iyy_b)*(h/2);
         }
+        
         //Take into account the different Spars' Area in the corners
         dsigma_dx(1-1)             =  dsigma_dx(1-1)*(A_fl/A_stiff); 
         dsigma_dx((n_tot/2) - 1)   =  dsigma_dx((n_tot/2) - 1)*(A_fl/A_stiff); 
@@ -748,13 +757,17 @@ void  CElement::StressRetrieving()
     //    %                0      0       -1    1     0         0;                               .
     //    %                0      0       0     -1    1         0;                            dsigma/dx (ntot-1 )
     //    %               bh     bh ...  bh     0     0 ...     0];                              M_Q]     
-            
-    addouble M_Q = Qxz*L_Qxz ;   // total Torque in the section due to Qxz and Qxy
+    
+    MatrixXdDiff tau_coeff= MatrixXdDiff::Zero(n_tot,n_tot);
+    
+    VectorXdDiff q  = VectorXdDiff::Zero(n_tot);
+   
+    addouble M_Q = Mt + Qxz*L_Qxz - Qxy*L_Qxy ;   // total Torque in the section due to Qxz and Qxy
     
     dsigma_dx(n_tot-1)= M_Q;    //index start from 0   
                 
-    MatrixXdDiff tau_coeff= MatrixXdDiff::Zero(n_tot,n_tot);
-
+    
+      
     // fill tau_coeff matrix 
     for (int j=1 -1 ; j<= (n_tot-1) -1; j+=1){
         tau_coeff(j,j)=1;}           // Diagonal
@@ -770,10 +783,18 @@ void  CElement::StressRetrieving()
     tau_coeff(1-1,(n_tot)-1)= -1;  // up right corner
        
     // System resolution 
-    tau = (tau_coeff).fullPivHouseholderQr().solve(-dsigma_dx);
+    q = (tau_coeff).fullPivHouseholderQr().solve(-dsigma_dx);
     
-    ///Section Verification
-    //N resultant in the section 
+    // Tau retrieving
+    tau = VectorXdDiff::Zero(n_tot);
+    tau.segment(1-1,n_tot/2 -1 )           = q.segment(1-1, n_tot/2 -1) /t_sk;
+    tau(n_tot/2 -1)                        = q(n_tot/2 -1) /t_sp;
+    tau.segment(n_tot/2+1 -1, n_tot/2 -1 ) = q.segment(n_tot/2+1 -1, n_tot/2 -1 )/t_sk;
+    tau(n_tot -1)                          = q(n_tot -1) /t_sp;
+          
+    
+    //--- Section Verification ---------
+ /*   //N resultant in the section 
     addouble N_sec =0;
     
     for (int i = 1-1 ;i<=(n_tot) -1 ; i=i+1){
@@ -790,27 +811,28 @@ void  CElement::StressRetrieving()
     addouble Ty_sec=0;
     for (int iy = 1-1 ;iy<=((n_tot/2)-1) -1 ; iy=iy+1){
         Ty_sec=Ty_sec + Ty_vect(iy);            
-    }    
+    }   
+  */ 
   
 }    
 
 
 
 void CElement:: VonMises(){
- /// Von mises criteria (skin and booms ) ----> (sigma_e/sigma_all) -1 <=0
+ // Von mises criteria (skin and booms ) ----> (sigma_e/sigma_all) -1 <=0
           
      int n_tot = n_stiff+4;                     // n_stiff + 4 flanges
      g_element = VectorXdDiff::Zero(2*n_tot);  //element constraint  equation Von mises    dim = (2*n_tot) 
      
-     SF=1.5;                                   // Safety factor
-     sigma_y= 468.5;                          // yielding stress Alluminum 7075
-     addouble sigma_all = sigma_y/SF;         // Allowable Stress
+     SF = 1.5;                                   // Safety factor
+     sigma_y = 468.5;                          // yielding stress Alluminum 7075
+     addouble sigma_adm = sigma_y/SF;         // Allowable Stress
      
     // Constraints
     for (int i= 1 -1 ; i<= n_tot -1 ; i=i+1)
     {
-      g_element(i)=(fabs(sigma_booms(i))/sigma_all)-1;                     // Normal stress state (Booms)     ---> g=(sigma_x/sigma_all) -1 
-      g_element((n_tot+1 - 1) +i )=(pow(3,0.5)*fabs(tau(i))/sigma_all)-1;  // Pure shear state (Spar and skin)---> g= (sqrt(3)*tau /sigma_all) -1 
+      g_element(i)=(fabs(sigma_booms(i))/sigma_adm)-1;                     // Normal stress state (Booms)     ---> g=(sigma_x/sigma_all) -1 
+      g_element((n_tot+1 - 1) +i )=( sqrt(3.0)*fabs(tau(i))/sigma_adm)-1;  // Pure shear state (Spar and skin)---> g= (sqrt(3)*tau /sigma_all) -1 
     }
      
 }

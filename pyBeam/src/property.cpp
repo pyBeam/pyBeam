@@ -61,7 +61,7 @@ void CProperty::SetSectionProperties(passivedouble C_wb_, passivedouble h_, pass
 
 void CProperty::FromWBtoInertias()
 {
-    addouble b=(C_wb)/(((n_stiff+4)/2)-1);      //distance within stiffeners
+    addouble b=(C_wb)/(((n_stiff+4)/2)-1);      //distance between stiffeners
     
     int r= ((n_stiff)/2)%2;
     
@@ -83,26 +83,26 @@ void CProperty::FromWBtoInertias()
     
     summ_ys=4*pow(b,2)*a;   
    
-    addouble A_skin = (C_wb+t_sp)*t_sk;                              //  skin area
-    addouble A_sp   = (t_sp*(h-t_sk));                               //  spar area
+    addouble A_skin = (C_wb+t_sp)*t_sk;                       //  skin area (on one side)
+    addouble A_web   = (t_sp*(h-t_sk));                       //  spar area (on one side)
        
     addouble Iyy_skin= (C_wb+t_sp)*(pow(t_sk,3)/12)+A_skin*(pow(((h/2)),2));  // Iyy of the skin
-    addouble Iyy_spar= t_sp*(pow((h-t_sk),3)/12);                            //Iyy of the spar
-    addouble Izz_skin= t_sk*(pow((C_wb-t_sp),3)/12);                         // Izz of the skin 
-    addouble Izz_spar= (h-t_sk)*(pow(t_sp,3)/12)+A_sp*(pow(((C_wb/2)),2));   // Izz of the spar
+    addouble Iyy_web= t_sp*(pow((h-t_sk),3)/12);                              // Iyy of the spar web
+    addouble Izz_skin= t_sk*(pow((C_wb-t_sp),3)/12);                         //  Izz of the skin 
+    addouble Izz_web= (h-t_sk)*(pow(t_sp,3)/12)+A_web*(pow(((C_wb/2)),2));   //  Izz of the spar web
     addouble Izz_fl = 4*A_fl*pow((C_wb/2),2); // Izz of the flanges 
     
-    A_b= n_stiff*A_stiff + 4*A_fl;  /// Number of stiffeners
+    A_b = n_stiff*A_stiff + 4*A_fl;  /// Area of the boom 
        
     Iyy_b=(n_stiff)*((A_stiff)*pow((h/2),2))  + 4*A_fl*pow((h/2),2);  // Iyy of the booms system for ideal shell theory
     
     Izz_b=(A_stiff*summ_ys+Izz_fl);                                  // Izz of the booms system for ideal shell theory
     
-    A = 2*A_skin + 2*A_sp  +  n_stiff*A_stiff  +  4*A_fl;       //  total area
+    A = 2*A_skin + 2*A_web  +  n_stiff*A_stiff  +  4*A_fl;       //  total area
            
-    Iyy=2*Iyy_skin  + 2*Iyy_spar + (n_stiff)*((A_stiff)*pow((h/2),2))  + 4*A_fl*pow((h/2),2);   
+    Iyy = 2*Iyy_skin  + 2*Iyy_web + (n_stiff)*((A_stiff)*pow((h/2),2))  + 4*A_fl*pow((h/2),2);   
          
-    Izz=2*Izz_skin  +   2*Izz_spar + (A_stiff*summ_ys+Izz_fl);
+    Izz = 2*Izz_skin  +   2*Izz_web + (A_stiff*summ_ys+Izz_fl);
         
     Jt=(2*t_sp*t_sk*pow(C_wb,2)*pow(h,2))/(C_wb*t_sp+h*t_sk);
    
@@ -241,9 +241,9 @@ void CProperty::GetGradient_WB(void) {
     addouble A_sp = (t_sp*(h-t_sk));                                          //  spar area
  
     addouble Iyy_skin=(C_wb+t_sp)*(pow(t_sk,3)/12)+A_skin*(pow(((h/2)),2));                // Iyy of the skin
-    addouble Iyy_spar= t_sp*(pow((h-t_sk),3)/12);                                        //Iyy of the spar
+    addouble Iyy_web= t_sp*(pow((h-t_sk),3)/12);                                        //Iyy of the spar
     addouble Izz_skin= t_sk*(pow((C_wb-t_sp),3)/12);                                               // Izz of the skin 
-    addouble Izz_spar= (h-t_sk)*(pow(t_sp,3)/12)+A_sp*(pow(((C_wb/2)),2));      // Izz of the spar
+    addouble Izz_web= (h-t_sk)*(pow(t_sp,3)/12)+A_sp*(pow(((C_wb/2)),2));      // Izz of the spar
     addouble Izz_fl = 4*A_fl*pow((C_wb/2),2);                                  // Izz of the flanges 
     
     
@@ -254,10 +254,10 @@ void CProperty::GetGradient_WB(void) {
              
                   
              
-    Iyy=2*Iyy_skin  + 2*Iyy_spar + (n_stiff)*((A_stiff)*pow((h/2),2))  + 4*A_fl*pow((h/2),2);   
+    Iyy=2*Iyy_skin  + 2*Iyy_web + (n_stiff)*((A_stiff)*pow((h/2),2))  + 4*A_fl*pow((h/2),2);   
    
       
-    Izz=2*Izz_skin  +   2*Izz_spar + (A_stiff*summ_ys+Izz_fl);
+    Izz=2*Izz_skin  +   2*Izz_web + (A_stiff*summ_ys+Izz_fl);
     
     
     Jt=(2*t_sp*t_sk*pow(C_wb,2)*pow(h,2))/(C_wb*t_sp+h*t_sk);
