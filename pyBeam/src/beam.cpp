@@ -848,11 +848,11 @@ passivedouble CBeamSolver::EvalKSStress(){
     
 //////  DEBUG 
 passivedouble CBeamSolver::EvalSigmaBoom(){
-//    resp_sigmaboom = element[0]->GetSB(); //sigma_booms(0);
+      resp_sigmaboom = element[0]->GetSB(); //sigma_booms(0);
 //    resp_sigmaboom = element[0]->Getdsigma_dx();   
 //    resp_sigmaboom = element[0]->Gettau();
 //    resp_sigmaboom = element[0]->Gettau();
-    resp_sigmaboom = element[0]->Getg(); 
+    //resp_sigmaboom = element[0]->Getg(); 
   
     return AD::GetValue(resp_sigmaboom);     };
     

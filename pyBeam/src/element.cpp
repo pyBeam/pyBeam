@@ -95,6 +95,7 @@ void CElement::Initializer(CNode* Node1, CNode* Node2, CProperty* Property, CInp
     // Store element properties from the input property object
     J0  = elprop->GetJ0();
     A   = elprop->GetA();
+    // cout<<"slenderness"<<pow(J0/A,0.5)<<endl;
     EIz = input->GetYoungModulus()*elprop->GetIzz();
     EIy = input->GetYoungModulus()*elprop->GetIyy();
     GJ  = input->GetShear()*elprop->GetJt();
@@ -201,6 +202,7 @@ void CElement::ElementMass_Rao() {
     // This mass matrix is currently evaluated using the original length of the element
     // The Finite Element Method in Engineering- S.S. Rao
     addouble r = J0/A;
+    
 
     // Element matrix
 
@@ -662,7 +664,13 @@ void  CElement::StressRetrieving()
     addouble Mt   = Edim*fint(10-1);     
     addouble My   = Edim*fint(11-1)-Qxz*(l_curr/2.0);    // moment y, mid section
     addouble Mz   = Edim*fint(12-1)+Qxy*(l_curr/2.0);    // moment z, mid section
-
+    //cout<<"My ="<< My<<endl;
+    //cout<<"MZ ="<< Mz<<endl;
+    //cout<<"N = "<< N<<endl;
+    //cout<<"Qxy = "<< Qxy<<endl;
+    //cout<<"Qxz = "<< Qxz<<endl;
+      
+   
     
     
     VectorXdDiff dsigma_dx   = VectorXdDiff::Zero(n_tot);
@@ -744,6 +752,7 @@ void  CElement::StressRetrieving()
         axial_load(n_tot - 1)       = axial_load(n_tot - 1)*(A_fl/A_stiff);
       }
       
+ 
     
     /// Shear Flux calculation
 
@@ -793,13 +802,19 @@ void  CElement::StressRetrieving()
     tau(n_tot -1)                          = q(n_tot -1) /t_sp;
           
     
+    
+    
+    
     //--- Section Verification ---------
- /*   //N resultant in the section 
+   //N resultant in the section 
     addouble N_sec =0;
     
     for (int i = 1-1 ;i<=(n_tot) -1 ; i=i+1){
         N_sec=N_sec+axial_load(i);}
     
+    //cout<<"N"<<N_sec<<endl;
+ /* 
+     
     // Tz resultant in the section 
     addouble Tz_sec= -tau( (n_tot/2)-1)*h + tau(n_tot-1)*h ; 
       
@@ -813,7 +828,7 @@ void  CElement::StressRetrieving()
         Ty_sec=Ty_sec + Ty_vect(iy);            
     }   
   */ 
-  
+    //cout <<"sigma_booms"<<sigma_booms<<endl;
 }    
 
 

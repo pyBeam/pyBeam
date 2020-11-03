@@ -49,13 +49,10 @@ void CProperty::SetSectionProperties(passivedouble C_wb_, passivedouble h_, pass
     FromWBtoInertias();
 
    
-   //addouble Sy= A*(h/2);   // Y static moment of the section
-   
-   //addouble Sz=A*(C_wb/2);  // Z static moment of the section   
+  
    
    isWBDV = 1;
    
-//   std::cout << "Inertias of the boom never used. Static Moments neither" << std::endl;
     
 }
 
@@ -107,6 +104,8 @@ void CProperty::FromWBtoInertias()
     Jt=(2*t_sp*t_sk*pow(C_wb,2)*pow(h,2))/(C_wb*t_sp+h*t_sk);
    
     J0=Iyy+Izz;
+    
+   
 }
 
 

@@ -150,7 +150,7 @@ public:
     inline addouble GetIzz_b(void) { 
         return   Izz_b;}
     inline addouble GetSB(void) { 
-        return   sigma_booms(0);}
+        return   sigma_booms(2);}
     inline addouble Gettau(void) { 
         std::cout << "tau" <<  tau << std::endl;        
         return   tau(1);}//input->GetYoungModulus()*elprop->GetA();}   

@@ -1717,33 +1717,40 @@ addouble CStructure::Evaluate_no_AdaptiveKSstresses()
     int n_stiff = 0;
     int n_tot = n_stiff+4;  // n_stiff + 4 flanges    
     addouble r = 50;       // Aggregation parameter for stress 
-    
     int id_fe;
-         
+   
+   
     addouble g_max;
     addouble summ_KS=0;
     
+    element[1-1]->StressRetrieving();
+    element[1-1]->VonMises();
+    g_max= element[1-1]->g_element(1-1);
+   
     for (id_fe=1;     id_fe <= nfem ; id_fe++) {       
        element[id_fe-1]->StressRetrieving();
        element[id_fe-1]->VonMises();
 
         //g_max
-        g_max= element[id_fe-1]->g_element(1-1);
-        for(int i= 2-1 ; i<= n_tot; i++){
+        
+        for(int i= 1-1 ; i<= n_tot-1  ; i++){
 
             if(element[id_fe-1]->g_element(i) >= g_max){
                 g_max= element[id_fe-1]->g_element(i); }
 
          // summ (exp(aggr_parameter(g_element)))
-            summ_KS  += pow(M_E,r*(element[id_fe-1]->g_element(i)));   
+            summ_KS  += pow(M_E,r*(element[id_fe-1]->g_element(i)));  
+             
         }
+       
+             
     //KS
     }
-    
-    addouble KS = g_max+(1/ r)*log(summ_KS *pow(M_E,-r*g_max )); //contribute of g_max
-    //cout<<"g_max="<<g_max<<endl;
+      addouble KS = g_max+(1/ r)*log(summ_KS *pow(M_E,-r*g_max )); //contribute of g_max
+     
     //cout<<"KS="<<KS<<endl;
-   
+    
+     //addouble  KS = g_max;
      
     return KS;
 }
