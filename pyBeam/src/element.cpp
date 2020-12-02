@@ -829,7 +829,7 @@ void  CElement::StressRetrieving()
     }   
   */ 
     //cout <<"sigma_booms"<<sigma_booms<<endl;
-}    
+} 
 
 
 
@@ -844,13 +844,85 @@ void CElement:: VonMises(){
      addouble sigma_adm = sigma_y/SF;         // Allowable Stress
      
     // Constraints
+     
+    
     for (int i= 1 -1 ; i<= n_tot -1 ; i=i+1)
     {
       g_element(i)=(fabs(sigma_booms(i))/sigma_adm)-1;                     // Normal stress state (Booms)     ---> g=(sigma_x/sigma_all) -1 
       g_element((n_tot+1 - 1) +i )=( sqrt(3.0)*fabs(tau(i))/sigma_adm)-1;  // Pure shear state (Spar and skin)---> g= (sqrt(3)*tau /sigma_all) -1 
+    
     }
-     
+    // cout<<"__________________________"<<endl;
 }
+
+
+
+void CElement:: BoomsBuckling(){
+    
+ // Formula of Vallat for the calculation of sigma_cr of buckling for the concentrated areas 
+    
+    // has been considered " L " section booms , 
+          
+     int n_tot = n_stiff+4;                     // n_stiff + 4 flanges
+     addouble t_b =1;
+     addouble h_stiff = (A_stiff + pow(t_b,2))/(2*t_b);
+     addouble h_fl =  (A_fl + pow(t_b,2))/(2*t_b);
+     
+     
+     addouble K = 8.5;   // constant for open stiffeners section 
+     addouble beta_fl = h_fl/t_b;
+     addouble beta_stiff = h_stiff/t_b;
+     
+      //cout << "H fl"<< h_fl<<endl;
+      //cout << "H stiff"<< h_stiff<<endl;
+      
+     addouble Edim =input->GetYoungModulus_dimensional();   
+     
+     
+     sigma_y = 468.5;
+     
+     addouble  sigma_buckl_fl =  sigma_y/(1 + K*beta_fl*sigma_y/Edim );
+     addouble  sigma_buckl_stiff =  sigma_y/(1 + K*beta_stiff*sigma_y/Edim );
+     
+     //cout << "Sigma Critica Buckling FLANGE"<< sigma_buckl_fl<<endl;
+     //cout << "Sigma Critica Buckling STIFF"<< sigma_buckl_stiff<<endl;
+     
+    // Constraints
+         
+    int n_neg=0;
+  
+    for (int i= 1 -1 ; i<= n_tot -1 ; i=i+1)
+    {
+      if (sigma_booms(i) < 0){
+          n_neg++ ;
+      }
+    }
+      
+    g_buckl_element = VectorXdDiff::Zero(n_neg);
+    
+    int j=0;
+    for (int i= 1 -1 ; i<= n_tot -1 ; i=i+1)
+    {
+      if (sigma_booms(i) < 0){
+    
+        if (i == 0 or i== (n_tot/2) - 1 or i==(n_tot/2+1) - 1 or i ==n_tot - 1 ){
+             g_buckl_element(j++)=(fabs(sigma_booms(i)/sigma_buckl_fl))-1;
+            
+        }else
+         {
+            
+      g_buckl_element(j++)=(fabs(sigma_booms(i)/sigma_buckl_stiff))-1;   
+     
+         } 
+      }
+    }
+          
+    
+   // cout<<"g_buckling = "<<g_buckl_element<<endl;
+    
+}
+
+ 
 
 addouble CElement:: RetrieveNint(){
     std::cout << fint << std::endl;

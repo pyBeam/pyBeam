@@ -237,7 +237,9 @@ public:
 
     addouble EvaluateWeight();
      
-    addouble Evaluate_no_AdaptiveKSstresses();    
+    addouble Evaluate_no_AdaptiveKSstresses(); 
+    
+    addouble Evaluate_no_AdaptiveKSbuckling();  
     
     addouble GetDisplacement(int iNode, int iDim) {
         return U(6 * iNode + iDim);

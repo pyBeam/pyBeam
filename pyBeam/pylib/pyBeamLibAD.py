@@ -192,9 +192,13 @@ class pyBeamSolverAD:
     """ This function stops registration for AD  """
     self.beam.StopRecordingWeight()
     
-  def StopRecordingKS(self):
+  def StopRecordingKSstresses(self):
     """ This function stops registration for AD  """
-    self.beam.StopRecordingKS()
+    self.beam.StopRecordingKSstresses()
+
+  def StopRecordingKSbuckling(self):
+        """ This function stops registration for AD  """
+        self.beam.StopRecordingKSbuckling()
 
   def StopRecordingSigmaBoom(self):
     self.beam.StopRecordingSigmaBoom()
@@ -226,9 +230,13 @@ class pyBeamSolverAD:
     """ This function computes Adjoint for AD  """
     self.beam.ComputeAdjointWeight()
     
-  def ComputeAdjointKS(self):
+  def ComputeAdjointKSStresses(self):
     """ This function computes Adjoint for AD  """
-    self.beam.ComputeAdjointKS()
+    self.beam.ComputeAdjointKSstresses()
+
+  def ComputeAdjointKSBuckling(self):
+    """ This function computes Adjoint for AD  """
+    self.beam.ComputeAdjointKSbuckling()
 
   def ComputeAdjointSigmaBoom(self):
     """ This function computes Adjoint for AD  """
@@ -279,6 +287,21 @@ class pyBeamSolverAD:
     Nint = self.beam.EvalIzz_b()
     return Nint
 
+  def GetDesignVariables(self):
+      self.beam_prop = []
+      for i in range(self.nProp):
+          if self.Prop[i].GetFormat() == "S":
+              C_wb = self.Prop[i].GetC_wb()
+              h = self.Prop[i].Geth()
+              A_fl = self.Prop[i].GetA_fl()
+              A_stiff = self.Prop[i].GetA_stiff()
+              n_stiff = self.Prop[i].Getn_stiff()
+              t_sk = self.Prop[i].Gett_sk()
+              t_sp = self.Prop[i].Gett_sp()
+              DVs = (C_wb, h, t_sk, t_sp, A_fl, n_stiff, A_stiff)
+
+              return DVs
+
   def ComputeWeight(self):
     """ This function computes the response weight of the structure (important to be recorded) """
     weight = self.beam.EvalWeight()
@@ -289,6 +312,12 @@ class pyBeamSolverAD:
     """ This function computes the KS stress on the structure (important to be recorded) """
     KSStress= self.beam.EvalKSStress()
     return KSStress
+
+
+  def ComputeResponseKSBuckling(self):
+    """ This function computes the KS stress on the structure (important to be recorded) """
+    KSBuckl= self.beam.EvalKSBuckling()
+    return KSBuckl
 
   def ComputeResponseSigmaBoom(self):
     """ This function computes the KS stress on the structure (important to be recorded) """

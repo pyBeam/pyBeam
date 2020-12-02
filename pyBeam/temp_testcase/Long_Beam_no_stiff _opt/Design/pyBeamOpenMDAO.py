@@ -48,8 +48,12 @@ class pyBeamOpt:
 
     def NewDesign(self,DVs):
         """ This function create a folder in which are copied the input files,appending the new Design Variables (DVs) in property file   """
+        print("design Variables", DVs)
         path = os.path.abspath(os.path.join(self.file_dir, ".."))
         final_directory = os.path.join(path, r'Optimization')
+
+        if os.path.exists(final_directory):
+            os.rmdir(final_directory)
         if not os.path.exists(final_directory):
             os.makedirs(final_directory)
 
@@ -63,12 +67,12 @@ class pyBeamOpt:
 
         Name_prop = os.path.join(final_directory, "property.prt")
 
+        DVs = DVs.reshape(self.nProp,7)
+
+
         with open(Name_prop, "w") as f_prop:
-            f_prop.write("% ChordofWB  HeightofWB thickskin  thicksparweb Areasparcap numberstiff Astiff" +
-                         " \n NPROPS=" + str(self.nProp) + "\n" + "S\n" + str(DVs[0]) + "  " + str(
-                DVs[1]) + "  " + str(
-                DVs[2]) + "  " + str(DVs[3]) + "  " + str(DVs[4]) + "  " + str(DVs[5]) + "  " + str(DVs[6]))
-            f_prop.close()
+           f_prop.write()
+        f_prop.close()
 
         return final_directory
 
@@ -79,7 +83,6 @@ class pyBeamOpt:
         beam.SetLoads(self.Loads[0],self.Loads[1],self.Loads[2], self.Loads[3])
         beam.RunLin()
         KS=beam.ComputeResponseKSStress()
-        #beam.ComputeResponseSigmaBoom()
 
         del beam.file_dir
         Name_KS = os.path.join(final_directory, "constraint_KS.txt")

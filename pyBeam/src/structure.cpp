@@ -1714,7 +1714,7 @@ void CStructure::UpdateInternalForcesLinear()
 addouble CStructure::Evaluate_no_AdaptiveKSstresses()
 {
     // Ks calculation ----> Ks(g_element) = g_max + summ (exp(aggr_parameter*(g_element - g_max)))
-    int n_stiff = 0;
+    int n_stiff = element[1-1]->elprop->Getn_stiff();
     int n_tot = n_stiff+4;  // n_stiff + 4 flanges    
     addouble r = 50;       // Aggregation parameter for stress 
     int id_fe;
@@ -1723,18 +1723,20 @@ addouble CStructure::Evaluate_no_AdaptiveKSstresses()
     addouble g_max;
     addouble summ_KS=0;
     
+    cout<<"aaaaaaaaaaaaaaaaaa"<<endl;
     element[1-1]->StressRetrieving();
     element[1-1]->VonMises();
     g_max= element[1-1]->g_element(1-1);
-   
-    for (id_fe=1;     id_fe <= nfem ; id_fe++) {       
+ 
+    for (id_fe=1;     id_fe <= nfem ; id_fe++) {  
+        cout<<"counter"<< id_fe <<endl;
        element[id_fe-1]->StressRetrieving();
        element[id_fe-1]->VonMises();
-
         //g_max
-        
-        for(int i= 1-1 ; i<= n_tot-1  ; i++){
-
+       
+       
+        for(int i= 1-1 ; i<= (2*n_tot)-1  ; i++){
+   
             if(element[id_fe-1]->g_element(i) >= g_max){
                 g_max= element[id_fe-1]->g_element(i); }
 
@@ -1742,21 +1744,76 @@ addouble CStructure::Evaluate_no_AdaptiveKSstresses()
             summ_KS  += pow(M_E,r*(element[id_fe-1]->g_element(i)));  
              
         }
-       
-             
     //KS
     }
-      addouble KS = g_max+(1/ r)*log(summ_KS *pow(M_E,-r*g_max )); //contribute of g_max
+      addouble KS_stress = g_max+(1/ r)*log(summ_KS *pow(M_E,-r*g_max )); //aggregated stress constraint
+
+      if (KS_stress > 0) {
+          cout<<"!!! Failure, Von mises constraint is not respected"<<endl;
+      }
      
-    //cout<<"KS="<<KS<<endl;
     
-     //addouble  KS = g_max;
+      //addouble  KS = g_max;
      
-    return KS;
+    return KS_stress;
 }
-      
-     
+
+
+
+
+
+
+addouble CStructure::Evaluate_no_AdaptiveKSbuckling()
+{ 
+   // Ks calculation ----> Ks(g_element) = g_max + summ (exp(aggr_parameter*(g_element - g_max)))
+    int n_stiff = element[1-1]->elprop->Getn_stiff();
+    int n_tot = n_stiff+4;  // n_stiff + 4 flanges    
+    addouble r = 50;       // Aggregation parameter for stress 
+    int id_fe;
+   
+   
+    addouble g_max;
+    addouble summ_KS=0;
+    
+    
+    element[1-1]->StressRetrieving();
+    element[1-1]->BoomsBuckling();
+    g_max= element[1-1]->g_buckl_element(1-1);
  
+    for (id_fe=1;     id_fe <= nfem ; id_fe++) {  
+        cout<<"counter"<< id_fe <<endl;
+       element[id_fe-1]->StressRetrieving();
+       element[id_fe-1]->BoomsBuckling();
+
+        //g_max
+       
+       
+        for(int i= 1-1 ; i<= (element[id_fe-1]->g_buckl_element).size() -1  ; i++){
+   
+            if(element[id_fe-1]->g_buckl_element(i) >= g_max){
+                g_max= element[id_fe-1]->g_buckl_element(i); }
+
+         // summ (exp(aggr_parameter(g_element)))
+            summ_KS  += pow(M_E,r*(element[id_fe-1]->g_buckl_element(i)));  
+             
+        }
+       
+    //KS
+    }
+      addouble KS_buckl = g_max+(1/ r)*log(summ_KS *pow(M_E,-r*g_max )); //aggregated stress constraint
+
+      if (KS_buckl > 0) {
+          cout<<"!!! Stiffeners Buckling "<<endl;
+      }
+     
+    
+    
+     
+    return KS_buckl;
+}
+   
+
+
      
 addouble CStructure::EvaluateWeight(){
     
@@ -1767,7 +1824,8 @@ addouble CStructure::EvaluateWeight(){
         //addouble A = element[1-1]-> elprop->GetA();  //Area  (constant)
         //addouble l = element[1-1]-> GetInitial_Length();     // initial length
     
-        weight +=   rho *  element[id_fe]-> elprop->GetA() * element[id_fe]-> GetInitial_Length();                 
+        weight +=   rho *  element[id_fe]-> elprop->GetA() * element[id_fe]-> GetInitial_Length();  
+       
 //    cout<<"A = "<< A<< endl;
 //    cout<<"l= "<< l<<endl;
 //    cout<<"rho = "<< rho<<endl;

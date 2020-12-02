@@ -46,7 +46,9 @@ CBeamSolver::CBeamSolver(void) {
     register_loads = false;
     objective_function = 0.0;
     resp_weight = 0.0;
-    resp_KS = 0.0;
+    resp_KS_stress = 0.0;
+    resp_KS_buckl = 0.0;
+
 
     totalIter = 0;
     initResNorm   =  1.0;
@@ -185,7 +187,7 @@ void CBeamSolver::Solve(int FSIIter = 0){
     unsigned long loadStep = 1;
     cout.setf(ios::fixed, ios::floatfield);
     history.setf(ios::fixed, ios::floatfield);
-    
+  
     // This function set the current initial coordinates and memorizes them as the old one 
     // before the converging procedure starts (necessary in case of FSI)
     structure->InitialCoord(); //sets the Coordinates 0 of the configuration (as given in the mesh)
@@ -249,7 +251,7 @@ void CBeamSolver::Solve(int FSIIter = 0){
             
             // Update the External Forces with the loadStep
             structure->UpdateExtForces(lambda);
-
+             
             // Evaluate the Residual
             structure->EvalResidual();
 
@@ -262,7 +264,7 @@ void CBeamSolver::Solve(int FSIIter = 0){
             /*--------------------------------------------------
              *   Assembly Ktang, Solve System
              *----------------------------------------------------*/
-            
+              
             // Reassembling Stiffness Matrix + Applying Boundary Conditions
             structure->AssemblyTang(1);
             
@@ -842,8 +844,12 @@ passivedouble CBeamSolver::EvalWeight(){
    
     
 passivedouble CBeamSolver::EvalKSStress(){
-    resp_KS = structure->Evaluate_no_AdaptiveKSstresses();
-    return AD::GetValue(resp_KS);     };
+    resp_KS_stress = structure->Evaluate_no_AdaptiveKSstresses();
+    return AD::GetValue(resp_KS_stress);     };
+    
+passivedouble CBeamSolver::EvalKSBuckling(){
+    resp_KS_buckl = structure->Evaluate_no_AdaptiveKSbuckling();
+    return AD::GetValue(resp_KS_buckl);     };
  
     
 //////  DEBUG 
@@ -1076,13 +1082,13 @@ void CBeamSolver::ComputeAdjointWeight(void){
 
 
 
-void CBeamSolver::ComputeAdjointKS(void){
+void CBeamSolver::ComputeAdjointKSstresses(void){
 
     unsigned long iLoad;
     
     for (unsigned short iTer = 0; iTer < input->Get_nIter(); iTer++){ 
 
-        AD::SetDerivative(resp_KS, 1.0);
+        AD::SetDerivative(resp_KS_stress, 1.0);
 
         structure->SetSolutionAdjoint(iRigid);
 
@@ -1104,6 +1110,45 @@ void CBeamSolver::ComputeAdjointKS(void){
         AD::ClearAdjoints();  
     }
 }
+
+
+
+
+
+
+
+
+void CBeamSolver::ComputeAdjointKSbuckling(void){
+
+    unsigned long iLoad;
+    
+    for (unsigned short iTer = 0; iTer < input->Get_nIter(); iTer++){ 
+
+        AD::SetDerivative(resp_KS_buckl, 1.0);
+
+        structure->SetSolutionAdjoint(iRigid);
+
+        AD::ComputeAdjoint();
+        structure->ExtractSolutionAdjoint(iRigid);
+
+        E_grad = input->GetGradient_E();
+        Nu_grad = input->GetGradient_Nu();
+
+
+        for (int iPDV = 0; iPDV < nPropDVs; iPDV++){
+            propGradient[iPDV] = AD::GetValue(AD::GetDerivative(propDVsVector[iPDV]));
+        }      
+
+        for (iLoad = 0; iLoad < nTotalDOF; iLoad++){
+            loadGradient[iLoad] = AD::GetValue(AD::GetDerivative(loadVector[iLoad]));
+        }
+
+        AD::ClearAdjoints();  
+    }
+}
+
+
+
 
 
 void CBeamSolver::ComputeAdjointSigmaBoom(void){
@@ -1209,9 +1254,16 @@ void CBeamSolver::StopRecordingWeight(void) {
     AD::StopRecording();}
 
 
-void CBeamSolver::StopRecordingKS(void) {
+void CBeamSolver::StopRecordingKSstresses(void) {
 
-    AD::RegisterOutput(resp_KS);
+    AD::RegisterOutput(resp_KS_stress);
+    /** Register the solution as output **/
+    structure->RegisterSolutionOutput(iRigid);
+    AD::StopRecording();}
+
+void CBeamSolver::StopRecordingKSbuckling(void) {
+
+    AD::RegisterOutput(resp_KS_buckl);
     /** Register the solution as output **/
     structure->RegisterSolutionOutput(iRigid);
     AD::StopRecording();}

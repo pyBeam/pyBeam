@@ -104,7 +104,7 @@ void CProperty::FromWBtoInertias()
     Jt=(2*t_sp*t_sk*pow(C_wb,2)*pow(h,2))/(C_wb*t_sp+h*t_sk);
    
     J0=Iyy+Izz;
-    
+   
    
 }
 

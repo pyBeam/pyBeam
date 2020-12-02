@@ -1,0 +1,22 @@
+VALIDATIONS
+
+
+1) & 2) fint_wrt_IN and _WB 
+
+partially validated, in the sense that in the linear case there is no dependence, and numericla linear system solutions cause some numericla instabilities
+
+
+4) validation_U_wrtWB
+
+validated. Same issues as above.
+
+5) validation-weight 
+
+validated
+
+3) validation KS
+Validated KS (and intermediate components) for th linear case, both with and without stiffeners.
+To coplete it needs the Nonlineare case, and the validation of KS in which the critical component is the tau and not the sigma boom.
+
+
+

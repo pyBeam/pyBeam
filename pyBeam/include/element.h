@@ -117,6 +117,7 @@ public:
 //    addouble Tz_sec;     // Resultant Tz in the section
 //    addouble Ty_sec;     // Resultant Tz in the section
     
+    VectorXdDiff g_buckl_element;  // element constraint  equations Von mises    dim = (2*n_tot) 
     VectorXdDiff g_element;  // element constraint  equations Von mises    dim = (2*n_tot) 
     addouble     SF;        // safety factor 
     addouble     sigma_y;  // sigma yielding 
@@ -213,10 +214,11 @@ public:
     
     // maximum normal stress in the section 
     void VonMises();
+    
+    void BoomsBuckling();
 
     
     addouble RetrieveNint();
     
 
 };
-

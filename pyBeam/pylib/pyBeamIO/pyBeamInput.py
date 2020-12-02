@@ -156,7 +156,7 @@ class Property:
     self.h = 0;              # box tot height
     self.C_wb = 0;           # box tot length
     self.n_stiff = 0;        # number of stiffeners
-    self.Format = "N";         # N tipical one in which inertias are defined
+    self.Format = "S";         # N tipical one in which inertias are defined
                              # S on in which wing box sizes are defined
 
   def SetA(self,A):
@@ -408,7 +408,7 @@ def readRBE2(Mesh_file):
     return RBE2, nRBE2	
 
 def readProp(Prop_file):	
-
+   
     Prop = []    
     nProp = 0
     with open(Prop_file, 'r') as propfile:
@@ -423,8 +423,8 @@ def readProp(Prop_file):
           if (line[0] == '%'):
             continue	
         pos  = line.find('NPROP ')
-        pos2 = line.find('NPROPS')        
-#        print(pos)
+        pos2 = line.find('NPROPS')
+#        print("pooooos",pos)
 #        print(pos2)
         
         if pos != -1 and pos2 != -1:
@@ -461,12 +461,16 @@ def readProp(Prop_file):
             line = line.replace(" ", "")
             line = line.split("=", 1)
             nProp = int(line[1])
+
+            line = propfile.readline()
+            line = line.strip('\r\n')
+            line = line.split()  ## important modification in case the formatting includes tabs
+
+            Pformat = line[0]
+
             for iProp in range(nProp):
+
                 Prop.append(Property())
-                line = propfile.readline()
-                line = line.strip('\r\n')
-                line = line.split()  ## important modification in case the formatting includes tabs
-                Pformat = line[0]
                 Prop[iProp].SetFormat(Pformat)
                 line = propfile.readline()
                 line = line.strip('\r\n')
@@ -496,6 +500,8 @@ def readProp(Prop_file):
                     Prop[iProp].SetA_fl(A_fl);
                     Prop[iProp].Setn_stiff(n_stiff);
                     Prop[iProp].SetA_stiff(A_stiff);
+
+
                 else:
                     raise ValueError("Unknown paramter for Property CARD input. Execution aborted")
 #        else:

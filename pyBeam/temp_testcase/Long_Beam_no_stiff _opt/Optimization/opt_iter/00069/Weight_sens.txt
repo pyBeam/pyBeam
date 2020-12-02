@@ -1,0 +1,6 @@
+Weight wrt C_wb = [[0.80998097]]
+Weight wrt h = [[0.81003282]]
+Weight wrt t_sk = [[1617.80398275]]
+Weight wrt t_sp = [[852.22220378]]
+Weight wrt A_fl = [[1.62000106]]
+Weight wrt A_stiff = [[3.24000075]]

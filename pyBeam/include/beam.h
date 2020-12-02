@@ -44,8 +44,8 @@ private:
 
     addouble objective_function;
     addouble resp_weight;
-    addouble resp_KS;
-    //DBG
+    addouble resp_KS_stress ;
+    addouble  resp_KS_buckl ;    //DBG
     addouble resp_EA;
     addouble resp_Izz_b;    
     addouble resp_Nint;
@@ -120,6 +120,8 @@ public:
        
     passivedouble EvalKSStress();  
     
+    passivedouble EvalKSBuckling();
+    
     passivedouble EvalEA();   ///DEBUG 
     
     passivedouble EvalIzz_b();   ///DEBUG     
@@ -137,7 +139,9 @@ public:
     
     void ComputeAdjointWeight(void);  
     
-    void ComputeAdjointKS(void);      
+    void ComputeAdjointKSstresses(void); 
+    void ComputeAdjointKSbuckling(void); 
+    
     
    
     
@@ -184,7 +188,8 @@ public:
     
     void StopRecordingWeight(void);
     
-    void StopRecordingKS(void);    
+    void StopRecordingKSstresses(void);   
+    void StopRecordingKSbuckling(void);   
     
     void StopRecordingEA(void); /// DEBUG
     void StopRecordingIzz_b(void); /// DEBUG    

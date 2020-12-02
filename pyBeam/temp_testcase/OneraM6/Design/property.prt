@@ -1,0 +1,18 @@
+% Respect the format, properties have to start in line following NPROP
+% Format: AREA Iyy Izz Jt
+%NPROP = 1
+23800  1279191416.6666667461  26415122791.666664124 4090909090.9090909958
+%
+%
+% Respect the format, properties have to start in line following NPROP
+% Format: 
+% first line number of proeperties NPROPS = x
+% second line: Format of the input   N or S
+% if N, then in hte next line soecify the inertial in the following order
+% AREA Iyy Izz Jt
+% if S, then specify the wingbox parameters
+% ChordofWB  HeightofWB thickskin  thicksparweb Areasparcap numberstiff Astiff
+NPROPS = 1
+S
+272.631256980194	53.5172750000000	1	1	100	8	25
+

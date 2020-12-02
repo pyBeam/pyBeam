@@ -129,10 +129,16 @@ if __name__ == "__main__":
 
     prob = om.Problem()
 
-    Loads = (60, 150, 5000, 5000)
+    Loads = (60, 100, 5000, 5000)
     file_dir = os.path.dirname(os.path.realpath(__file__))
-    #beam = pyBeamSolver(file_dir, 'config_lin.cfg')
+    beam = pyBeamSolver(file_dir, 'config_lin.cfg')
     beam_opt = pyBeamOpt(file_dir, 'config_lin.cfg', Loads)
+
+    path_opt = os.path.abspath(os.path.join(file_dir, ".."))
+    final_directory_opt = os.path.join(path_opt, r'Optimization')
+    if os.path.exists(final_directory_opt):
+        shutil.rmtree(final_directory_opt)
+    os.makedirs(final_directory_opt)
 
     """NonLinear Analysis"""
     #beam = pyBeamSolver(file_dir, 'config_non_lin.cfg')
@@ -146,7 +152,7 @@ if __name__ == "__main__":
     t_sk = 3
     t_sp = 5
     A_fl = 200
-    n_stiff = 6
+    n_stiff = 8
     A_stiff = 50
 
     prob.model.add_subsystem('weight_comp', Weight(),
@@ -156,20 +162,30 @@ if __name__ == "__main__":
     prob.model.add_subsystem('KS_comp', KS_constraint(),
                              promotes_inputs=['C_wb', 'h', 't_sk', 't_sp', 'A_fl','n_stiff','A_stiff'])
 
+    #prob.model.add_subsystem('Cwb_h_comp', om.ExecComp('g1 = h-0.2*C_wb'),
+      #                       promotes=['*'])
 
+    #prob.model.add_subsystem('Astiff_Afl_comp', om.ExecComp('g2 = A_stiff - 0.25* A_fl'),
+     #                        promotes=['*'])
 
     # setup the optimization
 
-    #prob.driver = om.pyOptSparseDriver()
-    prob.driver = om.ScipyOptimizeDriver()
+    prob.driver = om.pyOptSparseDriver()
+    #prob.driver = om.ScipyOptimizeDriver()
     prob.driver.options['optimizer'] = 'SLSQP'
 
 
 
-    #prob.driver.options['maxiter'] = 100
+    #prob.driver.options['maxiter'] = 10
     prob.driver.options['debug_print']=['desvars','objs','nl_cons','totals']
 
-
+    prob.model.set_input_defaults('C_wb', C_wb, units='mm')
+    prob.model.set_input_defaults('h', h, units='mm')
+    prob.model.set_input_defaults('t_sk', t_sk, units='mm')
+    prob.model.set_input_defaults('t_sp', t_sp, units='mm')
+    prob.model.set_input_defaults('A_fl', A_fl, units='mm**2')
+    prob.model.set_input_defaults('n_stiff', n_stiff, units='mm')
+    prob.model.set_input_defaults('A_stiff', A_stiff, units='mm**2')
 
     prob.model.add_design_var('C_wb',lower=1)
     prob.model.add_design_var('h',lower=1)
@@ -191,16 +207,10 @@ if __name__ == "__main__":
 
     prob.model.add_objective('weight_comp.Obj_f')
     prob.model.add_constraint('KS_comp.Const_KS',upper=0)
-
+    #prob.model.add_constraint('g1', equals=0)
+    #prob.model.add_constraint('g2', equals=0)
     prob.setup()
 
-    prob.set_val('C_wb', C_wb,units='mm')
-    prob.set_val('h', h,units='mm')
-    prob.set_val('t_sk', t_sk,units='mm')
-    prob.set_val('t_sp', t_sp,units='mm')
-    prob.set_val('A_fl', A_fl,units='mm**2')
-    prob.set_val('n_stiff', n_stiff,units='mm')
-    prob.set_val('A_stiff', A_stiff,units='mm**2')
 
     prob.run_driver()
 
@@ -209,9 +219,7 @@ if __name__ == "__main__":
 
     prob.cleanup()
 
-
     """  Record Data : """
-
 
     cr = om.CaseReader("opt_results.sql")
 
@@ -219,112 +227,108 @@ if __name__ == "__main__":
 
     path = os.path.abspath(os.path.join(file_dir, "../Optimization"))
     final_directory = os.path.join(path, r'opt_iter')
+    final_directory_figures = os.path.join(path, r'Figures')
     if not os.path.exists(final_directory):
         os.makedirs(final_directory)
-
-
+    if not os.path.exists(final_directory_figures):
+        os.makedirs(final_directory_figures)
 
     path_iter = os.path.abspath(os.path.join(file_dir, "../Optimization/opt_iter"))
+    path_figures = os.path.abspath(os.path.join(file_dir, "../Optimization/Figures"))
 
+    for it in range(0, len(case_names), 1):
 
+        case = cr.get_case(it)
+        derivs = cr.get_case(it).derivatives
 
+        final_directory_iter = os.path.join(path_iter, r'000' + str(it))
+        if not os.path.exists(final_directory_iter):
+            os.makedirs(final_directory_iter)
 
+        if derivs is not None:
+            Weight_deriv = os.path.join(final_directory_iter, "Weight_sens" + ".txt")
 
+            Deriv_obj = open(Weight_deriv, "w")
+            Deriv_obj.write('Weight wrt C_wb = ' + str(derivs['weight_comp.Obj_f', 'C_wb']) + '\n'
+                                                                                              'Weight wrt h = ' + str(
+                derivs['weight_comp.Obj_f', 'h']) + '\n'
+                                                    'Weight wrt t_sk = ' + str(
+                derivs['weight_comp.Obj_f', 't_sk']) + '\n'
+                                                       'Weight wrt t_sp = ' + str(
+                derivs['weight_comp.Obj_f', 't_sp']) + '\n'
+                                                       'Weight wrt A_fl = ' + str(
+                derivs['weight_comp.Obj_f', 'A_fl']) + '\n'
+                                                       'Weight wrt A_stiff = ' + str(
+                derivs['weight_comp.Obj_f', 'A_stiff']))
+            Deriv_obj.close()
 
-    for it in range(0,len(case_names),1):
+            KS_deriv = os.path.join(final_directory_iter, "KS_sens" + ".txt")
 
-            case = cr.get_case(it)
-            derivs=cr.get_case(it).derivatives
+            Deriv_KS = open(KS_deriv, "w")
+            Deriv_KS.write('KS wrt C_wb = ' + str(derivs['KS_comp.Const_KS', 'C_wb']) + '\n'
+                                                                                        'KS wrt h = ' + str(
+                derivs['KS_comp.Const_KS', 'h']) + '\n'
+                                                   'KS wrt t_sk = ' + str(
+                derivs['KS_comp.Const_KS', 't_sk']) + '\n'
+                                                      'KS wrt t_sp = ' + str(
+                derivs['KS_comp.Const_KS', 't_sp']) + '\n'
+                                                      'KS wrt A_fl = ' + str(derivs['KS_comp.Const_KS', 'A_fl']) + '\n'
+                                                                                                                   'KS wrt A_stiff = ' + str(
+                derivs['KS_comp.Const_KS', 'A_stiff']))
+            Deriv_KS.close()
 
-            final_directory_iter = os.path.join(path_iter, r'000'+ str(it))
-            if not os.path.exists(final_directory_iter):
-                os.makedirs(final_directory_iter)
+        if derivs is None:
+            pass
 
-            if derivs is not None :
-             Weight_deriv = os.path.join(final_directory_iter, "Weight_sens" + ".txt")
+        Obj_func = os.path.join(final_directory_iter, "Weight" + ".txt")
 
-             Deriv_obj = open(Weight_deriv, "w")
-             Deriv_obj.write('Weight wrt C_wb = ' + str(derivs['weight_comp.Obj_f','C_wb']) + '\n'
-                             'Weight wrt h = ' + str(derivs['weight_comp.Obj_f','h']) + '\n'
-                             'Weight wrt t_sk = ' + str(derivs['weight_comp.Obj_f','t_sk']) + '\n'
-                             'Weight wrt t_sp = ' + str(derivs['weight_comp.Obj_f','t_sp']) + '\n'
-                             'Weight wrt A_fl = ' + str(derivs['weight_comp.Obj_f','A_fl']) + '\n'
-                             'Weight wrt A_stiff = ' + str(derivs['weight_comp.Obj_f','A_stiff']))
-             Deriv_obj.close()
+        outputs_obj = open(Obj_func, "w")
+        outputs_obj.write(str(case['weight_comp.Obj_f']))
+        outputs_obj.close()
 
-             KS_deriv = os.path.join(final_directory_iter, "KS_sens" + ".txt")
+        KS = os.path.join(final_directory_iter, "KS_constraint" + ".txt")
 
-             Deriv_KS = open(KS_deriv, "w")
-             Deriv_KS.write('KS wrt C_wb = ' + str(derivs['KS_comp.Const_KS', 'C_wb']) + '\n'
-                                                                                               'KS wrt h = ' + str(
-                 derivs['KS_comp.Const_KS', 'h']) + '\n'
-                        'KS wrt t_sk = ' + str(
-                 derivs['KS_comp.Const_KS', 't_sk']) + '\n'
-                        'KS wrt t_sp = ' + str(
-                 derivs['KS_comp.Const_KS', 't_sp']) + '\n'
-                        'KS wrt A_fl = ' + str(derivs['KS_comp.Const_KS', 'A_fl']) + '\n'
-             'KS wrt A_stiff = ' + str(derivs['KS_comp.Const_KS', 'A_stiff']))
-             Deriv_KS.close()
+        outputs_KS = open(KS, "w")
+        outputs_KS.write(str(case['KS_comp.Const_KS']))
+        outputs_KS.close()
 
-            if derivs is None:
-                pass
+        Box_width = os.path.join(final_directory_iter, "C_wb" + ".txt")
 
-            Obj_func = os.path.join(final_directory_iter,  "Weight" + ".txt")
+        outputs_C_wb = open(Box_width, "w")
+        outputs_C_wb.write(str(case['C_wb']))
+        outputs_C_wb.close()
 
-            outputs_obj = open(Obj_func , "w")
-            outputs_obj.write(str(case['weight_comp.Obj_f']))
-            outputs_obj.close()
+        height = os.path.join(final_directory_iter, "h" + ".txt")
 
-            KS = os.path.join(final_directory_iter, "KS_constraint" + ".txt")
+        outputs_h = open(height, "w")
+        outputs_h.write(str(case['h']))
+        outputs_h.close()
 
-            outputs_KS = open(KS, "w")
-            outputs_KS.write(str(case['KS_comp.Const_KS']))
-            outputs_KS.close()
+        t_skin = os.path.join(final_directory_iter, "t_sk" + ".txt")
 
-            Box_width = os.path.join(final_directory_iter, "C_wb" + ".txt")
+        outputs_t_sk = open(t_skin, "w")
+        outputs_t_sk.write(str(case['t_sk']))
+        outputs_t_sk.close()
 
-            outputs_C_wb = open(Box_width, "w")
-            outputs_C_wb.write(str(case['C_wb']))
-            outputs_C_wb.close()
+        t_spar = os.path.join(final_directory_iter, "t_sp" + ".txt")
 
-            height= os.path.join(final_directory_iter, "h" + ".txt")
+        outputs_t_sp = open(t_spar, "w")
+        outputs_t_sp.write(str(case['t_sp']))
+        outputs_t_sp.close()
 
-            outputs_h = open(height, "w")
-            outputs_h.write(str(case['h']))
-            outputs_h.close()
+        A_flanges = os.path.join(final_directory_iter, "A_fl" + ".txt")
 
-            t_skin = os.path.join(final_directory_iter, "t_sk" + ".txt")
+        outputs_A_fl = open(A_flanges, "w")
+        outputs_A_fl.write(str(case['A_fl']))
+        outputs_A_fl.close()
 
-            outputs_t_sk = open(t_skin, "w")
-            outputs_t_sk.write(str(case['t_sk']))
-            outputs_t_sk.close()
+        A_stiffeners = os.path.join(final_directory_iter, "A_stiff" + ".txt")
 
-            t_spar= os.path.join(final_directory_iter, "t_sp" + ".txt")
+        outputs_A_stiff = open(A_stiffeners, "w")
+        outputs_A_stiff.write(str(case['A_stiff']))
+        outputs_A_stiff.close()
 
-            outputs_t_sp = open(t_spar, "w")
-            outputs_t_sp.write(str(case['t_sp']))
-            outputs_t_sp.close()
-
-
-            A_flanges = os.path.join(final_directory_iter, "A_fl" + ".txt")
-
-            outputs_A_fl = open(A_flanges, "w")
-            outputs_A_fl.write(str(case['A_fl']))
-            outputs_A_fl.close()
-
-            A_stiff = os.path.join(final_directory_iter, "A_stiff" + ".txt")
-
-            outputs_A_stiff = open(A_stiff, "w")
-            outputs_A_stiff.write(str(case['A_stiff']))
-            outputs_A_stiff.close()
-
-
-
-
-
-
-
-    plt.figure()
+    fig1 = plt.figure()
     for i in range(0, len(case_names), 1):
         case_plot = cr.get_case(i)
         plt.plot(i, float(case_plot['weight_comp.Obj_f']), 'ro', label='Weight')
@@ -332,8 +336,10 @@ if __name__ == "__main__":
     plt.xlabel('Driver Iterations', fontsize=18)
     plt.ylabel('Weight', fontsize=16)
 
+    plt.savefig('../Optimization/Figures/Weight_' + str(n_stiff) + '_stiff_FD_lin.pdf')  # save the figure to file
+    plt.close(fig1)
 
-    plt.figure()
+    fig2 = plt.figure()
     for i in range(0, len(case_names), 1):
         case_plot = cr.get_case(i)
         plt.plot(i, float(case_plot['KS_comp.Const_KS']), 'ro')
@@ -341,7 +347,10 @@ if __name__ == "__main__":
     plt.xlabel('Driver Iterations', fontsize=18)
     plt.ylabel('KS Constraint', fontsize=16)
 
-    plt.figure()
+    plt.savefig('../Optimization/Figures/KSconstraint_' + str(n_stiff) + '_stiff_FD_lin.pdf')  # save the figure to file
+    plt.close(fig2)
+
+    fig3 = plt.figure()
     for i in range(0, len(case_names), 1):
         case_plot = cr.get_case(i)
 
@@ -351,8 +360,13 @@ if __name__ == "__main__":
         plt.plot(i, float(case_plot['t_sp']), 'yo', label='t_sp')
         plt.plot(i, float(case_plot['A_fl']), 'k+', label='A_fl')
         plt.plot(i, float(case_plot['A_stiff']), 'co', label='A_stiff')
-    plt.legend(['C_wb', 'h', 't_sk', 't_sp', 'A_fl','A_stiff'], bbox_to_anchor=(1.05, 1), loc='upper left')
+    plt.legend(['C_wb', 'h', 't_sk', 't_sp', 'A_fl', 'A_stiff'], bbox_to_anchor=(1.05, 1), loc='upper left')
     plt.xlabel('Driver Iterations', fontsize=18)
     plt.ylabel('Design Variables', fontsize=16)
+
+    plt.show()
+    plt.savefig(
+        '../Optimization/Figures/DesignVAriables_' + str(n_stiff) + '_stiff_FD_lin.pdf')  # save the figure to file
+    plt.close(fig3)
 
     plt.show()
