@@ -865,16 +865,20 @@ void CElement:: BoomsBuckling(){
           
      int n_tot = n_stiff+4;                     // n_stiff + 4 flanges
      addouble t_b =1;
-     addouble h_stiff = (A_stiff + pow(t_b,2))/(2*t_b);
-     addouble h_fl =  (A_fl + pow(t_b,2))/(2*t_b);
-     
-     
      addouble K = 8.5;   // constant for open stiffeners section 
+
+    addouble h_fl ;
+    addouble h_stiff;
+    
+    h_fl =  (A_fl/(2*t_b)) + t_b/4;
+    h_stiff = (A_stiff/(2*t_b)) + t_b/4;
+       
+    
      addouble beta_fl = h_fl/t_b;
      addouble beta_stiff = h_stiff/t_b;
      
-      //cout << "H fl"<< h_fl<<endl;
-      //cout << "H stiff"<< h_stiff<<endl;
+      cout << "H fl"<< h_fl<<endl;
+      cout << "H stiff"<< h_stiff<<endl;
       
      addouble Edim =input->GetYoungModulus_dimensional();   
      
@@ -899,12 +903,23 @@ void CElement:: BoomsBuckling(){
     }
       
     g_buckl_element = VectorXdDiff::Zero(n_neg);
-    
     int j=0;
+    if (n_stiff == 0){
+       for (int i= 1 -1 ; i<= n_tot -1 ; i=i+1)
+    {
+            if (sigma_booms(i) < 0){
+                g_buckl_element(j++)=(fabs(sigma_booms(i)/sigma_buckl_fl))-1;
+            }
+           
+       } 
+        
+    } else {
+    
+    
     for (int i= 1 -1 ; i<= n_tot -1 ; i=i+1)
     {
       if (sigma_booms(i) < 0){
-    
+          
         if (i == 0 or i== (n_tot/2) - 1 or i==(n_tot/2+1) - 1 or i ==n_tot - 1 ){
              g_buckl_element(j++)=(fabs(sigma_booms(i)/sigma_buckl_fl))-1;
             
@@ -916,10 +931,10 @@ void CElement:: BoomsBuckling(){
          } 
       }
     }
-          
+        
+    }  
     
-   // cout<<"g_buckling = "<<g_buckl_element<<endl;
-    
+    cout<<"g_buckling = "<<g_buckl_element<<endl;  
 }
 
  

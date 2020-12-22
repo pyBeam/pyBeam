@@ -35,7 +35,7 @@ file_dir = os.path.dirname(os.path.realpath(__file__))
 
 beam = pyBeamSolverAD(file_dir ,'config_non_lin.cfg')
 
-beam.SetLoads(19 ,0,500,500) #
+beam.SetLoads(19 ,100,5000,5000) #
 #beam.SetLoads(62 , 0, 0 ,-5) #
 #beam.SetLoads(19 , 0, 0 , 7.8e-02)
 #beam.SetLoads(19 , 0.78005, 0 , 0)

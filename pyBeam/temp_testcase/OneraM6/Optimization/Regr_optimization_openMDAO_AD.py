@@ -265,7 +265,7 @@ if __name__ == "__main__":
 
     flag_lin = input('Which optimization do you want to run ? (lin or nonlin) \n')
 
-    Loads = (19, -1000 ,0, 5000)
+    Loads = (19,100,5000,50000)
     file_dir = os.path.dirname(os.path.realpath(__file__))
 
     path_opt = os.path.abspath(os.path.join(file_dir, ".."))
@@ -312,7 +312,7 @@ if __name__ == "__main__":
     prob.model.add_subsystem('KS_comp_buckl', KSBuckling_constraint(),
                              promotes_inputs=['C_wb', 'h', 't_sk', 't_sp', 'A_fl', 'n_stiff', 'A_stiff'])
     if not n_stiff.all() == 0:
-        prob.model.add_subsystem('Astiff_Afl_comp', om.ExecComp('g1 = A_stiff-0.25*A_fl', g1=np.ones(nProp),
+        prob.model.add_subsystem('Astiff_Afl_comp', om.ExecComp('g1 = A_stiff-A_fl', g1=np.ones(nProp),
                                                                A_stiff=np.ones(nProp), A_fl=np.ones(nProp)),promotes=['*'])
 
     # If properties > 1
@@ -367,9 +367,9 @@ if __name__ == "__main__":
     #prob.model.add_design_var('h')
     prob.model.add_design_var('t_sk', lower=0.5)
     prob.model.add_design_var('t_sp', lower=0.5)
-    prob.model.add_design_var('A_fl',lower=0)
+    prob.model.add_design_var('A_fl')
     if not n_stiff.all() == 0:
-        prob.model.add_design_var('A_stiff',lower= 10 )
+        prob.model.add_design_var('A_stiff')
 
     prob.model.add_objective('weight_comp.Obj_f')
 

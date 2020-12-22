@@ -1723,13 +1723,13 @@ addouble CStructure::Evaluate_no_AdaptiveKSstresses()
     addouble g_max;
     addouble summ_KS=0;
     
-    cout<<"aaaaaaaaaaaaaaaaaa"<<endl;
+   
     element[1-1]->StressRetrieving();
     element[1-1]->VonMises();
     g_max= element[1-1]->g_element(1-1);
  
     for (id_fe=1;     id_fe <= nfem ; id_fe++) {  
-        cout<<"counter"<< id_fe <<endl;
+        
        element[id_fe-1]->StressRetrieving();
        element[id_fe-1]->VonMises();
         //g_max
@@ -1781,7 +1781,7 @@ addouble CStructure::Evaluate_no_AdaptiveKSbuckling()
     g_max= element[1-1]->g_buckl_element(1-1);
  
     for (id_fe=1;     id_fe <= nfem ; id_fe++) {  
-        cout<<"counter"<< id_fe <<endl;
+       
        element[id_fe-1]->StressRetrieving();
        element[id_fe-1]->BoomsBuckling();
 
