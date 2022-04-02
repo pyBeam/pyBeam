@@ -41,7 +41,7 @@ class CDV{
 
 private:
 
-//    int ID;                    ///< Global ID number of the DV
+    int ID;                    ///< Global ID number of the DV
    
     std::string TAG;            ///< KEY in the input file 
     int idx;                  ///< position in the container of the entities defined by TAG
@@ -55,7 +55,7 @@ protected:
 
 public:
 
-    CDV(void){};
+    CDV(int ID_){ID = ID_;};
 
     virtual ~CDV(void){};
 

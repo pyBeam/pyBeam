@@ -63,7 +63,7 @@ private:
     
     std::vector<CDV>    dv_container;     ///< Container of the Design variables   
 
-    int nDOF, nTotalDOF, nRBE2, nDim;
+    int nDOF, nTotalDOF, nRBE2, nDim, nDV;
     int iRigid = 0;     // iRigid = 0: Penalty method iRigid = 1: Lagrange Multiplier method
     unsigned long nFEM;
 

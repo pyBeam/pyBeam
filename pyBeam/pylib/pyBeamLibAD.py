@@ -81,7 +81,8 @@ class pyBeamSolverAD:
 
     self.Mesh_file = self.file_dir + '/' + self.Config['MESH_FILE']
     self.Property = self.file_dir + '/' + self.Config['PROPERTY_FILE']
-
+    self.DVfile = self.file_dir + '/' + self.Config['DV_FILE']    
+    
     # Parsing mesh file
     self.nDim= pyInput.readDimension(self.Mesh_file)
     self.node_py, self.nPoint = pyInput.readMesh(self.Mesh_file, self.nDim)
@@ -90,9 +91,11 @@ class pyBeamSolverAD:
     self.RBE2_py, self.nRBE2 = pyInput.readRBE2(self.Mesh_file)
     # Parsing Property file
     self.Prop, self.nProp = pyInput.readProp(self.Property)
+    # Parsing DV file
+    self.DV , self.nDV = pyInput.readDV(self.DVfile)        
     # Initializing objects
     self.beam = pyBeamAD.CBeamSolver()
-    self.inputs = pyBeamAD.CInput(self.nPoint, self.nElem, self.nRBE2)
+    self.inputs = pyBeamAD.CInput(self.nPoint, self.nElem, self.nRBE2,self.nDV)
 
     # Start recording
     print("--> Initialization successful")
@@ -137,6 +140,12 @@ class pyBeamSolverAD:
             self.RBE2.append(pyBeamAD.CRBE2(i))
             self.RBE2[i].Initializer(self.node[self.RBE2_py[i].GetNodes()[0, 0] - 1], self.node[self.RBE2_py[i].GetNodes()[1, 0] - 1])
             self.beam.InitializeRBE2(self.RBE2[i], i)
+
+    # Assigning property values to the property objects in C++
+    self.beam_DV = []
+    for i in range(self.nDV):
+        self.beam_DV.append(pyBeam.CDV(i))
+        self.beam_DV[i].SetDV(self.DV[i].GetTAG(), self.DV[i].Getidx(), self.DV[i].GetsTAG(), self.DV[i].GetlB(), self.DV[i].GetuB())
 
 
     # Initialize structures to store the coordinates and displacements

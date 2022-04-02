@@ -178,8 +178,8 @@ class DV:  # for boundary elements
     
   def __init__(self):
     self.TAG = "";       #  KEY in the input file 
-    self.idxTAG = 0;     #  position in the container of the entities defined by TAG
-    self.subTAG = "";    #  sub KEY within the field     
+    self.idx = 0;     #  position in the container of the entities defined by TAG
+    self.sTAG = "";    #  sub KEY within the field     
     self.lB = 0;         #  lower bound
     self.uB = 0;         #   upper bound
     
@@ -187,11 +187,11 @@ class DV:  # for boundary elements
   def SetTAG(self,TAG):
     self.TAG = TAG 
     
-  def SetidxTAG(self, idxTAG):
-    self.idxTAG = idxTAG
+  def Setidx(self, idxTAG):
+    self.idx = idxTAG
     
-  def SetsubTAG(self,subTAG):
-    self.subTAG = subTAG
+  def SetsTAG(self,subTAG):
+    self.sTAG = subTAG
     
   def SetlB (self,lB ):
     self.lB  = lB 
@@ -202,11 +202,11 @@ class DV:  # for boundary elements
   def GetTAG(self):
     return self.TAG 
     
-  def GetidxTAG(self):
-    return self.idxTAG 
+  def Getidx(self):
+    return self.idx 
     
-  def GetsubTAG(self):
-    return self.subTAG
+  def GetsTAG(self):
+    return self.sTAG
     
   def GetlB (self):
     return self.lB 
@@ -420,7 +420,7 @@ def readProp(Prop_file):
               
     return Prop, nProp
 
-def readDVs(DV_file):	
+def readDV(DV_file):	
 
     DVs = []    
     
@@ -444,11 +444,11 @@ def readDVs(DV_file):
               line = DVfile.readline()
               line = line.strip('\r\n')
               line = line.split() ## important modification in case the formatting includes tabs    
-              TAG = line[0]; idxTAG = float(line[1]); subTAG =  line[2]; 
+              TAG = line[0]; idxTAG = int(line[1]); subTAG =  line[2]; 
               lB = float(line[3]);   uB = float(line[4]); 
               DVs[iDV].SetTAG(TAG);               
-              DVs[iDV].SetidxTAG(idxTAG);     
-              DVs[iDV].SetsubTAG(subTAG);                          
+              DVs[iDV].Setidx(idxTAG);     
+              DVs[iDV].SetsTAG(subTAG);                          
               DVs[iDV].SetlB(lB);   
               DVs[iDV].SetuB(uB); 
               
