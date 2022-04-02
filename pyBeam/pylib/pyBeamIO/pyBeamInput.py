@@ -174,7 +174,47 @@ class Property:
   def GetJt(self):
     return self.Jt
 
-
+class DV:  # for boundary elements
+    
+  def __init__(self):
+    self.TAG = "";       #  KEY in the input file 
+    self.idxTAG = 0;     #  position in the container of the entities defined by TAG
+    self.subTAG = "";    #  sub KEY within the field     
+    self.lB = 0;         #  lower bound
+    self.uB = 0;         #   upper bound
+    
+    
+  def SetTAG(self,TAG):
+    self.TAG = TAG 
+    
+  def SetidxTAG(self, idxTAG):
+    self.idxTAG = idxTAG
+    
+  def SetsubTAG(self,subTAG):
+    self.subTAG = subTAG
+    
+  def SetlB (self,lB ):
+    self.lB  = lB 
+    
+  def SetuB (self,uB ):
+    self.uB  = uB 
+    
+  def GetTAG(self):
+    return self.TAG 
+    
+  def GetidxTAG(self):
+    return self.idxTAG 
+    
+  def GetsubTAG(self):
+    return self.subTAG
+    
+  def GetlB (self):
+    return self.lB 
+    
+  def GetuB (self):
+    return self.uB 
+     
+         
 def readDimension(Mesh_file):
 
     nDim = 0
@@ -380,4 +420,50 @@ def readProp(Prop_file):
               
     return Prop, nProp
 
+def readDVs(DV_file):	
 
+    DVs = []    
+    
+    with open(DV_file, 'r') as DVfile:
+      print('--> Reading DV file: ' + DV_file + '.')
+      while 1:
+        line = DVfile.readline()
+        if not line:
+          break	
+        if line.strip():
+          if (line[0] == '%'):
+            continue	
+        pos = line.find('NDV')
+        if pos != -1:
+          line = line.strip('\r\n')
+          line = line.replace(" ", "")
+          line = line.split("=",1)
+          nDV = int(line[1])
+          for iDV in range(nDV):    
+              DVs.append(DV())
+              line = DVfile.readline()
+              line = line.strip('\r\n')
+              line = line.split() ## important modification in case the formatting includes tabs    
+              TAG = line[0]; idxTAG = float(line[1]); subTAG =  line[2]; 
+              lB = float(line[3]);   uB = float(line[4]); 
+              DVs[iDV].SetTAG(TAG);               
+              DVs[iDV].SetidxTAG(idxTAG);     
+              DVs[iDV].SetsubTAG(subTAG);                          
+              DVs[iDV].SetlB(lB);   
+              DVs[iDV].SetuB(uB); 
+              
+    return DVs, nDV
+    
+# def checkDVs(DV,nDV):
+	# if nDV !=0:
+       # masters = np.zeros((nRBE2,1))
+       # slaves = np.zeros((nRBE2,1))
+    
+       # for i in range(0,nRBE2):
+          # masters[i,0] = RBE2[i].GetNodes()[0,0];
+          # slaves[i,0] = RBE2[i].GetNodes()[1,0];
+       
+       # check = np.isin(slaves,masters)
+    
+       # if np.any(check) == True:
+          # raise ValueError('RBE2 issue: a slave cannot be master as well. Execution aborted') 

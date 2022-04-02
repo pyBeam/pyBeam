@@ -36,6 +36,7 @@
 #include "../include/structure.h"
 #include "../include/geometry.h"
 #include "../include/input.h"
+#include "../include/CDV.h"
 
 class CBeamSolver
 {
@@ -59,6 +60,8 @@ private:
     CRBE2** RBE2;                         /*!< \brief Vector which the define the elements. */
 
     CStructure* structure;                /*!< \brief Pointer which the defines the structure. */
+    
+    std::vector<CDV>    dv_container;     ///< Container of the Design variables   
 
     int nDOF, nTotalDOF, nRBE2, nDim;
     int iRigid = 0;     // iRigid = 0: Penalty method iRigid = 1: Lagrange Multiplier method

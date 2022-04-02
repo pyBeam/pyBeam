@@ -123,6 +123,9 @@ class pyBeamConfig:
                 if case("PROPERTY_FILE"):
                     self._ConfigContent[this_param] = this_value
                     break
+                if case("DV_FILE"):
+                    self._ConfigContent[this_param] = this_value
+                    break                    
                 if case():
                     print(this_param + " is an invalid option !")
                     break
