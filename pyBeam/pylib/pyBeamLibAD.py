@@ -95,7 +95,7 @@ class pyBeamSolverAD:
     self.DV , self.nDV = pyInput.readDV(self.DVfile)        
     # Initializing objects
     self.beam = pyBeamAD.CBeamSolver()
-    self.inputs = pyBeamAD.CInput(self.nPoint, self.nElem, self.nRBE2,self.nDV)
+    self.inputs = pyBeamAD.CInput(self.nPoint, self.nElem, self.nRBE2,self.nDV,self.nProp)
 
     # Start recording
     print("--> Initialization successful")
@@ -122,6 +122,14 @@ class pyBeamSolverAD:
     for i in range(self.nProp):
         self.beam_prop.append(pyBeamAD.CProperty(i))
         self.beam_prop[i].SetSectionProperties(self.Prop[i].GetA(), self.Prop[i].GetIyy(), self.Prop[i].GetIzz(), self.Prop[i].GetJt())
+        self.beam.InitializeProp(self.beam_prop[i], i)
+
+   # Assigning DV values to the DVobjects in C++
+    self.beam_DV = []
+    for i in range(self.nDV):
+        self.beam_DV.append(pyBeamAD.CDV(i))
+        self.beam_DV[i].SetDV(self.DV[i].GetTAG(), self.DV[i].Getidx(), self.DV[i].GetsTAG(), self.DV[i].GetlB(), self.DV[i].GetuB())
+        self.beam.InitializeDV_cont(self.beam_DV[i], i)
 
     # Assigning element values to the element objects in C++
     self.element = []
@@ -141,13 +149,7 @@ class pyBeamSolverAD:
             self.RBE2[i].Initializer(self.node[self.RBE2_py[i].GetNodes()[0, 0] - 1], self.node[self.RBE2_py[i].GetNodes()[1, 0] - 1])
             self.beam.InitializeRBE2(self.RBE2[i], i)
 
-    # Assigning property values to the property objects in C++
-    self.beam_DV = []
-    for i in range(self.nDV):
-        self.beam_DV.append(pyBeam.CDV(i))
-        self.beam_DV[i].SetDV(self.DV[i].GetTAG(), self.DV[i].Getidx(), self.DV[i].GetsTAG(), self.DV[i].GetlB(), self.DV[i].GetuB())
-
-
+ 
     # Initialize structures to store the coordinates and displacements
 
     self.coordinate_X = []
@@ -330,6 +332,13 @@ class pyBeamSolverAD:
 
       return self.beam.ExtractGradient_E()
 
+  def PrintSensitivityDV(self):
+	  
+	  for iDV in range(0,self.nDV):
+		  print("DV'(",iDV,") = (", self.beam.ExtractGradientDV(iDV), ")")
+                   
+             
+      
   def TestSensitivityE(self, sensEres, sensECheck):
 
       """ This function prints the sensitivities of the objective functions for all the loads"""

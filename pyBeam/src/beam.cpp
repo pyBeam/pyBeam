@@ -67,6 +67,8 @@ void CBeamSolver::InitializeInput(CInput* py_input){   // insert node class and 
     nFEM = input->Get_nFEM();
     nTotalDOF = input->Get_nNodes() * input->Get_nDOF();
     nRBE2 = input->Get_nRBE2();
+    nProp=input->Get_nProp(); 
+    nDV=input->Get_nDV();
     
     //==============================================================
     //      Load Vector initialization
@@ -83,6 +85,26 @@ void CBeamSolver::InitializeInput(CInput* py_input){   // insert node class and 
     if (verbose){cout << "--> Node Structure Initialization... ";}
     unsigned long nNodes = input->Get_nNodes();   //substitute from mesh file
     node = new CNode*[nNodes];
+    if (verbose){std::cout << "ok!"  <<std::endl;}
+
+    //==============================================================
+    //      Property vector initialization
+    //==============================================================
+    
+    if (verbose){cout << "--> Property Initialization... ";}
+   
+    Prop = new CProperty*[nProp];
+    
+    if (verbose){std::cout << "ok!"  <<std::endl;}
+    
+    //==============================================================
+    //      DV vector initialization
+    //==============================================================
+    
+    if (verbose){cout << "--> DV Initialization... ";}
+   
+    dv_container = new CDV*[nDV];
+    
     if (verbose){std::cout << "ok!"  <<std::endl;}
     
     //==============================================================
@@ -113,12 +135,13 @@ void CBeamSolver::InitializeInput(CInput* py_input){   // insert node class and 
     structure = NULL;
     
 }
+
     void CBeamSolver::InitializeStructure(void) {
     structure = new CStructure(input, element, node); structure->SetCoord0();
     // If there are RBE and Lagrange multiplier method is used it's important to define already the dimension as AD recording needs it
     if (nRBE2 != 0){ 
-    if (verbose){std::cout << "--> Setting RBE2 for Rigid Constraints" << std::endl;}        
-    structure->AddRBE2(input, RBE2);}
+        if (verbose){std::cout << "--> Setting RBE2 for Rigid Constraints" << std::endl;}        
+        structure->AddRBE2(input, RBE2);}
     // Sizing rigid support matrix. Necessary in case of SPARSE approach
     // Should be also done here for SPARSE approach and rigid lagraignan (in the future)
     if (nRBE2 != 0 and iRigid == 0){
@@ -130,7 +153,7 @@ void CBeamSolver::InitializeInput(CInput* py_input){   // insert node class and 
     // Resizes the sparse Ksys matriX
     structure->K_penal.resize( (input->Get_nNodes())*6,(input->Get_nNodes())*6);    
     structure->tripletListRBEPenalty.reserve((input->Get_nNodes())*6*100);     
-    #endif }
+    #endif 
     }
     if (nRBE2 != 0 and iRigid == 1){
     structure->SetRigidLagrangeDimensions();}
@@ -500,16 +523,21 @@ passivedouble CBeamSolver::OF_NodeDisplacement(int iNode){
 }
 
 void CBeamSolver::SetDependencies(void){
-
+    
+    cout << " Registering U .." ; 
+     
     /** Register the solution as input **/
     structure->RegisterSolutionInput(iRigid);
-
+    
+    cout << "OK." <<endl; 
+    
     addouble E, E_dim, Nu, G;
     unsigned long iFEM,iRBE2, iLoad;
-
+    cout << " Registering E,nu .." ; 
     input->RegisterInput_E();
     input->RegisterInput_Nu();
-
+    cout << "OK." <<endl; 
+    cout << " Exposing E,nu dependencies .." ;
     E_dim = input->GetYoungModulus_dimensional();
     structure->SetDimensionalYoungModulus(E_dim);
 
@@ -518,7 +546,76 @@ void CBeamSolver::SetDependencies(void){
     G = E/(2*(1+Nu));
 
     input->SetShear(G);
+    cout << "OK." <<endl; 
+    /* Need to register structural DVs (on properties) before exposing dependencies of FE from Properties*/
+    cout << " Exposing DVs dependencies..." << endl;; 
+    // Browsing DVs 
+    for (int iDV= 0; iDV<nDV; iDV ++){
+        cout <<  "       "<< iDV << " of " << nDV << endl;
+        std::string TAG = dv_container[iDV]->GetTAG()  ;
+        int idx = dv_container[iDV]->Getidx();
+        std::string sTAG = dv_container[iDV]->GetsTAG()  ;
+//        cout << TAG <<" " << idx << " " << sTAG << endl;
+        
+        // --- Browsing DV vector, taking the DV value from the correct storage
+        // and register each DV vector element as INPUT
+            
+            
+        if (TAG == "PROP"){            
+            if (sTAG=="AREA")   dv_container[iDV]->SetDVval(Prop[idx]->GetA());
+            else if (sTAG=="Iyy")    dv_container[iDV]->SetDVval(Prop[idx]->GetIyy());   
+            else if (sTAG=="Izz")    dv_container[iDV]->SetDVval(Prop[idx]->GetIzz());
+            else if (sTAG=="Jt")     dv_container[iDV]->SetDVval(Prop[idx]->GetJt());
+            else{
+                cout << "Invalid SUBTAG" << sTAG << endl;
+                exit (EXIT_FAILURE);
+            }
+                              
+            /* Registering as input the  DVs*/    
+            AD::RegisterInput(dv_container[iDV]->value);
+        }
+        else {
+            cout << "DV "<< iDV << "refers to a non-supported type"  << endl;
+            exit (EXIT_FAILURE);
+        }         
+        
+    }
+    cout << " 1..." ; 
+    /* Exposing dependencies, i.e., redefine entities wrt to  DVs*/
+    
+    for (int iDV= 0; iDV<nDV; iDV ++){
+        std::string TAG = dv_container[iDV]->GetTAG()  ;
+        int idx = dv_container[iDV]->Getidx();
+        std::string sTAG = dv_container[iDV]->GetsTAG()  ;
+        
+        
+        // --- Browsing DV vector, taking the DV value from the correct storage
+        // and register each DV vector element as INPUT
+        if (TAG == "PROP"){            
+            if (sTAG=="AREA") Prop[idx]->SetA(dv_container[iDV]->GetDVval()); 
+            else if (sTAG=="Iyy")  Prop[idx]->SetIyy(dv_container[iDV]->GetDVval());
+            else if (sTAG=="Izz")  Prop[idx]->SetIzz(dv_container[iDV]->GetDVval());     
+            else if (sTAG=="Jt")   Prop[idx]->SetJt( dv_container[iDV]->GetDVval()) ; 
+            else{
+                    cout << "Invalid SUBTAG" << sTAG << endl;
+                    exit (EXIT_FAILURE);
+            }
 
+        }
+        else {
+            cout << "DV "<< iDV << "refers to a non-supported type"  << endl;
+            exit (EXIT_FAILURE);
+        }         
+        
+    }
+ 
+    /*--- Initialize vector to store the gradient wrt to propDV vector ---*/
+    DVGradient = new passivedouble[nDV]; 
+    for (int iDV= 0; iDV<nDV; iDV ++){DVGradient[iDV] = 0.0;}
+    
+   
+    
+    
     for (iFEM = 0; iFEM < nFEM; iFEM++) {
         element[iFEM]->SetDependencies();
     }
@@ -548,15 +645,34 @@ void CBeamSolver::ComputeAdjoint(void){
 
     for (unsigned short iTer = 0; iTer < input->Get_nIter(); iTer++){
 
+        //In the adjoint system of the field  and objective dual equations sets the
+        // initial values of objective adjoint to 1         
         AD::SetDerivative(objective_function, 1.0);
-
+        
+        //In the adjoint system of the field  and objective dual equations sets the
+        // initial values of state adjoints to the previous iteration values + adds source term
+        
+        // takes care of the source term and adjoint to disp 
         structure->SetSolutionAdjoint(iRigid);
 
         AD::ComputeAdjoint();
-        structure->ExtractSolutionAdjoint(iRigid);
+        
+        // Extracts new value of the adjoint to U        
+        structure->ExtractSolutionAdjoint(iRigid);  // extract gradient wrt to state variables
 
+        // Extracts the sensitivities wrt to E_grad and Nu_grad 
         E_grad = input->GetGradient_E();
         Nu_grad = input->GetGradient_Nu();
+        
+ 
+        
+        for (int iDV= 0; iDV<nDV; iDV ++){
+            dv_container[iDV]->sensitivity = AD::GetDerivative(dv_container[iDV]->value);
+            cout << AD::GetDerivative(dv_container[iDV]->value) << endl;
+            DVGradient[iDV]= AD::GetValue(dv_container[iDV]->sensitivity);
+        }
+
+        
         for (iLoad = 0; iLoad < nTotalDOF; iLoad++){
             loadGradient[iLoad] = AD::GetValue(AD::GetDerivative(loadVector[iLoad]));
 
@@ -571,6 +687,7 @@ void CBeamSolver::ComputeAdjoint(void){
 void CBeamSolver::StopRecording(void) {
 
     AD::RegisterOutput(objective_function);
+    OF_NodeDisplacement(99);
 
     /** Register the solution as output **/
     structure->RegisterSolutionOutput(iRigid);
@@ -623,8 +740,17 @@ void CBeamSolver::ReadRestart(){
         }
     }
     if (myfile.fail()){
-        cout << "Error opening solution file (solution.pyBeam)." << endl;
-        exit (EXIT_FAILURE);
+        //cout << "Error opening solution file (solution.pyBeam)." << endl;
+       // exit (EXIT_FAILURE);
+        cout << "CAN't READ SOLUTION FILE (solution.pybeam) of the primal. Assuming the initial undeformed configuration." << endl;
+        for (int id_node=1; id_node<= input->Get_nNodes() ; id_node++)   {
+            structure->U(posX+0-1) = 0.0; structure->U(posX+1-1) = 0.0; structure->U(posX+2-1) = 0.0;
+            structure->U(posX+3-1) = 0.0; structure->U(posX+4-1) = 0.0; structure->U(posX+5-1) = 0.0;
+            posX += 6;
+            
+        }
+        cout << "Successfull !" << endl;
+        
     }
 }
 

@@ -451,6 +451,7 @@ def readDV(DV_file):
               DVs[iDV].SetsTAG(subTAG);                          
               DVs[iDV].SetlB(lB);   
               DVs[iDV].SetuB(uB); 
+              DVs[iDV].value = 0;               
               
     return DVs, nDV
     

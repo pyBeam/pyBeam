@@ -34,8 +34,7 @@
 #include "../include/types.h"
 
 
-class CInput
-{
+class CInput{
 
 private:
 
@@ -49,6 +48,7 @@ protected:
     unsigned long nNodes;           // Number of overall nodes along the wing (no collapsed)
     unsigned long nFEM;             // Number of finite elements
     unsigned long nRBE2;            // Number of RBE2 rigid elements
+    unsigned long nProp;            ///< Number of Properties      
     unsigned long nDV;              // Number of DVs
 
     unsigned short nDOF;            // Number of degrees of freedom
@@ -91,6 +91,8 @@ public:
     CInput(int py_nPoint, int py_nElem, int py_nRBE2);
 
     CInput(int py_nPoint, int py_nElem, int py_nRBE2, int py_nDV);
+
+    CInput(int py_nPoint, int py_nElem, int py_nRBE2, int py_nDV,int nProp);
         
         
     virtual ~CInput(void);
@@ -159,6 +161,10 @@ public:
     unsigned short GetKind_LinSol(void) {return kind_LinSol; }
 
     unsigned long Get_nNodes(void) { return nNodes; }
+    
+    unsigned long Get_nProp(void) { return nProp; }  
+    
+    unsigned long Get_nDV(void) { return nDV; }      
 
     unsigned long Get_nFEM(void) { return nFEM; }
 

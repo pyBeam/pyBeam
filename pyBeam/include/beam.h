@@ -47,6 +47,7 @@ private:
     bool register_loads;
     passivedouble *loadGradient;
     passivedouble E_grad, Nu_grad;
+    passivedouble *DVGradient;
 
     bool verbose = true;
 
@@ -61,9 +62,11 @@ private:
 
     CStructure* structure;                /*!< \brief Pointer which the defines the structure. */
     
-    std::vector<CDV>    dv_container;     ///< Container of the Design variables   
+    CProperty** Prop;                     /*!< \brief Pointer to the Properties. */
+    
+    CDV**    dv_container;     ///< Container of the Design variables   
 
-    int nDOF, nTotalDOF, nRBE2, nDim, nDV;
+    int nDOF, nTotalDOF, nRBE2, nDim, nDV, nProp;
     int iRigid = 0;     // iRigid = 0: Penalty method iRigid = 1: Lagrange Multiplier method
     unsigned long nFEM;
 
@@ -73,7 +76,6 @@ private:
     addouble *loadVector;
     addouble thickness;
 
-protected:
 
 public:
 
@@ -88,6 +90,10 @@ public:
     inline void InitializeElement(CElement *py_element, unsigned long iFEM) {element[iFEM] = py_element;}
 
     inline void InitializeRBE2(CRBE2* py_RBE2,unsigned long iRBE2) {RBE2[iRBE2] = py_RBE2;}
+    
+    inline void InitializeProp(CProperty* py_prop,unsigned long iProp) {Prop[iProp] = py_prop;}    
+    
+    inline void InitializeDV_cont(CDV* py_DV,unsigned long iDV) {dv_container[iDV] = py_DV;}    
 
     void InitializeStructure(void);
 
@@ -140,6 +146,8 @@ public:
 
     inline passivedouble ExtractLoadGradient(int iNode, int iDOF) {return loadGradient[iNode*nDOF + iDOF];}
 
+    inline passivedouble ExtractGradientDV(int iDV) {return DVGradient[iDV];}
+    
     inline passivedouble ExtractGradient_E(void) {return E_grad;}
 
     inline passivedouble ExtractGradient_Nu(void) {return Nu_grad;}

@@ -49,7 +49,9 @@ private:
     
     addouble lB;              ///< lower bound
     addouble uB;              ///< upper bound
-
+public:
+    addouble value = 0.0;     ///< this stores hte current value, and is needed only for AD
+    addouble sensitivity = 0.0;  ///< Sensitivity evaluated 
 
 protected:
 
@@ -73,5 +75,7 @@ public:
     inline std::string GetsTAG(void) { return sTAG; }    
     inline addouble GetlB(void) { return lB; }
     inline addouble GetuB(void) { return uB; }   
+    inline addouble GetDVval(void) { return value; }   
+    inline addouble SetDVval(addouble value_) { value = value_; }       
     
 };

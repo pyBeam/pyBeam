@@ -49,12 +49,7 @@ exit("CIAO")
 
 
 
-for iNode in range(0,len(loadsX)):
-  primal.SetLoads(iNode, loadsX[iNode], loadsY[iNode], loadsZ[iNode])
-  
-############################
-# Solve adjoint
-############################
+
 
 
 ############################

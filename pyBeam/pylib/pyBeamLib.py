@@ -95,7 +95,7 @@ class pyBeamSolver:
     self.DV , self.nDV = pyInput.readDV(self.DVfile)    
     # Initializing objects
     self.beam = pyBeam.CBeamSolver()
-    self.inputs = pyBeam.CInput(self.nPoint, self.nElem, self.nRBE2,self.nDV)
+    self.inputs = pyBeam.CInput(self.nPoint, self.nElem, self.nRBE2,self.nDV,self.nProp)
 
 
     print("--> Initialization successful")
@@ -119,7 +119,8 @@ class pyBeamSolver:
     for i in range(self.nProp):
         self.beam_prop.append(pyBeam.CProperty(i))
         self.beam_prop[i].SetSectionProperties(self.Prop[i].GetA(), self.Prop[i].GetIyy(), self.Prop[i].GetIzz(), self.Prop[i].GetJt())
-
+        self.beam.InitializeProp(self.beam_prop[i], i) 
+		
     # Assigning element values to the element objects in C++
     self.element = []
     for i in range(self.nElem):
@@ -142,11 +143,6 @@ class pyBeamSolver:
     self.beam_DV = []
     for i in range(self.nDV):
         self.beam_DV.append(pyBeam.CDV(i))
-        print(self.DV[i].GetTAG())
-        print(self.DV[i].Getidx())
-        print(self.DV[i].GetsTAG())
-        print(self.DV[i].GetlB())
-        print(self.DV[i].GetuB())
         self.beam_DV[i].SetDV(self.DV[i].GetTAG(), self.DV[i].Getidx(), self.DV[i].GetsTAG(), self.DV[i].GetlB(), self.DV[i].GetuB())
 
 

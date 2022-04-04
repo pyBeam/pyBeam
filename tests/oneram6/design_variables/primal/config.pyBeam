@@ -18,10 +18,10 @@ POISSON = 0.33
 RHO = 2700
 
 % Number of loadsteps used in the analysis (DEFAULT = 1) 25
-LOAD_STEPS = 10
+LOAD_STEPS = 1 
 
 % Number of iterations used in the analysis  (DEFAULT = 1) 15
-N_STRUCT_ITER =10
+N_STRUCT_ITER =1
 
 % Convergence rate criterium (DEFAULT = 1e-4)
 CONV_CRITERIUM = 0.000000001

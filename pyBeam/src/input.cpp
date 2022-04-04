@@ -59,6 +59,16 @@ CInput::CInput(int py_nPoint, int py_nElem, int py_nRBE2, int py_nDV) {
 
 }
 
+CInput::CInput(int py_nPoint, int py_nElem, int py_nRBE2, int py_nDV,int py_nProp) {
+
+    nNodes = py_nPoint;
+    nFEM   = py_nElem;
+    nRBE2  = py_nRBE2;
+    nDV    = py_nDV;
+    nProp  = py_nProp;
+}
+
+
 
 void CInput::SetParameters(){
 

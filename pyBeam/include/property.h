@@ -70,5 +70,15 @@ public:
     inline addouble GetJt(void) { return Jt; }
 
     inline addouble GetJ0(void) { return J0; }
+    
+    
+    inline void SetIyy(addouble Iyy_) { Iyy = Iyy_ ; }
+
+    inline void SetIzz(addouble Izz_) { Izz = Izz_ ; }
+    
+    inline void SetA(addouble A_) { A = A_ ; }
+
+    inline void SetJt(addouble Jt_) { Jt = Jt_ ; }    
+  
 
 };
