@@ -79,6 +79,28 @@ public:
     inline void SetA(addouble A_) { A = A_ ; }
 
     inline void SetJt(addouble Jt_) { Jt = Jt_ ; }    
+    
+    void SetProp(std::string sTAG, passivedouble value){
+        if (sTAG=="AREA")      SetA(value);
+        else if (sTAG=="Iyy")   SetIyy(value);
+        else if (sTAG=="Izz")     SetIzz(value);
+        else if (sTAG=="Jt")     SetJt(value);
+        else{
+            std::cout << "Invalid SUBTAG" << sTAG << endl;
+            exit (EXIT_FAILURE);
+        }
+    }
   
+    
+    void IncreaseProp(std::string sTAG, passivedouble Dvalue){
+        if (sTAG=="AREA")      A+= Dvalue;
+        else if (sTAG=="Iyy")   Iyy+=Dvalue;
+        else if (sTAG=="Izz")   Izz += Dvalue;
+        else if (sTAG=="Jt")    Jt += Dvalue;
+        else{
+            std::cout << "Invalid SUBTAG" << sTAG << endl;
+            exit (EXIT_FAILURE);
+        }
+    }    
 
 };

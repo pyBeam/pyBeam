@@ -21,7 +21,7 @@ RHO = 2700
 LOAD_STEPS = 10
 
 % Number of iterations used in the analysis  (DEFAULT = 1)
-N_STRUCT_ITER = 30
+N_STRUCT_ITER = 10
 
 % Convergence rate criterium (DEFAULT = 1e-4)
 CONV_CRITERIUM = 0.000000001
@@ -37,7 +37,6 @@ MESH_FILE = mesh.pyBeam
 
 % PROPERTY file 
 PROPERTY_FILE = property.pyBeam
-
 
 % DVs
 DV_FILE =  dv.pyBeam

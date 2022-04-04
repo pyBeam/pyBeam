@@ -144,7 +144,7 @@ class pyBeamSolver:
     for i in range(self.nDV):
         self.beam_DV.append(pyBeam.CDV(i))
         self.beam_DV[i].SetDV(self.DV[i].GetTAG(), self.DV[i].Getidx(), self.DV[i].GetsTAG(), self.DV[i].GetlB(), self.DV[i].GetuB())
-
+        self.beam.InitializeDV_cont(self.beam_DV[i], i)
 
             
     # Initialize structures to store the coordinates and displacements
@@ -175,6 +175,37 @@ class pyBeamSolver:
     self.beam.SetLoads(iVertex, 1, loadY)
     self.beam.SetLoads(iVertex, 2, loadZ)
 
+
+  def ChangeProp(self, iProp, sTAG, val):
+    """ This function sets the property, updating the whole dependencies """
+    self.beam_prop[iProp].SetProp(sTAG,val)
+    #self.beam.ChangeProp(iProp, sTAG,val)
+    # Assigning element values to the element objects in C++
+    for i in range(self.nElem):
+        self.element[i].Initializer(self.node[self.elem_py[i].GetNodes()[0, 0] - 1], self.node[self.elem_py[i].GetNodes()[1, 0] - 1],
+                               self.beam_prop[self.elem_py[i].GetProperty() - 1], self.inputs, self.elem_py[i].GetAuxVector()[0, 0],
+                               self.elem_py[i].GetAuxVector()[1, 0], self.elem_py[i].GetAuxVector()[2, 0])
+        self.beam.InitializeElement(self.element[i], i)
+        
+
+    
+        
+  def IncreaseProp(self, iProp, sTAG, dval):
+    """ This function sets the property, updating the whole dependencies """
+    print(" WARNING: Increasing property ", iProp, " ", sTAG, "  of ", dval, "\n") 
+    self.beam_prop[iProp].IncreaseProp(sTAG,dval)
+    #self.beam.IncreaseProp(iProp, sTAG,dval)
+        
+    # Assigning element values to the element objects in C++
+    for i in range(self.nElem):
+        self.element[i].Initializer(self.node[self.elem_py[i].GetNodes()[0, 0] - 1], self.node[self.elem_py[i].GetNodes()[1, 0] - 1],
+                               self.beam_prop[self.elem_py[i].GetProperty() - 1], self.inputs, self.elem_py[i].GetAuxVector()[0, 0],
+                               self.elem_py[i].GetAuxVector()[1, 0], self.elem_py[i].GetAuxVector()[2, 0])
+        self.beam.InitializeElement(self.element[i], i)
+    
+    self.beam.InitializeStructure()
+    
+    
   def GetInitialCoordinates(self,iVertex):
 
     """ This function returns the initial coordinates of the structural beam model  """

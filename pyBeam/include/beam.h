@@ -38,8 +38,7 @@
 #include "../include/input.h"
 #include "../include/CDV.h"
 
-class CBeamSolver
-{
+class CBeamSolver{
 
 private:
 
@@ -105,6 +104,9 @@ public:
 
     inline void SetLoads(int iNode, int iDOF, passivedouble loadValue) { loadVector[iNode*nDOF + iDOF] = loadValue; }
     
+    void ChangeProp(int iProp, std::string sTAG, passivedouble Value);   
+    void IncreaseProp(int iProp, std::string sTAG, passivedouble DValue);  
+    
     // In FSI if Solve is called again with a new set of loads, old loadset needs to be reset
     inline void ResetLoads() {
         for (int iLoad = 0; iLoad < nTotalDOF; iLoad++){
@@ -157,7 +159,7 @@ public:
     void StoreDisplacementAdjoint(int iNode, int iDim, passivedouble val_adj);
 
     void RunRestart(int FSIIter);
-
+    
     void WriteRestart();
 
     void ReadRestart();

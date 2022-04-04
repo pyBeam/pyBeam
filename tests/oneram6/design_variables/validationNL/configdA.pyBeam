@@ -1,7 +1,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                              %
 % pyBeam configuration file                                                    %
-% Case description: distributed load                                           %
+% Case description: crossed-term flow adjoint                                  %
 % Author: Rocco Bombardieri, Ruben Sanchez___________________________________  %
 % Institution: UC3M, TU KL___________________________________________________  %
 %                                                                              %
@@ -17,10 +17,10 @@ POISSON = 0.33
 %  Beam Density [kg/m^3]
 RHO = 2700
 
-% Number of loadsteps used in the analysis (DEFAULT = 1)
-LOAD_STEPS = 10
+% Number of loadsteps used in the analysis (DEFAULT = 1) 25
+LOAD_STEPS = 10 
 
-% Number of iterations used in the analysis  (DEFAULT = 1)
+% Number of iterations used in the analysis  (DEFAULT = 1) 15
 N_STRUCT_ITER = 30
 
 % Convergence rate criterium (DEFAULT = 1e-4)
@@ -32,12 +32,11 @@ TOLERANCE_LINSOL = 1e-7
 % Kind of linear solver (FullPivHouseholderQr, PartialPivLu, FullPivLu, HouseholderQr, ColPivHouseholderQr, LLT, LDLT)
 KIND_LINSOL = FullPivLu
 
-% MESH file 
+% Mesh file 
 MESH_FILE = mesh.pyBeam
 
-% PROPERTY file 
-PROPERTY_FILE = property.pyBeam
-
+% Property file 
+PROPERTY_FILE =  propertydA.pyBeam
 
 % DVs
 DV_FILE =  dv.pyBeam

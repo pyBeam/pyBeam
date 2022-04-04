@@ -3,8 +3,6 @@
 # pyBeam, an open-source Beam Solver
 #
 # Copyright (C) 2019 by the authors
-# 
-# File Developers: Ruben Sanchez (SciComp, TU Kaiserslautern)
 #
 # This file is part of pyBeam.
 #
@@ -27,13 +25,15 @@ import shutil
 import numpy as np
 import sys, os, csv
 
+
 sys.path.append('/home/rauno/pyBeamSU2/bin')
 
-#from pyBeamLib import pyBeamSolver
+from pyBeamLib import pyBeamSolver
 from pyBeamLibAD import pyBeamSolverAD
 
 # Load running directory
 file_dir = os.path.dirname(os.path.realpath(__file__))
+
 iNode = 19
 Loady = -100
 Loadz = 7000
@@ -41,11 +41,41 @@ Loadz = 7000
 ########################################
 # Initialize and set loads/crossed terms
 ########################################
+#os.chdir('./nominal')
+primal = pyBeamSolver(file_dir, 'config.pyBeam')
+primal.SetLoads(iNode, 0, Loady , Loadz )
+primal.Run()
+
+# Copy the solution file to the running directory
+solution_file = file_dir + '/restart.pyBeam'
+shutil.move(solution_file, "solution.pyBeam")
+
+###  dA
+primaldA = pyBeamSolver(file_dir, 'configdA.pyBeam')
+
+iNode = 19
+primaldA.SetLoads(iNode, 0, -100, 7000)
+  
+primaldA.Run()
+
+posX, posY, posZ = primal.PrintSolution(iNode)
+OF = primal.ComputeObjectiveFunction(iNode)
+posX, posY, posZ = primaldA.PrintSolution(iNode)
+OFdA = primaldA.ComputeObjectiveFunction(iNode)
+
+deriv = (OFdA-OF)/(1.0E-7)
+print("sensitivity FD = ",deriv)
+
+
+########################################
+# Initialize and set loads/crossed terms
+########################################
 
 adjoint = pyBeamSolverAD(file_dir, 'configAD.pyBeam')
-adjoint.SetLoads(iNode, 0, Loady , Loadz ) 
-#  adjoint.SetDisplacementAdjoint(iNode, adjX[iNode], adjY[iNode], adjZ[iNode])
- 
+
+
+adjoint.SetLoads(iNode, 0, -100, 7000)
+
 
 ############################
 # Solve adjoint
@@ -66,18 +96,8 @@ adjoint.StopRecording()
 print("6-COmputing Adjoint")
 adjoint.ComputeAdjoint()
 
-#===
+adjoint.PrintSensitivityDV()
 sensE = adjoint.PrintSensitivityE()
 adjoint.PrintSensitivityLoad(iNode)
-adjoint.PrintSensitivityDV()
- 
+
 exit()
-############################
-# Tests
-############################
-
-print("\n############################\n TEST \n############################\n")
-test = adjoint.TestSensitivityE(sensE, 1.0546216892681002e-13)
-
-exit(test)
-

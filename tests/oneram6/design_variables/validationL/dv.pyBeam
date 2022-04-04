@@ -1,0 +1,19 @@
+% Respect the format, properties have to start in line following NDV
+% Format: TAG idxTAG  subTAG  lB  uB
+NDV = 16
+PROP  0 AREA 0.0003   0.0004
+PROP  1 AREA 0.0003   0.0004
+PROP  2 AREA 0.0003   0.0004
+PROP  3 AREA 0.0003   0.0004
+PROP  0 Iyy 0.0003   0.0004
+PROP  1 Iyy 0.0003   0.0004
+PROP  2 Iyy 0.0003   0.0004
+PROP  3 Iyy 0.0003   0.0004
+PROP  0 Izz 0.0003   0.0004
+PROP  1 Izz 0.0003   0.0004
+PROP  2 Izz 0.0003   0.0004
+PROP  3 Izz 0.0003   0.0004
+PROP  0 Jt 0.0003   0.0004
+PROP  1 Jt 0.0003   0.0004
+PROP  2 Jt 0.0003   0.0004
+PROP  3 Jt 0.0003   0.0004

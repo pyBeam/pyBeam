@@ -136,8 +136,15 @@ void CBeamSolver::InitializeInput(CInput* py_input){   // insert node class and 
     
 }
 
+    void CBeamSolver::ChangeProp(int iProp, string sTAG, passivedouble value) { 
+      Prop[iProp]->SetProp(sTAG,value); }
+    
+    void CBeamSolver::IncreaseProp(int iProp, string sTAG, passivedouble Dvalue) { 
+      Prop[iProp]->IncreaseProp(sTAG, Dvalue); }    
+    
     void CBeamSolver::InitializeStructure(void) {
     structure = new CStructure(input, element, node); structure->SetCoord0();
+    
     // If there are RBE and Lagrange multiplier method is used it's important to define already the dimension as AD recording needs it
     if (nRBE2 != 0){ 
         if (verbose){std::cout << "--> Setting RBE2 for Rigid Constraints" << std::endl;}        
@@ -667,9 +674,9 @@ void CBeamSolver::ComputeAdjoint(void){
  
         
         for (int iDV= 0; iDV<nDV; iDV ++){
-            dv_container[iDV]->sensitivity = AD::GetDerivative(dv_container[iDV]->value);
-            cout << AD::GetDerivative(dv_container[iDV]->value) << endl;
+            dv_container[iDV]->sensitivity = AD::GetDerivative(dv_container[iDV]->value);           
             DVGradient[iDV]= AD::GetValue(dv_container[iDV]->sensitivity);
+//            cout << DVGradient[iDV] << endl;
         }
 
         
@@ -687,7 +694,6 @@ void CBeamSolver::ComputeAdjoint(void){
 void CBeamSolver::StopRecording(void) {
 
     AD::RegisterOutput(objective_function);
-    OF_NodeDisplacement(99);
 
     /** Register the solution as output **/
     structure->RegisterSolutionOutput(iRigid);
@@ -740,16 +746,16 @@ void CBeamSolver::ReadRestart(){
         }
     }
     if (myfile.fail()){
-        //cout << "Error opening solution file (solution.pyBeam)." << endl;
-       // exit (EXIT_FAILURE);
-        cout << "CAN't READ SOLUTION FILE (solution.pybeam) of the primal. Assuming the initial undeformed configuration." << endl;
-        for (int id_node=1; id_node<= input->Get_nNodes() ; id_node++)   {
-            structure->U(posX+0-1) = 0.0; structure->U(posX+1-1) = 0.0; structure->U(posX+2-1) = 0.0;
-            structure->U(posX+3-1) = 0.0; structure->U(posX+4-1) = 0.0; structure->U(posX+5-1) = 0.0;
-            posX += 6;
-            
-        }
-        cout << "Successfull !" << endl;
+        cout << "Error opening solution file (solution.pyBeam)." << endl;
+        exit (EXIT_FAILURE);
+//        cout << "CAN't READ SOLUTION FILE (solution.pybeam) of the primal. Assuming the initial undeformed configuration." << endl;
+//        for (int id_node=1; id_node<= input->Get_nNodes() ; id_node++)   {
+//            structure->U(posX+0-1) = 0.0; structure->U(posX+1-1) = 0.0; structure->U(posX+2-1) = 0.0;
+//            structure->U(posX+3-1) = 0.0; structure->U(posX+4-1) = 0.0; structure->U(posX+5-1) = 0.0;
+//            posX += 6;
+//            
+//        }
+//        cout << "Successfull !" << endl;
         
     }
 }

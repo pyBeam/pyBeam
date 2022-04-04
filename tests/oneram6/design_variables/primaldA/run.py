@@ -25,6 +25,7 @@ import shutil
 import numpy as np
 import sys, os, csv
 
+
 sys.path.append('/home/rauno/pyBeamSU2/bin')
 
 from pyBeamLib import pyBeamSolver
@@ -40,23 +41,12 @@ Loadz = 7000
 # Initialize and set loads/crossed terms
 ########################################
 
-primal = pyBeamSolver(file_dir, 'config.pyBeam')
-primal.SetLoads(iNode, 0, Loady , Loadz )
-primal.Run()
-
-posX, posY, posZ = primal.PrintSolution(iNode)
-OF = primal.ComputeObjectiveFunction(iNode)
+primaldA = pyBeamSolver(file_dir, 'configdA.pyBeam')
+primaldA.SetLoads(iNode, 0, Loady , Loadz )
+primaldA.Run()
 
 
+posXdA, posYdA, posZdA = primaldA.PrintSolution(iNode)
+OFdA = primaldA.ComputeObjectiveFunction(iNode)
 
 exit()
-
-
-############################
-# Tests
-############################
-
-print("\n############################\n TEST \n############################\n")
-test = primal.TestNodePosition(posX, posY, posZ, 0.870500167468, 1.192027546023, 0.101850147705, 1E-8)
-
-exit(test)
