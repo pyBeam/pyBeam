@@ -52,8 +52,7 @@ protected:
 
     unsigned short nDOF;            // Number of degrees of freedom
 
-    unsigned short rigid = 1;       // [0] RBE2 [1] penalty
-    addouble penalty = pow(10,15);  // penalty coefficient
+    addouble penalty = pow(10,8);  // penalty coefficient
 
     addouble load;                  // [N];              // To be removed
     int follower_flag;              // (0) Nonfollower (1) follower (2) approx follower
@@ -170,8 +169,6 @@ public:
     unsigned long Get_nIter(void) { return nIter;}
 
     addouble Get_ConvCriteria(void) { return convCriteria; }
-
-    unsigned short Get_RigidCriteria(void) { return rigid; }
 
     addouble GetPenalty(void) { return penalty; }
 

@@ -102,6 +102,7 @@ void CBeamSolver::InitializeInput(CInput* py_input){   // insert node class and 
         if (verbose){std::cout << "ok!"  <<std::endl;}
         if (verbose){std::cout << "--> Warning: the code works if slave nodes are not connected to beams! "
                                << std::endl;}
+        if (verbose){std::cout << "--> Remember to add a check about this..."  <<std::endl;}
     }
     else {RBE2 = NULL; }
     
@@ -112,7 +113,29 @@ void CBeamSolver::InitializeInput(CInput* py_input){   // insert node class and 
     structure = NULL;
     
 }
-
+    void CBeamSolver::InitializeStructure(void) {
+    structure = new CStructure(input, element, node); structure->SetCoord0();
+    // If there are RBE and Lagrange multiplier method is used it's important to define already the dimension as AD recording needs it
+    if (nRBE2 != 0){ 
+    if (verbose){std::cout << "--> Setting RBE2 for Rigid Constraints" << std::endl;}        
+    structure->AddRBE2(input, RBE2);}
+    // Sizing rigid support matrix. Necessary in case of SPARSE approach
+    // Should be also done here for SPARSE approach and rigid lagraignan (in the future)
+    if (nRBE2 != 0 and iRigid == 0){
+    #ifdef DENSE
+    // Resizes and zeros the K matrices
+    structure->K_penal.resize(input->Get_nNodes()*6,input->Get_nNodes()*6);
+    structure->K_penal = MatrixXdDiff::Zero(input->Get_nNodes()*6,input->Get_nNodes()*6);
+    #else
+    // Resizes the sparse Ksys matriX
+    structure->K_penal.resize( (input->Get_nNodes())*6,(input->Get_nNodes())*6);    
+    structure->tripletListRBEPenalty.reserve((input->Get_nNodes())*6*100);     
+    #endif }
+    }
+    if (nRBE2 != 0 and iRigid == 1){
+    structure->SetRigidLagrangeDimensions();}
+    }
+    
 /**
  * @todo Remove unused parameters
  * @body Remove unused FSIIter from the arguments of the function, and also from the python wrapper and library.
@@ -120,6 +143,9 @@ void CBeamSolver::InitializeInput(CInput* py_input){   // insert node class and 
 
 
 void CBeamSolver::Solve(int FSIIter = 0){
+    
+    std::ofstream history;
+    history.open ("History.pyBeam");
     
     // Beam total length
     addouble TotalLength = 0;
@@ -130,11 +156,6 @@ void CBeamSolver::Solve(int FSIIter = 0){
     if (verbose){std::cout << "--> Setting External Forces" << std::endl;}
     structure->ReadForces(nTotalDOF, loadVector);
     
-    if (nRBE2 != 0){
-        if (verbose){std::cout << "--> Setting RBE2 Matrix for Rigid Constraints" << std::endl;}
-        structure->AddRBE2(input, RBE2);
-    }
-
     //===============================================
     // LOAD STEPPING
     //===============================================
@@ -144,33 +165,54 @@ void CBeamSolver::Solve(int FSIIter = 0){
     addouble  lambda = 1.0;
     addouble dlambda =  1.0/input->Get_LoadSteps() ;
     unsigned long iIter;
-
+    
     unsigned long loadStep = 1;
     cout.setf(ios::fixed, ios::floatfield);
+    history.setf(ios::fixed, ios::floatfield);
     
-    // This function set the current initial coordinates and memorizes them as the old one before the converging procedure starts
-    structure->InitialCoord();
-    structure->RestartCoord();
-    structure->UpdateRotationMatrix_FP();  // based on the rotational displacements
+    // This function set the current initial coordinates and memorizes them as the old one 
+    // before the converging procedure starts (necessary in case of FSI)
+    structure->InitialCoord(); //sets the Coordinates 0 of the configuration (as given in the mesh)
+    structure->RestartCoord(); //sets the current Coordinates of the configuration (as given in restart or from the previous iter of FSI)
     structure->UpdateLength();
-    structure->UpdateInternalForces_FP();
-
+    //structure->UpdateRotationMatrix_FP();  // based on the rotational displacements
+    //structure->UpdateInternalForces_FP();
+       
     totalIter = 0;
     for  ( loadStep = 0; loadStep < input->Get_LoadSteps(); loadStep++) {
-
+        
         lambda = dlambda*(loadStep+1);
         if (verbose){
-        std::cout << "===========================================================================" << std::endl;
-        std::cout << "==       LOAD STEP     " << loadStep << std::endl;
-        std::cout.precision(8);
-        std::cout << "==       Lambda        " << lambda << std::endl;
-        std::cout << "===========================================================================" << std::endl;
-
-        std::cout.width(6); std::cout << "Iter";
-        std::cout.width(17); std::cout << "Log10(Norm_Res)";
-        std::cout.width(17); std::cout << "Log10(Lin_Sol)";
-        std::cout.width(17); std::cout << "Log10(Norm_Disp)";
-        std::cout.width(17); std::cout << "Log10(Disp_Fact)" << std::endl;
+            std::cout << "===========================================================================" << std::endl;
+            std::cout << "==       LOAD STEP     " << loadStep << std::endl;
+            std::cout.precision(8);
+            std::cout << "==       Lambda        " << lambda << std::endl;
+            std::cout << "===========================================================================" << std::endl;
+            
+            std::cout.width(6); std::cout << "Iter";
+            std::cout.width(17); std::cout << "Log10(Norm_Res)";
+            if (nRBE2 != 0 ) {
+                std::cout.width(17); std::cout << " Log10(Norm[Res+Constr])";    
+            }
+            std::cout.width(17); std::cout << "Log10(Lin_Sol)";
+            std::cout.width(17); std::cout << "Log10(Norm_Disp)";
+            std::cout.width(17); std::cout << "Log10(Disp_Fact)" << std::endl;
+            
+            // WRITE HISTORY FILE
+            history << "===========================================================================" << std::endl;
+            history << "==       LOAD STEP     " << loadStep << std::endl ;
+            history.precision(8);
+            history << "==       Lambda        " << lambda << std::endl ;
+            history << "===========================================================================" << std::endl;
+            
+            history.width(6); history << "Iter";
+            history.width(17); history << "Log10(Norm_Res)";
+            if (nRBE2 != 0 ) {
+                history.width(17); history << " Log10(Norm[Res+Constr])";    
+            }
+            history.width(17); history << "Log10(Lin_Sol)";
+            history.width(17); history << "Log10(Norm_Disp)";
+            history.width(17); history << "Log10(Disp_Fact)" << std::endl;        
         }
         
         //===============================================
@@ -180,7 +222,8 @@ void CBeamSolver::Solve(int FSIIter = 0){
         
         for (iIter = 0; iIter < input->Get_nIter(); iIter++) {
 
-            if (verbose){std::cout.width(6); std::cout << iIter;}
+            if (verbose){std::cout.width(6); std::cout << iIter;
+                         history.width(6); history << iIter;}
 
             //std::cout << "   ----- ITERATION  -----" << iIter << std::endl;
             
@@ -192,9 +235,13 @@ void CBeamSolver::Solve(int FSIIter = 0){
             structure->UpdateExtForces(lambda);
 
             // Evaluate the Residual
-            structure->EvalResidual(input->Get_RigidCriteria());
+            structure->EvalResidual();
 
-            if (verbose){std::cout.width(17); std::cout << log10(structure->Residual.norm());}
+            
+            if (verbose){
+                std::cout.width(17); std::cout << log10(structure->Residual.norm());
+                history.width(17); history << log10(structure->Residual.norm());
+            }
 
             /*--------------------------------------------------
              *   Assembly Ktang, Solve System
@@ -203,28 +250,45 @@ void CBeamSolver::Solve(int FSIIter = 0){
             // Reassembling Stiffness Matrix + Applying Boundary Conditions
             structure->AssemblyTang(1);
             
-            // Solve Linear System   K*dU = Res = Fext - Fin
-            if (nRBE2 != 0 and input->Get_RigidCriteria() == 0) {
-                if (verbose){std::cout << "-->  Update KRBE matrix "  << std::endl;}
-                structure->AssemblyRigidConstr();
-                structure->SolveLinearStaticSystem_RBE2(iIter);
+            
+            if (nRBE2 != 0 ) {
+                if (iRigid == 0 ) {
+                 if (iIter == 0 ) {structure->SetPenalty();}
+                structure->RigidResidual();
+                structure->AssemblyRigidPenalty();
+                }
+                else{
+                
+                structure->RigidResidualLagrange();
+                structure->AssemblyRigidLagrange();
+                }
+                if (verbose){
+                    std::cout.width(17); std::cout << log10(structure->Residual.norm());
+                    history.width(17); history << log10(structure->Residual.norm());
+                }                
             }
-            else if (nRBE2 != 0 and input->Get_RigidCriteria() == 1) {
-                if (verbose){std::cout << "-->  Update penalty matrix for RBEs "  << std::endl;}
-                structure->AssemblyRigidPenalty(input->GetPenalty());
-                structure->SolveLinearStaticSystem_RBE2_penalty(iIter);
+            
+            if (nRBE2 != 0 and iRigid == 1){
+            structure->ImposeBC_RigidLagrangian(); 
+            // Solve Linear System   Ksys_lam*dU_lam = Res_lam 
+            structure->SolveLinearStaticSystem_RigidLagrangian(iIter,history,1);                
             }
-            else {
-                structure->SolveLinearStaticSystem(iIter);
+            else{
+            structure->ImposeBC(); 
+            // Solve Linear System   Ksys*dU = Res =
+            structure->SolveLinearStaticSystem(iIter,history,1);
             }
 
-            if (verbose){std::cout.width(17); std::cout << log10(structure->dU.norm());}
+            if (verbose){
+                std::cout.width(17); std::cout << log10(structure->dU.norm());
+                history.width(17); history << log10(structure->dU.norm());
+            }
 
             /*--------------------------------------------------
              *   Updates Coordinates, Updates Rotation Matrices
              *----------------------------------------------------*/
             
-            structure->UpdateCoord();
+            structure->UpdateCoord(nRBE2,iRigid);
             
             // Now only X is updated
             //structure->UpdateRotationMatrix();  // based on the rotational displacements
@@ -237,24 +301,18 @@ void CBeamSolver::Solve(int FSIIter = 0){
             // Now, X, R, l are updated
             //structure->UpdateInternalForces();
             structure-> UpdateInternalForces_FP();
-            /*--------------------------------------------------
-             *   Update Penalty Forces
-             *----------------------------------------------------*/
             
-            if (nRBE2 != 0 and input->Get_RigidCriteria() == 1)
-            {
-                //structure->UpdateAxvector_RBE2();
-                //structure->EvalPenaltyForces(input->GetPenalty());
-                //structure->UpdateRigidConstr(iIter);
-            }
             /*--------------------------------------------------
              *    Check Convergence
              *----------------------------------------------------*/
             
             addouble disp_factor =   structure->dU.norm()/TotalLength;
-
-            if (verbose){std::cout.width(17); std::cout << log10(disp_factor);}
-            if (verbose){std::cout << std::endl;}
+            
+            if (verbose){
+                std::cout.width(17); std::cout << log10(disp_factor);
+                history.width(17); history << log10(disp_factor);
+            }
+            if (verbose){std::cout << std::endl;  history << std::endl;}
             
             if (disp_factor <= input->Get_ConvCriteria()) {
                 converged = true;
@@ -266,117 +324,165 @@ void CBeamSolver::Solve(int FSIIter = 0){
     }
     
     if (verbose){
-    std::cout << "===========================================================================" << std::endl;
-    std::cout << std::endl << "--> Writing Restart file (restart.pyBeam)." << std::endl;
+        std::cout << "===========================================================================" << std::endl;
+        history << "==========================================================================="<< std::endl;
+        std::cout << std::endl << "--> Writing Restart file (restart.pyBeam)." << std::endl;
     }
     WriteRestart();
     if (verbose){std::cout << std::endl << "--> Exiting Iterative Sequence." << std::endl;}
-
     
+    history.close();
+    
+    // Resetting Fnom in case Solve is called again
+    ResetLoads(); 
     
 }
 
 void CBeamSolver::RunRestart(int FSIIter = 0){
-
+ 
+    std::ofstream history;
+    history.open ("History_restart.pyBeam");    
+    
     // This function set the current initial coordinates and memorizes them as the old one before the converging procedure starts
-
+    
     // Beam total length
     addouble TotalLength = 0;
     for  ( unsigned long iFEM = 0; iFEM < nFEM; iFEM++) {
         TotalLength += element[iFEM]->GetInitial_Length();
     }
-
+    
     if (verbose){std::cout << "--> Setting External Forces" << std::endl;}
     structure->ReadForces(nTotalDOF, loadVector);
-
-    if (nRBE2 != 0){
-        if (verbose){std::cout << "--> Setting RBE2 Matrix for Rigid Constraints" << std::endl;}
-        structure->AddRBE2(input, RBE2);
-    }
-
+    
+    
     /*--- Restart the internal forces ---*/
     if (verbose){std::cout << "--> Initializing from restart file" << std::endl;}
-    structure->InitialCoord();
-    structure->RestartCoord();
+    structure->InitialCoord(); //sets the Coordinates 0 of the configuration (as given in the mesh)
+    structure->RestartCoord(); //sets the current Coordinates of the configuration (as given in restart or from the previous iter of FSI)
     structure->UpdateLength();
     structure->UpdateRotationMatrix_FP();  // based on the rotational displacements
     structure->UpdateInternalForces_FP();
-
+    
     if (verbose){
-    std::cout << "--> Starting Restart Sequence" << std::endl;
-    std::cout << "===========================================================================" << std::endl;
-
-    cout.setf(ios::fixed, ios::floatfield);
-    std::cout.width(8); std::cout << "Iter";
-    std::cout.width(16); std::cout << "Log10(Res)";
-    std::cout.width(17); std::cout << "Log10(Lin_Sol)";
-    std::cout.width(16); std::cout << "Log10(Disp)";
-    std::cout.width(17); std::cout << "Log10(Disp_Fact)" << std::endl;
+        std::cout << "--> Starting Restart Sequence" << std::endl;
+        std::cout << "===========================================================================" << std::endl;
+        
+        history << "===========================================================================" << std::endl;
+        
+        cout.setf(ios::fixed, ios::floatfield);
+        history.setf(ios::fixed, ios::floatfield);
+        
+        std::cout.width(8); std::cout << "Iter";
+        std::cout.width(16); std::cout << "Log10(Res)";
+        if (nRBE2 != 0 ) {
+            std::cout.width(17); std::cout << " Log10(Norm[Res+Constr])";    
+        }        
+        std::cout.width(17); std::cout << "Log10(Lin_Sol)";
+        std::cout.width(16); std::cout << "Log10(Disp)";
+        std::cout.width(17); std::cout << "Log10(Disp_Fact)" << std::endl;
+        
+        // WRITE HISTORY FILE
+        history.width(6); history << "Iter";
+        history.width(17); history << "Log10(Norm_Res)";
+        if (nRBE2 != 0 ) {
+            history.width(17); history << " Log10(Norm[Res+Constr])";    
+        }
+        history.width(17); history << "Log10(Lin_Sol)";
+        history.width(17); history << "Log10(Norm_Disp)";
+        history.width(17); history << "Log10(Disp_Fact)" << std::endl;                
     }
-
+    
     //===============================================
     //               RESTART SEQUENCE
     //===============================================
-
-    if (verbose){std::cout.width(8); std::cout << "RESTART";}
-
+    
+            if (verbose){std::cout.width(8); std::cout << "RESTART";
+                         history.width(8); history << "RESTART";}
+    
     /*--------------------------------------------------
-    *   Updates  Fext, Residual,
-    *----------------------------------------------------*/
-
+     *   Updates  Fext, Residual,
+     *----------------------------------------------------*/
+    
     // Update the External Forces with the loadStep
     structure->UpdateExtForces(1);
-
+    
     // Evaluate the Residual
-    structure->EvalResidual(input->Get_RigidCriteria());
-
-    if (verbose){std::cout.width(16); std::cout << log10(structure->Residual.norm());}
-
+    structure->EvalResidual();
+    
+    if (verbose){
+        std::cout.width(17); std::cout << log10(structure->Residual.norm());
+        history.width(17); history << log10(structure->Residual.norm());
+    }
+    
     /*--------------------------------------------------
-    *   Assembly Ktang, Solve System
-    *----------------------------------------------------*/
-
+     *   Assembly Ktang, Solve System
+     *----------------------------------------------------*/
+    
     // Reassembling Stiffness Matrix + Applying Boundary Conditions
     structure->AssemblyTang(1);
+    if (nRBE2 != 0 ) {
+        if (iRigid == 0 ) {
+            structure->SetPenalty();
+            structure->RigidResidual();
+            structure->AssemblyRigidPenalty();
+        }
+        else{
+            
+            structure->RigidResidualLagrange();
+            structure->AssemblyRigidLagrange();
+        }
+        if (verbose){
+            std::cout.width(17); std::cout << log10(structure->Residual.norm());
+            history.width(17); history << log10(structure->Residual.norm());
+        }                
+    }              
 
-    // Solve Linear System   K*dU = Res = Fext - Fin
-    if (nRBE2 != 0 and input->Get_RigidCriteria() == 0) {
-        if (verbose){std::cout << "-->  Update KRBE matrix "  << std::endl;}
-        structure->AssemblyRigidConstr();
-        structure->SolveLinearStaticSystem_RBE2(1);
-    }
-    else if (nRBE2 != 0 and input->Get_RigidCriteria() == 1) {
-        if (verbose){std::cout << "-->  Update penalty matrix for RBEs "  << std::endl;}
-        structure->AssemblyRigidPenalty(input->GetPenalty());
-        structure->SolveLinearStaticSystem_RBE2_penalty(1);
-    }
-    else {
-        structure->SolveLinearStaticSystem(1);
-    }
 
-    if (verbose){std::cout.width(16); std::cout << log10(structure->dU.norm());}
+if (nRBE2 != 0 and iRigid == 1){
+    structure->ImposeBC_RigidLagrangian(); 
+    // Solve Linear System   Ksys_lam*dU_lam = Res_lam 
+    structure->SolveLinearStaticSystem_RigidLagrangian(0,history,1);                
+}
+else{
+    structure->ImposeBC(); 
+    // Solve Linear System   Ksys*dU = Res =
+    structure->SolveLinearStaticSystem(0,history,1);
+}
 
+if (verbose){
+    std::cout.width(17); std::cout << log10(structure->dU.norm());
+    history.width(17); history << log10(structure->dU.norm());
+    }
+    
     /*--------------------------------------------------
-    *   Updates Coordinates, Updates Rotation Matrices
-    *----------------------------------------------------*/
-
-    structure->UpdateCoord();
-
+     *   Updates Coordinates, Updates Rotation Matrices
+     *----------------------------------------------------*/
+    
+    structure->UpdateCoord(nRBE2,iRigid);
+    
+    
     /*--------------------------------------------------
-    *    Check Convergence
-    *----------------------------------------------------*/
+     *    Check Convergence
+     *----------------------------------------------------*/
 
     addouble disp_factor =   structure->dU.norm()/TotalLength;
 
     if (verbose){
-    std::cout.width(17); std::cout << log10(disp_factor);
-    std::cout << std::endl;
+                std::cout.width(17); std::cout << log10(disp_factor);
+                history.width(17); history << log10(disp_factor);
+                std::cout << std::endl;
+                history << std::endl;
 
 
-    std::cout << "===========================================================================" << std::endl;
-    std::cout << std::endl << "--> Exiting Restart Sequence." << std::endl;
+        std::cout << "===========================================================================" << std::endl;
+        std::cout << std::endl << "--> Exiting Restart Sequence." << std::endl;
+        history << "===========================================================================" << std::endl;
+        history << std::endl << "--> Exiting Restart Sequence." << std::endl;
     }
-    
+
+    // Reset of load is not used here as restart is usually run before Adjoint which requires the loadvector array
+
+
 }
 
 passivedouble CBeamSolver::OF_NodeDisplacement(int iNode){
@@ -396,10 +502,10 @@ passivedouble CBeamSolver::OF_NodeDisplacement(int iNode){
 void CBeamSolver::SetDependencies(void){
 
     /** Register the solution as input **/
-    structure->RegisterSolutionInput();
+    structure->RegisterSolutionInput(iRigid);
 
     addouble E, E_dim, Nu, G;
-    unsigned long iFEM, iLoad;
+    unsigned long iFEM,iRBE2, iLoad;
 
     input->RegisterInput_E();
     input->RegisterInput_Nu();
@@ -417,6 +523,11 @@ void CBeamSolver::SetDependencies(void){
         element[iFEM]->SetDependencies();
     }
 
+    if (nRBE2 != 0){
+    for (iRBE2 = 0; iRBE2 < nRBE2; iRBE2++) {    
+        RBE2[iRBE2]->SetDependencies();    
+    }
+    }
     /*--- Initialize vector to store the gradient ---*/
     loadGradient = new passivedouble[nTotalDOF];
 
@@ -439,17 +550,16 @@ void CBeamSolver::ComputeAdjoint(void){
 
         AD::SetDerivative(objective_function, 1.0);
 
-        structure->SetSolutionAdjoint();
+        structure->SetSolutionAdjoint(iRigid);
 
         AD::ComputeAdjoint();
-
-        structure->ExtractSolutionAdjoint();
+        structure->ExtractSolutionAdjoint(iRigid);
 
         E_grad = input->GetGradient_E();
         Nu_grad = input->GetGradient_Nu();
-
         for (iLoad = 0; iLoad < nTotalDOF; iLoad++){
             loadGradient[iLoad] = AD::GetValue(AD::GetDerivative(loadVector[iLoad]));
+
         }
 
         AD::ClearAdjoints();
@@ -463,7 +573,7 @@ void CBeamSolver::StopRecording(void) {
     AD::RegisterOutput(objective_function);
 
     /** Register the solution as output **/
-    structure->RegisterSolutionOutput();
+    structure->RegisterSolutionOutput(iRigid);
 
     AD::StopRecording();
 

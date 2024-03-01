@@ -138,7 +138,7 @@ public:
     // Initially rotates the elements
     void InitializeRotMats();
 
-    // Set the element dependencies
+    // Set the element dependencies (AD )
     void SetDependencies(void);
 
 };

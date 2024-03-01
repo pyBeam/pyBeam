@@ -61,6 +61,7 @@ private:
     CStructure* structure;                /*!< \brief Pointer which the defines the structure. */
 
     int nDOF, nTotalDOF, nRBE2, nDim;
+    int iRigid = 0;     // iRigid = 0: Penalty method iRigid = 1: Lagrange Multiplier method
     unsigned long nFEM;
 
     unsigned long totalIter;
@@ -85,7 +86,7 @@ public:
 
     inline void InitializeRBE2(CRBE2* py_RBE2,unsigned long iRBE2) {RBE2[iRBE2] = py_RBE2;}
 
-    inline void InitializeStructure(void) {structure = new CStructure(input, element, node); structure->SetCoord0();}
+    void InitializeStructure(void);
 
     void Solve(int FSIIter);
 
@@ -94,6 +95,13 @@ public:
     void ComputeAdjoint(void);
 
     inline void SetLoads(int iNode, int iDOF, passivedouble loadValue) { loadVector[iNode*nDOF + iDOF] = loadValue; }
+    
+    // In FSI if Solve is called again with a new set of loads, old loadset needs to be reset
+    inline void ResetLoads() {
+        for (int iLoad = 0; iLoad < nTotalDOF; iLoad++){
+        loadVector[iLoad] = 0.0;}
+        structure->ResetForces();
+    }
 
     inline passivedouble ExtractDisplacements(int iNode, int iDim) {
         return AD::GetValue(structure->GetDisplacement(iNode, iDim));

@@ -28,9 +28,6 @@
 
 #pragma once
 
-#include <Eigen/Dense>
-#include <Eigen/Eigenvalues>
-#include <Eigen/LU>
 
 #include "../include/types.h"
 #include "../include/element.h"
@@ -74,14 +71,25 @@ public:
     CNode **node;               // Pointer to the first finite element
 
     VectorXdDiff cross_term;    // Store the displacement vector
+
+#ifdef DENSE
+	MatrixXdDiff Ksys;
+        MatrixXdDiff K_penal;       // penalty matrix for rigid elements        
+#else        
+        MatrixXdDiffSP  Ksys ;      
+        MatrixXdDiffSP  K_penal ;  // penalty matrix for rigid elements 
+        std::vector<adtripletype > tripletList;
+        std::vector<adtripletype > tripletListRBEPenalty;  // triplet for the rigid contribution to the tangent matrix
+#endif 
     
-    MatrixXdDiff Ksys;
-    MatrixXdDiff Ksys_red;      // [relative to masters in case of RBE2]
-    MatrixXdDiff K_penal;       // penalty matrix for rigid elements
-    VectorXdDiff V_penal;       // penalty vector for rigid elements
+
     
-    MatrixXdDiff KRBE;          // Kinematic constraint matrix due to the RBE2 elements   [totalDOFs, BossDOFs]
-    MatrixXdDiff KRBE_ext;      // Kinematic constraint matrix due to the RBE2 elements   [totalDOFs, BossDOFs]
+    // In case Rigid with Lagrangian multiplier method
+    MatrixXdDiff Ksys_lam;  // Aumented matrix [6*(nNode+nRBE)x6*(nNode+nRBE)]
+    VectorXdDiff U_lam;     // Aumented Displacement array [6*(nNode+nRBE)]
+    VectorXdDiff Residual_lam; //  // Aumented Residual array [6*(nNode+nRBE)]
+    VectorXdDiff dU_lam;           // Aumented Displacement array (increment)[6*(nNode+nRBE)]  
+    VectorXdDiff U_lam_adj;     // Aumented Displacement array [6*(nNode+nRBE)]
     
     MatrixXdDiff  Constr_matrix;// COnstraint matrix [ NODE_ID DOF_ID ]
     
@@ -93,15 +101,15 @@ public:
 
     VectorXdDiff U_adj;         // Adjoint of the displacement array (cumulative)
     
-    VectorXdDiff Fpenal;        // Array of internal forces
     VectorXdDiff Fint;          // Array of internal forces
     VectorXdDiff Fext;          // Array of External Forces
     VectorXdDiff Residual;      // Array of Unbalanced Forces
-    VectorXdDiff Residual_red;  // Array of Unbalanced Forces   [relative to masters in case of RBE2]
     
     VectorXdDiff Fnom;          // Array of nominal forces
+    VectorXdDiff Fnom_old;          // Array of nominal forces  of previous FSI run  
     
     addouble YoungModulus;
+    addouble penalty;
     
     CStructure(CInput *input, CElement **container_element, CNode **container_node);
     
@@ -109,35 +117,49 @@ public:
     
     /*##############################################################
      *
-     *         External Forces, Residual, Intenral Forces
+     *         External Forces, Residual, Internal Forces
      *
      *###############################################################*/
     
     inline void ReadForces(int nTotalDOF, addouble *loadVector) {
         for (int iLoad = 0; iLoad < nTotalDOF; iLoad++){Fnom(iLoad) = loadVector[iLoad];}
     }
+    
+    inline void ResetForces() {
+        Fnom_old = Fnom;
+        Fnom = VectorXdDiff::Zero(nNode*6);
+    }    
 
     inline void SetDimensionalYoungModulus(addouble val_E){ YoungModulus = val_E; }
 
     // External forces are normalized by the Young Modulus
-    inline void UpdateExtForces(addouble lambda){ Fext = lambda* Fnom / YoungModulus; }
-
-    void EvalResidual(unsigned short rigid);
-
-    void EvalPenaltyForces(addouble penalty);
+    //inline void UpdateExtForces(addouble lambda){ Fext = lambda* Fnom / YoungModulus; }
+    inline void UpdateExtForces(addouble lambda){       
+        Fext = ( lambda* (Fnom -Fnom_old) +Fnom_old )  / YoungModulus;}
+    void EvalResidual();
 
     //===================================================
     //      Assembly RBE2 rigid constraint matrix
     //===================================================
 
     inline void AddRBE2(CInput *input, CRBE2** container_RBE2) {nRBE2 = input->Get_nRBE2(); RBE2 = container_RBE2;}
+    
+    // Penalty strategy
+    void SetPenalty() {  penalty = 100*Ksys.diagonal().maxCoeff(); };
+    
+    void RigidResidual();
 
-    void AssemblyRigidConstr();
-
-    void AssemblyRigidPenalty(addouble penalty);
-
-    void UpdateRigidConstr(int iIter);
-
+    void AssemblyRigidPenalty();
+    
+    // Lagrange Multiplier strategy
+    inline void SetRigidLagrangeDimensions() {U_lam = VectorXdDiff::Zero((nNode+nRBE2)*6); dU_lam = VectorXdDiff::Zero((nNode+nRBE2)*6); Residual_lam = VectorXdDiff::Zero((nNode+nRBE2)*6); Ksys_lam =MatrixXdDiff::Zero((nNode+nRBE2)*6,(nNode+nRBE2)*6); U_lam_adj = VectorXdDiff::Zero((nNode+nRBE2)*6); };
+    
+    void RigidResidualLagrange();
+    
+    void AssemblyRigidLagrange();
+    
+    void ImposeBC_RigidLagrangian();
+    
     //===================================================
     //      Assembly System Stiffness Matrix
     //===================================================
@@ -146,19 +168,21 @@ public:
 
     void EvalSensRot();    // Evaluate the sensitivity of Rotation Matrix - need for Jacobian
 
-    //void EvalSensRotFiniteDifferences();    // Evaluate the sensitivity of Rotation Matrix - need for Jacobian
+    void ImposeBC();  // Impose the boundary condition on the stiffness matrix and Residual
 
     //===================================================
     //      Solve linear static system
     //===================================================
     // Assembles LHS and RHS and solves the linear static problem
-
-    void SolveLinearStaticSystem(int iIter);
-
-    void SolveLinearStaticSystem_RBE2(int iIter);
-
-    void SolveLinearStaticSystem_RBE2_penalty(int iIter);
-
+#ifdef DENSE
+    void SolveLinearStaticSystem(int iIter, std::ofstream &history , int print);  ///< Performs the linear system solution for DENSE matrix 
+       
+    void SolveLinearStaticSystem_RigidLagrangian(int iIter, std::ofstream &history , int print); 
+#else
+    void SolveLinearStaticSystem(int iIter, std::ofstream &history , int print);  ///< Performs the linear system solution for SPARSE matrix 
+       
+    void SolveLinearStaticSystem_RigidLagrangian(int iIter, std::ofstream &history , int print){}; ///< Linear solutino of system using SPARSE not supported in case of Lagrangian formulation for rigid elements      
+#endif    
     //===================================================
     //      Update Coordinates
     //===================================================
@@ -168,13 +192,9 @@ public:
      * are based on the displacements.
      */
 
-    void UpdateCoord();
+    void UpdateCoord(int nRBE2, int iRigid);
 
     void RestartCoord();
-
-    void UpdateAxvector_RBE2();
-
-    void UpdateCoord_RBE2(int iIter);
 
     void InitialCoord();
 
@@ -197,28 +217,55 @@ public:
     void InitializeInternalForces();
 
     addouble GetDisplacement(int iNode, int iDim) {
-        return U(6*iNode+iDim);
+        return U(6 * iNode + iDim);
     }
 
-    inline void RegisterSolutionInput(void) {
-        for (unsigned long i = 0; i < nNode * 6; i++)
-            AD::RegisterInput(U(i));
-    }
-
-    inline void RegisterSolutionOutput(void) {
-        for (unsigned long i = 0; i < nNode * 6; i++)
-            AD::RegisterOutput(U(i));
-    }
-
-    inline void ExtractSolutionAdjoint(void) {
-        for (unsigned long i = 0; i < nNode * 6; i++){
-            U_adj(i) = AD::GetDerivative(U(i));
+    inline void RegisterSolutionInput(int iRigid) {
+        if (nRBE2 != 0 and iRigid == 1) {
+            for (unsigned long i = 0; i < (nNode + nRBE2)*6; i++){
+                AD::RegisterInput(U_lam(i)); }
+        } 
+        else {
+            for (unsigned long i = 0; i < nNode * 6; i++){
+                AD::RegisterInput(U(i));}
         }
     }
 
-    inline void SetSolutionAdjoint(void) {
-        for (unsigned long i = 0; i < nNode * 6; i++)
-            AD::SetDerivative(U(i), AD::GetValue(U_adj(i) + cross_term(i)));
+    inline void RegisterSolutionOutput(int iRigid) {
+        if (nRBE2 != 0 and iRigid == 1) {
+            for (unsigned long i = 0; i < (nNode + nRBE2)*6; i++){
+                AD::RegisterOutput(U_lam(i)); }
+        } 
+        else {
+            for (unsigned long i = 0; i < nNode * 6; i++){
+                AD::RegisterOutput(U(i));}
+        }
+    }
+
+    inline void ExtractSolutionAdjoint(int iRigid) {
+        if (nRBE2 != 0 and iRigid == 1) {
+           for (unsigned long i = 0; i < (nNode + nRBE2)*6; i++){
+               U_lam_adj(i) = AD::GetDerivative(U_lam(i));}
+        }
+        else{
+        for (unsigned long i = 0; i < nNode * 6; i++){
+            U_adj(i) = AD::GetDerivative(U(i));}
+        }
+    }
+
+    inline void SetSolutionAdjoint(int iRigid) {
+        if (nRBE2 != 0 and iRigid == 1) {
+        for (unsigned long i = 0; i < nNode * 6; i++){
+            AD::SetDerivative(U_lam(i), AD::GetValue(U_lam_adj(i) + cross_term(i))); 
+        }    
+        for (unsigned long i = nNode * 6; i < (nNode + nRBE2)*6; i++){
+            AD::SetDerivative(U_lam(i), AD::GetValue( U_lam_adj(i) ));
+        }
+        }
+        else{
+        for (unsigned long i = 0; i < nNode * 6; i++){
+            AD::SetDerivative(U(i), AD::GetValue(U_adj(i) + cross_term(i)));}
+        }
     }
 
     inline void StoreDisplacementAdjoint(int iNode, int iDim, passivedouble val_adj) {
