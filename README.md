@@ -23,7 +23,7 @@ Continuous integration of test cases is provided by Travis CI.
 
 ## Installation tips:
 
-NOTE: this procedure has been verified for Ubuntu 18.04
+NOTE: this procedure has been verified for Ubuntu 18.04 and 22.04
 
 - Make sure you have meson installed
 
@@ -47,6 +47,16 @@ sudo apt-get install swig
 ```
 git submodule init
 git submodule update
+```
+
+- If usign a python version < 3.8, change the meson.build line 35 :
+form
+```
+python_dep = dependency('python3-embed')
+```
+to
+```
+python_dep = dependency('python3')
 ```
 
 - Compile:

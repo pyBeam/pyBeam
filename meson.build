@@ -32,7 +32,7 @@ project('pyBeam', 'cpp',
 
 pymod = import('python')
 python = pymod.find_installation()
-python_dep = dependency('python3')
+python_dep = dependency('python3-embed')
 
 # check for swig
 swig = find_program('swig')
