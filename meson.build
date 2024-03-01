@@ -23,16 +23,16 @@
 # If not, see <http://www.gnu.org/licenses/>.
 #
 
-project('pyBeam', 'cpp',
-        version: '0.1.0',
+project('pyBeam', 'cpp', 
+        version: '0.1.0', 
         license: 'GNU Affero 3.0',
-        default_options: ['buildtype=release',
-                          'warning_level=0',
+        default_options: ['buildtype=release', 
+                          'warning_level=0', 
                           'cpp_std=c++11'])
 
 pymod = import('python')
 python = pymod.find_installation()
-python_dep = dependency('python3')
+python_dep = dependency('python3-embed')
 
 # check for swig
 swig = find_program('swig')
@@ -54,3 +54,4 @@ subdir('pyMLS')
 subdir('pyMLS/pylib')
 subdir('pyBeam')
 subdir('pyBeam/pylib')
+
