@@ -33,6 +33,7 @@
 #include <Eigen/Core>
 #include <Eigen/Dense>
 #include <Eigen/SVD>
+#include <Eigen/Sparse>
 #include <iostream> 
 #include <vector>
 #include <fstream>
@@ -41,7 +42,8 @@
 #include "../externals/ann/include/ANN/ANN.h"
 #include "../externals/libigl/include/igl/slice.h"
 
-void mls_interface (std::vector<double> &interpolation_matrix_std,
+void mls_interface (std::vector<double> &interpolation_matrix_vals,
+                    std::vector<int> &interpolation_matrix_cols,
                     std::vector<double> &norm_err_std,
                     int str_nodenumb,
                     int aero_nodenumb,

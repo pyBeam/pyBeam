@@ -27,6 +27,7 @@
 
 
 #include "../include/interface.hpp"
+#include <Eigen/Sparse>
 
 
 void annInterface(Eigen::MatrixXd &dist, Eigen::MatrixXi &nnpos, int nDim, long int pointsUsed,
@@ -209,7 +210,7 @@ void   mls_wgt(Eigen::MatrixXd &W, Eigen::VectorXd dist, int type, double delta)
     
 };
 
-void check_MLS( Eigen::Map< Eigen::VectorXd > &norm_err, Eigen::MatrixXd str_data , Eigen::MatrixXd interpolation_matrix , Eigen::MatrixXd aero_data )
+void check_MLS( Eigen::Map< Eigen::VectorXd > &norm_err, Eigen::MatrixXd str_data , Eigen::SparseMatrix<double> interpolation_matrix , Eigen::MatrixXd aero_data )
 {
     /*% "check_MLS" performs a check on the consistency of the interface matrices
      % of MSL (in this case of H_VR_str_to_aero, but it can be considered
@@ -312,11 +313,12 @@ void pseudo_inv_eig(Eigen::MatrixXd &pinvA, Eigen::MatrixXd A, double toll)
          
 }
 
-void mls_interface (std::vector<double> &interpolation_matrix_std, std::vector<double> &norm_err_std,
+void mls_interface (std::vector<double> &interpolation_matrix_vals, std::vector<int> &interpolation_matrix_cols,
+                    std::vector<double> &norm_err_std,
                     int str_nodenumb, int aero_nodenumb,
                     std::vector<double> str_data_std, std::vector<double> aero_data_std ,
                     int poly, int weight, long int points, double rmax,double delta, double toll) {
-    
+
     /*
      % the first 3 outputs enable to evaluate the gradient of a function from
      % the values of the function
@@ -333,7 +335,8 @@ void mls_interface (std::vector<double> &interpolation_matrix_std, std::vector<d
      */
     // INTIIALIZATION ----------------------------------
     
-    int i, j, coeff;
+    int i, j;
+    long int coeff;
     // conversion of input arrays into matrices  (same memory position of the preceding array)
     double *str_data_pointer = &str_data_std[0];
     double *aero_data_pointer = &aero_data_std[0];
@@ -344,9 +347,7 @@ void mls_interface (std::vector<double> &interpolation_matrix_std, std::vector<d
 
     //std::cout << " str_data =" << str_data << "\n";
            
-    double *interpolation_matrix_pointer = &interpolation_matrix_std[0];
     double *norm_err_pointer = &norm_err_std[0];
-    Eigen::Map< Eigen::MatrixXd > interpolation_matrix(interpolation_matrix_pointer,aero_nodenumb,str_nodenumb)  ;
     Eigen::Map< Eigen::VectorXd > norm_err(norm_err_pointer,aero_nodenumb)  ;
 
     int min_p;
@@ -370,7 +371,6 @@ void mls_interface (std::vector<double> &interpolation_matrix_std, std::vector<d
     // P = [ones(N,1), str]; //initialize auxiliary MatrixX
     Eigen::MatrixXd P(strN, 1 + ipow(dim,poly));
     Eigen::VectorXd pp(1 + ipow(dim,poly));
-    Eigen::MatrixXd aux;
     Eigen::MatrixXd b;
     Eigen::MatrixXd A;
     //Eigen::MatrixXd pinvA;
@@ -553,14 +553,20 @@ void mls_interface (std::vector<double> &interpolation_matrix_std, std::vector<d
 
     coeff = 0;
 
-    //std::cout << interpolation_matrix << std::endl;
+    Eigen::SparseMatrix<double> interpolation_matrix(aero_nodenumb, str_nodenumb);
+    interpolation_matrix.reserve(Eigen::VectorXi::Constant(aero_nodenumb, points));
 
     for (i=0;i<nnpos.rows();i++){
         for (j=0;j<nnpos.cols();j++){
-            interpolation_matrix(i,nnpos(i,j)) = h(coeff);
+            interpolation_matrix.insert(i,nnpos(i,j)) = h(coeff);
+            
+            interpolation_matrix_vals[coeff] = h(coeff);
+            interpolation_matrix_cols[coeff] = nnpos(i,j);
+            
             coeff +=1;
         }
     }
+    interpolation_matrix.makeCompressed();
     //std::cout << "interpolation_matrix = \n" << interpolation_matrix << "\n";
 
     check_MLS( norm_err,  str_data , interpolation_matrix , aero_data );

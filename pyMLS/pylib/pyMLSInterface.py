@@ -31,6 +31,7 @@
 from pyMLSIO import pyMLSConfig as io
 import numpy as np
 import pyMLS as Spline
+from scipy import sparse
 
 # ----------------------------------------------------------------------
 #  MLS_Spline Interface Class
@@ -77,19 +78,21 @@ class pyMLSInterface:
                 aero_data_std[l] = float(AeroNodes[j][i])
                 l = l + 1
 
-        interpolation_matrix_std = Spline.DoubleVector(self.nAeroNodes * self.nStructNodes)
+        n_interp = self.nAeroNodes * MLS_conf['POINTS']
+        interpolation_matrix_vals = Spline.DoubleVector(n_interp)
+        interpolation_matrix_cols = Spline.IntVector(n_interp)
         norm_err_std = Spline.DoubleVector(self.nAeroNodes)
 
-        Spline.mls_interface(interpolation_matrix_std, norm_err_std, self.nStructNodes, self.nAeroNodes, str_data_std,
+        Spline.mls_interface(interpolation_matrix_vals, interpolation_matrix_cols, norm_err_std, self.nStructNodes, self.nAeroNodes, str_data_std,
                              aero_data_std, MLS_conf['POLY'], MLS_conf['WEIGHT'], MLS_conf['POINTS'],
                              MLS_conf['RMAX'], MLS_conf['DELTA'], MLS_conf['TOLL_SVD'])
 
         # --- OUTPUT ----------------------------------------------------------------
-        self.interpolation_matrix = np.zeros((self.nAeroNodes, self.nStructNodes))
-        l = 0
-        for i in range(0, self.nStructNodes):
-            for j in range(0, self.nAeroNodes):
-                self.interpolation_matrix[j][i] = interpolation_matrix_std[l]
-                l = l + 1
+        # Construct the sparse matrix from COO components
+        # Row indices are implicit: each aero node has MLS_conf['POINTS'] neighbors
+        row_indices = np.repeat(np.arange(self.nAeroNodes), MLS_conf['POINTS'])
+        
+        self.interpolation_matrix = sparse.csr_matrix((interpolation_matrix_vals, (row_indices, interpolation_matrix_cols)), 
+                                                      shape=(self.nAeroNodes, self.nStructNodes))
 
         print("Splining: norm of interpolation error over nodes position = {}".format(np.linalg.norm(norm_err_std)))
