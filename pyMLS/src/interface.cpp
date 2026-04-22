@@ -553,8 +553,8 @@ void mls_interface (std::vector<double> &interpolation_matrix_vals, std::vector<
 
     coeff = 0;
 
-    Eigen::SparseMatrix<double> interpolation_matrix(aero_nodenumb, str_nodenumb);
-    interpolation_matrix.reserve(Eigen::VectorXi::Constant(aero_nodenumb, points));
+    Eigen::SparseMatrix<double, Eigen::RowMajor> interpolation_matrix(aero_nodenumb, str_nodenumb);
+    interpolation_matrix.reserve(points);
 
     for (i=0;i<nnpos.rows();i++){
         for (j=0;j<nnpos.cols();j++){
